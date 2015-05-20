@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>fr.pgih</groupId>
+	<artifactId>pom-explorer</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>pom-explorer</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<aetherVersion>1.0.0.v20140518</aetherVersion>
+		<mavenVersion>3.1.0</mavenVersion>
+		<wagonVersion>1.0</wagonVersion>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-core</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-ext</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.apache.maven</groupId> -->
+<!-- 			<artifactId>maven-model</artifactId> -->
+<!-- 			<version>3.3.3</version> -->
+<!-- 		</dependency> -->
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+			<version>3.1.1</version>
+		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.codehaus.plexus</groupId> -->
+<!-- 			<artifactId>plexus-utils</artifactId> -->
+<!-- 			<version>3.0.22</version> -->
+<!-- 		</dependency> -->
+		<dependency>
+			<groupId>jgraph</groupId>
+			<artifactId>jgraph</artifactId>
+			<version>5.13.0.0</version>
+		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.eclipse.aether</groupId> -->
+<!-- 			<artifactId>aether-api</artifactId> -->
+<!-- 			<version>${aetherVersion}</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.eclipse.aether</groupId> -->
+<!-- 			<artifactId>aether-util</artifactId> -->
+<!-- 			<version>${aetherVersion}</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.eclipse.aether</groupId> -->
+<!-- 			<artifactId>aether-impl</artifactId> -->
+<!-- 			<version>${aetherVersion}</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.eclipse.aether</groupId> -->
+<!-- 			<artifactId>aether-connector-basic</artifactId> -->
+<!-- 			<version>${aetherVersion}</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.eclipse.aether</groupId> -->
+<!-- 			<artifactId>aether-transport-file</artifactId> -->
+<!-- 			<version>${aetherVersion}</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.eclipse.aether</groupId> -->
+<!-- 			<artifactId>aether-transport-http</artifactId> -->
+<!-- 			<version>${aetherVersion}</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.eclipse.aether</groupId> -->
+<!-- 			<artifactId>aether-transport-wagon</artifactId> -->
+<!-- 			<version>${aetherVersion}</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.apache.maven</groupId> -->
+<!-- 			<artifactId>maven-aether-provider</artifactId> -->
+<!-- 			<version>${mavenVersion}</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.apache.maven.wagon</groupId> -->
+<!-- 			<artifactId>wagon-ssh</artifactId> -->
+<!-- 			<version>${wagonVersion}</version> -->
+<!-- 		</dependency> -->
+
+		<dependency>
+			<groupId>org.jboss.shrinkwrap.resolver</groupId>
+			<artifactId>shrinkwrap-resolver-depchain</artifactId>
+			<version>2.1.1</version> <!-- Or whatever version you need -->
+			<type>pom</type>
+		</dependency>
+	</dependencies>
+</project>
