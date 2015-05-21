@@ -1,6 +1,5 @@
 package fr.lteconsulting.pomexplorer;
 
-import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.hexa.client.tools.Func2;
 import fr.lteconsulting.pomexplorer.WebServer.XWebServer;
 
@@ -36,15 +35,6 @@ public class App
 			}
 		};
 
-		Func1<String, String> service = new Func1<String, String>()
-		{
-			@Override
-			public String exec(String query)
-			{
-				return "Super, you just asked for " + query;
-			}
-		};
-
 		Func2<Client, String, String> socket = new Func2<Client, String, String>()
 		{
 			@Override
@@ -57,7 +47,7 @@ public class App
 			}
 		};
 
-		WebServer server = new WebServer(xWebServer, service, socket);
+		WebServer server = new WebServer(xWebServer, socket);
 		server.start();
 	}
 }
