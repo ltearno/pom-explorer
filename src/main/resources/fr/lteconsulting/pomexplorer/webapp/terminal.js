@@ -28,7 +28,7 @@ var Terminal = (function () {
 		inputField.style.opacity = '0'
 		inputField.style.fontSize = '0.2em'
 
-		terminalObj._inputLine.textContent = ''
+		terminalObj._inputLine.textContent = '>'
 		terminalObj._input.style.display = 'block'
 		terminalObj.html.appendChild(inputField)
 		fireCursorInterval(inputField, terminalObj)
@@ -60,8 +60,10 @@ var Terminal = (function () {
 		inputField.onkeyup = function (e) {
 			if (PROMPT_TYPE === PROMPT_CONFIRM || e.which === 13) {
 				terminalObj._input.style.display = 'none'
-				var inputValue = inputField.value
+				var inputValue = inputField.value;
 				if (shouldDisplayInput) terminalObj.print(inputValue)
+				if(inputValue[0]=='>')
+					inputValue=inputValue.slice(1);
 				terminalObj.html.removeChild(inputField)
 				if (typeof(callback) === 'function') {
 					if (PROMPT_TYPE === PROMPT_CONFIRM) {
@@ -107,7 +109,8 @@ var Terminal = (function () {
 
 		this.print = function (message) {
 			var newLine = document.createElement('div')
-			newLine.textContent = message
+			//newLine.textContent = message
+			newLine.innerHTML = message
 			this._output.appendChild(newLine)
 		}
 

@@ -1,4 +1,4 @@
-package fr.pgih;
+package fr.lteconsulting.pomexplorer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,6 +25,10 @@ import org.jgrapht.graph.DirectedMultigraph;
 import com.mxgraph.layout.mxFastOrganicLayout;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
+import fr.lteconsulting.hexa.client.tools.Func2;
+import fr.lteconsulting.pomexplorer.WebServer.XWebServer;
+import fr.lteconsulting.pomexplorer.web.commands.Command;
+import fr.lteconsulting.pomexplorer.web.commands.CommandList;
 
 /**
  * Hello world!
@@ -33,21 +37,64 @@ public class App
 {
 	public static void main(String[] args)
 	{
-		WebServer server = new WebServer(new Func1<String, String>()
+		App app = new App();
+		app.run();
+	}
+
+	private void run()
+	{
+		XWebServer xWebServer = new XWebServer()
+		{
+			@Override
+			public void onNewClient(Client client)
+			{
+				System.out.println("New client " + client.getId());
+			}
+
+			@Override
+			public void onClientLeft(Client client)
+			{
+				System.out.println("Bye bye client !");
+			}
+		};
+
+		Func1<String, String> service = new Func1<String, String>()
 		{
 			@Override
 			public String exec(String query)
 			{
 				return "Super, you just asked for " + query;
 			}
-		});
-		server.start();
+		};
 
-		App app = new App();
-		app.run();
+		Func2<Client, String, String> socket = new Func2<Client, String, String>()
+		{
+			@Override
+			public String exec(Client client, String query)
+			{
+				if (query == null || query.isEmpty())
+					return "NOP.";
+
+				String[] parts = query.split(" ");
+				String command = parts[0];
+				String[] parameters = new String[parts.length - 1];
+				for (int i = 1; i < parts.length; i++)
+					parameters[i - 1] = parts[i];
+
+				Command cmd = CommandList.getCommand(command);
+				if (cmd == null)
+					return "Unknown command '" + command + "'";
+
+				String result = cmd.execute(client, parameters);
+				return result;
+			}
+		};
+
+		WebServer server = new WebServer(xWebServer, service, socket);
+		server.start();
 	}
 
-	private void run()
+	private void test()
 	{
 		DirectedGraph<GAV, Dep> g = new DirectedMultigraph<GAV, Dep>(Dep.class);
 
@@ -165,116 +212,14 @@ public class App
 
 		System.out.println("## Resolving analysis");
 		Toto.toto(pom);
-
-		// Model model = null;
-		// FileReader reader = null;
-		// MavenXpp3Reader mavenreader = new MavenXpp3Reader();
-		// try
-		// {
-		// reader = new FileReader(pom);
-		// }
-		// catch (FileNotFoundException e1)
-		// {
-		// }
-		// try
-		// {
-		// model = mavenreader.read(reader);
-		// model.setPomFile(pom);
-		// }
-		// catch (IOException | XmlPullParserException e1)
-		// {
-		// }
-		// MavenProject project = new MavenProject(model);
-
-		/** Aether */
-		// DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
-		// locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
-		// locator.addService(TransporterFactory.class, FileTransporterFactory.class);
-		// locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
-		// RepositorySystem rs = locator.getService(RepositorySystem.class);
-		//
-		// DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
-		// LocalRepository localRepo = new LocalRepository("target/local-repo");
-		// RepositorySystemSession rss = session.setLocalRepositoryManager(rs.newLocalRepositoryManager(session,
-		// localRepo));
-		//
-		// Dependency dependency = new Dependency(new DefaultArtifact("org.apache.maven:maven-profile:2.2.1"), "compile");
-		// RemoteRepository central = new RemoteRepository.Builder("central", "default", "http://repo1.maven.org/maven2/")
-		// .build();
-		//
-		// CollectRequest collectRequest = new CollectRequest();
-		// collectRequest.setRoot(dependency);
-		// collectRequest.addRepository(central);
-		// DependencyNode node = null;
-		// try
-		// {
-		// node = rs.collectDependencies(session, collectRequest).getRoot();
-		// }
-		// catch (DependencyCollectionException e)
-		// {
-		// return;
-		// }
-		//
-		// DependencyRequest dependencyRequest = new DependencyRequest();
-		// dependencyRequest.setRoot(node);
-		//
-		// try
-		// {
-		// rs.resolveDependencies(session, dependencyRequest);
-		// }
-		// catch (DependencyResolutionException e)
-		// {
-		// // TODO Gérer l'exception DependencyResolutionException
-		// }
-		//
-		// PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
-		// node.accept(nlg);
-		// System.out.println(nlg.getClassPath());
-
-		// rs.resolveDependencies(rss, new )
-		//
-		// System.out.println("process pom " + pom.getAbsolutePath());
-		//
-		//
-		//
-		// DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
-		//
-		// DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
-		//
-		// // attention double fqn
-		// RepositorySystem repoSystem = locator.getService(RepositorySystem.class);
-		//
-		// // repoSystem.resolve(new DefaultDependencyResolutionRequest(project, session));
-		//
-		// // MavenRepositorySystemSession
-		// // DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-		// try
-		// {
-		// session.setLocalRepositoryManager(new SimpleLocalRepositoryManagerFactory().newInstance(session,
-		// new LocalRepository("c:\\pgih\\repository")));
-		// }
-		// catch (NoLocalRepositoryManagerException e1)
-		// {
-		// System.out.println(e1);
-		// }
-		//
-		// DefaultProjectDependenciesResolver resolver = new DefaultProjectDependenciesResolver();
-		// try
-		// {
-		// resolver.resolve(new DefaultDependencyResolutionRequest(project, session));
-		// }
-		// catch (DependencyResolutionException e)
-		// {
-		// System.out.println(e);
-		// }
 	}
 
 	HashMap<String, GAV> gavs = new HashMap<>();
 
 	private GAV ensureArtifact(String groupId, String artifactId, String version, DirectedGraph<GAV, Dep> g)
 	{
-		if (!groupId.startsWith("fr."))
-			return null;
+		// if (!groupId.startsWith("fr."))
+		// return null;
 
 		String sig = groupId + ":" + artifactId + ":" + version;
 		GAV gav = gavs.get(sig);

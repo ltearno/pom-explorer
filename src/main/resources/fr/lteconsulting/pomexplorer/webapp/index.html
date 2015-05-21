@@ -21,7 +21,9 @@
 			consoleLoop();
 		};
 		socket.onmessage = function (event) {
-			terminal.print("received: '" + event.data+"'");
+			terminal.print(event.data);
+
+			consoleLoop();
 		}
 		socket.onerror = function (event) {
 			terminal.print("server communication error");
@@ -32,7 +34,7 @@
 
 		var consoleLoop = function()
 		{
-			terminal.input("Enter a command ('help' for help)", function (userInput) {
+			terminal.input("<br/>Enter a command ('help' for help)", function (userInput) {
 				if(userInput=="cls" || userInput=="clear")
 				{
 					terminal.clear();
@@ -40,7 +42,7 @@
 					return;
 				}
 				
-				var httpRequest = new XMLHttpRequest();
+				/*var httpRequest = new XMLHttpRequest();
 				httpRequest.onreadystatechange = function(){
 					if (httpRequest.readyState !== 4)
 						return;
@@ -57,9 +59,9 @@
 					consoleLoop();
 				};
 				httpRequest.open('GET', '/service/'+userInput, true);
-				httpRequest.send(null);
-				
-				terminal.print("...")
+				httpRequest.send(null);*/
+
+				socket.send(userInput);
 			});
 		}
 	</script>

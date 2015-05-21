@@ -1,4 +1,4 @@
-package fr.pgih;
+package fr.lteconsulting.pomexplorer;
 
 import java.io.File;
 
