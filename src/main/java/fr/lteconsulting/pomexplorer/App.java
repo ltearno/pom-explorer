@@ -3,8 +3,10 @@ package fr.lteconsulting.pomexplorer;
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.hexa.client.tools.Func2;
 import fr.lteconsulting.pomexplorer.WebServer.XWebServer;
+import fr.lteconsulting.pomexplorer.web.commands.AnalyseCommand;
 import fr.lteconsulting.pomexplorer.web.commands.Command;
 import fr.lteconsulting.pomexplorer.web.commands.CommandList;
+import fr.lteconsulting.pomexplorer.web.commands.SessionCommand;
 
 /**
  * Hello world!
@@ -25,6 +27,11 @@ public class App
 			public void onNewClient(Client client)
 			{
 				System.out.println("New client " + client.getId());
+				
+				// create a session for the user
+				new SessionCommand().execute( client, new String[] { "-c" } );
+				
+				new AnalyseCommand().execute( client, new String[] { "c:\\documents\\repos" } );
 			}
 
 			@Override

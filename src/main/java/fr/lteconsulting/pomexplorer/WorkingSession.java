@@ -11,7 +11,7 @@ public class WorkingSession
 	private DirectedGraph<GAV, Dep> g = new DirectedMultigraph<GAV, Dep>( Dep.class );
 
 	private HashMap<String, GAV> gavs = new HashMap<>();
-	
+
 	private Map<GAV, Project> projects = new HashMap<>();
 
 	public DirectedGraph<GAV, Dep> getGraph()
@@ -23,34 +23,22 @@ public class WorkingSession
 	{
 		return gavs;
 	}
-	
-	public boolean hasArtifact(GAV gav)
+
+	public boolean hasArtifact( GAV gav )
 	{
 		return hasArtifact( gav.getGroupId(), gav.getArtifactId(), gav.getVersion() );
 	}
-	
+
 	public boolean hasArtifact( String groupId, String artifactId, String version )
 	{
 		String sig = groupId + ":" + artifactId + ":" + version;
 		GAV gav = gavs.get( sig );
-		
+
 		return gav != null;
 	}
 
-	/**
-	 * Can return null if not interested by the artifact
-	 * 
-	 * @param groupId
-	 * @param artifactId
-	 * @param version
-	 * @param g
-	 * @return
-	 */
 	public GAV registerArtifact( String groupId, String artifactId, String version )
 	{
-		// if (!groupId.startsWith("fr."))
-		// return null;
-
 		String sig = groupId + ":" + artifactId + ":" + version;
 		GAV gav = gavs.get( sig );
 
@@ -63,17 +51,19 @@ public class WorkingSession
 
 		return gav;
 	}
-	
+
 	public boolean hasProject( GAV gav )
 	{
 		return projects.containsKey( gav );
 	}
-	
+
 	public void registerProject( Project project )
 	{
+		System.out.println( "registered project " + project.getGav() );
+
 		projects.put( project.getGav(), project );
 	}
-	
+
 	public Map<GAV, Project> getProjects()
 	{
 		return projects;

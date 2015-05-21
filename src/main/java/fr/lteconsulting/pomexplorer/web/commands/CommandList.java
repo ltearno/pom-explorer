@@ -15,6 +15,7 @@ public class CommandList
 		commands.add(new StatsCommand());
 		commands.add(new GavsCommand());
 		commands.add(new ProjectsCommand());
+		commands.add(new DependsOnCommand());
 	}
 
 	public static List<Command> getCommands()

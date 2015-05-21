@@ -101,7 +101,7 @@ public class PomAnalyzer
 
 		if( session.hasProject( gav ) )
 		{
-			System.out.println( "POM alreday processed ! Ignoring." );
+			System.out.println( "POM already processed '" + pomFile.getAbsolutePath() + "' ! Ignoring." );
 			return;
 		}
 
