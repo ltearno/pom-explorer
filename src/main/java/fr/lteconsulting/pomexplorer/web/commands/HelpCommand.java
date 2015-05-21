@@ -14,12 +14,18 @@ public class HelpCommand extends BaseCommand
 	{
 		StringBuilder sb = new StringBuilder();
 
-		String sep = "";
+		sb.append( "<table border='0' style='color:white;'>" );
+		
+		sb.append( "<tr><td><b>Command</b></td><td><b>Shortcut(s)</b></td></tr>" );
+		
 		for (Command c : CommandList.getCommands())
 		{
-			sb.append(sep);
-			sep = "<br/>";
+			sb.append( "<tr><td>" );
 
+			sb.append(c.getName());
+
+			sb.append("</td><td>");
+			
 			String sep2 = "";
 			for (String shortcut : c.getShortcuts())
 			{
@@ -27,10 +33,11 @@ public class HelpCommand extends BaseCommand
 				sep2 = ", ";
 				sb.append("'" + shortcut + "'");
 			}
-
-			sb.append(" ");
-			sb.append(c.getName());
+			
+			sb.append( "</td></tr>" );
 		}
+		
+		sb.append( "</table>" );
 
 		return sb.toString();
 	}

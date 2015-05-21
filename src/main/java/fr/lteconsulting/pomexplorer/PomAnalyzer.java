@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -13,7 +15,16 @@ import org.apache.maven.model.Parent;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.jboss.shrinkwrap.resolver.api.InvalidConfigurationFileException;
+import org.jboss.shrinkwrap.resolver.api.maven.MavenWorkingSession;
+import org.jboss.shrinkwrap.resolver.api.maven.ScopeType;
+import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
+import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
+import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
+import org.jboss.shrinkwrap.resolver.impl.maven.task.AddScopedDependenciesTask;
 import org.jgrapht.DirectedGraph;
+
+import fr.lteconsulting.pomexplorer.Project.DependencyInfo;
 
 public class PomAnalyzer
 {
@@ -42,59 +53,71 @@ public class PomAnalyzer
 		}
 	}
 
-	private void processPom( File pom, WorkingSession session )
+	private void resolvePom( File pomFile )
 	{
-		System.out.println( "\n# Analysing pom file " + pom.getAbsolutePath() );
-		System.out.println( "## Non-resolving analysis" );
-
-		MavenProject project = loadProject( pom );
-
-		System.out.println( project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion() + ":" + project.getPackaging() );
-
-		GAV gav = session.ensureArtifact( project.getGroupId(), project.getArtifactId(), project.getVersion() );
-
-		Parent parent = project.getModel().getParent();
-		if( parent != null )
+		ParsedPomFile parsedPom = parsePomFile( pomFile );
+		if( parsedPom == null )
 		{
-			System.out.println( "   PARENT : " + parent.getId() + ":" + parent.getRelativePath() );
+			System.out.println( "Cannot load this pom file : " + pomFile.getAbsolutePath() );
+			return;
 		}
 
-		Properties ptties = project.getProperties();
-		if( ptties != null )
+		
+	}
+
+	private ParsedPomFile parsePomFile( File pomFile )
+	{
+		MavenWorkingSession session = new MavenWorkingSessionImpl();
+		session = new AddScopedDependenciesTask( ScopeType.COMPILE, ScopeType.IMPORT, ScopeType.SYSTEM, ScopeType.RUNTIME ).execute( session );
+
+		try
 		{
-			for( Entry<Object, Object> e : ptties.entrySet() )
-			{
-				System.out.println( "   PPTY: " + e.getKey() + " = " + e.getValue() );
-			}
+			session.loadPomFromFile( pomFile );
+			return session.getParsedPomFile();
+		}
+		catch( InvalidConfigurationFileException e )
+		{
+			return null;
+		}
+	}
+
+	private void processPom( File pomFile, WorkingSession session )
+	{
+		ParsedPomFile resolvedPom = parsePomFile( pomFile );
+		if( resolvedPom == null )
+		{
+			System.out.println( "Cannot load this pom file : " + pomFile.getAbsolutePath() );
+			return;
 		}
 		
+		MavenProject project = loadProject( pomFile );
+		if( project == null )
+		{
+			System.out.println( "Cannot read this pom file : " + pomFile.getAbsolutePath() );
+			return;
+		}
+
+		GAV gav = new GAV( resolvedPom.getGroupId(), resolvedPom.getArtifactId(), resolvedPom.getVersion() );
+
+		if( session.hasProject( gav ) )
+		{
+			System.out.println( "POM alreday processed ! Ignoring." );
+			return;
+		}
+
+		gav = session.registerArtifact( resolvedPom.getGroupId(), resolvedPom.getArtifactId(), resolvedPom.getVersion() );
+		
 		DirectedGraph<GAV, Dep> g = session.getGraph();
-
-		if( project.getDependencyManagement() != null )
+		for( MavenDependency dependency : resolvedPom.getDependencies() )
 		{
-			for( Dependency dependency : project.getDependencyManagement().getDependencies() )
-			{
-				System.out.println( "   MNGT: " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() );
-
-				GAV depGav = session.ensureArtifact( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
-
-				if( gav != null && depGav != null )
-					g.addEdge( gav, depGav, new Dep( dependency.getScope(), dependency.getClassifier() ) );
-			}
-		}
-
-		for( Dependency dependency : project.getDependencies() )
-		{
-			System.out.println( "   " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() );
-
-			GAV depGav = session.ensureArtifact( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
-
+			GAV depGav = session.registerArtifact( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
+			
 			if( gav != null && depGav != null )
-				g.addEdge( gav, depGav, new Dep( dependency.getScope(), dependency.getClassifier() ) );
+				g.addEdge( gav, depGav, new Dep( dependency.getScope().name(), dependency.getClassifier() ) );
 		}
 
-		System.out.println( "## Resolving analysis" );
-		Toto.toto( pom );
+		Project projectInfo = new Project( pomFile, resolvedPom, project );
+		session.registerProject( projectInfo );
 	}
 
 	private MavenProject loadProject( File pom )
