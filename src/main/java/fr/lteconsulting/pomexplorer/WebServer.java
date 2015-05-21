@@ -87,18 +87,12 @@ public class WebServer
 
 				xWebServer.onNewClient(client);
 
-				System.out.println("CONNECTED CLIENT : " + System.identityHashCode(channel));
 				channel.getReceiveSetter().set(new AbstractReceiveListener()
 				{
 					@Override
 					protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message)
 					{
-						System.out.println("ONMESSAGE CLIENT : " + System.identityHashCode(channel));
-						final String messageData = socketCallback.exec(getClient(channel), message.getData());
-						// for (WebSocketChannel session : channel.getPeerConnections())
-						// {
-						// WebSockets.sendText(messageData, session, null);
-						// }
+						String messageData = socketCallback.exec(getClient(channel), message.getData());
 						WebSockets.sendText(messageData, channel, null);
 					}
 

@@ -9,14 +9,12 @@ import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
 import org.jboss.shrinkwrap.resolver.impl.maven.task.AddScopedDependenciesTask;
-import org.jboss.shrinkwrap.resolver.impl.maven.task.ConfigureSettingsFromFileTask;
 
 public class Toto
 {
 	public static void toto(File pom)
 	{
 		MavenWorkingSession mm = new MavenWorkingSessionImpl();
-		mm = new ConfigureSettingsFromFileTask(new File("C:\\pgih\\maven\\3.2.1\\conf\\settings.xml")).execute(mm);
 
 		mm = new AddScopedDependenciesTask(ScopeType.COMPILE, ScopeType.IMPORT, ScopeType.SYSTEM, ScopeType.RUNTIME)
 				.execute(mm);

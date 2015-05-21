@@ -1,6 +1,7 @@
 package fr.lteconsulting.pomexplorer;
 
 import io.undertow.websockets.core.WebSocketChannel;
+import io.undertow.websockets.core.WebSockets;
 
 public class Client
 {
@@ -34,5 +35,10 @@ public class Client
 	public WebSocketChannel getChannel()
 	{
 		return channel;
+	}
+	
+	public void send(String messageData)
+	{
+		WebSockets.sendText(messageData, channel, null);
 	}
 }

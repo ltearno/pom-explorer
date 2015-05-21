@@ -11,6 +11,9 @@ public class CommandList
 	{
 		commands.add(new HelpCommand());
 		commands.add(new SessionCommand());
+		commands.add(new AnalyseCommand());
+		commands.add(new StatsCommand());
+		commands.add(new GavsCommand());
 	}
 
 	public static List<Command> getCommands()
