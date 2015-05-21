@@ -2,25 +2,14 @@ package fr.lteconsulting.pomexplorer.web.commands;
 
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Dep;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
-public class GavsCommand extends BaseCommand
+public class GavsCommand
 {
-	public GavsCommand()
+	public String main( WorkingSession session )
 	{
-		super( "gavs" );
-	}
-	
-	@Override
-	public String execute( Client client, String[] params )
-	{
-		WorkingSession session = client.getCurrentSession();
-		if( session == null )
-			return "No working session associated, please create one.";
-
 		StringBuilder res = new StringBuilder();
 	
 		GAV v;

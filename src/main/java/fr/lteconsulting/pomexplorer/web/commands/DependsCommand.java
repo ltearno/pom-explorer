@@ -1,29 +1,15 @@
 package fr.lteconsulting.pomexplorer.web.commands;
 
-import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Dep;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
-public class DependsOnCommand extends BaseCommand
+public class DependsCommand
 {
-	public DependsOnCommand()
+	public String on( WorkingSession session, String gavString )
 	{
-		super( "dependOn" );
-	}
-
-	@Override
-	public String execute( Client client, String[] params )
-	{
-		WorkingSession session = client.getCurrentSession();
-		if( session == null )
-			return "No working session associated, please create one.";
-		
-		if( params==null || params.length<1)
-			return "specify the GAV with the group:artifact:version format please";
-		
-		String[] parts = params[0].split( ":" );
+		String[] parts = gavString.split( ":" );
 		if(parts.length!=3)
 			return "specify the GAV with the group:artifact:version format please";
 		

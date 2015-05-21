@@ -8,30 +8,14 @@ import org.apache.maven.model.Parent;
 import org.apache.maven.project.MavenProject;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 
-import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Project.DependencyInfo;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
-public class ProjectsCommand extends BaseCommand
+public class ProjectsCommand
 {
-	public ProjectsCommand()
+	public String main( WorkingSession session )
 	{
-		super( "projects" );
-	}
-
-	@Override
-	public String execute( Client client, String[] params )
-	{
-		WorkingSession session = client.getCurrentSession();
-		if( session == null )
-			return "No working session associated, please create one.";
-
-		if( params != null && params.length > 0 && "-v".equals( params[0] ) )
-		{
-			return verbose( session );
-		}
-
 		StringBuilder res = new StringBuilder();
 
 		res.append( "<br/>Project list:<br/>" );
@@ -41,7 +25,7 @@ public class ProjectsCommand extends BaseCommand
 		return res.toString();
 	}
 
-	private String verbose( WorkingSession session )
+	public String verbose( WorkingSession session )
 	{
 		StringBuilder res = new StringBuilder();
 

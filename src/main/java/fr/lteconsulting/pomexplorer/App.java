@@ -3,10 +3,6 @@ package fr.lteconsulting.pomexplorer;
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.hexa.client.tools.Func2;
 import fr.lteconsulting.pomexplorer.WebServer.XWebServer;
-import fr.lteconsulting.pomexplorer.web.commands.AnalyseCommand;
-import fr.lteconsulting.pomexplorer.web.commands.Command;
-import fr.lteconsulting.pomexplorer.web.commands.CommandList;
-import fr.lteconsulting.pomexplorer.web.commands.SessionCommand;
 
 /**
  * Hello world!
@@ -29,9 +25,8 @@ public class App
 				System.out.println("New client " + client.getId());
 				
 				// create a session for the user
-				new SessionCommand().execute( client, new String[] { "-c" } );
-				
-				new AnalyseCommand().execute( client, new String[] { "c:\\documents\\repos" } );
+				AppFactory.get().commands().takeCommand( client, "session create" );
+				AppFactory.get().commands().takeCommand( client, "analyse directory c:\\documents\\repos" );
 			}
 
 			@Override
@@ -58,42 +53,11 @@ public class App
 				if (query == null || query.isEmpty())
 					return "NOP.";
 
-				String[] parts = query.split(" ");
-				String command = parts[0];
-				String[] parameters = new String[parts.length - 1];
-				for (int i = 1; i < parts.length; i++)
-					parameters[i - 1] = parts[i];
-
-				Command cmd = CommandList.getCommand(command);
-				if (cmd == null)
-					return "Unknown command '" + command + "'";
-
-				String result = cmd.execute(client, parameters);
-				return result;
+				return AppFactory.get().commands().takeCommand( client, query );
 			}
 		};
 
 		WebServer server = new WebServer(xWebServer, service, socket);
 		server.start();
-	}
-
-	private void test()
-	{
-		
-
-		
-		// processFile(new File("C:\\gr"), g);
-
-		
-
-		
-
-//		JGraphXAdapter<GAV, Dep> ga = new JGraphXAdapter<>(g);
-//		GraphFrame frame = new GraphFrame(ga);
-//
-//		mxFastOrganicLayout layout = new mxFastOrganicLayout(ga);
-//		layout.setUseBoundingBox(true);
-//		layout.setForceConstant(200);
-//		layout.execute(ga.getDefaultParent());
 	}
 }

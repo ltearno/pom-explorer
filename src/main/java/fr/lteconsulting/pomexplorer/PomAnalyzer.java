@@ -4,14 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
 
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.Parent;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -23,8 +17,6 @@ import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
 import org.jboss.shrinkwrap.resolver.impl.maven.task.AddScopedDependenciesTask;
 import org.jgrapht.DirectedGraph;
-
-import fr.lteconsulting.pomexplorer.Project.DependencyInfo;
 
 public class PomAnalyzer
 {
@@ -51,18 +43,6 @@ public class PomAnalyzer
 		{
 			processPom( file, session );
 		}
-	}
-
-	private void resolvePom( File pomFile )
-	{
-		ParsedPomFile parsedPom = parsePomFile( pomFile );
-		if( parsedPom == null )
-		{
-			System.out.println( "Cannot load this pom file : " + pomFile.getAbsolutePath() );
-			return;
-		}
-
-		
 	}
 
 	private ParsedPomFile parsePomFile( File pomFile )
