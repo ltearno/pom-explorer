@@ -6,11 +6,13 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class SessionCommand
 {
+	@Help("tells about the current working session")
 	public String main( Client client, WorkingSession session )
 	{
 		return "You are working on session " + session;
 	}
 
+	@Help("list the existing sessions")
 	public String list()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -22,6 +24,7 @@ public class SessionCommand
 		return sb.toString();
 	}
 
+	@Help("create and attach a new session")
 	public String create( Client client )
 	{
 		WorkingSession session = new WorkingSession();

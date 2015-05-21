@@ -25,7 +25,7 @@ public class App
 				
 				// create a session for the user
 				AppFactory.get().commands().takeCommand( client, "session create" );
-				AppFactory.get().commands().takeCommand( client, "analyse directory c:\\documents\\repos" );
+				AppFactory.get().commands().takeCommand( client, "analyze directory c:\\documents\\repos" );
 			}
 
 			@Override

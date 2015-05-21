@@ -8,6 +8,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class GavsCommand
 {
+	@Help("list the session's GAVs")
 	public String main( WorkingSession session )
 	{
 		StringBuilder res = new StringBuilder();

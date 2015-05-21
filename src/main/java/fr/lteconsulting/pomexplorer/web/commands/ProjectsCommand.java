@@ -14,6 +14,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class ProjectsCommand
 {
+	@Help("list the session's projects")
 	public String main( WorkingSession session )
 	{
 		StringBuilder res = new StringBuilder();
@@ -25,6 +26,7 @@ public class ProjectsCommand
 		return res.toString();
 	}
 
+	@Help("list the session's projects - with details")
 	public String verbose( WorkingSession session )
 	{
 		StringBuilder res = new StringBuilder();

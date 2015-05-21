@@ -12,6 +12,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class StatsCommand
 {
+	@Help("general statistics on the session")
 	public String main( WorkingSession session )
 	{
 		StringBuilder res = new StringBuilder();
@@ -30,6 +31,7 @@ public class StatsCommand
 		return res.toString();
 	}
 
+	@Help("gives the details of the connected components of the pom graph")
 	public String components( WorkingSession session )
 	{
 		StringBuilder res = new StringBuilder();

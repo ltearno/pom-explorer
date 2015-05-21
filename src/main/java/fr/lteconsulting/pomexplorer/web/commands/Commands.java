@@ -34,38 +34,40 @@ public class Commands
 	{
 		StringBuilder sb = new StringBuilder();
 
-		sb.append( "<b>Shortcuts :</b><br/>" );
-
 		for( Entry<String, Object> e : commands.entrySet() )
 		{
 			Object c = e.getValue();
 			String shortcut = e.getKey();
 
-			String sep = "";
 			for( Method m : c.getClass().getDeclaredMethods() )
 			{
 				if( !Modifier.isPublic( m.getModifiers() ) )
 					continue;
 				
-				sb.append( sep );
-				sep = ", ";
+				sb.append( "<b>" );
 
 				String mName = m.getName();
 				if( mName.equals( "main" ) )
 					sb.append( shortcut );
 				else
 					sb.append( shortcut + " " + mName );
+				
+				sb.append( "</b>" );
 
 				for( Class<?> pCls : m.getParameterTypes() )
 				{
 					if( pCls == Client.class || pCls == WorkingSession.class )
 						continue;
 
-					sb.append( " <" + pCls.getSimpleName() + ">" );
+					sb.append( " [" + pCls.getSimpleName() + "]" );
 				}
+				
+				Help help = m.getAnnotation( Help.class );
+				if( help != null )
+					sb.append( " : " + help.value() );
+				
+				sb.append( "<br/>" );
 			}
-
-			sb.append( "<br/>" );
 		}
 
 		return sb.toString();
