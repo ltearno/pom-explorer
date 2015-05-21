@@ -17,6 +17,7 @@
 		<aetherVersion>1.0.0.v20140518</aetherVersion>
 		<mavenVersion>3.1.0</mavenVersion>
 		<wagonVersion>1.0</wagonVersion>
+		<version.io.undertow>1.2.6.Final</version.io.undertow>
 	</properties>
 
 	<dependencies>
@@ -36,77 +37,69 @@
 			<artifactId>jgrapht-ext</artifactId>
 			<version>0.9.1</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.maven</groupId> -->
-<!-- 			<artifactId>maven-model</artifactId> -->
-<!-- 			<version>3.3.3</version> -->
-<!-- 		</dependency> -->
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
 			<version>3.1.1</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.codehaus.plexus</groupId> -->
-<!-- 			<artifactId>plexus-utils</artifactId> -->
-<!-- 			<version>3.0.22</version> -->
-<!-- 		</dependency> -->
 		<dependency>
 			<groupId>jgraph</groupId>
 			<artifactId>jgraph</artifactId>
 			<version>5.13.0.0</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.aether</groupId> -->
-<!-- 			<artifactId>aether-api</artifactId> -->
-<!-- 			<version>${aetherVersion}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.aether</groupId> -->
-<!-- 			<artifactId>aether-util</artifactId> -->
-<!-- 			<version>${aetherVersion}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.aether</groupId> -->
-<!-- 			<artifactId>aether-impl</artifactId> -->
-<!-- 			<version>${aetherVersion}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.aether</groupId> -->
-<!-- 			<artifactId>aether-connector-basic</artifactId> -->
-<!-- 			<version>${aetherVersion}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.aether</groupId> -->
-<!-- 			<artifactId>aether-transport-file</artifactId> -->
-<!-- 			<version>${aetherVersion}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.aether</groupId> -->
-<!-- 			<artifactId>aether-transport-http</artifactId> -->
-<!-- 			<version>${aetherVersion}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.aether</groupId> -->
-<!-- 			<artifactId>aether-transport-wagon</artifactId> -->
-<!-- 			<version>${aetherVersion}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.maven</groupId> -->
-<!-- 			<artifactId>maven-aether-provider</artifactId> -->
-<!-- 			<version>${mavenVersion}</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.maven.wagon</groupId> -->
-<!-- 			<artifactId>wagon-ssh</artifactId> -->
-<!-- 			<version>${wagonVersion}</version> -->
-<!-- 		</dependency> -->
-
 		<dependency>
 			<groupId>org.jboss.shrinkwrap.resolver</groupId>
 			<artifactId>shrinkwrap-resolver-depchain</artifactId>
-			<version>2.1.1</version> <!-- Or whatever version you need -->
+			<version>2.1.1</version>
 			<type>pom</type>
 		</dependency>
+		<dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+            <version>2.1.1</version>
+        </dependency>
+
+		<dependency>
+			<groupId>io.undertow</groupId>
+			<artifactId>undertow-servlet</artifactId>
+			<version>${version.io.undertow}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.undertow</groupId>
+			<artifactId>undertow-websockets-jsr</artifactId>
+			<version>${version.io.undertow}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>fr.lteconsulting</groupId>
+			<artifactId>hexa.binding</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*.java</include>
+					<include>**/*.gwt.xml</include>
+					<include>**/*.js</include>
+					<include>**/*.html</include>
+					<include>**/*.*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.java</include>
+					<include>**/*.gwt.xml</include>
+					<include>**/*.js</include>
+					<include>**/*.html</include>
+					<include>**/*.*</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
 </project>

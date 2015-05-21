@@ -24,6 +24,8 @@ import org.jgrapht.graph.DirectedMultigraph;
 
 import com.mxgraph.layout.mxFastOrganicLayout;
 
+import fr.lteconsulting.hexa.client.tools.Func1;
+
 /**
  * Hello world!
  */
@@ -31,6 +33,16 @@ public class App
 {
 	public static void main(String[] args)
 	{
+		WebServer server = new WebServer(new Func1<String, String>()
+		{
+			@Override
+			public String exec(String query)
+			{
+				return "Super, you just asked for " + query;
+			}
+		});
+		server.start();
+
 		App app = new App();
 		app.run();
 	}
@@ -39,8 +51,8 @@ public class App
 	{
 		DirectedGraph<GAV, Dep> g = new DirectedMultigraph<GAV, Dep>(Dep.class);
 
-		// processFile(new File("C:\\tmp\\hexa.tools"), g);
-		processFile(new File("C:\\gr"), g);
+		processFile(new File("C:\\tmp\\hexa.tools"), g);
+		// processFile(new File("C:\\gr"), g);
 
 		// GAV v;
 		// TopologicalOrderIterator<GAV, Dep> orderIterator;

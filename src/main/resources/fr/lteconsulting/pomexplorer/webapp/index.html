@@ -1,0 +1,66 @@
+<html>
+<head>
+<title>POM Explorer</title>
+<script src="terminal.js"></script>
+</head>
+
+<body>
+	<div id="terminal"></div>
+</body>
+
+<script>
+		var terminal = new Terminal();
+		terminal.print("Hi, welcome to the POM Explorer");
+		document.getElementById("terminal").appendChild(terminal.html);
+
+		var socket = new WebSocket("ws://localhost:90/ws");
+		socket.onopen = function (event) {
+			terminal.print("connected to the server.");
+			//socket.send(JSON.stringify({name:'titi',password:'tata'})); 
+
+			consoleLoop();
+		};
+		socket.onmessage = function (event) {
+			terminal.print("received: '" + event.data+"'");
+		}
+		socket.onerror = function (event) {
+			terminal.print("server communication error");
+		}
+		socket.onclose = function (event) {
+			terminal.print("disconnected from server");
+		}
+
+		var consoleLoop = function()
+		{
+			terminal.input("Enter a command ('help' for help)", function (userInput) {
+				if(userInput=="cls" || userInput=="clear")
+				{
+					terminal.clear();
+					consoleLoop();
+					return;
+				}
+				
+				var httpRequest = new XMLHttpRequest();
+				httpRequest.onreadystatechange = function(){
+					if (httpRequest.readyState !== 4)
+						return;
+					
+					if (httpRequest.status != 200)
+					{
+						terminal.print("ERROR ! status=" + httpRequest.status);
+					}
+					else
+					{
+						terminal.print(httpRequest.responseText);
+					}
+
+					consoleLoop();
+				};
+				httpRequest.open('GET', '/service/'+userInput, true);
+				httpRequest.send(null);
+				
+				terminal.print("...")
+			});
+		}
+	</script>
+</html>
