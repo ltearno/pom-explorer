@@ -10,6 +10,7 @@ import fr.lteconsulting.pomexplorer.web.commands.GavsCommand;
 import fr.lteconsulting.pomexplorer.web.commands.GraphXCommand;
 import fr.lteconsulting.pomexplorer.web.commands.HelpCommand;
 import fr.lteconsulting.pomexplorer.web.commands.ProjectsCommand;
+import fr.lteconsulting.pomexplorer.web.commands.ReleaseCommand;
 import fr.lteconsulting.pomexplorer.web.commands.SessionCommand;
 import fr.lteconsulting.pomexplorer.web.commands.StatsCommand;
 
@@ -49,6 +50,7 @@ public class AppFactory
 			commands.addCommand( new GavsCommand() );
 			commands.addCommand( new ProjectsCommand() );
 			commands.addCommand( new DependsCommand() );
+			commands.addCommand( new ReleaseCommand() );
 			commands.addCommand( new GraphXCommand() );
 		}
 		

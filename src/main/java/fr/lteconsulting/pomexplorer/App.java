@@ -43,7 +43,7 @@ public class App
 			public String exec(Client client, String query)
 			{
 				if (query == null || query.isEmpty())
-					return "NOP.";
+					return "nop.";
 
 				return AppFactory.get().commands().takeCommand( client, query );
 			}

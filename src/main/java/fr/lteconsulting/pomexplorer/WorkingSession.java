@@ -45,6 +45,7 @@ public class WorkingSession
 		if( gav == null )
 		{
 			gav = new GAV( groupId, artifactId, version );
+			
 			gavs.put( sig, gav );
 			g.addVertex( gav );
 		}
