@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>POM Explorer</title>
+    <link rel="stylesheet" href="normalize.css" />
+
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .terminal {
+            color: #eee;
+            background: black;
+            font-family: Monaco, Courier;
+            font-size: 1em;
+        }
+        
+        .terminal.window {
+            padding: 0px;
+            position: absolute;
+            width: 100%;
+            height:100%;
+        }
+        
+        input[type=text].terminal {
+            color: white;
+            border: 0;
+            padding-top: 10px;
+            width: 90%;
+        }
+        
+        input[type=text]:focus.terminal {
+            outline: 0;
+        }
+        
+        .terminal>.container {
+            overflow: hidden;
+            
+            overflow-y: auto;
+            
+            position: absolute;
+            top: 1em;
+            left: 1em;
+            right: 1em;
+            bottom: 3em;
+        }
+        
+        .terminal>.footer {
+            position: absolute;
+            height: 2em;
+            left: 1em;
+            right: 1em;
+            bottom: 1em;
+        }
+        
+        .terminal>.container>div {
+            -webkit-animation: appear 0.2s ease 0s 1;
+        }
+        
+        @-webkit-keyframes appear {
+            0% {
+                transform: translateX(50em);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body style=''>
+    <div id="terminal" style="position: absolute; width: 100%; height:100%;">
+    </div>
+    
+    <script>
+        var Terminal = (function () {
+            var Terminal = function () {
+                var me = this;
+                
+                this.oninput = null;
+                
+                this.html = document.createElement('div');
+                this.html.className += ' terminal window';
+                this.html.innerHTML = "<div class='terminal window'>"
+                       + "<div class='container'>"
+                        + "</div>"
+                        + "<div class='footer'>"
+                            + "<span class='prompt'>&gt;</span>"
+                            + "<input class='terminal' type='text' placeholder='enter a command, 'help' to get help></input>"
+                        + "</div>"
+                    + "</div>";
+                this.html = this.html.children[0];
+                
+                this.input = this.html.children[1].children[1];
+                this.container = this.html.children[0];
+                
+                this.input.onkeyup = function(e) {
+                    if( e.which === 13 ) {
+                        me.oninput( me.input.value );
+                        
+                        me.input.value = "";
+                        me.input.focus();
+                    }
+                }
+            };
+
+            Terminal.prototype.print = function (text) {
+            	var me = this;
+                var div = document.createElement('div');
+                div.innerHTML = text;
+                this.html.children[0].appendChild(div);
+                
+                this.container.scrollTop = this.container.scrollHeight;
+            };
+
+            Terminal.prototype.input = function (callback) {};
+            
+            Terminal.prototype.clear = function() {
+            	this.container.innerHTML = '';
+            };
+            
+            return Terminal;
+        })();
+        
+        var terminal = new Terminal();
+        document.getElementById('terminal').appendChild(terminal.html);
+        terminal.print('enter a command of "help" for help');
+        
+        var socket = new WebSocket("ws://localhost:90/ws");
+		socket.onopen = function (event) {
+			terminal.print("connected to the server.");
+		};
+		socket.onmessage = function (event) {
+			terminal.print(event.data);
+		}
+		socket.onerror = function (event) {
+			terminal.print("server communication error");
+		}
+		socket.onclose = function (event) {
+			terminal.print("disconnected from server");
+		}
+        
+        terminal.oninput = function( userInput ) {
+            if(userInput=="cls" || userInput=="clear")
+            {
+                terminal.clear();
+                return;
+            }
+            
+            terminal.print("<div style='color:white;margin-top:1.5em;'>&gt;&nbsp;" + userInput + "</div>");
+
+            socket.send(userInput);
+        };
+    </script>
+</body>
+
+</html>
