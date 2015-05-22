@@ -27,7 +27,7 @@ public class App
 				client.send( "Welcome, creating your session and default environment..." );
 				client.send( AppFactory.get().commands().takeCommand( client, "session create" ) );
 				client.send( "Analyzing default directory..." );
-				client.send( AppFactory.get().commands().takeCommand( client, "analyze directory c:\\documents\\repos" ) );
+				client.send( AppFactory.get().commands().takeCommand( client, "analyze directory c:\\documents\\repos\\hexa.tools" ) );
 			}
 
 			@Override

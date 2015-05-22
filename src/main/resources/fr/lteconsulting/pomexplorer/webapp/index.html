@@ -76,6 +76,16 @@
     
     <script>
         var Terminal = (function () {
+            var history = [];
+            var hIndex = 0;
+            
+            var maybePushHistory = function(text) {
+            	if(text=="")
+            		return;
+            	if( history.length==0 || history[history.length-1]!=text )
+                	history.push( text );
+            }
+            
             var Terminal = function () {
                 var me = this;
                 
@@ -100,8 +110,48 @@
                     if( e.which === 13 ) {
                         me.oninput( me.input.value );
                         
-                        me.input.value = "";
+                        if( hIndex >= history.length ) {
+                        	maybePushHistory(me.input.value);
+                        	hIndex = history.length;
+                        	me.input.value = "";
+                        }
+                        else {
+                        	if( me.input.value != history[hIndex] ) {
+                        		history = history.slice(0, hIndex);
+                        		maybePushHistory(me.input.value);
+                        		hIndex = history.length;
+                        		me.input.value = "";
+                        	} 
+                        }
+                        
                         me.input.focus();
+
+                        me.print("HISTORY " + history + " INDEX " + hIndex);
+                    }
+                    else if( e.which === 38 ) {
+                    	if( hIndex >= history.length )
+                    		maybePushHistory(me.input.value);
+                    	
+                    	hIndex = Math.max( 0, hIndex - 1 );
+                    	me.input.value = history[hIndex];
+                    	
+                    	me.print("HISTORY " + history + " INDEX " + hIndex);
+                    }
+                    else if( e.which === 40 ) {
+                    	if( hIndex >= history.length )
+                    		maybePushHistory(me.input.value);
+                    		
+                    	hIndex = Math.min( hIndex + 1, history.length );
+                    	
+                    	if( hIndex >= history.length ) {
+                    		me.input.value = "";
+                    		hIndex = history.length;
+                    	}
+                    	else {
+                    		me.input.value = history[hIndex];
+                    	}
+                    	
+                    	me.print("HISTORY " + history + " INDEX " + hIndex);
                     }
                 }
             };
