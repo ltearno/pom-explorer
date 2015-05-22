@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.lteconsulting.pomexplorer.web.commands.AnalyzeCommand;
+import fr.lteconsulting.pomexplorer.web.commands.ChangeCommand;
 import fr.lteconsulting.pomexplorer.web.commands.Commands;
 import fr.lteconsulting.pomexplorer.web.commands.DependsCommand;
 import fr.lteconsulting.pomexplorer.web.commands.GavsCommand;
@@ -51,6 +52,7 @@ public class AppFactory
 			commands.addCommand( new ProjectsCommand() );
 			commands.addCommand( new DependsCommand() );
 			commands.addCommand( new ReleaseCommand() );
+			commands.addCommand( new ChangeCommand() );
 			commands.addCommand( new GraphXCommand() );
 		}
 		

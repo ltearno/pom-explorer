@@ -82,25 +82,35 @@ public class Tools
 	 * Maven tools
 	 */
 
-	public static Set<Location> getImpactedLocationsToChangeGav( WorkingSession session, GAV gav, StringBuilder res, boolean logDependency )
+	public static Set<Location> getImpactedLocationsToChangeGav( WorkingSession session, GAV gav, StringBuilder log, boolean logDependency )
 	{
 		HashSet<Location> locations = new HashSet<>();
+		
+		Project project = session.getProjects().get( gav );
+		if( project == null )
+		{
+			log.append( "<b style='color:orange;'>" + gav + "</b> (no project found)<br/>" );
+		}
+		else
+		{
+			locations.add( new PropertyLocation( project, null, "project.version", gav.getVersion() ) );
+		}
 
 		for( GAV dependency : Tools.dependentGAVs( session, gav ) )
 		{
-			Project project = session.getProjects().get( dependency );
-			if( project == null )
+			Project dependentProject = session.getProjects().get( dependency );
+			if( dependentProject == null )
 			{
-				res.append( "<b style='color:orange;'>" + dependency + "</b> (no project found)<br/>" );
+				log.append( "<b style='color:orange;'>" + dependency + "</b> (no project found)<br/>" );
 				continue;
 			}
 
 			String dependencyKind = "?";
 
-			Project specifyingProject = getProjectWhereDependencyIsSpecifiedInHierarchy( session, project, gav );
+			Project specifyingProject = getProjectWhereDependencyIsSpecifiedInHierarchy( session, dependentProject, gav );
 			if( specifyingProject != null )
 			{
-				dependencyKind = specifyingProject == project ? "D" : "H";
+				dependencyKind = specifyingProject == dependentProject ? "D" : "H";
 			}
 			else
 			{
@@ -115,18 +125,18 @@ public class Tools
 				dependencyKind = "!";
 
 			if( logDependency )
-				res.append( "[" + dependencyKind + "] " + project + "<br/>" );
+				log.append( "[" + dependencyKind + "] " + dependentProject + "<br/>" );
 
 			if( specifyingProject == null )
 			{
-				res.append( "(dependency declaration not found although it is in the dependency graph, ignoring)<br/>" );
+				log.append( "(dependency declaration not found although it is in the dependency graph, ignoring)<br/>" );
 				continue;
 			}
 
 			DependencyInfo info = specifyingProject.getDependencies().get( gav );
 			if( info == null || info.getUnresolvedGav() == null )
 			{
-				res.append( "(WARNING, dependency not found in specifying project !)<br/>" );
+				log.append( "(WARNING, dependency not found in specifying project !)<br/>" );
 				continue;
 			}
 
@@ -146,7 +156,7 @@ public class Tools
 					}
 					else
 					{
-						res.append( "[ERROR] not found property definition for property " + property + "<br/>" );
+						log.append( "[ERROR] not found property definition for property " + property + "<br/>" );
 					}
 				}
 			}
