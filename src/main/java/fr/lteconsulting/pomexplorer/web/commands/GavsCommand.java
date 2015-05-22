@@ -2,9 +2,9 @@ package fr.lteconsulting.pomexplorer.web.commands;
 
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import fr.lteconsulting.pomexplorer.Dep;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class GavsCommand
 {
@@ -14,9 +14,9 @@ public class GavsCommand
 		StringBuilder res = new StringBuilder();
 	
 		GAV v;
-		TopologicalOrderIterator<GAV, Dep> orderIterator;
+		TopologicalOrderIterator<GAV, Relation> orderIterator;
 		
-		orderIterator = new TopologicalOrderIterator<>( session.getGraph() );
+		orderIterator = new TopologicalOrderIterator<>( session.graph().getGraphInternal() );
 		res.append( "<br/>GAV list:<br/>" );
 		while( orderIterator.hasNext() )
 		{

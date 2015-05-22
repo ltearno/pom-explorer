@@ -4,17 +4,17 @@ import org.jgrapht.ext.JGraphXAdapter;
 
 import com.mxgraph.layout.mxFastOrganicLayout;
 
-import fr.lteconsulting.pomexplorer.Dep;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.GraphFrame;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class GraphXCommand
 {
 	@Help( "displays a graph on the server machine" )
 	public String main( WorkingSession session )
 	{
-		JGraphXAdapter<GAV, Dep> ga = new JGraphXAdapter<>( session.getGraph() );
+		JGraphXAdapter<GAV, Relation> ga = new JGraphXAdapter<>( session.graph().getGraphInternal() );
 
 		new GraphFrame( ga );
 

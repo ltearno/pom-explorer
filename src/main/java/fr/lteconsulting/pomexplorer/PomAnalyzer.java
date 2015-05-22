@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -16,7 +17,9 @@ import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
 import org.jboss.shrinkwrap.resolver.impl.maven.task.AddScopedDependenciesTask;
-import org.jgrapht.DirectedGraph;
+
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 
 public class PomAnalyzer
 {
@@ -45,11 +48,60 @@ public class PomAnalyzer
 		}
 	}
 
-	private ParsedPomFile parsePomFile( File pomFile )
+	private void processPom( File pomFile, WorkingSession session )
+	{
+		MavenProject unresolved = readPomFile( pomFile );
+		if( unresolved == null )
+		{
+			System.out.println( "Cannot read this pom file : " + pomFile.getAbsolutePath() );
+			return;
+		}
+		
+		ParsedPomFile resolved = loadPomFile( pomFile );
+		if( resolved == null )
+		{
+			System.out.println( "Cannot load this pom file : " + pomFile.getAbsolutePath() );
+			return;
+		}
+
+		GAV gav = new GAV( resolved.getGroupId(), resolved.getArtifactId(), resolved.getVersion() );
+
+		if( session.hasProject( gav ) )
+		{
+			System.out.println( "POM already processed '" + pomFile.getAbsolutePath() + "' ! Ignoring." );
+			return;
+		}
+
+		session.graph().addGav( gav );
+		
+		// hierarchy
+		Parent parent = unresolved.getModel().getParent();
+		if( parent != null )
+		{
+			GAV parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
+			session.graph().addGav( parentGav );
+			
+			session.graph().addRelation( gav, parentGav, new ParentRelation() );
+		}
+
+		// dependencies
+		for( MavenDependency dependency : resolved.getDependencies() )
+		{
+			GAV depGav = new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
+			session.graph().addGav( depGav );
+			
+			session.graph().addRelation( gav, depGav, new DependencyRelation( dependency.getScope().name(), dependency.getClassifier() ) );
+		}
+
+		Project projectInfo = new Project( pomFile, resolved, unresolved );
+		session.registerProject( projectInfo );
+	}
+
+	private ParsedPomFile loadPomFile( File pomFile )
 	{
 		MavenWorkingSession session = new MavenWorkingSessionImpl();
 		session = new AddScopedDependenciesTask( ScopeType.COMPILE, ScopeType.IMPORT, ScopeType.SYSTEM, ScopeType.RUNTIME ).execute( session );
-
+	
 		try
 		{
 			session.loadPomFromFile( pomFile );
@@ -61,46 +113,7 @@ public class PomAnalyzer
 		}
 	}
 
-	private void processPom( File pomFile, WorkingSession session )
-	{
-		ParsedPomFile resolvedPom = parsePomFile( pomFile );
-		if( resolvedPom == null )
-		{
-			System.out.println( "Cannot load this pom file : " + pomFile.getAbsolutePath() );
-			return;
-		}
-		
-		MavenProject project = loadProject( pomFile );
-		if( project == null )
-		{
-			System.out.println( "Cannot read this pom file : " + pomFile.getAbsolutePath() );
-			return;
-		}
-
-		GAV gav = new GAV( resolvedPom.getGroupId(), resolvedPom.getArtifactId(), resolvedPom.getVersion() );
-
-		if( session.hasProject( gav ) )
-		{
-			System.out.println( "POM already processed '" + pomFile.getAbsolutePath() + "' ! Ignoring." );
-			return;
-		}
-
-		gav = session.registerArtifact( resolvedPom.getGroupId(), resolvedPom.getArtifactId(), resolvedPom.getVersion() );
-		
-		DirectedGraph<GAV, Dep> g = session.getGraph();
-		for( MavenDependency dependency : resolvedPom.getDependencies() )
-		{
-			GAV depGav = session.registerArtifact( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
-			
-			if( gav != null && depGav != null )
-				g.addEdge( gav, depGav, new Dep( dependency.getScope().name(), dependency.getClassifier() ) );
-		}
-
-		Project projectInfo = new Project( pomFile, resolvedPom, project );
-		session.registerProject( projectInfo );
-	}
-
-	private MavenProject loadProject( File pom )
+	private MavenProject readPomFile( File pom )
 	{
 		Model model = null;
 		FileReader reader = null;

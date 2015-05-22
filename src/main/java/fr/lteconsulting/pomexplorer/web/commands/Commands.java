@@ -2,7 +2,6 @@ package fr.lteconsulting.pomexplorer.web.commands;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +9,7 @@ import java.util.Map.Entry;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.Client;
+import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class Commands
@@ -88,7 +88,7 @@ public class Commands
 		if( parts.length < 1 )
 			return "syntax error (should be 'command [verb] [parameters]')";
 
-		List<String> potentialCommands = filter( commands.keySet(), new Func1<String, Boolean>()
+		List<String> potentialCommands = Tools.filter( commands.keySet(), new Func1<String, Boolean>()
 		{
 			@Override
 			public Boolean exec( String c )
@@ -150,38 +150,14 @@ public class Commands
 		catch( Exception e )
 		{
 			e.getCause().printStackTrace();
-			
+
 			return e.getCause().getMessage();
 		}
 	}
 
-	private <T> List<T> filter( Iterable<T> list, Func1<T, Boolean> predicate )
-	{
-		List<T> res = new ArrayList<>();
-		if( list == null )
-			return res;
-
-		for( T t : list )
-			if( predicate.exec( t ) )
-				res.add( t );
-		return res;
-	}
-
-	private <T> List<T> filter( T[] list, Func1<T, Boolean> predicate )
-	{
-		List<T> res = new ArrayList<>();
-		if( list == null )
-			return res;
-
-		for( T t : list )
-			if( predicate.exec( t ) )
-				res.add( t );
-		return res;
-	}
-
 	private Method findMethodWith( Object o, final String verb, final int nbParamsGiven )
 	{
-		List<Method> methods = filter( o.getClass().getMethods(), new Func1<Method, Boolean>()
+		List<Method> methods = Tools.filter( o.getClass().getMethods(), new Func1<Method, Boolean>()
 		{
 			@Override
 			public Boolean exec( Method m )

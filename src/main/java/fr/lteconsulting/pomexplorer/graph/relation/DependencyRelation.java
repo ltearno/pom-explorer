@@ -1,13 +1,14 @@
-package fr.lteconsulting.pomexplorer;
+package fr.lteconsulting.pomexplorer.graph.relation;
 
-public class Dep
+public class DependencyRelation extends Relation
 {
 	private final String scope;
 
 	private final String classifier;
 
-	public Dep(String scope, String classifier)
+	public DependencyRelation( String scope, String classifier )
 	{
+		super( Type.DEPENDENCY );
 		this.scope = scope;
 		this.classifier = classifier;
 	}
@@ -25,7 +26,6 @@ public class Dep
 	@Override
 	public String toString()
 	{
-		return "depends(" + scope + ", " + classifier + ") on ";
+		return "scope: " + scope + ", classifier:" + classifier;
 	}
-
 }

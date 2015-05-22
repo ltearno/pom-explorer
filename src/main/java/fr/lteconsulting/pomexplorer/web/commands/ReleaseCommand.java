@@ -8,7 +8,6 @@ import java.util.Set;
 import fr.lteconsulting.hexa.client.tools.Func;
 import fr.lteconsulting.pomexplorer.AppFactory;
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.Dep;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -193,10 +192,7 @@ public class ReleaseCommand
 		res.append( "<br/><b>Details</b><br/>" );
 		for( Change change : changes )
 		{
-			res.append( "file: " + change.getLocation().getProject().getPomFile().getAbsolutePath() + "<br/>"
-					+ "location: " + change.getLocation() + "<br/>"
-					+ "change to: " + change.getNewValue() + "<br>"
-					+ "<br/>" );
+			res.append( "file: " + change.getLocation().getProject().getPomFile().getAbsolutePath() + "<br/>" + "location: " + change.getLocation() + "<br/>" + "change to: " + change.getNewValue() + "<br>" + "<br/>" );
 		}
 
 		return res.toString();
@@ -205,7 +201,7 @@ public class ReleaseCommand
 	void visit( WorkingSession session, GAV gav, Visitor visitor )
 	{
 		// find project gav
-		Project project = session.getProjects().get( gav );
+		Project project = session.projects().get( gav );
 		if( project == null )
 		{
 			visitor.projectNotFound( gav, "project not found" );
@@ -220,10 +216,11 @@ public class ReleaseCommand
 	private void visitChild( WorkingSession session, Project project, Visitor visitor )
 	{
 		// visit hierarchical projects
-		GAV parentGAV = Tools.getParentGav( project );
+		GAV parentGAV = Tools.getParentGav( session, project );
 		if( parentGAV == null )
 			return;
-		Project parentProject = session.getProjects().get( parentGAV );
+		
+		Project parentProject = session.projects().get( parentGAV );
 		if( parentProject == null )
 		{
 			visitor.projectNotFound( parentGAV, "parent missing for project " + project );
@@ -233,11 +230,9 @@ public class ReleaseCommand
 		visitChild( session, parentProject, visitor );
 
 		// visit transitive projects
-		for( Dep dep : session.getGraph().outgoingEdgesOf( project.getGav() ) )
+		for( GAV dependencyGav : session.graph().getDependencies( project.getGav() ) )
 		{
-			GAV dependencyGav = session.getGraph().getEdgeTarget( dep );
-
-			Project dependencyProject = session.getProjects().get( dependencyGav );
+			Project dependencyProject = session.projects().get( dependencyGav );
 			if( dependencyProject == null )
 			{
 				visitor.projectNotFound( dependencyGav, "dependent project missing " + project );

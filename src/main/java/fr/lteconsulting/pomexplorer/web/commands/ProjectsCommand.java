@@ -20,7 +20,7 @@ public class ProjectsCommand
 		StringBuilder res = new StringBuilder();
 
 		res.append( "<br/>Project list:<br/>" );
-		for( Project project : session.getProjects().values() )
+		for( Project project : session.projects().values() )
 			res.append( project + "<br/>" );
 
 		return res.toString();
@@ -42,7 +42,7 @@ public class ProjectsCommand
 		
 		res.append( "Verbose list of projects. Filter with: '" + gavFilter + "'<br/>" );
 
-		for( Project project : session.getProjects().values() )
+		for( Project project : session.projects().values() )
 		{
 
 			ParsedPomFile resolvedPom = project.getResolvedPom();

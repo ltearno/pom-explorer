@@ -5,9 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.maven.model.Parent;
-import org.apache.maven.project.MavenProject;
-
+import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.Project.DependencyInfo;
 import fr.lteconsulting.pomexplorer.depanalyze.DependencyLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
@@ -26,29 +24,18 @@ public class Tools
 		return gav;
 	}
 
-	public static GAV getParentGav( Project project )
+	public static GAV getParentGav( WorkingSession session, Project project )
 	{
-		// TODO : should use resolved, but it does not have the parentId !
-		MavenProject pom = project.getUnresolvedPom();
-		if( pom == null )
-			return null;
-
-		Parent parent = pom.getModel().getParent();
-		if( parent == null )
-			return null;
-
-		GAV parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
-
-		return parentGav;
+		return session.graph().getParent( project.getGav() );
 	}
 
 	public static Project getParentProject( WorkingSession session, Project project )
 	{
-		GAV parentGav = getParentGav( project );
+		GAV parentGav = getParentGav( session, project );
 		if( parentGav == null )
 			return null;
 
-		Project parentProject = session.getProjects().get( parentGav );
+		Project parentProject = session.projects().get( parentGav );
 
 		return parentProject;
 	}
@@ -67,11 +54,9 @@ public class Tools
 
 	private static void dependentGAVsRec( WorkingSession session, GAV gav, Set<GAV> list )
 	{
-		Set<Dep> deps = session.getGraph().incomingEdgesOf( gav );
-		for( Dep dep : deps )
+		Set<GAV> deps = session.graph().getDependents( gav );
+		for( GAV ancestor : deps )
 		{
-			GAV ancestor = session.getGraph().getEdgeSource( dep );
-
 			list.add( ancestor );
 
 			dependentGAVsRec( session, ancestor, list );
@@ -85,8 +70,8 @@ public class Tools
 	public static Set<Location> getImpactedLocationsToChangeGav( WorkingSession session, GAV gav, StringBuilder log, boolean logDependency )
 	{
 		HashSet<Location> locations = new HashSet<>();
-		
-		Project project = session.getProjects().get( gav );
+
+		Project project = session.projects().get( gav );
 		if( project == null )
 		{
 			log.append( "<b style='color:orange;'>" + gav + "</b> (no project found)<br/>" );
@@ -98,7 +83,7 @@ public class Tools
 
 		for( GAV dependency : Tools.dependentGAVs( session, gav ) )
 		{
-			Project dependentProject = session.getProjects().get( dependency );
+			Project dependentProject = session.projects().get( dependency );
 			if( dependentProject == null )
 			{
 				log.append( "<b style='color:orange;'>" + dependency + "</b> (no project found)<br/>" );
@@ -251,11 +236,9 @@ public class Tools
 
 	private static Project getProjectWhereDependencyIsSpecifiedInTransitiveDeps( WorkingSession session, GAV currentGav, GAV searchedGav )
 	{
-		for( Dep dep : session.getGraph().outgoingEdgesOf( currentGav ) )
+		for( GAV dependencyGav : session.graph().getDependencies( currentGav ) )
 		{
-			GAV dependencyGav = session.getGraph().getEdgeTarget( dep );
-
-			Project project = session.getProjects().get( dependencyGav );
+			Project project = session.projects().get( dependencyGav );
 			if( project != null )
 			{
 				DependencyInfo info = project.getDependencies().get( searchedGav );
@@ -275,5 +258,33 @@ public class Tools
 		}
 
 		return null;
+	}
+
+	/**
+	 * Collection utilities
+	 */
+
+	public static <T> List<T> filter( Iterable<T> list, Func1<T, Boolean> predicate )
+	{
+		List<T> res = new ArrayList<>();
+		if( list == null )
+			return res;
+
+		for( T t : list )
+			if( predicate.exec( t ) )
+				res.add( t );
+		return res;
+	}
+
+	public static <T> List<T> filter( T[] list, Func1<T, Boolean> predicate )
+	{
+		List<T> res = new ArrayList<>();
+		if( list == null )
+			return res;
+
+		for( T t : list )
+			if( predicate.exec( t ) )
+				res.add( t );
+		return res;
 	}
 }
