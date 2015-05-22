@@ -130,7 +130,7 @@ public class Project
 			return gav;
 		}
 
-		private GAV getUnresolvedGav()
+		public GAV getUnresolvedGav()
 		{
 			if( unresolvedGav == null && readden != null )
 				unresolvedGav = new GAV( readden.getGroupId(), readden.getArtifactId(), readden.getVersion() );

@@ -44,9 +44,9 @@ var Terminal = (function () {
 			terminalObj._cursor.style.display = 'inline'
 		}
 
-		terminalObj.html.onclick = function () {
-			inputField.focus()
-		}
+		//terminalObj.html.onclick = function () {
+		//	inputField.focus()
+		//}
 
 		inputField.onkeydown = function (e) {
 			if (e.which === 37 || e.which === 39 || e.which === 38 || e.which === 40 || e.which === 9) {

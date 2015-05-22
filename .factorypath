@@ -65,4 +65,6 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/fr/lteconsulting/hexa.binding.processor/1.0/hexa.binding.processor-1.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/squareup/javapoet/1.0.0/javapoet-1.0.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/fr/lteconsulting/hexa.utils/1.0/hexa.utils-1.0.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/xerces/xercesImpl/2.11.0/xercesImpl-2.11.0.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

@@ -16,14 +16,11 @@
 		var socket = new WebSocket("ws://localhost:90/ws");
 		socket.onopen = function (event) {
 			terminal.print("connected to the server.");
-			//socket.send(JSON.stringify({name:'titi',password:'tata'})); 
-
+			
 			consoleLoop();
 		};
 		socket.onmessage = function (event) {
 			terminal.print(event.data);
-
-			consoleLoop();
 		}
 		socket.onerror = function (event) {
 			terminal.print("server communication error");
@@ -35,10 +32,11 @@
 		var consoleLoop = function()
 		{
 			terminal.input("<br/>Enter a command ('help' for help)", function (userInput) {
+				setTimeout( consoleLoop(), 300 );
+				
 				if(userInput=="cls" || userInput=="clear")
 				{
 					terminal.clear();
-					consoleLoop();
 					return;
 				}
 				
@@ -55,8 +53,6 @@
 					{
 						terminal.print(httpRequest.responseText);
 					}
-
-					consoleLoop();
 				};
 				httpRequest.open('GET', '/service/'+userInput, true);
 				httpRequest.send(null);*/

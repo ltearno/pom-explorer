@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.pgih</groupId>
+	<groupId>fr.lteconsulting</groupId>
 	<artifactId>pom-explorer</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -54,10 +54,10 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
-            <groupId>org.jboss.shrinkwrap.resolver</groupId>
-            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-            <version>2.1.1</version>
-        </dependency>
+			<groupId>org.jboss.shrinkwrap.resolver</groupId>
+			<artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+			<version>2.1.1</version>
+		</dependency>
 
 		<dependency>
 			<groupId>io.undertow</groupId>
@@ -70,12 +70,19 @@
 			<artifactId>undertow-websockets-jsr</artifactId>
 			<version>${version.io.undertow}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>fr.lteconsulting</groupId>
 			<artifactId>hexa.binding</artifactId>
 			<version>1.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

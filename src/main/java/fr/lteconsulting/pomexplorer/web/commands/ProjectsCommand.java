@@ -14,7 +14,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class ProjectsCommand
 {
-	@Help("list the session's projects")
+	@Help( "list the session's projects" )
 	public String main( WorkingSession session )
 	{
 		StringBuilder res = new StringBuilder();
@@ -26,18 +26,32 @@ public class ProjectsCommand
 		return res.toString();
 	}
 
-	@Help("list the session's projects - with details")
+	@Help( "list the session's projects - with details" )
 	public String verbose( WorkingSession session )
 	{
+		return verbose( session, null );
+	}
+
+	@Help( "list the session's projects - with details. Parameter is a filter for the GAVs" )
+	public String verbose( WorkingSession session, String gavFilter )
+	{
+		if( gavFilter != null )
+			gavFilter = gavFilter.toLowerCase();
+		
 		StringBuilder res = new StringBuilder();
+		
+		res.append( "Verbose list of projects. Filter with: '" + gavFilter + "'<br/>" );
 
 		for( Project project : session.getProjects().values() )
 		{
-			res.append( "PROJECT FILE : " + project.getPomFile().getAbsolutePath() + "<br/>" );
-			
+
 			ParsedPomFile resolvedPom = project.getResolvedPom();
 			MavenProject unresolvedProject = project.getUnresolvedPom();
 
+			if( gavFilter != null && ! project.getGav().toString().toLowerCase().contains( gavFilter ) )
+				continue;
+
+			res.append( "FILE : " + project.getPomFile().getAbsolutePath() + "<br/>" );
 			res.append( "GAV : " + project.getGav() + " " + resolvedPom.getPackagingType().getId() + ":" + resolvedPom.getPackagingType().getExtension() + ":" + resolvedPom.getPackagingType().getClassifier() + "<br/>" );
 
 			Parent parent = unresolvedProject.getModel().getParent();
@@ -62,7 +76,7 @@ public class ProjectsCommand
 
 			for( DependencyInfo dependency : project.getDependencies().values() )
 				res.append( " - depends on ->  " + dependency.toString() + "<br/>" );
-			
+
 			res.append( "<br/>" );
 		}
 
