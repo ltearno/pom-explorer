@@ -23,12 +23,12 @@ import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 
 public class PomAnalyzer
 {
-	public void analyze( String directory, WorkingSession session )
+	public void analyze( String directory, WorkingSession session, Client client )
 	{
-		processFile( new File( directory ), session );
+		processFile( new File( directory ), session, client );
 	}
 
-	private void processFile( File file, WorkingSession session )
+	private void processFile( File file, WorkingSession session, Client client )
 	{
 		if( file == null )
 			return;
@@ -40,15 +40,15 @@ public class PomAnalyzer
 				return;
 
 			for( File f : file.listFiles() )
-				processFile( f, session );
+				processFile( f, session, client );
 		}
 		else if( file.getName().equalsIgnoreCase( "pom.xml" ) )
 		{
-			processPom( file, session );
+			processPom( file, session, client );
 		}
 	}
 
-	private void processPom( File pomFile, WorkingSession session )
+	private void processPom( File pomFile, WorkingSession session, Client client )
 	{
 		MavenProject unresolved = readPomFile( pomFile );
 		if( unresolved == null )
@@ -95,6 +95,8 @@ public class PomAnalyzer
 
 		Project projectInfo = new Project( pomFile, resolved, unresolved );
 		session.registerProject( projectInfo );
+		
+		client.send( "processed project " + projectInfo.getGav() );
 	}
 
 	private ParsedPomFile loadPomFile( File pomFile )

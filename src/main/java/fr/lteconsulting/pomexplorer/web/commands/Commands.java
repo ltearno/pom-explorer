@@ -97,10 +97,10 @@ public class Commands
 			}
 		} );
 
-		if( potentialCommands == null )
-			return "command not found";
+		if( potentialCommands == null || potentialCommands.isEmpty() )
+			return "command not found: " + parts[0];
 		if( potentialCommands.size() != 1 )
-			return "ambiguous command";
+			return "ambiguous command: " + parts[0] + " possible are " + potentialCommands;
 
 		Object command = commands.get( potentialCommands.get( 0 ) );
 
