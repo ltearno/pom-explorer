@@ -130,6 +130,8 @@ public class ReleaseCommand
 	public String gav( final Client client, WorkingSession session, String gavString )
 	{
 		GAV gav = Tools.string2Gav( gavString );
+		if( gav == null )
+			return "specify the GAV with the group:artifact:version format please";
 
 		final GavValidator validator = new GavValidator()
 		{

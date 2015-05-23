@@ -125,8 +125,6 @@
                         }
                         
                         me.input.focus();
-
-                        me.print("HISTORY " + history + " INDEX " + hIndex);
                     }
                     else if( e.which === 38 ) {
                     	if( hIndex >= history.length )
@@ -134,8 +132,6 @@
                     	
                     	hIndex = Math.max( 0, hIndex - 1 );
                     	me.input.value = history[hIndex];
-                    	
-                    	me.print("HISTORY " + history + " INDEX " + hIndex);
                     }
                     else if( e.which === 40 ) {
                     	if( hIndex >= history.length )
@@ -150,8 +146,6 @@
                     	else {
                     		me.input.value = history[hIndex];
                     	}
-                    	
-                    	me.print("HISTORY " + history + " INDEX " + hIndex);
                     }
                 }
             };

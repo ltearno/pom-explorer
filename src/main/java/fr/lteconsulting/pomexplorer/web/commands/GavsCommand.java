@@ -13,6 +13,12 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 public class GavsCommand
 {
 	@Help( "list the session's GAVs" )
+	public String main( WorkingSession session )
+	{
+		return list( session );
+	}
+	
+	@Help( "list the session's GAVs" )
 	public String list( WorkingSession session )
 	{
 		return list( session, null );
