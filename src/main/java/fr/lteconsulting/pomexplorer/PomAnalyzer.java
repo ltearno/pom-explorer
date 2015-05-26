@@ -36,7 +36,7 @@ public class PomAnalyzer
 		if( file.isDirectory() )
 		{
 			String name = file.getName();
-			if( "target".equalsIgnoreCase( name ) || "src".equalsIgnoreCase( name ) )
+			if( "target".equalsIgnoreCase( name ) || "bin".equalsIgnoreCase( name ) || "src".equalsIgnoreCase( name ) )
 				return;
 
 			for( File f : file.listFiles() )

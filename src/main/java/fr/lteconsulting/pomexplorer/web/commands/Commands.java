@@ -72,6 +72,8 @@ public class Commands
 				sb.append( "<br/>" );
 			}
 		}
+		
+		sb.append( "<i>You can type only the first letters of commands, for example '<b>ga li</b>' instead of '<b>gavs list</b>'</i><br/>" );
 
 		return sb.toString();
 	}

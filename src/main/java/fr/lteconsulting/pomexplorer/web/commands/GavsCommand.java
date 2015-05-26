@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import org.jgrapht.traverse.TopologicalOrderIterator;
-
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.WorkingSession;
-import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class GavsCommand
 {
