@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
@@ -23,6 +24,8 @@ public class Project
 	private GAV gav;
 	private Map<GAV, DependencyInfo> dependencies;
 
+	private Map<GAV, DependencyInfo> pluginDependencies;
+
 	public Project( File pomFile, ParsedPomFile resolvedPom, MavenProject project )
 	{
 		this.pomFile = pomFile;
@@ -32,7 +35,7 @@ public class Project
 		dependencies = new HashMap<>();
 		for( MavenDependency dependency : resolvedPom.getDependencies() )
 		{
-			DependencyInfo info = new DependencyInfo( dependency );
+			DependencyInfo info = new DependencyInfo(dependency, DependencyInfoType.DEPENDENCY);
 
 			dependencies.put( new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() ), info );
 		}
@@ -42,13 +45,27 @@ public class Project
 			DependencyInfo info = getApproximateDependency( dependency.getGroupId(), dependency.getArtifactId() );
 			if( info == null )
 			{
-				info = new DependencyInfo( dependency );
+				info = new DependencyInfo(dependency, DependencyInfoType.DEPENDENCY);
 				dependencies.put( info.getGav(), info );
 			}
 			else
 			{
 				info.setReadDependency( dependency );
 			}
+		}
+
+		pluginDependencies = new HashMap<>();
+		for (Plugin plugin : project.getBuildPlugins())
+		{
+			GAV pluginGAV = new GAV(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion());
+			Dependency dep = new Dependency();
+			dep.setGroupId(plugin.getGroupId());
+			dep.setArtifactId(plugin.getArtifactId());
+			dep.setVersion(plugin.getVersion());
+
+			DependencyInfo info = new DependencyInfo(dep, DependencyInfoType.PLUGIN);
+			
+			pluginDependencies.put(pluginGAV, info);
 		}
 	}
 
@@ -90,22 +107,36 @@ public class Project
 		return dependencies;
 	}
 
+	public Map<GAV, DependencyInfo> getPluginDependencies()
+	{
+		return pluginDependencies;
+	}
+
+	public enum DependencyInfoType
+	{
+		DEPENDENCY,
+		PLUGIN;
+	}
+
 	public class DependencyInfo
 	{
+		DependencyInfoType type;
 		MavenDependency resolved;
 		Dependency readden;
 
 		GAV gav;
 		GAV unresolvedGav;
 
-		public DependencyInfo( MavenDependency resolved )
+		public DependencyInfo( MavenDependency resolved, DependencyInfoType type )
 		{
 			this.resolved = resolved;
+			this.type = type;
 		}
 
-		public DependencyInfo( Dependency readden )
+		public DependencyInfo(Dependency readden, DependencyInfoType type)
 		{
 			this.readden = readden;
+			this.type = type;
 		}
 
 		public void setReadDependency( Dependency readden )

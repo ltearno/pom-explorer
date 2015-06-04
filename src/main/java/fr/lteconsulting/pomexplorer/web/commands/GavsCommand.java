@@ -2,9 +2,9 @@ package fr.lteconsulting.pomexplorer.web.commands;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class GavsCommand
@@ -28,24 +28,7 @@ public class GavsCommand
 			gavFilter = gavFilter.toLowerCase();
 
 		ArrayList<GAV> gavs = new ArrayList<>( session.graph().getGavs() );
-		Collections.sort( gavs, new Comparator<GAV>()
-		{
-			@Override
-			public int compare( GAV o1, GAV o2 )
-			{
-				int r = o1.getGroupId().compareTo( o2.getGroupId() );
-				if( r != 0 )
-					return r;
-
-				r = o1.getArtifactId().compareTo( o2.getArtifactId() );
-				if( r != 0 )
-					return r;
-
-				r = o1.getVersion().compareTo( o2.getVersion() );
-
-				return 0;
-			}
-		} );
+		Collections.sort(gavs, Tools.gavAlphabeticalComparator);
 
 		StringBuilder res = new StringBuilder();
 

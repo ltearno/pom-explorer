@@ -13,4 +13,4 @@
 =Creating your session
 session create
 =Analysing the default directory
-analyze directory c:\\documents\\repos\\hexa.tools
+analyze directory c:\\tmp\\hexa.tools
