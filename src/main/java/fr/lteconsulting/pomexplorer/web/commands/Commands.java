@@ -62,7 +62,7 @@ public class Commands
 					if( pCls == Client.class || pCls == WorkingSession.class )
 						continue;
 
-					sb.append(" <b><i>" + pCls.getSimpleName() + "</i></b>");
+					sb.append( " <b><i>" + pCls.getSimpleName() + "</i></b>" );
 				}
 
 				Help help = m.getAnnotation( Help.class );
@@ -72,7 +72,7 @@ public class Commands
 				sb.append( "<br/>" );
 			}
 		}
-		
+
 		sb.append( "<i>You can type only the first letters of commands, for example '<b>ga li</b>' instead of '<b>gavs list</b>'</i><br/>" );
 
 		return sb.toString();
@@ -86,7 +86,7 @@ public class Commands
 		if( text == null || text.isEmpty() )
 			return "no text";
 
-		if ("?".equals(text))
+		if( "?".equals( text ) )
 			text = "help";
 
 		final String parts[] = text.split( " " );
@@ -141,8 +141,8 @@ public class Commands
 			}
 			else
 			{
-				if (argTypes[i] == Integer.class)
-					args[i] = Integer.parseInt(parts[curPart]);
+				if( argTypes[i] == Integer.class )
+					args[i] = Integer.parseInt( parts[curPart] );
 				else
 					args[i] = parts[curPart];
 
@@ -157,9 +157,9 @@ public class Commands
 		}
 		catch( Exception e )
 		{
-			System.out.println(args.length + " arguments of type :");
-			for (Object a : args)
-				System.out.println(a != null ? a.getClass() : "(null)");
+			System.out.println( args.length + " arguments of type :" );
+			for( Object a : args )
+				System.out.println( a != null ? a.getClass() : "(null)" );
 
 			e.printStackTrace();
 

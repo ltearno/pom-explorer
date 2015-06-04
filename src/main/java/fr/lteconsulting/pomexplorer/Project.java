@@ -35,7 +35,7 @@ public class Project
 		dependencies = new HashMap<>();
 		for( MavenDependency dependency : resolvedPom.getDependencies() )
 		{
-			DependencyInfo info = new DependencyInfo(dependency, DependencyInfoType.DEPENDENCY);
+			DependencyInfo info = new DependencyInfo( dependency, DependencyInfoType.DEPENDENCY );
 
 			dependencies.put( new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() ), info );
 		}
@@ -45,7 +45,7 @@ public class Project
 			DependencyInfo info = getApproximateDependency( dependency.getGroupId(), dependency.getArtifactId() );
 			if( info == null )
 			{
-				info = new DependencyInfo(dependency, DependencyInfoType.DEPENDENCY);
+				info = new DependencyInfo( dependency, DependencyInfoType.DEPENDENCY );
 				dependencies.put( info.getGav(), info );
 			}
 			else
@@ -55,17 +55,17 @@ public class Project
 		}
 
 		pluginDependencies = new HashMap<>();
-		for (Plugin plugin : project.getBuildPlugins())
+		for( Plugin plugin : project.getBuildPlugins() )
 		{
-			GAV pluginGAV = new GAV(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion());
+			GAV pluginGAV = new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
 			Dependency dep = new Dependency();
-			dep.setGroupId(plugin.getGroupId());
-			dep.setArtifactId(plugin.getArtifactId());
-			dep.setVersion(plugin.getVersion());
+			dep.setGroupId( plugin.getGroupId() );
+			dep.setArtifactId( plugin.getArtifactId() );
+			dep.setVersion( plugin.getVersion() );
 
-			DependencyInfo info = new DependencyInfo(dep, DependencyInfoType.PLUGIN);
-			
-			pluginDependencies.put(pluginGAV, info);
+			DependencyInfo info = new DependencyInfo( dep, DependencyInfoType.PLUGIN );
+
+			pluginDependencies.put( pluginGAV, info );
 		}
 	}
 
@@ -110,93 +110,6 @@ public class Project
 	public Map<GAV, DependencyInfo> getPluginDependencies()
 	{
 		return pluginDependencies;
-	}
-
-	public enum DependencyInfoType
-	{
-		DEPENDENCY,
-		PLUGIN;
-	}
-
-	public class DependencyInfo
-	{
-		DependencyInfoType type;
-		MavenDependency resolved;
-		Dependency readden;
-
-		GAV gav;
-		GAV unresolvedGav;
-
-		public DependencyInfo( MavenDependency resolved, DependencyInfoType type )
-		{
-			this.resolved = resolved;
-			this.type = type;
-		}
-
-		public DependencyInfo(Dependency readden, DependencyInfoType type)
-		{
-			this.readden = readden;
-			this.type = type;
-		}
-
-		public void setReadDependency( Dependency readden )
-		{
-			this.readden = readden;
-		}
-
-		public GAV getGav()
-		{
-			if( getResolvedGav() != null )
-				return getResolvedGav();
-			else if( getUnresolvedGav() != null )
-				return getUnresolvedGav();
-			return null;
-		}
-
-		public GAV getResolvedGav()
-		{
-			if( gav == null && resolved != null )
-				gav = new GAV( resolved.getGroupId(), resolved.getArtifactId(), resolved.getVersion() );
-
-			return gav;
-		}
-
-		public GAV getUnresolvedGav()
-		{
-			if( unresolvedGav == null && readden != null )
-				unresolvedGav = new GAV( readden.getGroupId(), readden.getArtifactId(), readden.getVersion() );
-			return unresolvedGav;
-		}
-
-		@Override
-		public String toString()
-		{
-			String res = "";
-
-			if( getResolvedGav() != null && getUnresolvedGav() != null )
-			{
-				if( getResolvedGav().equals( getUnresolvedGav() ) )
-					res = getResolvedGav().toString();
-				else
-					res = "[*] " + getResolvedGav() + " / " + getUnresolvedGav();
-			}
-			else
-			{
-				if( getResolvedGav() != null )
-					res = getResolvedGav().toString();
-				else if( getUnresolvedGav() != null )
-					res = "[!]" + getUnresolvedGav();
-				else
-					res = "[!!!] NULL";
-			}
-
-			if( resolved != null )
-				res += " " + resolved.getClassifier() + ":" + resolved.getScope();
-			else if( readden != null )
-				res += " " + readden.getClassifier() + ":" + readden.getScope();
-
-			return res;
-		}
 	}
 
 	@Override

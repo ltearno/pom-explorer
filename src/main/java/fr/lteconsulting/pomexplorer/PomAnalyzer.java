@@ -59,7 +59,7 @@ public class PomAnalyzer
 			return;
 		}
 
-		ParsedPomFile resolved = loadPomFile(pomFile, session.getMavenSettingsFilePath());
+		ParsedPomFile resolved = loadPomFile( pomFile, session.getMavenSettingsFilePath() );
 		if( resolved == null )
 		{
 			System.out.println( "Cannot load this pom file : " + pomFile.getAbsolutePath() );
@@ -118,11 +118,11 @@ public class PomAnalyzer
 		client.send( "processed project " + projectInfo.getGav() );
 	}
 
-	private ParsedPomFile loadPomFile(File pomFile, String mavenSettingsFilePath)
+	private ParsedPomFile loadPomFile( File pomFile, String mavenSettingsFilePath )
 	{
 		MavenWorkingSession session = new MavenWorkingSessionImpl();
-		if (mavenSettingsFilePath != null)
-			session = new ConfigureSettingsFromFileTask(mavenSettingsFilePath).execute(session);
+		if( mavenSettingsFilePath != null )
+			session = new ConfigureSettingsFromFileTask( mavenSettingsFilePath ).execute( session );
 		session = new AddScopedDependenciesTask( ScopeType.COMPILE, ScopeType.IMPORT, ScopeType.SYSTEM, ScopeType.RUNTIME ).execute( session );
 
 		try

@@ -1,7 +1,7 @@
 package fr.lteconsulting.pomexplorer.depanalyze;
 
+import fr.lteconsulting.pomexplorer.DependencyInfo;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Project.DependencyInfo;
 
 public class DependencyLocation extends Location
 {
@@ -16,7 +16,7 @@ public class DependencyLocation extends Location
 	@Override
 	public String toString()
 	{
-		return "dependency to " + dependency.getGav();
+		return "dependency " + dependency.getType() + " to " + dependency.getGav();
 	}
 
 	@Override

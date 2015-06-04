@@ -8,8 +8,8 @@ import org.apache.maven.model.Parent;
 import org.apache.maven.project.MavenProject;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 
+import fr.lteconsulting.pomexplorer.DependencyInfo;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Project.DependencyInfo;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class ProjectsCommand
@@ -37,9 +37,9 @@ public class ProjectsCommand
 	{
 		if( gavFilter != null )
 			gavFilter = gavFilter.toLowerCase();
-		
+
 		StringBuilder res = new StringBuilder();
-		
+
 		res.append( "Verbose list of projects. Filter with: '" + gavFilter + "'<br/>" );
 
 		for( Project project : session.projects().values() )
@@ -48,7 +48,7 @@ public class ProjectsCommand
 			ParsedPomFile resolvedPom = project.getResolvedPom();
 			MavenProject unresolvedProject = project.getUnresolvedPom();
 
-			if( gavFilter != null && ! project.getGav().toString().toLowerCase().contains( gavFilter ) )
+			if( gavFilter != null && !project.getGav().toString().toLowerCase().contains( gavFilter ) )
 				continue;
 
 			res.append( "FILE : " + project.getPomFile().getAbsolutePath() + "<br/>" );

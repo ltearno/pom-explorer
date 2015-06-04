@@ -16,86 +16,84 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class CheckCommand
 {
-	public String main(Client client, WorkingSession session)
+	public String main( Client client, WorkingSession session )
 	{
 		StringBuilder sb = new StringBuilder();
 
-		List<GAV> gavsWithoutProject = gavsWithoutProject(session);
-		sb.append("<b>GAVs without projects</b><br/>");
-		if (gavsWithoutProject.isEmpty())
+		List<GAV> gavsWithoutProject = gavsWithoutProject( session );
+		sb.append( "<b>GAVs without projects</b><br/>" );
+		if( gavsWithoutProject.isEmpty() )
 		{
-			sb.append("No GAV without project.<br/>");
+			sb.append( "No GAV without project.<br/>" );
 		}
 		else
 		{
-			sb.append(gavsWithoutProject.size() + " GAV(s) without project :");
-			for (GAV gav : gavsWithoutProject)
-				sb.append("<br/>" + gav);
+			sb.append( gavsWithoutProject.size() + " GAV(s) without project :" );
+			for( GAV gav : gavsWithoutProject )
+				sb.append( "<br/>" + gav );
 		}
-		
-		
-		
-		Map<MiniGAV, Set<GAV>> multipleGavs = multipleGavs(session);
-		sb.append("<br/><br/><b>Multiple GAVs</b><br/>");
-		if (multipleGavs.isEmpty())
+
+		Map<MiniGAV, Set<GAV>> multipleGavs = multipleGavs( session );
+		sb.append( "<br/><br/><b>Multiple GAVs</b><br/>" );
+		if( multipleGavs.isEmpty() )
 		{
-			sb.append("No GAV with multiple versions.<br/>");
+			sb.append( "No GAV with multiple versions.<br/>" );
 		}
 		else
 		{
-			sb.append(multipleGavs.size() + " GAV(s) with multiple versions :<br/><ul>");
-			for (Entry<MiniGAV, Set<GAV>> e : multipleGavs.entrySet())
+			sb.append( multipleGavs.size() + " GAV(s) with multiple versions :<br/><ul>" );
+			for( Entry<MiniGAV, Set<GAV>> e : multipleGavs.entrySet() )
 			{
-				sb.append("<li>" + e.getKey() + " :<ul>");
-				for (GAV gav : e.getValue())
-					sb.append("<li>" + gav + "</li>");
-				sb.append("</ul></li>");
+				sb.append( "<li>" + e.getKey() + " :<ul>" );
+				for( GAV gav : e.getValue() )
+					sb.append( "<li>" + gav + "</li>" );
+				sb.append( "</ul></li>" );
 			}
-			sb.append("</ul>");
+			sb.append( "</ul>" );
 		}
 
 		return sb.toString();
 	}
 
-	private Map<MiniGAV, Set<GAV>> multipleGavs(WorkingSession session)
+	private Map<MiniGAV, Set<GAV>> multipleGavs( WorkingSession session )
 	{
 		Map<MiniGAV, Set<GAV>> prov = new HashMap<>();
 
-		for (GAV gav : session.graph().getGavs())
+		for( GAV gav : session.graph().getGavs() )
 		{
-			MiniGAV miniGav = new MiniGAV(gav.getGroupId(), gav.getArtifactId());
-			Set<GAV> list = prov.get(miniGav);
-			if (list == null)
+			MiniGAV miniGav = new MiniGAV( gav.getGroupId(), gav.getArtifactId() );
+			Set<GAV> list = prov.get( miniGav );
+			if( list == null )
 			{
 				list = new HashSet<>();
-				prov.put(miniGav, list);
+				prov.put( miniGav, list );
 			}
-			list.add(gav);
+			list.add( gav );
 		}
 
 		Map<MiniGAV, Set<GAV>> res = new HashMap<>();
-		for (Entry<MiniGAV, Set<GAV>> e : prov.entrySet())
+		for( Entry<MiniGAV, Set<GAV>> e : prov.entrySet() )
 		{
-			if (e.getValue().size() > 1)
-				res.put(e.getKey(), e.getValue());
+			if( e.getValue().size() > 1 )
+				res.put( e.getKey(), e.getValue() );
 		}
 
 		return res;
 	}
 
-	private List<GAV> gavsWithoutProject(WorkingSession session)
+	private List<GAV> gavsWithoutProject( WorkingSession session )
 	{
 		Set<GAV> res = new HashSet<GAV>();
 
-		for (GAV gav : session.graph().getGavs())
+		for( GAV gav : session.graph().getGavs() )
 		{
-			if (!session.projects().keySet().contains(gav))
-				res.add(gav);
+			if( !session.projects().keySet().contains( gav ) )
+				res.add( gav );
 		}
 
 		ArrayList<GAV> list = new ArrayList<GAV>();
-		list.addAll(res);
-		Collections.sort(list, Tools.gavAlphabeticalComparator);
+		list.addAll( res );
+		Collections.sort( list, Tools.gavAlphabeticalComparator );
 
 		return list;
 	}
@@ -106,7 +104,7 @@ public class CheckCommand
 
 		String artifactId;
 
-		public MiniGAV(String groupId, String artifactId)
+		public MiniGAV( String groupId, String artifactId )
 		{
 			super();
 			this.groupId = groupId;
@@ -130,28 +128,28 @@ public class CheckCommand
 		}
 
 		@Override
-		public boolean equals(Object obj)
+		public boolean equals( Object obj )
 		{
-			if (this == obj)
+			if( this == obj )
 				return true;
-			if (obj == null)
+			if( obj == null )
 				return false;
-			if (getClass() != obj.getClass())
+			if( getClass() != obj.getClass() )
 				return false;
-			MiniGAV other = (MiniGAV)obj;
-			if (artifactId == null)
+			MiniGAV other = (MiniGAV) obj;
+			if( artifactId == null )
 			{
-				if (other.artifactId != null)
+				if( other.artifactId != null )
 					return false;
 			}
-			else if (!artifactId.equals(other.artifactId))
+			else if( !artifactId.equals( other.artifactId ) )
 				return false;
-			if (groupId == null)
+			if( groupId == null )
 			{
-				if (other.groupId != null)
+				if( other.groupId != null )
 					return false;
 			}
-			else if (!groupId.equals(other.groupId))
+			else if( !groupId.equals( other.groupId ) )
 				return false;
 			return true;
 		}

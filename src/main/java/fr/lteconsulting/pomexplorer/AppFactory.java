@@ -57,9 +57,9 @@ public class AppFactory
 			commands.addCommand( new ChangeCommand() );
 			commands.addCommand( new BuildCommand() );
 			commands.addCommand( new GraphXCommand() );
-			commands.addCommand(new CheckCommand());
+			commands.addCommand( new CheckCommand() );
 		}
-		
+
 		return commands;
 	}
 
@@ -67,7 +67,7 @@ public class AppFactory
 
 	public ApplicationSettings getSettings()
 	{
-		if (settings == null)
+		if( settings == null )
 		{
 			settings = new ApplicationSettings();
 			settings.load();

@@ -15,7 +15,7 @@ import fr.lteconsulting.pomexplorer.WebServer.XWebServer;
  */
 public class App
 {
-	public static void main(String[] args)
+	public static void main( String[] args )
 	{
 		App app = new App();
 		app.run();
@@ -26,74 +26,74 @@ public class App
 		XWebServer xWebServer = new XWebServer()
 		{
 			@Override
-			public void onNewClient(Client client)
+			public void onNewClient( Client client )
 			{
-				System.out.println("New client " + client.getId());
+				System.out.println( "New client " + client.getId() );
 
 				// running the default script
-				List<String> commands = readFileLines("welcome.commands");
-				for (String command : commands)
+				List<String> commands = readFileLines( "welcome.commands" );
+				for( String command : commands )
 				{
-					if (command.isEmpty() || command.startsWith("#"))
+					if( command.isEmpty() || command.startsWith( "#" ) )
 						continue;
 
-					if (command.startsWith("="))
+					if( command.startsWith( "=" ) )
 					{
-						String message = command.substring(1);
-						if (message.isEmpty())
+						String message = command.substring( 1 );
+						if( message.isEmpty() )
 							message = "<br/>";
-						client.send(message);
+						client.send( message );
 					}
 					else
-						client.send(AppFactory.get().commands().takeCommand(client, command));
+						client.send( AppFactory.get().commands().takeCommand( client, command ) );
 				}
 			}
 
 			@Override
-			public void onClientLeft(Client client)
+			public void onClientLeft( Client client )
 			{
-				System.out.println("Bye bye client !");
+				System.out.println( "Bye bye client !" );
 			}
 		};
 
 		Func2<Client, String, String> socket = new Func2<Client, String, String>()
 		{
 			@Override
-			public String exec(Client client, String query)
+			public String exec( Client client, String query )
 			{
-				if (query == null || query.isEmpty())
+				if( query == null || query.isEmpty() )
 					return "nop.";
 
-				return AppFactory.get().commands().takeCommand(client, query);
+				return AppFactory.get().commands().takeCommand( client, query );
 			}
 		};
 
-		WebServer server = new WebServer(xWebServer, socket);
+		WebServer server = new WebServer( xWebServer, socket );
 		server.start();
 	}
 
-	private static List<String> readFileLines(String path)
+	private static List<String> readFileLines( String path )
 	{
 		ArrayList<String> res = new ArrayList<String>();
 
-		File file = new File(path);
-		if (!file.exists())
+		File file = new File( path );
+		if( !file.exists() )
 			return res;
 
 		try
 		{
-			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
+			BufferedReader in = new BufferedReader( new InputStreamReader( new FileInputStream( file ), "UTF8" ) );
 
 			String str;
 
-			while ((str = in.readLine()) != null)
+			while( (str = in.readLine()) != null )
 			{
-				res.add(str);
+				res.add( str );
 			}
 
 			in.close();
 		}
-		catch (Exception e)
+		catch( Exception e )
 		{
 		}
 

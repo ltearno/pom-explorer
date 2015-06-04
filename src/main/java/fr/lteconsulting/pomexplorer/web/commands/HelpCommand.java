@@ -5,7 +5,7 @@ import fr.lteconsulting.pomexplorer.Client;
 
 public class HelpCommand
 {
-	@Help("gives this message")
+	@Help( "gives this message" )
 	public String main( Client client )
 	{
 		return AppFactory.get().commands().help();

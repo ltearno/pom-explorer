@@ -60,54 +60,54 @@ public class PomGraph
 
 		return parent;
 	}
-	
+
 	public Set<GAV> getChildren( GAV gav )
 	{
 		Set<GAV> res = new HashSet<>();
-		
+
 		List<ParentRelation> relations = parentRelations( g.incomingEdgesOf( gav ) );
 		for( ParentRelation relation : relations )
 			res.add( g.getEdgeSource( relation ) );
-		
+
 		return res;
 	}
 
 	public Set<GAV> getDependencies( GAV gav )
 	{
 		Set<GAV> res = new HashSet<>();
-		
+
 		List<DependencyRelation> relations = dependencyRelations( g.outgoingEdgesOf( gav ) );
 
 		for( DependencyRelation relation : relations )
 		{
 			GAV dependencyGav = g.getEdgeTarget( relation );
-			
+
 			res.add( dependencyGav );
 		}
-		
+
 		return res;
 	}
-	
+
 	public Set<GAV> getDependents( GAV gav )
 	{
 		Set<GAV> res = new HashSet<>();
-		
+
 		List<DependencyRelation> relations = dependencyRelations( g.incomingEdgesOf( gav ) );
 
 		for( DependencyRelation relation : relations )
 		{
 			GAV dependencyGav = g.getEdgeSource( relation );
-			
+
 			res.add( dependencyGav );
 		}
-		
+
 		return res;
 	}
 
 	private List<ParentRelation> parentRelations( Set<Relation> relations )
 	{
 		@SuppressWarnings( { "unchecked", "rawtypes" } )
-		List<ParentRelation> res = (List<ParentRelation>)(List)Tools.filter( relations, new Func1<Relation, Boolean>()
+		List<ParentRelation> res = (List<ParentRelation>) (List) Tools.filter( relations, new Func1<Relation, Boolean>()
 		{
 			@Override
 			public Boolean exec( Relation relation )
@@ -115,7 +115,7 @@ public class PomGraph
 				return relation.getType() == Type.PARENT;
 			}
 		} );
-		
+
 		return res;
 	}
 
@@ -130,7 +130,7 @@ public class PomGraph
 				return relation.getType() == Type.DEPENDENCY;
 			}
 		} );
-		
+
 		return result;
 	}
 }

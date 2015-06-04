@@ -14,7 +14,7 @@ public class GavsCommand
 	{
 		return list( session );
 	}
-	
+
 	@Help( "list the session's GAVs" )
 	public String list( WorkingSession session )
 	{
@@ -28,11 +28,11 @@ public class GavsCommand
 			gavFilter = gavFilter.toLowerCase();
 
 		ArrayList<GAV> gavs = new ArrayList<>( session.graph().getGavs() );
-		Collections.sort(gavs, Tools.gavAlphabeticalComparator);
+		Collections.sort( gavs, Tools.gavAlphabeticalComparator );
 
 		StringBuilder res = new StringBuilder();
 
-		res.append( "<br/>GAV list "+(gavFilter!=null?("filtering with '"+gavFilter+"'"):"")+":<br/>" );
+		res.append( "<br/>GAV list " + (gavFilter != null ? ("filtering with '" + gavFilter + "'") : "") + ":<br/>" );
 		for( GAV gav : gavs )
 		{
 			if( gavFilter != null && !gav.toString().toLowerCase().contains( gavFilter ) )

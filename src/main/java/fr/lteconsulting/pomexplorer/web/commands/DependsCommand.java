@@ -37,4 +37,10 @@ public class DependsCommand
 
 		return res.toString();
 	}
+	
+	@Help( "lists the GAVs that the GAV passed in parameters depends on" )
+	public String by( WorkingSession session, String gavString )
+	{
+		return "";
+	}
 }

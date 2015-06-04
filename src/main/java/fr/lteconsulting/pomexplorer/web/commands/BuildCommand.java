@@ -57,7 +57,7 @@ public class BuildCommand
 				log.append( "cannot find project for GAV " + gav + "<br/>" );
 				continue;
 			}
-			
+
 			buildRec( session, subProject, log );
 		}
 	}

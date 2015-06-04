@@ -16,13 +16,6 @@ import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 public class ReleaseCommand
 {
-	public String test( Client client, WorkingSession session )
-	{
-		return gav( client, session, "fr.lteconsulting:hexa.binding:1.2-SNAPSHOT" );
-		// return gav( session, "fr.lteconsulting:hexa.css:1.2-SNAPSHOT" );
-		// return gav( session, "fr.lteconsulting:hexa.utils:1.2-SNAPSHOT" );
-	}
-
 	interface Visitor
 	{
 		void project( VisitKind kind, Project project );
@@ -127,6 +120,7 @@ public class ReleaseCommand
 		}
 	}
 
+	@Help("releases a gav. All dependencies are also released")
 	public String gav( final Client client, WorkingSession session, String gavString )
 	{
 		GAV gav = Tools.string2Gav( gavString );
@@ -163,7 +157,7 @@ public class ReleaseCommand
 			{
 				if( !isOK( gav ) )
 				{
-					res.append( "<b style='red'>project should be changed and source files can't be found ! GAV : " + gav + "</b>" );
+					res.append( "<b style='color:orange;'>project should be changed and source files can't be found ! GAV : " + gav + "</b><br/>" );
 				}
 			}
 
@@ -219,17 +213,19 @@ public class ReleaseCommand
 	{
 		// visit hierarchical projects
 		GAV parentGAV = Tools.getParentGav( session, project );
-		if( parentGAV == null )
-			return;
-		
-		Project parentProject = session.projects().get( parentGAV );
-		if( parentProject == null )
+		if( parentGAV != null )
 		{
-			visitor.projectNotFound( parentGAV, "parent missing for project " + project );
-			return;
+			Project parentProject = session.projects().get( parentGAV );
+			if( parentProject == null )
+			{
+				visitor.projectNotFound( parentGAV, "parent missing for project " + project );
+			}
+			else
+			{
+				visitor.project( VisitKind.HIERARCHYCAL, parentProject );
+				visitChild( session, parentProject, visitor );
+			}
 		}
-		visitor.project( VisitKind.HIERARCHYCAL, parentProject );
-		visitChild( session, parentProject, visitor );
 
 		// visit transitive projects
 		for( GAV dependencyGav : session.graph().getDependencies( project.getGav() ) )

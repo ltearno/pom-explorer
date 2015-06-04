@@ -1,7 +1,7 @@
 package fr.lteconsulting.pomexplorer.depanalyze;
 
+import fr.lteconsulting.pomexplorer.DependencyInfo;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Project.DependencyInfo;
 
 public class PropertyLocation extends Location
 {

@@ -15,22 +15,22 @@ public class ApplicationSettings
 
 	public void load()
 	{
-		File configFile = new File(CONFIG_FILE_PATH);
-		if (!configFile.exists())
+		File configFile = new File( CONFIG_FILE_PATH );
+		if( !configFile.exists() )
 			return;
 
 		try
 		{
-			properties.load(new FileReader(configFile));
+			properties.load( new FileReader( configFile ) );
 		}
-		catch (IOException e)
+		catch( IOException e )
 		{
-			System.out.println("Impossible to read the configuration file : " + configFile.getAbsolutePath());
+			System.out.println( "Impossible to read the configuration file : " + configFile.getAbsolutePath() );
 		}
 	}
 
 	public String getDefaultMavenSettingsFile()
 	{
-		return properties.getProperty(CONFIG_DEFAULT_MAVEN_SETTINGS_FILE_KEY, null);
+		return properties.getProperty( CONFIG_DEFAULT_MAVEN_SETTINGS_FILE_KEY, null );
 	}
 }

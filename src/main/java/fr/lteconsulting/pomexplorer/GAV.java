@@ -8,7 +8,7 @@ public class GAV
 
 	private final String version;
 
-	public GAV(String groupId, String artifactId, String version)
+	public GAV( String groupId, String artifactId, String version )
 	{
 		this.groupId = groupId;
 		this.artifactId = artifactId;
@@ -48,35 +48,35 @@ public class GAV
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (this == obj)
+		if( this == obj )
 			return true;
-		if (obj == null)
+		if( obj == null )
 			return false;
-		if (getClass() != obj.getClass())
+		if( getClass() != obj.getClass() )
 			return false;
-		GAV other = (GAV)obj;
-		if (artifactId == null)
+		GAV other = (GAV) obj;
+		if( artifactId == null )
 		{
-			if (other.artifactId != null)
+			if( other.artifactId != null )
 				return false;
 		}
-		else if (!artifactId.equals(other.artifactId))
+		else if( !artifactId.equals( other.artifactId ) )
 			return false;
-		if (groupId == null)
+		if( groupId == null )
 		{
-			if (other.groupId != null)
+			if( other.groupId != null )
 				return false;
 		}
-		else if (!groupId.equals(other.groupId))
+		else if( !groupId.equals( other.groupId ) )
 			return false;
-		if (version == null)
+		if( version == null )
 		{
-			if (other.version != null)
+			if( other.version != null )
 				return false;
 		}
-		else if (!version.equals(other.version))
+		else if( !version.equals( other.version ) )
 			return false;
 		return true;
 	}
