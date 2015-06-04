@@ -24,6 +24,11 @@ public class PomGraph
 		return g.vertexSet();
 	}
 
+	public Set<Relation> getRelations()
+	{
+		return g.edgeSet();
+	}
+
 	public DirectedGraph<GAV, Relation> getGraphInternal()
 	{
 		return g;

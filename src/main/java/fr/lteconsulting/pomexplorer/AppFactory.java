@@ -60,4 +60,17 @@ public class AppFactory
 		
 		return commands;
 	}
+
+	private ApplicationSettings settings;
+
+	public ApplicationSettings getSettings()
+	{
+		if (settings == null)
+		{
+			settings = new ApplicationSettings();
+			settings.load();
+		}
+
+		return settings;
+	}
 }

@@ -138,7 +138,10 @@ public class Commands
 			}
 			else
 			{
-				args[i] = parts[curPart];
+				if (argTypes[i] == Integer.class)
+					args[i] = Integer.parseInt(parts[curPart]);
+				else
+					args[i] = parts[curPart];
 
 				curPart++;
 			}
@@ -151,9 +154,13 @@ public class Commands
 		}
 		catch( Exception e )
 		{
-			e.getCause().printStackTrace();
+			System.out.println(args.length + " arguments of type :");
+			for (Object a : args)
+				System.out.println(a != null ? a.getClass() : "(null)");
 
-			return e.getCause().getMessage();
+			e.printStackTrace();
+
+			return e.getMessage();
 		}
 	}
 

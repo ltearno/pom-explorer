@@ -18,6 +18,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
 import org.jboss.shrinkwrap.resolver.impl.maven.task.AddScopedDependenciesTask;
+import org.jboss.shrinkwrap.resolver.impl.maven.task.ConfigureSettingsFromFileTask;
 
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
@@ -58,7 +59,7 @@ public class PomAnalyzer
 			return;
 		}
 
-		ParsedPomFile resolved = loadPomFile( pomFile );
+		ParsedPomFile resolved = loadPomFile(pomFile, session.getMavenSettingsFilePath());
 		if( resolved == null )
 		{
 			System.out.println( "Cannot load this pom file : " + pomFile.getAbsolutePath() );
@@ -117,9 +118,11 @@ public class PomAnalyzer
 		client.send( "processed project " + projectInfo.getGav() );
 	}
 
-	private ParsedPomFile loadPomFile( File pomFile )
+	private ParsedPomFile loadPomFile(File pomFile, String mavenSettingsFilePath)
 	{
 		MavenWorkingSession session = new MavenWorkingSessionImpl();
+		if (mavenSettingsFilePath != null)
+			session = new ConfigureSettingsFromFileTask(mavenSettingsFilePath).execute(session);
 		session = new AddScopedDependenciesTask( ScopeType.COMPILE, ScopeType.IMPORT, ScopeType.SYSTEM, ScopeType.RUNTIME ).execute( session );
 
 		try

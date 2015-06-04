@@ -4,7 +4,7 @@ import fr.lteconsulting.hexa.client.tools.Func2;
 import fr.lteconsulting.pomexplorer.WebServer.XWebServer;
 
 /**
- * Hello world!
+ * POM Explorer main class
  */
 public class App
 {
