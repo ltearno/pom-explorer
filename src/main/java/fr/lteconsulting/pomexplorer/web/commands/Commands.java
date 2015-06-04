@@ -62,7 +62,7 @@ public class Commands
 					if( pCls == Client.class || pCls == WorkingSession.class )
 						continue;
 
-					sb.append( " [" + pCls.getSimpleName() + "]" );
+					sb.append(" <b><i>" + pCls.getSimpleName() + "</i></b>");
 				}
 
 				Help help = m.getAnnotation( Help.class );
@@ -85,6 +85,9 @@ public class Commands
 	{
 		if( text == null || text.isEmpty() )
 			return "no text";
+
+		if ("?".equals(text))
+			text = "help";
 
 		final String parts[] = text.split( " " );
 		if( parts.length < 1 )

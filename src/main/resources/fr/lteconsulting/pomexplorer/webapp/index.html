@@ -98,7 +98,7 @@
                         + "</div>"
                         + "<div class='footer'>"
                             + "<span class='prompt'>&gt;</span>"
-                            + "<input class='terminal' type='text' placeholder='enter a command, 'help' to get help></input>"
+                            + "<input class='terminal' type='text' placeholder='enter a command, or just \"?\" to get help'></input>"
                         + "</div>"
                     + "</div>";
                 this.html = this.html.children[0];
@@ -170,7 +170,8 @@
         
         var terminal = new Terminal();
         document.getElementById('terminal').appendChild(terminal.html);
-        terminal.print('enter a command of "help" for help');
+
+        terminal.input.focus();
         
         var socket = new WebSocket("ws://localhost:90/ws");
 		socket.onopen = function (event) {

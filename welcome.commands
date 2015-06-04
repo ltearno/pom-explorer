@@ -1,0 +1,16 @@
+#lines beginning with a # will be completely ignored,
+#lines beginning with a = will be sent to the web client
+#other lines will be executed...
+#
+#
+=
+=Hello ! This is the beta version of POM Explorer ...
+=
+=Have fun !
+=
+=The official repository is here : <a href="https://github.com/ltearno/pom-explorer" target="_blank">https://github.com/ltearno/pom-explorer</a>
+=
+=Creating your session
+session create
+=Analysing the default directory
+analyze directory c:\\documents\\repos\\hexa.tools
