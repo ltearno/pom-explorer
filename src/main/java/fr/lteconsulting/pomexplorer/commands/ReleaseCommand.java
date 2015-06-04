@@ -1,7 +1,6 @@
 package fr.lteconsulting.pomexplorer.commands;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -13,7 +12,9 @@ import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
-import fr.lteconsulting.pomexplorer.graph.relation.GAVDependencyRelation;
+import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
+import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ReleaseCommand
 {
@@ -121,126 +122,71 @@ public class ReleaseCommand
 		}
 	}
 
-	@Help("releases a gav. All dependencies are also released")
+	private final static String SNAPSHOT_SUFFIX = "-SNAPSHOT";
+
+	private GAV onGav( GAV gav )
+	{
+		if( !isOK( gav ) )
+			return new GAV( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
+
+		return gav;
+	}
+
+	private boolean isOK( GAV gav )
+	{
+		return !gav.getVersion().endsWith( SNAPSHOT_SUFFIX );
+	}
+
+	@Help( "releases a gav. All dependencies are also released" )
 	public String gav( final Client client, WorkingSession session, String gavString )
 	{
 		GAV gav = Tools.string2Gav( gavString );
 		if( gav == null )
 			return "specify the GAV with the group:artifact:version format please";
 
-		final GavValidator validator = new GavValidator()
-		{
-			@Override
-			public GAV onGav( GAV gav )
-			{
-				if( gav.getVersion().endsWith( "-SNAPSHOT" ) )
-					return new GAV( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0, gav.getVersion().length() - "-SNAPSHOT".length() ) );
-
-				return gav;
-			}
-		};
-
 		final StringBuilder res = new StringBuilder();
 
 		res.append( "<b>Releasing</b> project " + gav + "<br/>" );
-
-		final HashSet<Project> projects = new HashSet<>();
-
-		visit( session, gav, new Visitor()
-		{
-			private boolean isOK( GAV gav )
-			{
-				return validator.onGav( gav ).equals( gav );
-			}
-
-			@Override
-			public void projectNotFound( GAV gav, String message )
-			{
-				if( !isOK( gav ) )
-				{
-					res.append( "<b style='color:orange;'>project should be changed and source files can't be found ! GAV : " + gav + "</b><br/>" );
-				}
-			}
-
-			@Override
-			public void project( VisitKind kind, Project project )
-			{
-				if( !isOK( project.getGav() ) )
-					projects.add( project );
-			}
-		} );
-
-		res.append( "<br/><b>Summary</b><br/>" );
-
+		res.append( "All dependencies will be updated to a release version.<br/><br/>" );
+		
 		List<Change> changes = new ArrayList<>();
 
-		for( Project project : projects )
+		changes.add( new Change( new PropertyLocation( session.projects().get( gav ), null, "project.version", gav.getVersion() ), gav.getVersion(), onGav(gav).getVersion() ) );
+
+		Set<GAVRelation<Relation>> relations = session.graph().relationsRec( gav );
+		for( GAVRelation<Relation> r : relations )
 		{
-			String oldValue = project.getGav().toString();
-			String newValue = validator.onGav( project.getGav() ).toString();
+			if( isOK( r.getTarget() ) )
+				continue;
 
-			res.append( oldValue + " should be changed to " + newValue + "<br/>" );
+			GAV source = r.getSource();
+			GAV from = r.getTarget();
+			GAV to = onGav( r.getTarget() );
 
-			Set<Location> locations = Tools.getImpactedLocationsToChangeGav( session, project.getGav(), res, false );
-			for( Location l : locations )
-				changes.add( new Change( l, oldValue, newValue ) );
+			res.append( from + " should be changed to " + to + " in gav " + source + "<br/>" );
+
+			Project project = session.projects().get( source );
+			if( project == null )
+			{
+				res.append( "<span style='color:orange;'>Project not found for this GAV ! " + source + "</span><br/>" );
+				continue;
+			}
+
+			Location dependencyLocation = Tools.findDependencyLocation( session, project, r );
+			if( dependencyLocation == null )
+			{
+				res.append( "<span style='color:red;'>Cannot find the location of dependency to " + r.getTarget() + " in this project " + project + "</span><br/>" );
+				continue;
+			}
+
+			changes.add( new Change( dependencyLocation, from.getVersion(), to.getVersion() ) );
 		}
-
-		res.append( "<br/><b>Details</b><br/>" );
-		for( Change change : changes )
+		
+		for(Change c : changes)
 		{
-			res.append( "file: " + change.getLocation().getProject().getPomFile().getAbsolutePath() + "<br/>" + "location: " + change.getLocation() + "<br/>" + "change to: " + change.getNewValue() + "<br>" + "<br/>" );
+			res.append( "file: " + c.getLocation().getProject().getPomFile().getAbsolutePath() + "<br/>" + "location: " + c.getLocation() + "<br/>" + "change to: " + c.getNewValue() + "<br>" + "<br/>" );			
 		}
 
 		return res.toString();
-	}
-
-	void visit( WorkingSession session, GAV gav, Visitor visitor )
-	{
-		// find project gav
-		Project project = session.projects().get( gav );
-		if( project == null )
-		{
-			visitor.projectNotFound( gav, "project not found" );
-			return;
-		}
-
-		visitor.project( VisitKind.ROOT, project );
-
-		visitChild( session, project, visitor );
-	}
-
-	private void visitChild( WorkingSession session, Project project, Visitor visitor )
-	{
-		// visit hierarchical projects
-		GAV parentGAV = session.graph().parent( project.getGav() );
-		if( parentGAV != null )
-		{
-			Project parentProject = session.projects().get( parentGAV );
-			if( parentProject == null )
-			{
-				visitor.projectNotFound( parentGAV, "parent missing for project " + project );
-			}
-			else
-			{
-				visitor.project( VisitKind.HIERARCHYCAL, parentProject );
-				visitChild( session, parentProject, visitor );
-			}
-		}
-
-		// visit transitive projects
-		for( GAVDependencyRelation dependencyGav : session.graph().dependencies( project.getGav() ) )
-		{
-			Project dependencyProject = session.projects().get( dependencyGav.getGav() );
-			if( dependencyProject == null )
-			{
-				visitor.projectNotFound( dependencyGav.getGav(), "dependent project missing " + project );
-			}
-			else
-			{
-				visitor.project( VisitKind.TRANSITIVE, dependencyProject );
-				visitChild( session, dependencyProject, visitor );
-			}
-		}
 	}
 }

@@ -12,6 +12,11 @@ public class DependencyLocation extends Location
 		super( project );
 		this.dependency = dependency;
 	}
+	
+	public DependencyInfo getDependency()
+	{
+		return dependency;
+	}
 
 	@Override
 	public String toString()

@@ -11,7 +11,7 @@ import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.GAVDependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation.Type;
@@ -52,12 +52,12 @@ public class PomGraph
 
 	public GAV parent( GAV gav )
 	{
-		List<ParentRelation> relations = filterParentRelations( g.outgoingEdgesOf( gav ) );
+		Set<GAVRelation<ParentRelation>> relations = filterParentRelations( relations( gav ) );
 
 		if( relations == null || relations.size() != 1 )
 			return null;
 
-		GAV parent = g.getEdgeTarget( relations.get( 0 ) );
+		GAV parent = relations.iterator().next().getTarget();
 
 		return parent;
 	}
@@ -66,96 +66,154 @@ public class PomGraph
 	{
 		Set<GAV> res = new HashSet<>();
 
-		List<ParentRelation> relations = filterParentRelations( g.incomingEdgesOf( gav ) );
-		for( ParentRelation relation : relations )
-			res.add( g.getEdgeSource( relation ) );
+		Set<GAVRelation<ParentRelation>> relations = filterParentRelations( relationsReverse( gav ) );
+		for( GAVRelation<ParentRelation> relation : relations )
+			res.add( relation.getSource() );
 
 		return res;
 	}
 
-	public Set<GAVDependencyRelation> dependencies( GAV gav )
+	/**
+	 * Gets the outgoing relations of a GAV
+	 * 
+	 * @param gav
+	 * @return
+	 */
+	public Set<GAVRelation<Relation>> relations( GAV gav )
 	{
-		Set<GAVDependencyRelation> res = new HashSet<>();
-
-		dependencies( gav, res );
-
+		Set<GAVRelation<Relation>> res = new HashSet<>();
+		relations( gav, res );
 		return res;
+	}
+
+	public void relations( GAV gav, Set<GAVRelation<Relation>> set )
+	{
+		Set<Relation> relations = g.outgoingEdgesOf( gav );
+		for( Relation r : relations )
+			set.add( new GAVRelation<Relation>( gav, g.getEdgeTarget( r ), r ) );
 	}
 	
-	private void dependencies( GAV gav, Set<GAVDependencyRelation> set )
+	/**
+	 * Recursively gets the outgoing relations of a GAV
+	 * 
+	 * @param gav
+	 * @return
+	 */
+	public Set<GAVRelation<Relation>> relationsRec( GAV gav )
 	{
-		List<DependencyRelation> relations = filterDependencyRelations( g.outgoingEdgesOf( gav ) );
-
-		for( DependencyRelation relation : relations )
-		{
-			GAV dependencyGav = g.getEdgeTarget( relation );
-
-			set.add( new GAVDependencyRelation( dependencyGav, relation ) );
-		}
-	}
-
-	public Set<GAVDependencyRelation> dependenciesRec( GAV gav )
-	{
-		Set<GAVDependencyRelation> res = new HashSet<>();
-
-		dependenciesRec( gav, res );
-
+		Set<GAVRelation<Relation>> res = new HashSet<>();
+		relationsRec( gav, res );
 		return res;
 	}
 
-	public void dependenciesRec( GAV gav, Set<GAVDependencyRelation> set )
+	public void relationsRec( GAV gav, Set<GAVRelation<Relation>> set )
 	{
-		Set<GAVDependencyRelation> deps = dependencies( gav );
-		for( GAVDependencyRelation d : deps )
+		Set<Relation> relations = g.outgoingEdgesOf( gav );
+		for( Relation r : relations )
 		{
-			set.add( d );
-			dependenciesRec( d.getGav(), set );
+			GAV target = g.getEdgeTarget( r );
+			set.add( new GAVRelation<Relation>( gav, target, r ) );
+			relationsRec( target, set );
 		}
 	}
-
-	public Set<GAVDependencyRelation> dependents( GAV gav )
+	
+	/**
+	 * Gets the ingoing relations of a GAV
+	 * 
+	 * @param gav
+	 * @return
+	 */
+	public Set<GAVRelation<Relation>> relationsReverse( GAV gav )
 	{
-		Set<GAVDependencyRelation> res = new HashSet<>();
-
-		List<DependencyRelation> relations = filterDependencyRelations( g.incomingEdgesOf( gav ) );
-
-		for( DependencyRelation relation : relations )
-		{
-			GAV dependencyGav = g.getEdgeSource( relation );
-
-			res.add( new GAVDependencyRelation( dependencyGav, relation ) );
-		}
-
+		Set<GAVRelation<Relation>> res = new HashSet<>();
+		relationsReverse( gav, res );
 		return res;
 	}
 
-	private List<ParentRelation> filterParentRelations( Set<Relation> relations )
+	public void relationsReverse( GAV gav, Set<GAVRelation<Relation>> set )
+	{
+		Set<Relation> relations = g.incomingEdgesOf( gav );
+		for( Relation r : relations )
+			set.add( new GAVRelation<Relation>( g.getEdgeSource( r ), gav, r ) );
+	}
+	
+	/**
+	 * Recursively gets the ingoing relations of a GAV
+	 * 
+	 * @param gav
+	 * @return
+	 */
+	public Set<GAVRelation<Relation>> relationsReverseRec( GAV gav )
+	{
+		Set<GAVRelation<Relation>> res = new HashSet<>();
+		relationsReverseRec( gav, res );
+		return res;
+	}
+
+	public void relationsReverseRec( GAV gav, Set<GAVRelation<Relation>> set )
+	{
+		Set<Relation> relations = g.incomingEdgesOf( gav );
+		for( Relation r : relations )
+		{
+			GAV source = g.getEdgeSource( r );
+			set.add( new GAVRelation<Relation>( source, gav, r ) );
+			relationsReverseRec( source, set );
+		}
+	}
+
+	public Set<GAVRelation<DependencyRelation>> dependencies( GAV gav )
+	{
+		return filterDependencyRelations( relations( gav ) );
+	}
+
+	public Set<GAVRelation<DependencyRelation>> dependenciesRec( GAV gav )
+	{
+		return filterDependencyRelations( relationsRec( gav ) );
+	}
+
+	public Set<GAVRelation<DependencyRelation>> dependents( GAV gav )
+	{
+		return filterDependencyRelations( relationsReverse( gav ) );
+	}
+	
+	public Set<GAVRelation<DependencyRelation>> dependentsRec( GAV gav )
+	{
+		return filterDependencyRelations( relationsReverseRec( gav ) );
+	}
+
+	private Set<GAVRelation<ParentRelation>> filterParentRelations( Set<GAVRelation<Relation>> relations )
 	{
 		@SuppressWarnings( { "unchecked", "rawtypes" } )
-		List<ParentRelation> res = (List<ParentRelation>) (List) Tools.filter( relations, new Func1<Relation, Boolean>()
+		List<GAVRelation<ParentRelation>> res = (List<GAVRelation<ParentRelation>>) (List) Tools.filter( relations, new Func1<GAVRelation<Relation>, Boolean>()
 		{
 			@Override
-			public Boolean exec( Relation relation )
+			public Boolean exec( GAVRelation<Relation> relation )
 			{
-				return relation.getType() == Type.PARENT;
+				return relation.getRelation().getType() == Type.PARENT;
 			}
 		} );
-
-		return res;
-	}
-
-	private List<DependencyRelation> filterDependencyRelations( Set<Relation> relations )
-	{
-		@SuppressWarnings( { "rawtypes", "unchecked" } )
-		List<DependencyRelation> result = (List<DependencyRelation>) (List) Tools.filter( relations, new Func1<Relation, Boolean>()
-		{
-			@Override
-			public Boolean exec( Relation relation )
-			{
-				return relation.getType() == Type.DEPENDENCY;
-			}
-		} );
+		
+		Set<GAVRelation<ParentRelation>> result = new HashSet<>();
+		result.addAll( res );
 
 		return result;
+	}
+
+	private Set<GAVRelation<DependencyRelation>> filterDependencyRelations( Set<GAVRelation<Relation>> relations )
+	{
+		@SuppressWarnings( { "rawtypes", "unchecked" } )
+		List<GAVRelation<DependencyRelation>> result = (List<GAVRelation<DependencyRelation>>) (List) Tools.filter( relations, new Func1<GAVRelation<Relation>, Boolean>()
+		{
+			@Override
+			public Boolean exec( GAVRelation<Relation> relation )
+			{
+				return relation.getRelation().getType() == Type.DEPENDENCY;
+			}
+		} );
+		
+		Set<GAVRelation<DependencyRelation>> res = new HashSet<>();
+		res.addAll( result );
+
+		return res;
 	}
 }

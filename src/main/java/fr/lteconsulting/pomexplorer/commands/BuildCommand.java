@@ -8,7 +8,8 @@ import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
-import fr.lteconsulting.pomexplorer.graph.relation.GAVDependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 
 public class BuildCommand
 {
@@ -43,12 +44,12 @@ public class BuildCommand
 		log.append( "cd " + directory + "<br/>" );
 		log.append( "mvn install -DskipTests<br/>" );
 
-		Set<GAVDependencyRelation> dependents = session.graph().dependents( project.getGav() );
+		Set<GAVRelation<DependencyRelation>> dependents = session.graph().dependents( project.getGav() );
 		Set<GAV> children = session.graph().children( project.getGav() );
 
 		Set<GAV> toBuild = new HashSet<>();
-		for( GAVDependencyRelation d : dependents )
-			toBuild.add( d.getGav() );
+		for( GAVRelation<DependencyRelation> d : dependents )
+			toBuild.add( d.getSource() );
 		toBuild.addAll( children );
 
 		for( GAV gav : toBuild )

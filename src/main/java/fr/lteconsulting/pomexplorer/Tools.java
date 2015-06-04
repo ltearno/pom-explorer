@@ -16,7 +16,9 @@ import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.depanalyze.DependencyLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
-import fr.lteconsulting.pomexplorer.graph.relation.GAVDependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class Tools
 {
@@ -49,9 +51,9 @@ public class Tools
 			locations.add( new PropertyLocation( project, null, "project.version", gav.getVersion() ) );
 		}
 
-		for( GAVDependencyRelation dependencyRelation : session.graph().dependents( gav ) )
+		for( GAVRelation<DependencyRelation> dependencyRelation : session.graph().dependents( gav ) )
 		{
-			GAV dependencyGav = dependencyRelation.getGav();
+			GAV dependencyGav = dependencyRelation.getSource();
 
 			Project dependentProject = session.projects().get( dependencyGav );
 			if( dependentProject == null )
@@ -131,7 +133,7 @@ public class Tools
 		return locations;
 	}
 
-	private static List<String> getMavenProperties( GAV gav )
+	public static List<String> getMavenProperties( GAV gav )
 	{
 		if( gav == null )
 			return null;
@@ -150,7 +152,7 @@ public class Tools
 		return res;
 	}
 
-	private static boolean isMavenVariable( String text )
+	public static boolean isMavenVariable( String text )
 	{
 		return text != null && text.startsWith( "${" ) && text.endsWith( "}" );
 	}
@@ -161,7 +163,7 @@ public class Tools
 		return variable.substring( 2, variable.length() - 1 );
 	}
 
-	private static Project getPropertyDefinitionProject( WorkingSession session, Project startingProject, String property )
+	public static Project getPropertyDefinitionProject( WorkingSession session, Project startingProject, String property )
 	{
 		if( property.startsWith( "project." ) )
 			return startingProject;
@@ -213,6 +215,7 @@ public class Tools
 			GAV parentGav = session.graph().parent( project.getGav() );
 			if( parentGav == null )
 				return null;
+
 			Project parentProject = session.projects().get( parentGav );
 			if( parentProject == null )
 				return null;
@@ -223,9 +226,9 @@ public class Tools
 
 	private static Project getProjectWhereDependencyIsSpecifiedInTransitiveDeps( WorkingSession session, GAV currentGav, GAV searchedGav )
 	{
-		for( GAVDependencyRelation dependencyGav : session.graph().dependencies( currentGav ) )
+		for( GAVRelation<DependencyRelation> dependency : session.graph().dependencies( currentGav ) )
 		{
-			Project project = session.projects().get( dependencyGav );
+			Project project = session.projects().get( dependency.getTarget() );
 			if( project != null )
 			{
 				DependencyInfo info = project.getDependencies().get( searchedGav );
@@ -238,7 +241,7 @@ public class Tools
 				}
 			}
 
-			project = getProjectWhereDependencyIsSpecifiedInTransitiveDeps( session, dependencyGav.getGav(), searchedGav );
+			project = getProjectWhereDependencyIsSpecifiedInTransitiveDeps( session, dependency.getTarget(), searchedGav );
 			if( project != null )
 				return project;
 		}
@@ -267,6 +270,78 @@ public class Tools
 			return null;
 
 		return getProjectWhereDependencyIsSpecifiedInBuildPlugins( session, parentProject.getGav(), searchedGav );
+	}
+
+	public static Location findDependencyLocation( WorkingSession session, Project project, GAVRelation<Relation> relation )
+	{
+		Location dependencyLocation = null;
+
+		switch( relation.getRelation().getType() )
+		{
+			case DEPENDENCY:
+				DependencyLocation depLoc = null;
+				if( "build".equals( ((DependencyRelation) relation.getRelation()).getScope() ) )
+					depLoc = findDependencyLocationInPlugins( session, project, relation.getTarget() );
+				else
+					depLoc = findDependencyLocationInDependencies( session, project, relation.getTarget() );
+
+				dependencyLocation = maybeFindPropertyLocation( session, depLoc );
+				break;
+			case PARENT:
+				dependencyLocation = new PropertyLocation( project, null, "project.parent.version", relation.getTarget().getVersion() );
+				break;
+		}
+
+		return dependencyLocation;
+	}
+
+	public static Location maybeFindPropertyLocation( WorkingSession session, DependencyLocation depLoc )
+	{
+		if( depLoc == null )
+			return null;
+
+		DependencyInfo info = depLoc.getDependency();
+
+		if( !Tools.isMavenVariable( info.getUnresolvedGav().getVersion() ) )
+			return depLoc;
+
+		String property = info.getUnresolvedGav().getVersion();
+
+		Project definitionProject = Tools.getPropertyDefinitionProject( session, depLoc.getProject(), property );
+		if( definitionProject != null )
+			return new PropertyLocation( depLoc.getProject(), info, property, definitionProject.getUnresolvedPom().getProperties().getProperty( property ) );
+
+		return null;
+	}
+
+	public static DependencyLocation findDependencyLocationInDependencies( WorkingSession session, Project project, GAV searchedDependency )
+	{
+		if( project == null )
+			return null;
+
+		DependencyInfo info = project.getDependencies().get( searchedDependency );
+		if( info != null )
+			return new DependencyLocation( project, info );
+
+		// TODO search in the dependency management section
+
+		// find in parent
+		return findDependencyLocationInDependencies( session, session.projects().get( session.graph().parent( project.getGav() ) ), searchedDependency );
+	}
+
+	public static DependencyLocation findDependencyLocationInPlugins( WorkingSession session, Project project, GAV searchedPlugin )
+	{
+		if( project == null )
+			return null;
+
+		DependencyInfo info = project.getPluginDependencies().get( searchedPlugin );
+		if( info != null )
+			return new DependencyLocation( project, info );
+
+		// TODO search in the plugin management section
+
+		// find in parent
+		return findDependencyLocationInPlugins( session, session.projects().get( session.graph().parent( project.getGav() ) ), searchedPlugin );
 	}
 
 	private static Field modelField;
