@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -56,7 +57,7 @@ public class PomAnalyzer
 			System.out.println( "Cannot read this pom file : " + pomFile.getAbsolutePath() );
 			return;
 		}
-		
+
 		ParsedPomFile resolved = loadPomFile( pomFile );
 		if( resolved == null )
 		{
@@ -73,14 +74,14 @@ public class PomAnalyzer
 		}
 
 		session.graph().addGav( gav );
-		
+
 		// hierarchy
 		Parent parent = unresolved.getModel().getParent();
 		if( parent != null )
 		{
 			GAV parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
 			session.graph().addGav( parentGav );
-			
+
 			session.graph().addRelation( gav, parentGav, new ParentRelation() );
 		}
 
@@ -89,13 +90,30 @@ public class PomAnalyzer
 		{
 			GAV depGav = new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
 			session.graph().addGav( depGav );
-			
+
 			session.graph().addRelation( gav, depGav, new DependencyRelation( dependency.getScope().name(), dependency.getClassifier() ) );
+		}
+
+		// build dependencies
+		try
+		{
+			Model model = Tools.getParsedPomFileModel( resolved );
+			for( Plugin plugin : model.getBuild().getPlugins() )
+			{
+				GAV depGav = new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
+				session.graph().addGav( depGav );
+
+				session.graph().addRelation( gav, depGav, new DependencyRelation( "build", "mojo" ) );
+			}
+		}
+		catch( IllegalArgumentException | SecurityException e )
+		{
+			e.printStackTrace();
 		}
 
 		Project projectInfo = new Project( pomFile, resolved, unresolved );
 		session.registerProject( projectInfo );
-		
+
 		client.send( "processed project " + projectInfo.getGav() );
 	}
 
@@ -103,7 +121,7 @@ public class PomAnalyzer
 	{
 		MavenWorkingSession session = new MavenWorkingSessionImpl();
 		session = new AddScopedDependenciesTask( ScopeType.COMPILE, ScopeType.IMPORT, ScopeType.SYSTEM, ScopeType.RUNTIME ).execute( session );
-	
+
 		try
 		{
 			session.loadPomFromFile( pomFile );

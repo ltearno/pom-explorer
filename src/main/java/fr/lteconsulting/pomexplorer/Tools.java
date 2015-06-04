@@ -1,9 +1,14 @@
 package fr.lteconsulting.pomexplorer;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.maven.model.Model;
+import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
+import org.jboss.shrinkwrap.resolver.impl.maven.pom.ParsedPomFileImpl;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.Project.DependencyInfo;
@@ -103,6 +108,12 @@ public class Tools
 				if( specifyingProject != null )
 				{
 					dependencyKind = "T";
+				}
+				else
+				{
+					specifyingProject = getProjectWhereDependencyIsSpecifiedInBuildPlugins( session, dependency, gav );
+					if( specifyingProject != null )
+						dependencyKind = "P";
 				}
 			}
 
@@ -258,6 +269,42 @@ public class Tools
 		}
 
 		return null;
+	}
+
+	private static Project getProjectWhereDependencyIsSpecifiedInBuildPlugins( WorkingSession session, GAV currentGav, GAV searchedGav )
+	{
+		return null;
+	}
+
+	private static Field modelField;
+
+	public static Model getParsedPomFileModel( ParsedPomFile parsedPomFile )
+	{
+		if( modelField == null )
+		{
+			try
+			{
+				modelField = ParsedPomFileImpl.class.getDeclaredField( "model" );
+				modelField.setAccessible( true );
+				
+			}
+			catch( NoSuchFieldException | SecurityException | IllegalArgumentException e )
+			{
+				e.printStackTrace();
+				return null;
+			}
+		}
+		
+		try
+		{
+			Model model = (Model) modelField.get( parsedPomFile );
+			return model;
+		}
+		catch( IllegalArgumentException | IllegalAccessException e )
+		{
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
