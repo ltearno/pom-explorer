@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.web.commands;
+package fr.lteconsulting.pomexplorer.commands;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

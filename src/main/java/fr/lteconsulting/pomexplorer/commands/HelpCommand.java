@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.web.commands;
+package fr.lteconsulting.pomexplorer.commands;
 
 import fr.lteconsulting.pomexplorer.AppFactory;
 import fr.lteconsulting.pomexplorer.Client;

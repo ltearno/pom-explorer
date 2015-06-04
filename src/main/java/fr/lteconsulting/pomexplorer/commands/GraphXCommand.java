@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.web.commands;
+package fr.lteconsulting.pomexplorer.commands;
 
 import org.jgrapht.ext.JGraphXAdapter;
 
@@ -14,7 +14,7 @@ public class GraphXCommand
 	@Help( "displays a graph on the server machine" )
 	public String main( WorkingSession session )
 	{
-		JGraphXAdapter<GAV, Relation> ga = new JGraphXAdapter<>( session.graph().getGraphInternal() );
+		JGraphXAdapter<GAV, Relation> ga = new JGraphXAdapter<>( session.graph().internalGraph() );
 
 		new GraphFrame( ga );
 

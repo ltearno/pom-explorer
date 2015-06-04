@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.web.commands;
+package fr.lteconsulting.pomexplorer.commands;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +27,7 @@ public class GavsCommand
 		if( gavFilter != null )
 			gavFilter = gavFilter.toLowerCase();
 
-		ArrayList<GAV> gavs = new ArrayList<>( session.graph().getGavs() );
+		ArrayList<GAV> gavs = new ArrayList<>( session.graph().gavs() );
 		Collections.sort( gavs, Tools.gavAlphabeticalComparator );
 
 		StringBuilder res = new StringBuilder();

@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.web.commands;
+package fr.lteconsulting.pomexplorer.commands;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +59,7 @@ public class CheckCommand
 	{
 		Map<MiniGAV, Set<GAV>> prov = new HashMap<>();
 
-		for( GAV gav : session.graph().getGavs() )
+		for( GAV gav : session.graph().gavs() )
 		{
 			MiniGAV miniGav = new MiniGAV( gav.getGroupId(), gav.getArtifactId() );
 			Set<GAV> list = prov.get( miniGav );
@@ -85,7 +85,7 @@ public class CheckCommand
 	{
 		Set<GAV> res = new HashSet<GAV>();
 
-		for( GAV gav : session.graph().getGavs() )
+		for( GAV gav : session.graph().gavs() )
 		{
 			if( !session.projects().keySet().contains( gav ) )
 				res.add( gav );

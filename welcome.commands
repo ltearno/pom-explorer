@@ -13,9 +13,9 @@
 =Creating your session
 session create
 =Analysing the default directory
-#analyze directory C:\documents\repos\hexa.tools
-analyze directory C:\Documents\Repos\hexa.tools\hexa.css-maven-plugin
-analyze directory C:\Documents\Repos\hexa.tools\hexa.css.samples\sample6
+analyze directory C:\documents\repos\hexa.tools
+#analyze directory C:\Documents\Repos\hexa.tools\hexa.css-maven-plugin
+#analyze directory C:\Documents\Repos\hexa.tools\hexa.css.samples\sample6
 =Change a GAV
 #cha ga fr.lteconsulting:hexacss-maven-plugin:1.0 1.3-SNAPSHOT
 

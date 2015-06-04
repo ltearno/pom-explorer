@@ -3,19 +3,19 @@ package fr.lteconsulting.pomexplorer;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.lteconsulting.pomexplorer.web.commands.AnalyzeCommand;
-import fr.lteconsulting.pomexplorer.web.commands.BuildCommand;
-import fr.lteconsulting.pomexplorer.web.commands.ChangeCommand;
-import fr.lteconsulting.pomexplorer.web.commands.CheckCommand;
-import fr.lteconsulting.pomexplorer.web.commands.Commands;
-import fr.lteconsulting.pomexplorer.web.commands.DependsCommand;
-import fr.lteconsulting.pomexplorer.web.commands.GavsCommand;
-import fr.lteconsulting.pomexplorer.web.commands.GraphXCommand;
-import fr.lteconsulting.pomexplorer.web.commands.HelpCommand;
-import fr.lteconsulting.pomexplorer.web.commands.ProjectsCommand;
-import fr.lteconsulting.pomexplorer.web.commands.ReleaseCommand;
-import fr.lteconsulting.pomexplorer.web.commands.SessionCommand;
-import fr.lteconsulting.pomexplorer.web.commands.StatsCommand;
+import fr.lteconsulting.pomexplorer.commands.AnalyzeCommand;
+import fr.lteconsulting.pomexplorer.commands.BuildCommand;
+import fr.lteconsulting.pomexplorer.commands.ChangeCommand;
+import fr.lteconsulting.pomexplorer.commands.CheckCommand;
+import fr.lteconsulting.pomexplorer.commands.Commands;
+import fr.lteconsulting.pomexplorer.commands.DependsCommand;
+import fr.lteconsulting.pomexplorer.commands.GavsCommand;
+import fr.lteconsulting.pomexplorer.commands.GraphXCommand;
+import fr.lteconsulting.pomexplorer.commands.HelpCommand;
+import fr.lteconsulting.pomexplorer.commands.ProjectsCommand;
+import fr.lteconsulting.pomexplorer.commands.ReleaseCommand;
+import fr.lteconsulting.pomexplorer.commands.SessionCommand;
+import fr.lteconsulting.pomexplorer.commands.StatsCommand;
 
 public class AppFactory
 {

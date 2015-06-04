@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.web.commands;
+package fr.lteconsulting.pomexplorer.commands;
 
 import java.util.Set;
 
@@ -41,6 +41,12 @@ public class DependsCommand
 	@Help( "lists the GAVs that the GAV passed in parameters depends on" )
 	public String by( WorkingSession session, String gavString )
 	{
-		return "";
+		GAV gav = Tools.string2Gav( gavString );
+		if( gav == null )
+			return "specify the GAV with the group:artifact:version format please";
+
+		StringBuilder res = new StringBuilder();
+		
+		return res.toString();
 	}
 }

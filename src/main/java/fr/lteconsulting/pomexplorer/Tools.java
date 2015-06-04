@@ -16,6 +16,7 @@ import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.depanalyze.DependencyLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
+import fr.lteconsulting.pomexplorer.graph.relation.GAVDependencyRelation;
 
 public class Tools
 {
@@ -28,45 +29,6 @@ public class Tools
 		GAV gav = new GAV( parts[0], parts[1], parts[2] );
 
 		return gav;
-	}
-
-	public static GAV getParentGav( WorkingSession session, Project project )
-	{
-		return session.graph().getParent( project.getGav() );
-	}
-
-	public static Project getParentProject( WorkingSession session, Project project )
-	{
-		GAV parentGav = getParentGav( session, project );
-		if( parentGav == null )
-			return null;
-
-		Project parentProject = session.projects().get( parentGav );
-
-		return parentProject;
-	}
-
-	/**
-	 * GAVs which are dependent of the one in parameter
-	 */
-	public static Set<GAV> dependentGAVs( WorkingSession session, GAV gav )
-	{
-		Set<GAV> res = new HashSet<>();
-
-		dependentGAVsRec( session, gav, res );
-
-		return res;
-	}
-
-	private static void dependentGAVsRec( WorkingSession session, GAV gav, Set<GAV> list )
-	{
-		Set<GAV> deps = session.graph().getDependents( gav );
-		for( GAV ancestor : deps )
-		{
-			list.add( ancestor );
-
-			dependentGAVsRec( session, ancestor, list );
-		}
 	}
 
 	/***
@@ -87,12 +49,14 @@ public class Tools
 			locations.add( new PropertyLocation( project, null, "project.version", gav.getVersion() ) );
 		}
 
-		for( GAV dependency : Tools.dependentGAVs( session, gav ) )
+		for( GAVDependencyRelation dependencyRelation : session.graph().dependents( gav ) )
 		{
-			Project dependentProject = session.projects().get( dependency );
+			GAV dependencyGav = dependencyRelation.getGav();
+
+			Project dependentProject = session.projects().get( dependencyGav );
 			if( dependentProject == null )
 			{
-				log.append( "<b style='color:orange;'>" + dependency + "</b> (no project found)<br/>" );
+				log.append( "<b style='color:orange;'>" + dependencyGav + "</b> (no project found)<br/>" );
 				continue;
 			}
 
@@ -105,14 +69,14 @@ public class Tools
 			}
 			else
 			{
-				specifyingProject = getProjectWhereDependencyIsSpecifiedInTransitiveDeps( session, dependency, gav );
+				specifyingProject = getProjectWhereDependencyIsSpecifiedInTransitiveDeps( session, dependencyGav, gav );
 				if( specifyingProject != null )
 				{
 					dependencyKind = "T";
 				}
 				else
 				{
-					specifyingProject = getProjectWhereDependencyIsSpecifiedInBuildPlugins( session, dependency, gav );
+					specifyingProject = getProjectWhereDependencyIsSpecifiedInBuildPlugins( session, dependencyGav, gav );
 					if( specifyingProject != null )
 						dependencyKind = "P";
 				}
@@ -208,7 +172,11 @@ public class Tools
 			return startingProject;
 
 		// go deeper in hierarchy
-		Project parentProject = Tools.getParentProject( session, startingProject );
+		GAV parentGav = session.graph().parent( startingProject.getGav() );
+		Project parentProject = null;
+		if( parentGav != null )
+			parentProject = session.projects().get( parentGav );
+
 		if( parentProject != null )
 		{
 			Project definition = getPropertyDefinitionProject( session, parentProject, property );
@@ -242,7 +210,10 @@ public class Tools
 		}
 		else
 		{
-			Project parentProject = Tools.getParentProject( session, project );
+			GAV parentGav = session.graph().parent( project.getGav() );
+			if( parentGav == null )
+				return null;
+			Project parentProject = session.projects().get( parentGav );
 			if( parentProject == null )
 				return null;
 
@@ -252,7 +223,7 @@ public class Tools
 
 	private static Project getProjectWhereDependencyIsSpecifiedInTransitiveDeps( WorkingSession session, GAV currentGav, GAV searchedGav )
 	{
-		for( GAV dependencyGav : session.graph().getDependencies( currentGav ) )
+		for( GAVDependencyRelation dependencyGav : session.graph().dependencies( currentGav ) )
 		{
 			Project project = session.projects().get( dependencyGav );
 			if( project != null )
@@ -267,7 +238,7 @@ public class Tools
 				}
 			}
 
-			project = getProjectWhereDependencyIsSpecifiedInTransitiveDeps( session, dependencyGav, searchedGav );
+			project = getProjectWhereDependencyIsSpecifiedInTransitiveDeps( session, dependencyGav.getGav(), searchedGav );
 			if( project != null )
 				return project;
 		}
@@ -287,7 +258,11 @@ public class Tools
 				return project;
 		}
 
-		Project parentProject = Tools.getParentProject( session, project );
+		GAV parentGav = session.graph().parent( currentGav );
+		if( parentGav == null )
+			return null;
+
+		Project parentProject = session.projects().get( parentGav );
 		if( parentProject == null )
 			return null;
 

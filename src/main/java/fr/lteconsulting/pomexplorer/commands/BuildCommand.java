@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.web.commands;
+package fr.lteconsulting.pomexplorer.commands;
 
 import java.io.File;
 import java.util.HashSet;
@@ -8,6 +8,7 @@ import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.relation.GAVDependencyRelation;
 
 public class BuildCommand
 {
@@ -42,11 +43,12 @@ public class BuildCommand
 		log.append( "cd " + directory + "<br/>" );
 		log.append( "mvn install -DskipTests<br/>" );
 
-		Set<GAV> dependents = session.graph().getDependents( project.getGav() );
-		Set<GAV> children = session.graph().getChildren( project.getGav() );
+		Set<GAVDependencyRelation> dependents = session.graph().dependents( project.getGav() );
+		Set<GAV> children = session.graph().children( project.getGav() );
 
 		Set<GAV> toBuild = new HashSet<>();
-		toBuild.addAll( dependents );
+		for( GAVDependencyRelation d : dependents )
+			toBuild.add( d.getGav() );
 		toBuild.addAll( children );
 
 		for( GAV gav : toBuild )

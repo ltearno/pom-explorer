@@ -11,6 +11,7 @@ import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.GAVDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation.Type;
@@ -19,17 +20,17 @@ public class PomGraph
 {
 	private DirectedGraph<GAV, Relation> g = new DirectedMultigraph<GAV, Relation>( Relation.class );
 
-	public Set<GAV> getGavs()
+	public Set<GAV> gavs()
 	{
 		return g.vertexSet();
 	}
 
-	public Set<Relation> getRelations()
+	public Set<Relation> relations()
 	{
 		return g.edgeSet();
 	}
 
-	public DirectedGraph<GAV, Relation> getGraphInternal()
+	public DirectedGraph<GAV, Relation> internalGraph()
 	{
 		return g;
 	}
@@ -49,9 +50,9 @@ public class PomGraph
 		return g.addEdge( source, target, relation );
 	}
 
-	public GAV getParent( GAV gav )
+	public GAV parent( GAV gav )
 	{
-		List<ParentRelation> relations = parentRelations( g.outgoingEdgesOf( gav ) );
+		List<ParentRelation> relations = filterParentRelations( g.outgoingEdgesOf( gav ) );
 
 		if( relations == null || relations.size() != 1 )
 			return null;
@@ -61,50 +62,74 @@ public class PomGraph
 		return parent;
 	}
 
-	public Set<GAV> getChildren( GAV gav )
+	public Set<GAV> children( GAV gav )
 	{
 		Set<GAV> res = new HashSet<>();
 
-		List<ParentRelation> relations = parentRelations( g.incomingEdgesOf( gav ) );
+		List<ParentRelation> relations = filterParentRelations( g.incomingEdgesOf( gav ) );
 		for( ParentRelation relation : relations )
 			res.add( g.getEdgeSource( relation ) );
 
 		return res;
 	}
 
-	public Set<GAV> getDependencies( GAV gav )
+	public Set<GAVDependencyRelation> dependencies( GAV gav )
 	{
-		Set<GAV> res = new HashSet<>();
+		Set<GAVDependencyRelation> res = new HashSet<>();
 
-		List<DependencyRelation> relations = dependencyRelations( g.outgoingEdgesOf( gav ) );
+		dependencies( gav, res );
+
+		return res;
+	}
+	
+	private void dependencies( GAV gav, Set<GAVDependencyRelation> set )
+	{
+		List<DependencyRelation> relations = filterDependencyRelations( g.outgoingEdgesOf( gav ) );
 
 		for( DependencyRelation relation : relations )
 		{
 			GAV dependencyGav = g.getEdgeTarget( relation );
 
-			res.add( dependencyGav );
+			set.add( new GAVDependencyRelation( dependencyGav, relation ) );
 		}
+	}
+
+	public Set<GAVDependencyRelation> dependenciesRec( GAV gav )
+	{
+		Set<GAVDependencyRelation> res = new HashSet<>();
+
+		dependenciesRec( gav, res );
 
 		return res;
 	}
 
-	public Set<GAV> getDependents( GAV gav )
+	public void dependenciesRec( GAV gav, Set<GAVDependencyRelation> set )
 	{
-		Set<GAV> res = new HashSet<>();
+		Set<GAVDependencyRelation> deps = dependencies( gav );
+		for( GAVDependencyRelation d : deps )
+		{
+			set.add( d );
+			dependenciesRec( d.getGav(), set );
+		}
+	}
 
-		List<DependencyRelation> relations = dependencyRelations( g.incomingEdgesOf( gav ) );
+	public Set<GAVDependencyRelation> dependents( GAV gav )
+	{
+		Set<GAVDependencyRelation> res = new HashSet<>();
+
+		List<DependencyRelation> relations = filterDependencyRelations( g.incomingEdgesOf( gav ) );
 
 		for( DependencyRelation relation : relations )
 		{
 			GAV dependencyGav = g.getEdgeSource( relation );
 
-			res.add( dependencyGav );
+			res.add( new GAVDependencyRelation( dependencyGav, relation ) );
 		}
 
 		return res;
 	}
 
-	private List<ParentRelation> parentRelations( Set<Relation> relations )
+	private List<ParentRelation> filterParentRelations( Set<Relation> relations )
 	{
 		@SuppressWarnings( { "unchecked", "rawtypes" } )
 		List<ParentRelation> res = (List<ParentRelation>) (List) Tools.filter( relations, new Func1<Relation, Boolean>()
@@ -119,7 +144,7 @@ public class PomGraph
 		return res;
 	}
 
-	private List<DependencyRelation> dependencyRelations( Set<Relation> relations )
+	private List<DependencyRelation> filterDependencyRelations( Set<Relation> relations )
 	{
 		@SuppressWarnings( { "rawtypes", "unchecked" } )
 		List<DependencyRelation> result = (List<DependencyRelation>) (List) Tools.filter( relations, new Func1<Relation, Boolean>()

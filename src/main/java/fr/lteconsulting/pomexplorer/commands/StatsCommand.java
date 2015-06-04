@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.web.commands;
+package fr.lteconsulting.pomexplorer.commands;
 
 import java.util.Set;
 
@@ -17,15 +17,15 @@ public class StatsCommand
 	{
 		StringBuilder res = new StringBuilder();
 
-		res.append( "There are " + session.graph().getGavs().size() + " gavs<br/>" );
+		res.append( "There are " + session.graph().gavs().size() + " gavs<br/>" );
 
-		StrongConnectivityInspector<GAV, Relation> conn = new StrongConnectivityInspector<>( session.graph().getGraphInternal() );
+		StrongConnectivityInspector<GAV, Relation> conn = new StrongConnectivityInspector<>( session.graph().internalGraph() );
 		res.append( "There are " + conn.stronglyConnectedSets().size() + " strongly connected components<br/>" );
 
-		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( session.graph().getGraphInternal() );
+		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( session.graph().internalGraph() );
 		res.append( "There are " + ccon.connectedSets().size() + " weakly connected components<br/>" );
 
-		CycleDetector<GAV, Relation> cycles = new CycleDetector<GAV, Relation>( session.graph().getGraphInternal() );
+		CycleDetector<GAV, Relation> cycles = new CycleDetector<GAV, Relation>( session.graph().internalGraph() );
 		res.append( "Is there cycles ? " + cycles.detectCycles() + "<br/>" );
 
 		return res.toString();
@@ -36,7 +36,7 @@ public class StatsCommand
 	{
 		StringBuilder res = new StringBuilder();
 
-		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( session.graph().getGraphInternal() );
+		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( session.graph().internalGraph() );
 		res.append( "There are " + ccon.connectedSets().size() + " weakly connected components<br/>" );
 
 		for( Set<GAV> gavs : ccon.connectedSets() )

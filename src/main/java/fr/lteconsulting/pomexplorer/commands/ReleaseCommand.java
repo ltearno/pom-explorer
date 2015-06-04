@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.web.commands;
+package fr.lteconsulting.pomexplorer.commands;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,6 +13,7 @@ import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
+import fr.lteconsulting.pomexplorer.graph.relation.GAVDependencyRelation;
 
 public class ReleaseCommand
 {
@@ -212,7 +213,7 @@ public class ReleaseCommand
 	private void visitChild( WorkingSession session, Project project, Visitor visitor )
 	{
 		// visit hierarchical projects
-		GAV parentGAV = Tools.getParentGav( session, project );
+		GAV parentGAV = session.graph().parent( project.getGav() );
 		if( parentGAV != null )
 		{
 			Project parentProject = session.projects().get( parentGAV );
@@ -228,12 +229,12 @@ public class ReleaseCommand
 		}
 
 		// visit transitive projects
-		for( GAV dependencyGav : session.graph().getDependencies( project.getGav() ) )
+		for( GAVDependencyRelation dependencyGav : session.graph().dependencies( project.getGav() ) )
 		{
-			Project dependencyProject = session.projects().get( dependencyGav );
+			Project dependencyProject = session.projects().get( dependencyGav.getGav() );
 			if( dependencyProject == null )
 			{
-				visitor.projectNotFound( dependencyGav, "dependent project missing " + project );
+				visitor.projectNotFound( dependencyGav.getGav(), "dependent project missing " + project );
 			}
 			else
 			{

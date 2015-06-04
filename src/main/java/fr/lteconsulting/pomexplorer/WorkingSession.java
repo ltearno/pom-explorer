@@ -52,7 +52,7 @@ public class WorkingSession
 
 	public String getDescription()
 	{
-		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : " + (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>" + projects.size() + " projects<br/>" + graph.getGavs().size()
-				+ " GAVs<br/>" + graph.getRelations().size() + " relations<br/></div>";
+		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : " + (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>" + projects.size() + " projects<br/>" + graph.gavs().size()
+				+ " GAVs<br/>" + graph.relations().size() + " relations<br/></div>";
 	}
 }
