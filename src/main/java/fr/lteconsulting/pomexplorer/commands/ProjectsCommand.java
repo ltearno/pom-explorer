@@ -8,9 +8,9 @@ import org.apache.maven.model.Parent;
 import org.apache.maven.project.MavenProject;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 
-import fr.lteconsulting.pomexplorer.DependencyInfo;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 
 public class ProjectsCommand
 {
@@ -74,7 +74,7 @@ public class ProjectsCommand
 			for( Dependency dependency : unresolvedProject.getDependencies() )
 				res.append( "DEP: " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
 
-			for( DependencyInfo dependency : project.getDependencies().values() )
+			for( GavLocation dependency : project.getDependencies().values() )
 				res.append( " - depends on ->  " + dependency.toString() + "<br/>" );
 
 			res.append( "<br/>" );

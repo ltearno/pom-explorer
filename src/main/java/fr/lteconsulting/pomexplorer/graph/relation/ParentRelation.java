@@ -4,6 +4,6 @@ public class ParentRelation extends Relation
 {
 	public ParentRelation()
 	{
-		super( Type.PARENT );
+		super( RelationType.PARENT );
 	}
 }

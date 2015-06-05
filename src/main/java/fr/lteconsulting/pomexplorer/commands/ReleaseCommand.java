@@ -1,47 +1,25 @@
 package fr.lteconsulting.pomexplorer.commands;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 import fr.lteconsulting.hexa.client.tools.Func;
 import fr.lteconsulting.pomexplorer.AppFactory;
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.changes.Change;
+import fr.lteconsulting.pomexplorer.changes.GavChange;
+import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
-import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
 import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ReleaseCommand
 {
-	interface Visitor
-	{
-		void project( VisitKind kind, Project project );
-
-		void projectNotFound( GAV gav, String message );
-	}
-
-	public enum VisitKind
-	{
-		ROOT,
-		HIERARCHYCAL,
-		TRANSITIVE;
-	}
-
-	interface GavValidator
-	{
-		/**
-		 * Returns the GAV the project should be moved to.
-		 * 
-		 * Return the given gav if no transformation is desired.
-		 */
-		GAV onGav( GAV gav );
-	}
-
 	interface Task extends Func<String>
 	{
 	}
@@ -93,49 +71,7 @@ public class ReleaseCommand
 		}
 	}
 
-	static class Change
-	{
-		private final Location location;
-		private final String oldValue;
-		private final String newValue;
-
-		public Change( Location location, String oldValue, String newValue )
-		{
-			this.location = location;
-			this.oldValue = oldValue;
-			this.newValue = newValue;
-		}
-
-		public Location getLocation()
-		{
-			return location;
-		}
-
-		public String getOldValue()
-		{
-			return oldValue;
-		}
-
-		public String getNewValue()
-		{
-			return newValue;
-		}
-	}
-
 	private final static String SNAPSHOT_SUFFIX = "-SNAPSHOT";
-
-	private GAV onGav( GAV gav )
-	{
-		if( !isOK( gav ) )
-			return new GAV( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
-
-		return gav;
-	}
-
-	private boolean isOK( GAV gav )
-	{
-		return !gav.getVersion().endsWith( SNAPSHOT_SUFFIX );
-	}
 
 	@Help( "releases a gav. All dependencies are also released" )
 	public String gav( final Client client, WorkingSession session, String gavString )
@@ -148,22 +84,19 @@ public class ReleaseCommand
 
 		res.append( "<b>Releasing</b> project " + gav + "<br/>" );
 		res.append( "All dependencies will be updated to a release version.<br/><br/>" );
-		
-		List<Change> changes = new ArrayList<>();
 
-		changes.add( new Change( new PropertyLocation( session.projects().get( gav ), null, "project.version", gav.getVersion() ), gav.getVersion(), onGav(gav).getVersion() ) );
+		Set<Change<? extends Location>> changes = new HashSet<>();
+
+		changes.add( new GavChange( new GavLocation( session.projects().get( gav ), PomSection.PROJECT, gav, gav ), releasedGav( gav ) ) );
 
 		Set<GAVRelation<Relation>> relations = session.graph().relationsRec( gav );
 		for( GAVRelation<Relation> r : relations )
 		{
-			if( isOK( r.getTarget() ) )
+			if( isReleased( r.getTarget() ) )
 				continue;
 
 			GAV source = r.getSource();
-			GAV from = r.getTarget();
-			GAV to = onGav( r.getTarget() );
-
-			res.append( from + " should be changed to " + to + " in gav " + source + "<br/>" );
+			GAV to = releasedGav( r.getTarget() );
 
 			Project project = session.projects().get( source );
 			if( project == null )
@@ -172,6 +105,8 @@ public class ReleaseCommand
 				continue;
 			}
 
+			changes.add( new GavChange( new GavLocation( session.projects().get( r.getTarget() ), PomSection.PROJECT, r.getTarget(), r.getTarget() ), to ) );
+
 			Location dependencyLocation = Tools.findDependencyLocation( session, project, r );
 			if( dependencyLocation == null )
 			{
@@ -179,14 +114,44 @@ public class ReleaseCommand
 				continue;
 			}
 
-			changes.add( new Change( dependencyLocation, from.getVersion(), to.getVersion() ) );
-		}
-		
-		for(Change c : changes)
-		{
-			res.append( "file: " + c.getLocation().getProject().getPomFile().getAbsolutePath() + "<br/>" + "location: " + c.getLocation() + "<br/>" + "change to: " + c.getNewValue() + "<br>" + "<br/>" );			
+			Change<? extends Location> c = Change.create( dependencyLocation, to );
+			changes.add( c );
 		}
 
+		Tools.printChangeList( res, changes );
+
+		res.append( "<br/><b>Completing release</b>, by updating projects dependent on those just released<br/><br/>" );
+
+		Set<Change<? extends Location>> newChanges = new HashSet<>();
+
+		for( Change<? extends Location> c : changes )
+		{
+			if( !(c.getLocation() instanceof GavLocation) )
+				continue;
+
+			GavLocation location = (GavLocation) c.getLocation();
+
+			if( location.getSection() == PomSection.PROJECT )
+			{
+				Tools.changeGav( client, session, location.getGav(), ((GavChange) c).getNewGav(), newChanges );
+			}
+		}
+
+		Tools.printChangeList( res, newChanges );
+
 		return res.toString();
+	}
+
+	private boolean isReleased( GAV gav )
+	{
+		return !gav.getVersion().endsWith( SNAPSHOT_SUFFIX );
+	}
+
+	private GAV releasedGav( GAV gav )
+	{
+		if( !isReleased( gav ) )
+			return new GAV( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
+	
+		return gav;
 	}
 }

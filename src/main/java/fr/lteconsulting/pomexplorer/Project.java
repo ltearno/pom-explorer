@@ -10,6 +10,8 @@ import org.apache.maven.project.MavenProject;
 import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 
+import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
+
 /**
  * A POM project information
  * 
@@ -22,9 +24,9 @@ public class Project
 	private MavenProject project;
 
 	private GAV gav;
-	private Map<GAV, DependencyInfo> dependencies;
+	private Map<GAV, GavLocation> dependencies;
 
-	private Map<GAV, DependencyInfo> pluginDependencies;
+	private Map<GAV, GavLocation> pluginDependencies;
 
 	public Project( File pomFile, ParsedPomFile resolvedPom, MavenProject project )
 	{
@@ -35,17 +37,17 @@ public class Project
 		dependencies = new HashMap<>();
 		for( MavenDependency dependency : resolvedPom.getDependencies() )
 		{
-			DependencyInfo info = new DependencyInfo( dependency, DependencyInfoType.DEPENDENCY );
+			GavLocation info = new GavLocation( this, PomSection.DEPENDENCY, dependency );
 
 			dependencies.put( new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() ), info );
 		}
 
 		for( Dependency dependency : project.getDependencies() )
 		{
-			DependencyInfo info = getApproximateDependency( dependency.getGroupId(), dependency.getArtifactId() );
+			GavLocation info = getApproximateDependency( dependency.getGroupId(), dependency.getArtifactId() );
 			if( info == null )
 			{
-				info = new DependencyInfo( dependency, DependencyInfoType.DEPENDENCY );
+				info = new GavLocation( this, PomSection.DEPENDENCY, dependency );
 				dependencies.put( info.getGav(), info );
 			}
 			else
@@ -58,12 +60,7 @@ public class Project
 		for( Plugin plugin : project.getBuildPlugins() )
 		{
 			GAV pluginGAV = new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
-			Dependency dep = new Dependency();
-			dep.setGroupId( plugin.getGroupId() );
-			dep.setArtifactId( plugin.getArtifactId() );
-			dep.setVersion( plugin.getVersion() );
-
-			DependencyInfo info = new DependencyInfo( dep, DependencyInfoType.PLUGIN );
+			GavLocation info = new GavLocation( this, PomSection.PLUGIN, pluginGAV, pluginGAV );
 
 			pluginDependencies.put( pluginGAV, info );
 		}
@@ -84,9 +81,9 @@ public class Project
 		return project;
 	}
 
-	private DependencyInfo getApproximateDependency( String groupId, String artifactId )
+	private GavLocation getApproximateDependency( String groupId, String artifactId )
 	{
-		for( DependencyInfo info : dependencies.values() )
+		for( GavLocation info : dependencies.values() )
 		{
 			if( info.getGav().getGroupId().equals( groupId ) && info.getGav().getArtifactId().equals( artifactId ) )
 				return info;
@@ -102,12 +99,12 @@ public class Project
 		return gav;
 	}
 
-	public Map<GAV, DependencyInfo> getDependencies()
+	public Map<GAV, GavLocation> getDependencies()
 	{
 		return dependencies;
 	}
 
-	public Map<GAV, DependencyInfo> getPluginDependencies()
+	public Map<GAV, GavLocation> getPluginDependencies()
 	{
 		return pluginDependencies;
 	}

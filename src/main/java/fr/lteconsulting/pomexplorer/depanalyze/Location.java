@@ -5,15 +5,22 @@ import fr.lteconsulting.pomexplorer.Project;
 public abstract class Location
 {
 	private final Project project;
+	private final Location cause;
 
-	public Location( Project project )
+	public Location( Project project, Location cause )
 	{
 		this.project = project;
+		this.cause = cause;
 	}
 
 	public Project getProject()
 	{
 		return project;
+	}
+	
+	public Location getCause()
+	{
+		return cause;
 	}
 
 	@Override

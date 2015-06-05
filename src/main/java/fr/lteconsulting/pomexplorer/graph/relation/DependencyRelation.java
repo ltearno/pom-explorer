@@ -8,7 +8,7 @@ public class DependencyRelation extends Relation
 
 	public DependencyRelation( String scope, String classifier )
 	{
-		super( Type.DEPENDENCY );
+		super( RelationType.DEPENDENCY );
 		this.scope = scope;
 		this.classifier = classifier;
 	}

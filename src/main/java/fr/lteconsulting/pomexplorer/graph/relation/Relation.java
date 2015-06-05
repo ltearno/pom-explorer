@@ -2,21 +2,83 @@ package fr.lteconsulting.pomexplorer.graph.relation;
 
 public abstract class Relation
 {
-	public enum Type
+	public enum RelationType
 	{
-		DEPENDENCY,
-		PARENT;
+		DEPENDENCY( "D" ),
+		BUILD_DEPENDENCY( "B" ),
+		PARENT( "P" );
+
+		private final String shortName;
+
+		RelationType( String shortName )
+		{
+			this.shortName = shortName;
+		}
+
+		public String shortName()
+		{
+			return shortName;
+		}
 	}
 
-	private final Type type;
+	public interface RelationVisitor
+	{
+		void onDependencyRelation( DependencyRelation relation );
 
-	public Relation( Type type )
+		void onBuildDependencyRelation( BuildDependencyRelation relation );
+
+		void onParentRelation( ParentRelation relation );
+	}
+
+	private final RelationType type;
+
+	public Relation( RelationType type )
 	{
 		this.type = type;
 	}
 
-	public Type getType()
+	public RelationType getRelationType()
 	{
 		return type;
+	}
+
+	public DependencyRelation asDependencyRelation()
+	{
+		if( type != RelationType.DEPENDENCY )
+			return null;
+
+		return (DependencyRelation) this;
+	}
+
+	public BuildDependencyRelation asBuildDependencyRelation()
+	{
+		if( type != RelationType.BUILD_DEPENDENCY )
+			return null;
+
+		return (BuildDependencyRelation) this;
+	}
+
+	public ParentRelation asParentRelation()
+	{
+		if( type != RelationType.PARENT )
+			return null;
+
+		return (ParentRelation) this;
+	}
+
+	public void visit( RelationVisitor visitor )
+	{
+		switch( type )
+		{
+			case DEPENDENCY:
+				visitor.onDependencyRelation( asDependencyRelation() );
+				break;
+			case BUILD_DEPENDENCY:
+				visitor.onBuildDependencyRelation( asBuildDependencyRelation() );
+				break;
+			case PARENT:
+				visitor.onParentRelation( asParentRelation() );
+				break;
+		}
 	}
 }

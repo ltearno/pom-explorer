@@ -10,11 +10,12 @@ import org.jgrapht.graph.DirectedMultigraph;
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Tools;
+import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
-import fr.lteconsulting.pomexplorer.graph.relation.Relation.Type;
+import fr.lteconsulting.pomexplorer.graph.relation.Relation.RelationType;
 
 public class PomGraph
 {
@@ -170,6 +171,16 @@ public class PomGraph
 	{
 		return filterDependencyRelations( relationsRec( gav ) );
 	}
+	
+	public Set<GAVRelation<BuildDependencyRelation>> buildDependencies( GAV gav )
+	{
+		return filterBuildDependencyRelations( relations( gav ) );
+	}
+
+	public Set<GAVRelation<BuildDependencyRelation>> buildDependenciesRec( GAV gav )
+	{
+		return filterBuildDependencyRelations( relationsRec( gav ) );
+	}
 
 	public Set<GAVRelation<DependencyRelation>> dependents( GAV gav )
 	{
@@ -181,6 +192,16 @@ public class PomGraph
 		return filterDependencyRelations( relationsReverseRec( gav ) );
 	}
 
+	public Set<GAVRelation<BuildDependencyRelation>> buildDependents( GAV gav )
+	{
+		return filterBuildDependencyRelations( relationsReverse( gav ) );
+	}
+	
+	public Set<GAVRelation<BuildDependencyRelation>> buildDependentsRec( GAV gav )
+	{
+		return filterBuildDependencyRelations( relationsReverseRec( gav ) );
+	}
+
 	private Set<GAVRelation<ParentRelation>> filterParentRelations( Set<GAVRelation<Relation>> relations )
 	{
 		@SuppressWarnings( { "unchecked", "rawtypes" } )
@@ -189,7 +210,7 @@ public class PomGraph
 			@Override
 			public Boolean exec( GAVRelation<Relation> relation )
 			{
-				return relation.getRelation().getType() == Type.PARENT;
+				return relation.getRelation().getRelationType() == RelationType.PARENT;
 			}
 		} );
 		
@@ -207,11 +228,29 @@ public class PomGraph
 			@Override
 			public Boolean exec( GAVRelation<Relation> relation )
 			{
-				return relation.getRelation().getType() == Type.DEPENDENCY;
+				return relation.getRelation().getRelationType() == RelationType.DEPENDENCY;
 			}
 		} );
 		
 		Set<GAVRelation<DependencyRelation>> res = new HashSet<>();
+		res.addAll( result );
+
+		return res;
+	}
+
+	private Set<GAVRelation<BuildDependencyRelation>> filterBuildDependencyRelations( Set<GAVRelation<Relation>> relations )
+	{
+		@SuppressWarnings( { "rawtypes", "unchecked" } )
+		List<GAVRelation<BuildDependencyRelation>> result = (List<GAVRelation<BuildDependencyRelation>>) (List) Tools.filter( relations, new Func1<GAVRelation<Relation>, Boolean>()
+		{
+			@Override
+			public Boolean exec( GAVRelation<Relation> relation )
+			{
+				return relation.getRelation().getRelationType() == RelationType.BUILD_DEPENDENCY;
+			}
+		} );
+		
+		Set<GAVRelation<BuildDependencyRelation>> res = new HashSet<>();
 		res.addAll( result );
 
 		return res;

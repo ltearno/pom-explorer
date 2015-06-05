@@ -2,21 +2,21 @@ package fr.lteconsulting.pomexplorer;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.model.Model;
-import org.apache.maven.model.Plugin;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 import org.jboss.shrinkwrap.resolver.impl.maven.pom.ParsedPomFileImpl;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
-import fr.lteconsulting.pomexplorer.depanalyze.DependencyLocation;
+import fr.lteconsulting.pomexplorer.changes.Change;
+import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
@@ -32,105 +32,78 @@ public class Tools
 
 		return gav;
 	}
+	
+	/**
+	 * Prints a list of changes to be made to follow a GAV change
+	 */
+	public static String changeGav( Client client, WorkingSession session, GAV originalGav, GAV newGav, Set<Change<? extends Location>> changes )
+	{
+		StringBuilder sb = new StringBuilder();
+
+		Set<Location> locations = Tools.getDirectDependenciesLocations( session, sb, originalGav );
+
+		for( Location location : locations )
+		{
+			Change<? extends Location> c = Change.create( location, newGav );
+			changes.add( c );
+		}
+
+		return sb.toString();
+	}
+	
+	public static void printChangeList( StringBuilder res, Set<Change<? extends Location>> changes )
+	{
+		List<Change<? extends Location>> changeList = new ArrayList<>();
+		changeList.addAll( changes );
+	
+		Collections.sort( changeList, new Comparator<Change<? extends Location>>()
+		{
+			@Override
+			public int compare( Change<? extends Location> o1, Change<? extends Location> o2 )
+			{
+				return o1.getLocation().getProject().getPomFile().getAbsolutePath().compareTo( o2.getLocation().getProject().getPomFile().getAbsolutePath() );
+			}
+		} );
+	
+		for( Change<? extends Location> c : changeList )
+		{
+			res.append( c.toString() );
+		}
+	}
 
 	/***
 	 * Maven tools
 	 */
 
-	public static Set<Location> getImpactedLocationsToChangeGav( WorkingSession session, GAV gav, StringBuilder log, boolean logDependency )
+	public static Set<Location> getDirectDependenciesLocations( WorkingSession session, StringBuilder log, GAV gav )
 	{
-		HashSet<Location> locations = new HashSet<>();
+		Set<Location> set = new HashSet<>();
 
-		Project project = session.projects().get( gav );
-		if( project == null )
+		Set<GAVRelation<Relation>> relations = session.graph().relationsReverse( gav );
+		for( GAVRelation<Relation> relation : relations )
 		{
-			log.append( "<b style='color:orange;'>" + gav + "</b> (no project found)<br/>" );
-		}
-		else
-		{
-			locations.add( new PropertyLocation( project, null, "project.version", gav.getVersion() ) );
-		}
+			GAV updatedGav = relation.getSource();
 
-		for( GAVRelation<DependencyRelation> dependencyRelation : session.graph().dependents( gav ) )
-		{
-			GAV dependencyGav = dependencyRelation.getSource();
-
-			Project dependentProject = session.projects().get( dependencyGav );
-			if( dependentProject == null )
+			Project updatedProject = session.projects().get( updatedGav );
+			if( updatedProject == null )
 			{
-				log.append( "<b style='color:orange;'>" + dependencyGav + "</b> (no project found)<br/>" );
+				if( log != null )
+					log.append( "<span style='color:orange;'>Cannot find project for GAV " + updatedGav + " which dependency should be modified ! skipping.</span>" );
 				continue;
 			}
 
-			String dependencyKind = "?";
-
-			Project specifyingProject = getProjectWhereDependencyIsSpecifiedInHierarchy( session, dependentProject, gav );
-			if( specifyingProject != null )
+			Location dependencyLocation = Tools.findDependencyLocation( session, updatedProject, relation );
+			if( dependencyLocation == null )
 			{
-				dependencyKind = specifyingProject == dependentProject ? "D" : "H";
-			}
-			else
-			{
-				specifyingProject = getProjectWhereDependencyIsSpecifiedInTransitiveDeps( session, dependencyGav, gav );
-				if( specifyingProject != null )
-				{
-					dependencyKind = "T";
-				}
-				else
-				{
-					specifyingProject = getProjectWhereDependencyIsSpecifiedInBuildPlugins( session, dependencyGav, gav );
-					if( specifyingProject != null )
-						dependencyKind = "P";
-				}
-			}
-
-			if( specifyingProject == null )
-				dependencyKind = "!";
-
-			if( logDependency )
-				log.append( "[" + dependencyKind + "] " + dependentProject + "<br/>" );
-
-			if( specifyingProject == null )
-			{
-				log.append( "(dependency declaration not found although it is in the dependency graph, ignoring)<br/>" );
+				if( log != null )
+					log.append( "<span style='color:red;'>Cannot find the location of dependency to " + relation.getTarget() + " in this project " + updatedProject + "</span><br/>" );
 				continue;
 			}
 
-			DependencyInfo info = specifyingProject.getDependencies().get( gav );
-			if( info == null || info.getUnresolvedGav() == null )
-			{
-				info = specifyingProject.getPluginDependencies().get( gav );
-				if( info == null || info.getUnresolvedGav() == null )
-				{
-					log.append( "(WARNING, dependency not found in specifying project !)<br/>" );
-					continue;
-				}
-			}
-
-			List<String> properties = getMavenProperties( info.getUnresolvedGav() );
-			if( properties.isEmpty() || info.getUnresolvedGav().equals( info.getResolvedGav() ) )
-			{
-				locations.add( new DependencyLocation( specifyingProject, info ) );
-			}
-			else
-			{
-				for( String property : properties )
-				{
-					Project definitionProject = getPropertyDefinitionProject( session, specifyingProject, property );
-					if( definitionProject != null )
-					{
-						locations.add( new PropertyLocation( specifyingProject, info, property, definitionProject.getUnresolvedPom().getProperties().getProperty( property ) ) );
-					}
-					else
-					{
-						log.append( "[ERROR] not found property definition for property " + property + "<br/>" );
-					}
-				}
-			}
-
+			set.add( dependencyLocation );
 		}
 
-		return locations;
+		return set;
 	}
 
 	public static List<String> getMavenProperties( GAV gav )
@@ -197,146 +170,84 @@ public class Tools
 		return null;
 	}
 
-	private static Project getProjectWhereDependencyIsSpecifiedInHierarchy( WorkingSession session, Project project, GAV gav )
-	{
-		if( project == null )
-			return null;
-
-		DependencyInfo info = project.getDependencies().get( gav );
-
-		// if an unresolved gav is found, it means the dependency is written in
-		// the pom
-		if( info != null && info.getUnresolvedGav() != null )
-		{
-			return project;
-		}
-		else
-		{
-			GAV parentGav = session.graph().parent( project.getGav() );
-			if( parentGav == null )
-				return null;
-
-			Project parentProject = session.projects().get( parentGav );
-			if( parentProject == null )
-				return null;
-
-			return getProjectWhereDependencyIsSpecifiedInHierarchy( session, parentProject, gav );
-		}
-	}
-
-	private static Project getProjectWhereDependencyIsSpecifiedInTransitiveDeps( WorkingSession session, GAV currentGav, GAV searchedGav )
-	{
-		for( GAVRelation<DependencyRelation> dependency : session.graph().dependencies( currentGav ) )
-		{
-			Project project = session.projects().get( dependency.getTarget() );
-			if( project != null )
-			{
-				DependencyInfo info = project.getDependencies().get( searchedGav );
-
-				// if an unresolved gav is found, it means the dependency is
-				// written in the pom
-				if( info != null && info.getUnresolvedGav() != null )
-				{
-					return project;
-				}
-			}
-
-			project = getProjectWhereDependencyIsSpecifiedInTransitiveDeps( session, dependency.getTarget(), searchedGav );
-			if( project != null )
-				return project;
-		}
-
-		return null;
-	}
-
-	private static Project getProjectWhereDependencyIsSpecifiedInBuildPlugins( WorkingSession session, GAV currentGav, GAV searchedGav )
-	{
-		Project project = session.projects().get( currentGav );
-		if( project == null )
-			return null;
-
-		for( Plugin plugin : project.getUnresolvedPom().getBuildPlugins() )
-		{
-			if( plugin.getGroupId().equals( searchedGav.getGroupId() ) && plugin.getArtifactId().equals( searchedGav.getArtifactId() ) )
-				return project;
-		}
-
-		GAV parentGav = session.graph().parent( currentGav );
-		if( parentGav == null )
-			return null;
-
-		Project parentProject = session.projects().get( parentGav );
-		if( parentProject == null )
-			return null;
-
-		return getProjectWhereDependencyIsSpecifiedInBuildPlugins( session, parentProject.getGav(), searchedGav );
-	}
-
 	public static Location findDependencyLocation( WorkingSession session, Project project, GAVRelation<Relation> relation )
 	{
+		if( project.getGav().equals( relation.getTarget() ) )
+			return new GavLocation( project, PomSection.PROJECT, project.getGav(), project.getGav() );
+
 		Location dependencyLocation = null;
 
-		switch( relation.getRelation().getType() )
+		switch( relation.getRelation().getRelationType() )
 		{
 			case DEPENDENCY:
-				DependencyLocation depLoc = null;
-				if( "build".equals( ((DependencyRelation) relation.getRelation()).getScope() ) )
-					depLoc = findDependencyLocationInPlugins( session, project, relation.getTarget() );
-				else
-					depLoc = findDependencyLocationInDependencies( session, project, relation.getTarget() );
-
-				dependencyLocation = maybeFindPropertyLocation( session, depLoc );
+				dependencyLocation = findDependencyLocationInDependencies( session, project, relation.getTarget() );
 				break;
+				
+			case BUILD_DEPENDENCY:
+				dependencyLocation = findDependencyLocationInPlugins( session, project, relation.getTarget() );
+				break;
+				
 			case PARENT:
-				dependencyLocation = new PropertyLocation( project, null, "project.parent.version", relation.getTarget().getVersion() );
+				dependencyLocation = new GavLocation( project, PomSection.PARENT, relation.getTarget(), relation.getTarget() );
 				break;
 		}
+		
+		dependencyLocation = maybeFindPropertyLocation( session, dependencyLocation );
 
 		return dependencyLocation;
 	}
 
-	public static Location maybeFindPropertyLocation( WorkingSession session, DependencyLocation depLoc )
+	public static Location maybeFindPropertyLocation( WorkingSession session, Location loc )
 	{
-		if( depLoc == null )
+		if( loc == null )
 			return null;
+		
+		if( ! ( loc instanceof GavLocation ) )
+			return loc;
+		
+		GavLocation depLoc = (GavLocation) loc;
 
-		DependencyInfo info = depLoc.getDependency();
-
-		if( !Tools.isMavenVariable( info.getUnresolvedGav().getVersion() ) )
+		if( !Tools.isMavenVariable( depLoc.getUnresolvedGav().getVersion() ) )
 			return depLoc;
 
-		String property = info.getUnresolvedGav().getVersion();
+		String property = depLoc.getUnresolvedGav().getVersion();
 
 		Project definitionProject = Tools.getPropertyDefinitionProject( session, depLoc.getProject(), property );
 		if( definitionProject != null )
-			return new PropertyLocation( depLoc.getProject(), info, property, definitionProject.getUnresolvedPom().getProperties().getProperty( property ) );
+			return new PropertyLocation( depLoc.getProject(), depLoc, property, definitionProject.getUnresolvedPom().getProperties().getProperty( property ) );
 
 		return null;
 	}
 
-	public static DependencyLocation findDependencyLocationInDependencies( WorkingSession session, Project project, GAV searchedDependency )
+	public static GavLocation findDependencyLocationInDependencies( WorkingSession session, Project project, GAV searchedDependency )
 	{
 		if( project == null )
 			return null;
 
-		DependencyInfo info = project.getDependencies().get( searchedDependency );
+		GavLocation info = project.getDependencies().get( searchedDependency );
 		if( info != null )
-			return new DependencyLocation( project, info );
+			return info;
 
 		// TODO search in the dependency management section
 
 		// find in parent
-		return findDependencyLocationInDependencies( session, session.projects().get( session.graph().parent( project.getGav() ) ), searchedDependency );
+		GavLocation locationInParent = findDependencyLocationInDependencies( session, session.projects().get( session.graph().parent( project.getGav() ) ), searchedDependency );
+		if( locationInParent != null )
+			return locationInParent;
+
+		// find in transitive dependencies
+
+		return null;
 	}
 
-	public static DependencyLocation findDependencyLocationInPlugins( WorkingSession session, Project project, GAV searchedPlugin )
+	public static GavLocation findDependencyLocationInPlugins( WorkingSession session, Project project, GAV searchedPlugin )
 	{
 		if( project == null )
 			return null;
 
-		DependencyInfo info = project.getPluginDependencies().get( searchedPlugin );
+		GavLocation info = project.getPluginDependencies().get( searchedPlugin );
 		if( info != null )
-			return new DependencyLocation( project, info );
+			return info;
 
 		// TODO search in the plugin management section
 

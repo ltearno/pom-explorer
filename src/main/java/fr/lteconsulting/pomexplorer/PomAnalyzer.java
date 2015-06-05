@@ -20,6 +20,7 @@ import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
 import org.jboss.shrinkwrap.resolver.impl.maven.task.AddScopedDependenciesTask;
 import org.jboss.shrinkwrap.resolver.impl.maven.task.ConfigureSettingsFromFileTask;
 
+import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 
@@ -104,7 +105,7 @@ public class PomAnalyzer
 				GAV depGav = new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
 				session.graph().addGav( depGav );
 
-				session.graph().addRelation( gav, depGav, new DependencyRelation( "build", "mojo" ) );
+				session.graph().addRelation( gav, depGav, new BuildDependencyRelation() );
 			}
 		}
 		catch( IllegalArgumentException | SecurityException e )
