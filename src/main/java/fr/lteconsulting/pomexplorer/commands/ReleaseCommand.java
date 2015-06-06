@@ -139,7 +139,7 @@ public class ReleaseCommand
 		changes.addAll( newChanges );
 	}
 
-	@Help( "releases a gav. All dependencies are also released" )
+	@Help( "releases a gav, all dependencies are also released. GAVs depending on released GAVs are updated." )
 	public String gav( CommandOptions options, final Client client, WorkingSession session, String gavString )
 	{
 		GAV gav = Tools.string2Gav( gavString );
@@ -156,7 +156,7 @@ public class ReleaseCommand
 		return log.toString();
 	}
 
-	@Help( "releases all gavs. All dependencies are also released" )
+	@Help( "releases all gavs, all dependencies are also released. GAVs depending on released GAVs are updated." )
 	public String allGavs( CommandOptions options, final Client client, WorkingSession session )
 	{
 		final StringBuilder log = new StringBuilder();
