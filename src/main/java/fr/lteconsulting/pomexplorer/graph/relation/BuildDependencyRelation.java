@@ -6,7 +6,7 @@ public class BuildDependencyRelation extends Relation
 	{
 		super( RelationType.BUILD_DEPENDENCY );
 	}
-	
+
 	@Override
 	public String toString()
 	{

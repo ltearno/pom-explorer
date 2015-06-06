@@ -16,7 +16,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class CheckCommand
 {
-	@Help("checks some commons points of errors, at least of attention...")
+	@Help( "checks some commons points of errors, at least of attention..." )
 	public String main( Client client, WorkingSession session )
 	{
 		StringBuilder sb = new StringBuilder();

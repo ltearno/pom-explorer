@@ -21,14 +21,14 @@ public class GavLocation extends Location
 	public GavLocation( Project project, PomSection section, Dependency readden )
 	{
 		this( project, section, null, null );
-		
+
 		setReadDependency( readden );
 	}
-	
+
 	public GavLocation( Project project, PomSection section, GAV resolvedGav, GAV unresolvedGav )
 	{
 		super( project, null );
-		
+
 		this.section = section;
 		this.gav = resolvedGav;
 		this.unresolvedGav = unresolvedGav;
@@ -48,7 +48,7 @@ public class GavLocation extends Location
 	{
 		if( gav != null )
 			return gav;
-		
+
 		return unresolvedGav;
 	}
 

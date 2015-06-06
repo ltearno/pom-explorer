@@ -23,8 +23,8 @@ public class DependsCommand
 
 		Set<GAVRelation<Relation>> relations = session.graph().relationsReverse( gav );
 
-		res.append( "<br/><b>Directly depending on " + gav + "</b>, "+relations.size()+" GAVs :<br/>" );
-		res.append( "(["+RelationType.DEPENDENCY.shortName()+"]=direct dependency, ["+RelationType.PARENT.shortName()+"]=parent's dependency, ["+RelationType.BUILD_DEPENDENCY.shortName()+"]=build dependency)<br/><br/>" );
+		res.append( "<br/><b>Directly depending on " + gav + "</b>, " + relations.size() + " GAVs :<br/>" );
+		res.append( "([" + RelationType.DEPENDENCY.shortName() + "]=direct dependency, [" + RelationType.PARENT.shortName() + "]=parent's dependency, [" + RelationType.BUILD_DEPENDENCY.shortName() + "]=build dependency)<br/><br/>" );
 
 		Set<GAV> indirectDependents = new HashSet<>();
 
@@ -40,7 +40,7 @@ public class DependsCommand
 				indirectDependents.add( ir.getSource() );
 		}
 
-		res.append( "<br/><b>Indirectly depending on " + gav + "</b>, "+indirectDependents.size()+" GAVs :<br/>" );
+		res.append( "<br/><b>Indirectly depending on " + gav + "</b>, " + indirectDependents.size() + " GAVs :<br/>" );
 		for( GAV d : indirectDependents )
 		{
 			res.append( d + "<br/>" );
@@ -60,8 +60,8 @@ public class DependsCommand
 
 		Set<GAVRelation<Relation>> relations = session.graph().relations( gav );
 
-		res.append( "<br/><b>"+gav+" directly depends on</b> "+relations.size()+" GAVs :<br/>" );
-		res.append( "(["+RelationType.DEPENDENCY.shortName()+"]=direct dependency, ["+RelationType.PARENT.shortName()+"]=parent's dependency, ["+RelationType.BUILD_DEPENDENCY.shortName()+"]=build dependency)<br/><br/>" );
+		res.append( "<br/><b>" + gav + " directly depends on</b> " + relations.size() + " GAVs :<br/>" );
+		res.append( "([" + RelationType.DEPENDENCY.shortName() + "]=direct dependency, [" + RelationType.PARENT.shortName() + "]=parent's dependency, [" + RelationType.BUILD_DEPENDENCY.shortName() + "]=build dependency)<br/><br/>" );
 
 		Set<GAV> indirectDependents = new HashSet<>();
 
@@ -77,7 +77,7 @@ public class DependsCommand
 				indirectDependents.add( ir.getTarget() );
 		}
 
-		res.append( "<br/><b>"+gav+" indirectly depends on</b> "+indirectDependents.size()+" GAVs :<br/>" );
+		res.append( "<br/><b>" + gav + " indirectly depends on</b> " + indirectDependents.size() + " GAVs :<br/>" );
 		for( GAV d : indirectDependents )
 		{
 			res.append( d + "<br/>" );

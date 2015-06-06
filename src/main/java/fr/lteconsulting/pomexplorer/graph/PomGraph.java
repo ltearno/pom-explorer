@@ -93,7 +93,7 @@ public class PomGraph
 		for( Relation r : relations )
 			set.add( new GAVRelation<Relation>( gav, g.getEdgeTarget( r ), r ) );
 	}
-	
+
 	/**
 	 * Recursively gets the outgoing relations of a GAV
 	 * 
@@ -109,7 +109,7 @@ public class PomGraph
 
 	public void relationsRec( GAV gav, Set<GAVRelation<Relation>> set )
 	{
-		if(! g.containsVertex( gav ))
+		if( !g.containsVertex( gav ) )
 			return;
 		Set<Relation> relations = g.outgoingEdgesOf( gav );
 		for( Relation r : relations )
@@ -119,7 +119,7 @@ public class PomGraph
 			relationsRec( target, set );
 		}
 	}
-	
+
 	/**
 	 * Gets the ingoing relations of a GAV
 	 * 
@@ -135,14 +135,14 @@ public class PomGraph
 
 	public void relationsReverse( GAV gav, Set<GAVRelation<Relation>> set )
 	{
-		if( ! g.containsVertex( gav ) )
+		if( !g.containsVertex( gav ) )
 			return;
-		
+
 		Set<Relation> relations = g.incomingEdgesOf( gav );
 		for( Relation r : relations )
 			set.add( new GAVRelation<Relation>( g.getEdgeSource( r ), gav, r ) );
 	}
-	
+
 	/**
 	 * Recursively gets the ingoing relations of a GAV
 	 * 
@@ -176,7 +176,7 @@ public class PomGraph
 	{
 		return filterDependencyRelations( relationsRec( gav ) );
 	}
-	
+
 	public Set<GAVRelation<BuildDependencyRelation>> buildDependencies( GAV gav )
 	{
 		return filterBuildDependencyRelations( relations( gav ) );
@@ -191,7 +191,7 @@ public class PomGraph
 	{
 		return filterDependencyRelations( relationsReverse( gav ) );
 	}
-	
+
 	public Set<GAVRelation<DependencyRelation>> dependentsRec( GAV gav )
 	{
 		return filterDependencyRelations( relationsReverseRec( gav ) );
@@ -201,7 +201,7 @@ public class PomGraph
 	{
 		return filterBuildDependencyRelations( relationsReverse( gav ) );
 	}
-	
+
 	public Set<GAVRelation<BuildDependencyRelation>> buildDependentsRec( GAV gav )
 	{
 		return filterBuildDependencyRelations( relationsReverseRec( gav ) );
@@ -218,7 +218,7 @@ public class PomGraph
 				return relation.getRelation().getRelationType() == RelationType.PARENT;
 			}
 		} );
-		
+
 		Set<GAVRelation<ParentRelation>> result = new HashSet<>();
 		result.addAll( res );
 
@@ -236,7 +236,7 @@ public class PomGraph
 				return relation.getRelation().getRelationType() == RelationType.DEPENDENCY;
 			}
 		} );
-		
+
 		Set<GAVRelation<DependencyRelation>> res = new HashSet<>();
 		res.addAll( result );
 
@@ -254,7 +254,7 @@ public class PomGraph
 				return relation.getRelation().getRelationType() == RelationType.BUILD_DEPENDENCY;
 			}
 		} );
-		
+
 		Set<GAVRelation<BuildDependencyRelation>> res = new HashSet<>();
 		res.addAll( result );
 

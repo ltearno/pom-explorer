@@ -17,7 +17,7 @@ public abstract class Location
 	{
 		return project;
 	}
-	
+
 	public Location getCause()
 	{
 		return cause;

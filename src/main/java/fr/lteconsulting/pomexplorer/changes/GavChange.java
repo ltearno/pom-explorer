@@ -12,16 +12,16 @@ public class GavChange extends Change<GavLocation>
 		super( location );
 		this.newGav = newGav;
 	}
-	
+
 	public GAV getNewGav()
 	{
 		return newGav;
 	}
-	
+
 	@Override
 	public String toString()
 	{
-		return super.toString() +  "change to: " + newGav + "<br><br/>";
+		return super.toString() + "change to: " + newGav + "<br><br/>";
 	}
 
 	@Override

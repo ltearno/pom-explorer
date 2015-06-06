@@ -14,7 +14,7 @@ public class PropertyLocation extends Location
 		this.propertyName = propertyName;
 		this.propertyValue = propertyValue;
 	}
-	
+
 	public String getPropertyName()
 	{
 		return propertyName;
