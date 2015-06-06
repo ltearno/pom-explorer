@@ -1,5 +1,8 @@
 package fr.lteconsulting.pomexplorer.changes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
@@ -17,6 +20,8 @@ public abstract class Change<L extends Location>
 {
 	private final L location;
 
+	private List<Change<? extends Location>> causes;
+
 	public Change( L location )
 	{
 		this.location = location;
@@ -25,6 +30,31 @@ public abstract class Change<L extends Location>
 	public L getLocation()
 	{
 		return location;
+	}
+	
+	/**
+	 * Register the change that was the cause of the creation of this change
+	 * 
+	 * @param causingChange
+	 */
+	public void addCause(Change<? extends Location> causingChange)
+	{
+		ensureCausesList();
+		causes.add(causingChange);
+	}
+	
+	/**
+	 * Returns the list of changes which were the cause of the creation of this one.
+	 */
+	public List<Change<? extends Location>> getCauses()
+	{
+		return causes;
+	}
+
+	private void ensureCausesList()
+	{
+		if( causes == null)
+			causes = new ArrayList<>();
 	}
 
 	@Override
