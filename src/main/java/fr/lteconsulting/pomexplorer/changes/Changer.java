@@ -124,6 +124,7 @@ public class Changer
 				break;
 
 			case DEPENDENCY_MNGT:
+				replaceDependencyManagement( document, change, log );
 				break;
 
 			case PARENT:
@@ -174,6 +175,14 @@ public class Changer
 	{
 		GAV replacedGav = change.getLocation().getGav();
 		String expression = "/project/dependencies/dependency";
+
+		replaceDependency( document, change, log, replacedGav, expression );
+	}
+
+	private void replaceDependencyManagement( Document document, GavChange change, StringBuilder log )
+	{
+		GAV replacedGav = change.getLocation().getGav();
+		String expression = "/project/dependencyManagement/dependencies/dependency";
 
 		replaceDependency( document, change, log, replacedGav, expression );
 	}

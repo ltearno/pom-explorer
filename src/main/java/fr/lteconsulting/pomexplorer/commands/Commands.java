@@ -36,6 +36,9 @@ public class Commands
 	public String help()
 	{
 		StringBuilder sb = new StringBuilder();
+		
+		sb.append( "<b>List of commands</b><br/>" );
+		sb.append( "<i>You can type only the first letters of commands, for example '<b>ga li</b>' instead of '<b>gavs list</b>'</i><br/><br/>" );
 
 		for( Entry<String, Object> e : commands.entrySet() )
 		{
@@ -73,7 +76,6 @@ public class Commands
 			}
 		}
 
-		sb.append( "<i>You can type only the first letters of commands, for example '<b>ga li</b>' instead of '<b>gavs list</b>'</i><br/>" );
 
 		return sb.toString();
 	}

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 import org.jboss.shrinkwrap.resolver.impl.maven.pom.ParsedPomFileImpl;
@@ -70,7 +71,7 @@ public class Tools
 					return -1;
 				if( p2 == null )
 					return 1;
-				
+
 				return p1.getPomFile().getAbsolutePath().compareTo( p2.getPomFile().getAbsolutePath() );
 			}
 		} );
@@ -231,13 +232,13 @@ public class Tools
 
 		return null;
 	}
-	
+
 	public static String getPropertyNameFromPropertyReference( String name )
 	{
-		if( !( name.startsWith( "${" )&& name.endsWith( "}" )))
+		if( !(name.startsWith( "${" ) && name.endsWith( "}" )) )
 			return name;
-		
-		return name.substring( 2, name.length()-1 );
+
+		return name.substring( 2, name.length() - 1 );
 	}
 
 	public static GavLocation findDependencyLocationInDependencies( WorkingSession session, Project project, GAV searchedDependency )
@@ -245,18 +246,38 @@ public class Tools
 		if( project == null )
 			return null;
 
+		// dependencies
 		GavLocation info = project.getDependencies().get( searchedDependency );
-		if( info != null )
+		if( info != null && info.getUnresolvedGav().getVersion() != null )
 			return info;
 
-		// TODO search in the dependency management section
+		// dependency management
+		GavLocation locationInDepMngt = findDependencyLocationInDependencyManagement( session, project, searchedDependency );
+		if( locationInDepMngt != null )
+			return locationInDepMngt;
 
-		// find in parent
+		// parent
 		GavLocation locationInParent = findDependencyLocationInDependencies( session, session.projects().get( session.graph().parent( project.getGav() ) ), searchedDependency );
 		if( locationInParent != null )
 			return locationInParent;
 
-		// find in transitive dependencies
+		return null;
+	}
+
+	public static GavLocation findDependencyLocationInDependencyManagement( WorkingSession session, Project project, GAV searchedDependency )
+	{
+		if( project.getUnresolvedPom().getDependencyManagement() == null )
+			return null;
+		if( project.getUnresolvedPom().getDependencyManagement().getDependencies() == null )
+			return null;
+		for( Dependency d : project.getUnresolvedPom().getDependencyManagement().getDependencies() )
+		{
+			if( searchedDependency.getGroupId().equals( d.getGroupId() ) && searchedDependency.getArtifactId().equals( d.getArtifactId() ) )
+			{
+				GAV g = new GAV( d.getGroupId(), d.getArtifactId(), d.getVersion() );
+				return new GavLocation( project, PomSection.DEPENDENCY_MNGT, g, searchedDependency );
+			}
+		}
 
 		return null;
 	}
