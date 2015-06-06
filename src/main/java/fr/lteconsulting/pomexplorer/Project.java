@@ -112,6 +112,6 @@ public class Project
 	@Override
 	public String toString()
 	{
-		return getGav() + " @ " + pomFile.getAbsolutePath();
+		return getGav() + " (<i>" + pomFile.getAbsolutePath() + "</i>)";
 	}
 }

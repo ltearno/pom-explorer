@@ -110,44 +110,89 @@ public class Commands
 		Object command = commands.get( potentialCommands.get( 0 ) );
 
 		String verb = parts.length >= 2 ? parts[1] : "main";
-		int nbParamsGiven = parts.length - 2;
-		if( nbParamsGiven < 0 )
-			nbParamsGiven = 0;
+		int nbParamsGiven = 0;
+		for( int i = 2; i < parts.length; i++ )
+		{
+			if( parts[i].startsWith( "--" ) )
+			{
+				i++;
+				continue;
+			}
+
+			if( parts[i].startsWith( "-" ) )
+				continue;
+
+			nbParamsGiven++;
+		}
 
 		Method m = findMethodWith( command, verb, nbParamsGiven );
 		if( m == null )
 			return "verb not found (or with wrong parameters)";
 
+		CommandOptions options = new CommandOptions();
 		WorkingSession session = null;
 		Class<?>[] argTypes = m.getParameterTypes();
 		Object[] args = new Object[argTypes.length];
 		int curPart = 2;
-		for( int i = 0; i < argTypes.length; i++ )
+		int curArg = 0;
+		while( curArg < argTypes.length || curPart < parts.length )
 		{
-			if( argTypes[i] == Client.class )
+			if( curPart < parts.length )
 			{
-				args[i] = client;
-			}
-			else if( argTypes[i] == WorkingSession.class )
-			{
-				if( session == null )
+				String val = parts[curPart];
+				if( val.startsWith( "--" ) )
 				{
-					session = client.getCurrentSession();
-					if( session == null )
-						return "You should have a session, type 'session create'.";
+					options.setOption( val.substring( 2 ), parts[curPart + 1] );
+					curPart += 2;
+					continue;
 				}
 
-				args[i] = session;
+				if( val.startsWith( "-" ) )
+				{
+					options.setOption( val.substring( 1 ), true );
+					curPart++;
+					continue;
+				}
 			}
-			else
-			{
-				if( argTypes[i] == Integer.class )
-					args[i] = Integer.parseInt( parts[curPart] );
-				else
-					args[i] = parts[curPart];
 
-				curPart++;
+			if( curArg < argTypes.length )
+			{
+				if( argTypes[curArg] == Client.class )
+				{
+					args[curArg] = client;
+					curArg++;
+					continue;
+				}
+
+				if( argTypes[curArg] == WorkingSession.class )
+				{
+					if( session == null )
+					{
+						session = client.getCurrentSession();
+						if( session == null )
+							return "You should have a session, type 'session create'.";
+					}
+
+					args[curArg] = session;
+					curArg++;
+					continue;
+				}
+
+				if( argTypes[curArg] == CommandOptions.class )
+				{
+					args[curArg] = options;
+					curArg++;
+					continue;
+				}
 			}
+
+			if( argTypes[curArg] == Integer.class )
+				args[curArg] = Integer.parseInt( parts[curPart] );
+			else
+				args[curArg] = parts[curPart];
+
+			curPart++;
+			curArg++;
 		}
 
 		try
@@ -189,7 +234,7 @@ public class Commands
 		int c = 0;
 		for( Class<?> t : m.getParameterTypes() )
 		{
-			if( t != Client.class && t != WorkingSession.class )
+			if( t != Client.class && t != WorkingSession.class && t != CommandOptions.class )
 				c++;
 		}
 		return c;

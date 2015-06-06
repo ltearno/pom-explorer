@@ -1,5 +1,9 @@
 package fr.lteconsulting.pomexplorer.commands;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -9,6 +13,7 @@ import org.apache.maven.project.MavenProject;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 
@@ -20,7 +25,17 @@ public class ProjectsCommand
 		StringBuilder res = new StringBuilder();
 
 		res.append( "<br/>Project list:<br/>" );
-		for( Project project : session.projects().values() )
+		List<Project> list = new ArrayList<>();
+		list.addAll( session.projects().values() );
+		Collections.sort( list, new Comparator<Project>()
+		{
+			@Override
+			public int compare( Project o1, Project o2 )
+			{
+				return Tools.gavAlphabeticalComparator.compare( o1.getGav(), o2.getGav() );
+			}
+		} );
+		for( Project project : list )
 			res.append( project + "<br/>" );
 
 		return res.toString();

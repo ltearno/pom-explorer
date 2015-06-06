@@ -24,7 +24,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 public class Changer
@@ -70,10 +72,23 @@ public class Changer
 			if( document == null )
 				continue;
 
-			if( change instanceof GavChange )
+			if( change instanceof PropertyChange )
+			{
+				PropertyChange pchange = (PropertyChange) change;
+				if( "project.version".equals( pchange.getLocation().getPropertyName() ) )
+				{
+					GAV newGav = new GAV( project.getGav().getGroupId(), project.getGav().getArtifactId(), pchange.getNewValue() );
+					doChange( document, new GavChange( new GavLocation( project, PomSection.PROJECT, project.getGav(), project.getGav() ), newGav ), log );
+				}
+				else
+				{
+					doChange( document, (PropertyChange) change, log );
+				}
+			}
+			else if( change instanceof GavChange )
+			{
 				doChange( document, (GavChange) change, log );
-			else if( change instanceof PropertyChange )
-				doChange( (PropertyChange) change );
+			}
 
 			OutputFormat format = new OutputFormat( document );
 			format.setIndenting( true );
@@ -187,7 +202,7 @@ public class Changer
 
 				if( !replacedGav.getVersion().equals( gav.getVersion() ) )
 				{
-					log.append( "<span style='color:orange;'>Found a dependency with the wrong version in the pom file : " + gav + " instead of " + replacedGav + "</span>" );
+					log.append( "<span style='color:orange;'>Found a dependency with the wrong version in the pom file : " + gav + " instead of " + replacedGav + "</span><br/>" );
 					continue;
 				}
 
@@ -198,8 +213,38 @@ public class Changer
 		}
 	}
 
-	private void doChange( PropertyChange change )
+	private void doChange( Document document, PropertyChange change, StringBuilder log )
 	{
+		String property = change.getLocation().getPropertyName();
+
+		NodeList nodeList = null;
+		try
+		{
+			Node propertiesNode = (Node) xPath.compile( "/project/properties" ).evaluate( document, XPathConstants.NODE );
+			if( propertiesNode != null )
+				nodeList = propertiesNode.getChildNodes();
+		}
+		catch( XPathExpressionException e )
+		{
+			e.printStackTrace();
+			return;
+		}
+
+		boolean found = false;
+
+		for( int i = 0; i < nodeList.getLength(); i++ )
+		{
+			Node node = nodeList.item( i );
+			if( !property.equals( node.getNodeName() ) )
+				continue;
+
+			found = true;
+			node.setTextContent( change.getNewValue() );
+			log.append( "'" + property + "' property updated to '" + change.getNewValue() + "' in '" + change.getLocation().getProject().getGav() + "'<br/>" );
+		}
+
+		if( !found )
+			log.append( "<span style='color:orange;'>did not find property " + property + " definition in project " + change.getLocation().getProject().getGav() + "</span>" );
 	}
 
 	private GAV getGavFromDependencyNode( Node depNode )

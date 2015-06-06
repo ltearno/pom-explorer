@@ -32,7 +32,7 @@ public class Tools
 
 		return gav;
 	}
-	
+
 	/**
 	 * Prints a list of changes to be made to follow a GAV change
 	 */
@@ -50,21 +50,31 @@ public class Tools
 
 		return sb.toString();
 	}
-	
+
 	public static void printChangeList( StringBuilder res, Set<Change<? extends Location>> changes )
 	{
 		List<Change<? extends Location>> changeList = new ArrayList<>();
 		changeList.addAll( changes );
-	
+
 		Collections.sort( changeList, new Comparator<Change<? extends Location>>()
 		{
 			@Override
 			public int compare( Change<? extends Location> o1, Change<? extends Location> o2 )
 			{
-				return o1.getLocation().getProject().getPomFile().getAbsolutePath().compareTo( o2.getLocation().getProject().getPomFile().getAbsolutePath() );
+				Project p1 = o1.getLocation().getProject();
+				Project p2 = o2.getLocation().getProject();
+
+				if( p1 == null && p2 == null )
+					return 0;
+				if( p1 == null )
+					return -1;
+				if( p2 == null )
+					return 1;
+				
+				return p1.getPomFile().getAbsolutePath().compareTo( p2.getPomFile().getAbsolutePath() );
 			}
 		} );
-	
+
 		for( Change<? extends Location> c : changeList )
 		{
 			res.append( c.toString() );
@@ -182,16 +192,16 @@ public class Tools
 			case DEPENDENCY:
 				dependencyLocation = findDependencyLocationInDependencies( session, project, relation.getTarget() );
 				break;
-				
+
 			case BUILD_DEPENDENCY:
 				dependencyLocation = findDependencyLocationInPlugins( session, project, relation.getTarget() );
 				break;
-				
+
 			case PARENT:
 				dependencyLocation = new GavLocation( project, PomSection.PARENT, relation.getTarget(), relation.getTarget() );
 				break;
 		}
-		
+
 		dependencyLocation = maybeFindPropertyLocation( session, dependencyLocation );
 
 		return dependencyLocation;
@@ -201,25 +211,33 @@ public class Tools
 	{
 		if( loc == null )
 			return null;
-		
-		if( ! ( loc instanceof GavLocation ) )
+
+		if( !(loc instanceof GavLocation) )
 			return loc;
-		
+
 		GavLocation depLoc = (GavLocation) loc;
-		
+
 		if( depLoc.getUnresolvedGav() == null )
 			return depLoc;
 
 		if( !Tools.isMavenVariable( depLoc.getUnresolvedGav().getVersion() ) )
 			return depLoc;
 
-		String property = depLoc.getUnresolvedGav().getVersion();
+		String property = getPropertyNameFromPropertyReference( depLoc.getUnresolvedGav().getVersion() );
 
 		Project definitionProject = Tools.getPropertyDefinitionProject( session, depLoc.getProject(), property );
 		if( definitionProject != null )
 			return new PropertyLocation( depLoc.getProject(), depLoc, property, definitionProject.getUnresolvedPom().getProperties().getProperty( property ) );
 
 		return null;
+	}
+	
+	public static String getPropertyNameFromPropertyReference( String name )
+	{
+		if( !( name.startsWith( "${" )&& name.endsWith( "}" )))
+			return name;
+		
+		return name.substring( 2, name.length()-1 );
 	}
 
 	public static GavLocation findDependencyLocationInDependencies( WorkingSession session, Project project, GAV searchedDependency )
