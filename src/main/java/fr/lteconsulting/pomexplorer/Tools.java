@@ -248,7 +248,7 @@ public class Tools
 
 		// dependencies
 		GavLocation info = project.getDependencies().get( searchedDependency );
-		if( info != null && info.getUnresolvedGav().getVersion() != null )
+		if( info != null && info.getUnresolvedGav() != null && info.getUnresolvedGav().getVersion() != null )
 			return info;
 
 		// dependency management
