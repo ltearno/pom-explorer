@@ -13,7 +13,8 @@
 =Creating your session
 session create
 =Analysing the default directory
-analyze directory C:\documents\repos\hexa.tools
+#analyze directory C:\documents\repos\hexa.tools
+analyze directory C:\tmp\hexa.tools
 #analyze directory C:\Documents\Repos\hexa.tools\hexa.css-maven-plugin
 #analyze directory C:\Documents\Repos\hexa.tools\hexa.css.samples\sample6
 =Change a GAV

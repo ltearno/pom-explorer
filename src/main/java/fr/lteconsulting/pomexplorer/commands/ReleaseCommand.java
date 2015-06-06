@@ -12,6 +12,7 @@ import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.changes.Change;
+import fr.lteconsulting.pomexplorer.changes.Changer;
 import fr.lteconsulting.pomexplorer.changes.GavChange;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
@@ -138,6 +139,12 @@ public class ReleaseCommand
 		}
 
 		Tools.printChangeList( res, newChanges );
+		
+		res.append( "<br/><b>Applying changes...</b><br/><br/>" );
+		
+		changes.addAll( newChanges );
+		Changer changer = new Changer();
+		changer.doChanges( changes, res );
 
 		return res.toString();
 	}
