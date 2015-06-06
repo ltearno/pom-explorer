@@ -24,6 +24,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 public class Changer
@@ -35,7 +36,11 @@ public class Changer
 	{
 		for( Change<? extends Location> change : changes )
 		{
-			String pomPath = change.getLocation().getProject().getPomFile().getAbsolutePath();
+			Project project = change.getLocation().getProject();
+			if( project == null )
+				continue;
+
+			String pomPath = project.getPomFile().getAbsolutePath();
 
 			DocumentBuilder builder = null;
 			try
@@ -96,7 +101,7 @@ public class Changer
 	private void doChange( Document document, GavChange change, StringBuilder log )
 	{
 		log.append( "[" + change.getLocation().getSection() + "] " );
-		
+
 		switch( change.getLocation().getSection() )
 		{
 			case DEPENDENCY:
@@ -176,7 +181,7 @@ public class Changer
 			Node depNode = nodeList.item( i );
 			GAV gav = getGavFromDependencyNode( depNode );
 
-			if( replacedGav.getGroupId().equals( gav.getGroupId() ) && replacedGav.getArtifactId().equals( gav.getArtifactId() ) )
+			if( (gav.getGroupId() == null || replacedGav.getGroupId().equals( gav.getGroupId() )) && replacedGav.getArtifactId().equals( gav.getArtifactId() ) )
 			{
 				// seems a good take !
 
@@ -188,7 +193,7 @@ public class Changer
 
 				// replace the version value
 				setGavInDependencyNode( change.getNewGav(), depNode );
-				log.append( "dependency to " + gav + " updated to " + change.getNewGav() + "<br/>" );
+				log.append( "'" + gav + "' updated to '" + change.getNewGav() + "' in '" + (change.getLocation().getProject() != null ? change.getLocation().getProject().getGav() : "-") + "'<br/>" );
 			}
 		}
 	}

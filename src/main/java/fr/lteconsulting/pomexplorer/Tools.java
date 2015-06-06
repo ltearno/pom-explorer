@@ -206,6 +206,9 @@ public class Tools
 			return loc;
 		
 		GavLocation depLoc = (GavLocation) loc;
+		
+		if( depLoc.getUnresolvedGav() == null )
+			return depLoc;
 
 		if( !Tools.isMavenVariable( depLoc.getUnresolvedGav().getVersion() ) )
 			return depLoc;

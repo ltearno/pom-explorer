@@ -109,6 +109,8 @@ public class PomGraph
 
 	public void relationsRec( GAV gav, Set<GAVRelation<Relation>> set )
 	{
+		if(! g.containsVertex( gav ))
+			return;
 		Set<Relation> relations = g.outgoingEdgesOf( gav );
 		for( Relation r : relations )
 		{
@@ -133,6 +135,9 @@ public class PomGraph
 
 	public void relationsReverse( GAV gav, Set<GAVRelation<Relation>> set )
 	{
+		if( ! g.containsVertex( gav ) )
+			return;
+		
 		Set<Relation> relations = g.incomingEdgesOf( gav );
 		for( Relation r : relations )
 			set.add( new GAVRelation<Relation>( g.getEdgeSource( r ), gav, r ) );

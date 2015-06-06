@@ -58,6 +58,31 @@ public class DependsCommand
 
 		StringBuilder res = new StringBuilder();
 
+		Set<GAVRelation<Relation>> relations = session.graph().relations( gav );
+
+		res.append( "<br/><b>"+gav+" directly depends on</b> "+relations.size()+" GAVs :<br/>" );
+		res.append( "(["+RelationType.DEPENDENCY.shortName()+"]=direct dependency, ["+RelationType.PARENT.shortName()+"]=parent's dependency, ["+RelationType.BUILD_DEPENDENCY.shortName()+"]=build dependency)<br/><br/>" );
+
+		Set<GAV> indirectDependents = new HashSet<>();
+
+		for( GAVRelation<Relation> relation : relations )
+		{
+			GAV target = relation.getTarget();
+			RelationType type = relation.getRelation().getRelationType();
+
+			res.append( "[" + type.shortName() + "] " + target + "<br/>" );
+
+			Set<GAVRelation<Relation>> indirectRelations = session.graph().relationsRec( target );
+			for( GAVRelation<Relation> ir : indirectRelations )
+				indirectDependents.add( ir.getTarget() );
+		}
+
+		res.append( "<br/><b>"+gav+" indirectly depends on</b> "+indirectDependents.size()+" GAVs :<br/>" );
+		for( GAV d : indirectDependents )
+		{
+			res.append( d + "<br/>" );
+		}
+
 		return res.toString();
 	}
 }

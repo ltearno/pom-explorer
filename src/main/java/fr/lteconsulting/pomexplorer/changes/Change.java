@@ -30,7 +30,13 @@ public abstract class Change<L extends Location>
 	@Override
 	public String toString()
 	{
-		return "in: " + location.getProject().getGav() + " (<i>" + location.getProject().getPomFile().getAbsolutePath() + "</i>)<br/>" + "location: " + location + "<br/>";
+		String res = "";
+		if( location.getProject() != null )
+			res = "in: " + location.getProject().getGav() + " (<i>" + location.getProject().getPomFile().getAbsolutePath() + "</i>)<br/>";
+		else
+			res = "in: [!project not found!]<br/>";
+		res += "location: " + location + "<br/>";
+		return res;
 	}
 
 	public static Change<? extends Location> create( Location location, GAV newGav )
