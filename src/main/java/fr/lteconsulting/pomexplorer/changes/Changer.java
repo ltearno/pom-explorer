@@ -54,6 +54,9 @@ public class Changer
 				e.printStackTrace();
 			}
 
+			if (builder == null)
+				throw new RuntimeException("Unable to create teh document builder !");
+
 			Document document = null;
 
 			try
@@ -69,7 +72,7 @@ public class Changer
 				e.printStackTrace();
 			}
 
-			if( document == null )
+			if (document == null)
 				continue;
 
 			if( change instanceof PropertyChange )
@@ -238,6 +241,9 @@ public class Changer
 			e.printStackTrace();
 			return;
 		}
+
+		if (nodeList == null)
+			return;
 
 		boolean found = false;
 
