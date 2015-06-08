@@ -38,8 +38,12 @@ public class Tools
 	 * Prints a list of changes to be made to follow a GAV change
 	 */
 	public static String changeGav(Client client, WorkingSession session, GAV originalGav, GAV newGav,
-			Set<Change<? extends Location>> changes)
+			Set<Change<? extends Location>> changes, Set<GAV> changedProjects)
 	{
+		if (changedProjects.contains(originalGav))
+			return "";
+		changedProjects.add(originalGav);
+
 		StringBuilder log = new StringBuilder();
 
 		Set<Location> locations = Tools.getDirectDependenciesLocations(session, log, originalGav);
@@ -47,6 +51,7 @@ public class Tools
 		for (Location location : locations)
 		{
 			Change<? extends Location> c;
+
 			if (!location.getProject().getGav().equals(originalGav))
 			{
 				// because the location is used to update a parent version, ...
@@ -56,12 +61,13 @@ public class Tools
 				c = Change.create(location, newLocGav);
 
 				// TODO : fix infinite loop
-				log.append(changeGav(client, session, locGav, newLocGav, changes));
+				log.append(changeGav(client, session, locGav, newLocGav, changes, changedProjects));
 			}
 			else
 			{
 				c = Change.create(location, newGav);
 			}
+
 			changes.add(c);
 		}
 

@@ -32,7 +32,7 @@ public class ChangeCommand
 		GavLocation loc = GavLocation.createProjectGavLocation(session, originalGav, log);
 		changes.add(new GavChange(loc, new GAV(loc.getGav().getGroupId(), loc.getGav().getArtifactId(), newGav
 				.getVersion())));
-		log.append( Tools.changeGav( client, session, originalGav, newGav, changes ) );
+		log.append(Tools.changeGav(client, session, originalGav, newGav, changes, new HashSet<GAV>()));
 		Tools.printChangeList( log, changes );
 
 		CommandTools.maybeApplyChanges(session, options, log, changes);

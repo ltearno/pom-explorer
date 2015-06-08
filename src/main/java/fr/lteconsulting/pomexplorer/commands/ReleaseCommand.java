@@ -132,7 +132,8 @@ public class ReleaseCommand
 
 			if( location.getSection() == PomSection.PROJECT )
 			{
-				Tools.changeGav( client, session, location.getGav(), ((GavChange) c).getNewGav(), newChanges );
+				Tools.changeGav(client, session, location.getGav(), ((GavChange)c).getNewGav(), newChanges,
+						new HashSet<GAV>());
 			}
 		}
 
