@@ -17,6 +17,9 @@ public class GavLocation extends Location
 
 	private GAV unresolvedGav;
 
+	// TODO : this should be able to generate multiple locations.
+	// for instance : if we want to update a GAV's artifactId and version, and if version is defined by default by the
+	// parent, we should generate both changing the parent version and the current artifact id
 	public static GavLocation createProjectGavLocation(WorkingSession session, GAV projectGav, StringBuilder log)
 	{
 		Project project = session.projects().get(projectGav);

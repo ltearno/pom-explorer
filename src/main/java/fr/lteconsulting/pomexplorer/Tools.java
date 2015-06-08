@@ -52,16 +52,23 @@ public class Tools
 		{
 			Change<? extends Location> c;
 
-			if (!location.getProject().getGav().equals(originalGav))
+			if (location instanceof GavLocation)
 			{
-				// because the location is used to update a parent version, ...
-				GAV locGav = location.getProject().getGav();
-				GAV newLocGav = new GAV(locGav.getGroupId(), locGav.getArtifactId(), newGav.getVersion());
+				GavLocation gavLoc = (GavLocation)location;
+				if (!gavLoc.getGav().equals(originalGav))
+				{
+					// because the location is used to update a parent version, ...
+					GAV locGav = location.getProject().getGav();
+					GAV newLocGav = new GAV(locGav.getGroupId(), locGav.getArtifactId(), newGav.getVersion());
 
-				c = Change.create(location, newLocGav);
+					c = Change.create(location, newLocGav);
 
-				// TODO : fix infinite loop
-				log.append(changeGav(client, session, locGav, newLocGav, changes, changedProjects));
+					log.append(changeGav(client, session, locGav, newLocGav, changes, changedProjects));
+				}
+				else
+				{
+					c = Change.create(location, newGav);
+				}
 			}
 			else
 			{

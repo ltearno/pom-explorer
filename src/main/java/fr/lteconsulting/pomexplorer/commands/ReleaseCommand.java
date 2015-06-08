@@ -27,9 +27,10 @@ public class ReleaseCommand
 	static class ChangeVersionTask implements Task
 	{
 		private final GAV gav;
+
 		private final Client client;
 
-		public ChangeVersionTask( GAV gav, Client client )
+		public ChangeVersionTask(GAV gav, Client client)
 		{
 			this.gav = gav;
 			this.client = client;
@@ -38,7 +39,7 @@ public class ReleaseCommand
 		@Override
 		public String exec()
 		{
-			return AppFactory.get().commands().takeCommand( client, "de on " + gav.toString() );
+			return AppFactory.get().commands().takeCommand(client, "de on " + gav.toString());
 		}
 
 		@Override
@@ -51,21 +52,21 @@ public class ReleaseCommand
 		}
 
 		@Override
-		public boolean equals( Object obj )
+		public boolean equals(Object obj)
 		{
-			if( this == obj )
+			if (this == obj)
 				return true;
-			if( obj == null )
+			if (obj == null)
 				return false;
-			if( getClass() != obj.getClass() )
+			if (getClass() != obj.getClass())
 				return false;
-			ChangeVersionTask other = (ChangeVersionTask) obj;
-			if( gav == null )
+			ChangeVersionTask other = (ChangeVersionTask)obj;
+			if (gav == null)
 			{
-				if( other.gav != null )
+				if (other.gav != null)
 					return false;
 			}
-			else if( !gav.equals( other.gav ) )
+			else if (!gav.equals(other.gav))
 				return false;
 			return true;
 		}
@@ -73,110 +74,149 @@ public class ReleaseCommand
 
 	private final static String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
-	private void releaseGav( Client client, WorkingSession session, GAV gav, Set<Change<? extends Location>> changes, StringBuilder log )
+	private void releaseGav(Client client, WorkingSession session, GAV gav, Set<Change<? extends Location>> changes,
+			StringBuilder log)
 	{
-		log.append( "<b>Releasing</b> project " + gav + "<br/>" );
-		log.append( "All dependencies will be updated to a release version.<br/><br/>" );
+		log.append("<b>Releasing</b> project " + gav + "<br/>");
+		log.append("All dependencies will be updated to a release version.<br/><br/>");
+
+		Set<GAV> changedProjects = new HashSet<GAV>();
 
 		GavLocation loc = GavLocation.createProjectGavLocation(session, gav, log);
-		changes.add(new GavChange(loc, releasedGav(loc.getGav())));
+		if (loc != null)
+			changes.add(new GavChange(loc, releasedGav(loc.getGav())));
+		else
+			log.append(Tools.warningMessage("cannot find location of " + gav));
 
-		Set<GAVRelation<Relation>> relations = session.graph().relationsRec( gav );
-		for( GAVRelation<Relation> r : relations )
+		Set<GAVRelation<Relation>> relations = session.graph().relationsRec(gav);
+		for (GAVRelation<Relation> r : relations)
 		{
-			if( r.getTarget().getVersion() == null )
+			if (r.getTarget().getVersion() == null)
 			{
-				log.append( "<span style='color:orange;'>No target version (" + r.getTarget() + ") !</span><br/>" );
+				log.append("<span style='color:orange;'>No target version (" + r.getTarget() + ") !</span><br/>");
 				continue;
 			}
 
-			if( isReleased( r.getTarget() ) )
+			if (isReleased(r.getTarget()))
 				continue;
 
 			GAV source = r.getSource();
-			GAV to = releasedGav( r.getTarget() );
+			GAV to = releasedGav(r.getTarget());
 
-			Project project = session.projects().get( source );
-			if( project == null )
+			Project project = session.projects().get(source);
+			if (project == null)
 			{
-				log.append( "<span style='color:orange;'>Project not found for this GAV ! " + source + "</span><br/>" );
+				log.append("<span style='color:orange;'>Project not found for this GAV ! " + source + "</span><br/>");
 				continue;
 			}
 
 			GavLocation targetLoc = GavLocation.createProjectGavLocation(session, r.getTarget(), log);
-			changes.add(new GavChange(targetLoc, releasedGav(targetLoc.getGav())));
-
-			Location dependencyLocation = Tools.findDependencyLocation( session, project, r );
-			if( dependencyLocation == null )
+			if (targetLoc != null)
 			{
-				log.append( "<span style='color:red;'>Cannot find the location of dependency to " + r.getTarget() + " in this project " + project + "</span><br/>" );
+				changes.add(new GavChange(targetLoc, releasedGav(targetLoc.getGav())));
+			}
+			else
+			{
+				log.append(Tools.warningMessage("cannot find location of " + r.getTarget()));
 				continue;
 			}
 
-			Change<? extends Location> c = Change.create( dependencyLocation, to );
-			changes.add( c );
+			Location dependencyLocation = Tools.findDependencyLocation(session, project, r);
+			if (dependencyLocation == null)
+			{
+				log.append("<span style='color:red;'>Cannot find the location of dependency to " + r.getTarget()
+						+ " in this project " + project + "</span><br/>");
+				continue;
+			}
+
+			Change<? extends Location> c;
+
+			if (dependencyLocation instanceof GavLocation)
+			{
+				GavLocation gavLoc = (GavLocation)dependencyLocation;
+				if (!gavLoc.getGav().equals(gav))
+				{
+					// because the location is used to update a parent version, ...
+					GAV locGav = dependencyLocation.getProject().getGav();
+					GAV newLocGav = new GAV(locGav.getGroupId(), locGav.getArtifactId(), to.getVersion());
+
+					c = Change.create(dependencyLocation, newLocGav);
+
+					log.append(Tools.changeGav(client, session, locGav, newLocGav, changes, changedProjects));
+				}
+				else
+				{
+					c = Change.create(dependencyLocation, to);
+				}
+			}
+			else
+			{
+				c = Change.create(dependencyLocation, to);
+			}
+
+			changes.add(c);
 		}
 
-		Tools.printChangeList( log, changes );
+		Tools.printChangeList(log, changes);
 
-		log.append( "<br/><b>Completing release</b>, by updating projects dependent on those just released<br/><br/>" );
+		log.append("<br/><b>Completing release</b>, by updating projects dependent on those just released<br/><br/>");
 
 		Set<Change<? extends Location>> newChanges = new HashSet<>();
 
-		for( Change<? extends Location> c : changes )
+		for (Change<? extends Location> c : changes)
 		{
-			if( !(c.getLocation() instanceof GavLocation) )
+			if (!(c.getLocation() instanceof GavLocation))
 				continue;
 
-			GavLocation location = (GavLocation) c.getLocation();
+			GavLocation location = (GavLocation)c.getLocation();
 
-			if( location.getSection() == PomSection.PROJECT )
+			if (location.getSection() == PomSection.PROJECT)
 			{
 				Tools.changeGav(client, session, location.getGav(), ((GavChange)c).getNewGav(), newChanges,
 						new HashSet<GAV>());
 			}
 		}
 
-		Tools.printChangeList( log, newChanges );
+		Tools.printChangeList(log, newChanges);
 
-		changes.addAll( newChanges );
+		changes.addAll(newChanges);
 	}
 
-	@Help( "releases a gav, all dependencies are also released. GAVs depending on released GAVs are updated." )
-	public String gav( CommandOptions options, final Client client, WorkingSession session, String gavString )
+	@Help("releases a gav, all dependencies are also released. GAVs depending on released GAVs are updated.")
+	public String gav(CommandOptions options, final Client client, WorkingSession session, String gavString)
 	{
-		GAV gav = Tools.string2Gav( gavString );
-		if( gav == null )
+		GAV gav = Tools.string2Gav(gavString);
+		if (gav == null)
 			return "specify the GAV with the group:artifact:version format please";
 
 		final StringBuilder log = new StringBuilder();
 		Set<Change<? extends Location>> changes = new HashSet<>();
 
-		releaseGav( client, session, gav, changes, log );
+		releaseGav(client, session, gav, changes, log);
 
 		CommandTools.maybeApplyChanges(session, options, log, changes);
 
 		return log.toString();
 	}
 
-	@Help( "releases all gavs, all dependencies are also released. GAVs depending on released GAVs are updated." )
-	public String allGavs( CommandOptions options, final Client client, WorkingSession session )
+	@Help("releases all gavs, all dependencies are also released. GAVs depending on released GAVs are updated.")
+	public String allGavs(CommandOptions options, final Client client, WorkingSession session)
 	{
 		final StringBuilder log = new StringBuilder();
 		Set<Change<? extends Location>> changes = new HashSet<>();
 
-		for( GAV gav : session.graph().gavs() )
+		for (GAV gav : session.graph().gavs())
 		{
-			if( gav.getVersion() == null )
+			if (gav.getVersion() == null)
 			{
-				log.append( "<span style='color:orange;'>No target version (" + gav + ") !</span><br/>" );
+				log.append("<span style='color:orange;'>No target version (" + gav + ") !</span><br/>");
 				continue;
 			}
 
-			if( isReleased( gav ) )
+			if (isReleased(gav))
 				continue;
 
-			releaseGav( client, session, gav, changes, log );
+			releaseGav(client, session, gav, changes, log);
 		}
 
 		CommandTools.maybeApplyChanges(session, options, log, changes);
@@ -184,15 +224,16 @@ public class ReleaseCommand
 		return log.toString();
 	}
 
-	private boolean isReleased( GAV gav )
+	private boolean isReleased(GAV gav)
 	{
-		return !gav.getVersion().endsWith( SNAPSHOT_SUFFIX );
+		return !gav.getVersion().endsWith(SNAPSHOT_SUFFIX);
 	}
 
-	private GAV releasedGav( GAV gav )
+	private GAV releasedGav(GAV gav)
 	{
-		if( !isReleased( gav ) )
-			return new GAV( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
+		if (!isReleased(gav))
+			return new GAV(gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring(0,
+					gav.getVersion().length() - SNAPSHOT_SUFFIX.length()));
 
 		return gav;
 	}
