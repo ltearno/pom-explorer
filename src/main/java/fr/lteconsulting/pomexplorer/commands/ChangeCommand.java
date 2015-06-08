@@ -5,7 +5,6 @@ import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
-import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.changes.Change;
@@ -30,11 +29,13 @@ public class ChangeCommand
 
 		Set<Change<? extends Location>> changes = new HashSet<>();
 
-		changes.add( new GavChange( new GavLocation( session.projects().get( originalGav ), PomSection.PROJECT, originalGav, originalGav ), newGav ) );
+		GavLocation loc = GavLocation.createProjectGavLocation(session, originalGav, log);
+		changes.add(new GavChange(loc, new GAV(loc.getGav().getGroupId(), loc.getGav().getArtifactId(), newGav
+				.getVersion())));
 		log.append( Tools.changeGav( client, session, originalGav, newGav, changes ) );
 		Tools.printChangeList( log, changes );
 
-		CommandTools.maybeApplyChanges( options, log, changes );
+		CommandTools.maybeApplyChanges(session, options, log, changes);
 
 		return log.toString();
 	}

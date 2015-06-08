@@ -78,7 +78,8 @@ public class ReleaseCommand
 		log.append( "<b>Releasing</b> project " + gav + "<br/>" );
 		log.append( "All dependencies will be updated to a release version.<br/><br/>" );
 
-		changes.add( new GavChange( new GavLocation( session.projects().get( gav ), PomSection.PROJECT, gav, gav ), releasedGav( gav ) ) );
+		GavLocation loc = GavLocation.createProjectGavLocation(session, gav, log);
+		changes.add(new GavChange(loc, releasedGav(loc.getGav())));
 
 		Set<GAVRelation<Relation>> relations = session.graph().relationsRec( gav );
 		for( GAVRelation<Relation> r : relations )
@@ -102,7 +103,8 @@ public class ReleaseCommand
 				continue;
 			}
 
-			changes.add( new GavChange( new GavLocation( session.projects().get( r.getTarget() ), PomSection.PROJECT, r.getTarget(), r.getTarget() ), to ) );
+			GavLocation targetLoc = GavLocation.createProjectGavLocation(session, r.getTarget(), log);
+			changes.add(new GavChange(targetLoc, releasedGav(targetLoc.getGav())));
 
 			Location dependencyLocation = Tools.findDependencyLocation( session, project, r );
 			if( dependencyLocation == null )
@@ -151,7 +153,7 @@ public class ReleaseCommand
 
 		releaseGav( client, session, gav, changes, log );
 
-		CommandTools.maybeApplyChanges( options, log, changes );
+		CommandTools.maybeApplyChanges(session, options, log, changes);
 
 		return log.toString();
 	}
@@ -176,7 +178,7 @@ public class ReleaseCommand
 			releaseGav( client, session, gav, changes, log );
 		}
 
-		CommandTools.maybeApplyChanges( options, log, changes );
+		CommandTools.maybeApplyChanges(session, options, log, changes);
 
 		return log.toString();
 	}

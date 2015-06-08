@@ -23,8 +23,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fr.lteconsulting.pomexplorer.GAV;
-import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
@@ -34,7 +34,7 @@ public class Changer
 
 	XPath xPath = XPathFactory.newInstance().newXPath();
 
-	public void doChanges(Set<Change<? extends Location>> changes, StringBuilder log)
+	public void doChanges(WorkingSession session, Set<Change<? extends Location>> changes, StringBuilder log)
 	{
 		for (Change<? extends Location> change : changes)
 		{
@@ -82,11 +82,10 @@ public class Changer
 				PropertyChange pchange = (PropertyChange)change;
 				if ("project.version".equals(pchange.getLocation().getPropertyName()))
 				{
-					GAV newGav = new GAV(project.getGav().getGroupId(), project.getGav().getArtifactId(),
-							pchange.getNewValue());
+					GavLocation loc = GavLocation.createProjectGavLocation(session, project.getGav(), log);
+					GAV newGav = new GAV(loc.getGav().getGroupId(), loc.getGav().getArtifactId(), pchange.getNewValue());
 					doChange(document,
-							new GavChange(new GavLocation(project, PomSection.PROJECT, project.getGav(), project.getGav()),
-									newGav), log);
+							new GavChange(loc, newGav), log);
 				}
 				else
 				{

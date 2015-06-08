@@ -3,40 +3,67 @@ package fr.lteconsulting.pomexplorer.depanalyze;
 import org.apache.maven.model.Dependency;
 import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
 
-import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.Tools;
+import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class GavLocation extends Location
 {
 	private final PomSection section;
+
 	private GAV gav;
+
 	private GAV unresolvedGav;
 
-	public GavLocation( Project project, PomSection section, MavenDependency resolved )
+	public static GavLocation createProjectGavLocation(WorkingSession session, GAV projectGav, StringBuilder log)
 	{
-		this( project, section, new GAV( resolved.getGroupId(), resolved.getArtifactId(), resolved.getVersion() ), null );
+		Project project = session.projects().get(projectGav);
+		if (project == null)
+		{
+			if (log != null)
+				log.append(Tools.warningMessage("cannot find project for gav " + projectGav));
+			return null;
+		}
+
+		if (project.getUnresolvedPom().getModel().getVersion() == null)
+		{
+			GAV parentProjectGav = session.graph().parent(projectGav);
+			if (parentProjectGav != null)
+			{
+				// TODO : callers should then update references to the updated project !!!
+				return createProjectGavLocation(session, parentProjectGav, log);
+			}
+		}
+
+		return new GavLocation(project, PomSection.PROJECT, projectGav, projectGav);
 	}
 
-	public GavLocation( Project project, PomSection section, Dependency readden )
+	public GavLocation(Project project, PomSection section, MavenDependency resolved)
 	{
-		this( project, section, null, null );
-
-		setReadDependency( readden );
+		this(project, section, new GAV(resolved.getGroupId(), resolved.getArtifactId(), resolved.getVersion()), null);
 	}
 
-	public GavLocation( Project project, PomSection section, GAV resolvedGav, GAV unresolvedGav )
+	public GavLocation(Project project, PomSection section, Dependency readden)
 	{
-		super( project, null );
+		this(project, section, null, null);
+
+		setReadDependency(readden);
+	}
+
+	public GavLocation(Project project, PomSection section, GAV resolvedGav, GAV unresolvedGav)
+	{
+		super(project, null);
 
 		this.section = section;
 		this.gav = resolvedGav;
 		this.unresolvedGav = unresolvedGav;
 	}
 
-	public void setReadDependency( Dependency readden )
+	public void setReadDependency(Dependency readden)
 	{
-		unresolvedGav = new GAV( readden.getGroupId(), readden.getArtifactId(), readden.getVersion() );
+		unresolvedGav = new GAV(readden.getGroupId(), readden.getArtifactId(), readden.getVersion());
 	}
 
 	public PomSection getSection()
@@ -46,7 +73,7 @@ public class GavLocation extends Location
 
 	public GAV getGav()
 	{
-		if( gav != null )
+		if (gav != null)
 			return gav;
 
 		return unresolvedGav;
@@ -67,18 +94,18 @@ public class GavLocation extends Location
 	{
 		String res = "[" + section + "] ";
 
-		if( gav != null && unresolvedGav != null )
+		if (gav != null && unresolvedGav != null)
 		{
-			if( gav.equals( unresolvedGav ) )
+			if (gav.equals(unresolvedGav))
 				res += gav.toString();
 			else
 				res += "[*] " + gav + " / " + unresolvedGav;
 		}
 		else
 		{
-			if( gav != null )
+			if (gav != null)
 				res = gav.toString();
-			else if( unresolvedGav != null )
+			else if (unresolvedGav != null)
 				res += "[unresolved]" + unresolvedGav;
 			else
 				res += "[!!!] NULL";
@@ -99,30 +126,30 @@ public class GavLocation extends Location
 	}
 
 	@Override
-	public boolean equals( Object obj )
+	public boolean equals(Object obj)
 	{
-		if( this == obj )
+		if (this == obj)
 			return true;
-		if( !super.equals( obj ) )
+		if (!super.equals(obj))
 			return false;
-		if( getClass() != obj.getClass() )
+		if (getClass() != obj.getClass())
 			return false;
-		GavLocation other = (GavLocation) obj;
-		if( gav == null )
+		GavLocation other = (GavLocation)obj;
+		if (gav == null)
 		{
-			if( other.gav != null )
+			if (other.gav != null)
 				return false;
 		}
-		else if( !gav.equals( other.gav ) )
+		else if (!gav.equals(other.gav))
 			return false;
-		if( section != other.section )
+		if (section != other.section)
 			return false;
-		if( unresolvedGav == null )
+		if (unresolvedGav == null)
 		{
-			if( other.unresolvedGav != null )
+			if (other.unresolvedGav != null)
 				return false;
 		}
-		else if( !unresolvedGav.equals( other.unresolvedGav ) )
+		else if (!unresolvedGav.equals(other.unresolvedGav))
 			return false;
 		return true;
 	}

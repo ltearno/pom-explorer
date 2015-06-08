@@ -45,7 +45,17 @@ public class Tools
 
 		for( Location location : locations )
 		{
-			Change<? extends Location> c = Change.create( location, newGav );
+			Change<? extends Location> c;
+			if (!location.getProject().getGav().equals(originalGav))
+			{
+				// because the location is used to update a parent version, ...
+				GAV locGav = location.getProject().getGav();
+				c = Change.create(location, new GAV(locGav.getGroupId(), locGav.getArtifactId(), newGav.getVersion()));
+			}
+			else
+			{
+				c = Change.create(location, newGav);
+			}
 			changes.add( c );
 		}
 
@@ -184,7 +194,7 @@ public class Tools
 	public static Location findDependencyLocation( WorkingSession session, Project project, GAVRelation<Relation> relation )
 	{
 		if( project.getGav().equals( relation.getTarget() ) )
-			return new GavLocation( project, PomSection.PROJECT, project.getGav(), project.getGav() );
+			return GavLocation.createProjectGavLocation(session, project.getGav(), null);
 
 		Location dependencyLocation = null;
 
@@ -225,6 +235,13 @@ public class Tools
 			return depLoc;
 
 		String property = getPropertyNameFromPropertyReference( depLoc.getUnresolvedGav().getVersion() );
+
+		// if property == 'project.version', manage this special case...
+		if("project.version".equals(property))
+		{
+			GavLocation projectLoc = GavLocation.createProjectGavLocation(session, loc.getProject().getGav(), null);
+			return projectLoc;
+		}
 
 		Project definitionProject = Tools.getPropertyDefinitionProject( session, depLoc.getProject(), property );
 		if( definitionProject != null )
@@ -381,4 +398,9 @@ public class Tools
 			return 0;
 		}
 	};
+
+	public static Object warningMessage(String message)
+	{
+		return "<span style='color:orange'>" + message + "</span><br/>";
+	}
 }
