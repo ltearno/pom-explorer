@@ -138,11 +138,11 @@ public class ReleaseCommand
 				{
 					// because the location is used to update a parent version, ...
 					GAV locGav = dependencyLocation.getProject().getGav();
-					GAV newLocGav = new GAV(locGav.getGroupId(), locGav.getArtifactId(), to.getVersion());
+					GAV newLocGav = new GAV(gavLoc.getGav().getGroupId(), gavLoc.getGav().getArtifactId(), to.getVersion());
 
 					c = Change.create(dependencyLocation, newLocGav);
 
-					log.append(Tools.changeGav(client, session, locGav, newLocGav, changes, changedProjects));
+					log.append(Tools.changeGav(client, session, gavLoc.getGav(), newLocGav, changes, changedProjects));
 				}
 				else
 				{

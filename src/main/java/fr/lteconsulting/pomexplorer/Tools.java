@@ -266,7 +266,7 @@ public class Tools
 
 		Project definitionProject = Tools.getPropertyDefinitionProject(session, depLoc.getProject(), property);
 		if (definitionProject != null)
-			return new PropertyLocation(depLoc.getProject(), depLoc, property, definitionProject.getUnresolvedPom()
+			return new PropertyLocation(definitionProject, depLoc, property, definitionProject.getUnresolvedPom()
 					.getProperties().getProperty(property));
 
 		return null;

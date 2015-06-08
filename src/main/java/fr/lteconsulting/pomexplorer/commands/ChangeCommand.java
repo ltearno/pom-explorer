@@ -14,26 +14,31 @@ import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 public class ChangeCommand
 {
-	@Help( "Changes the GAV version and also in dependent projects. Parameters : gav, newVersion" )
-	public static String gav( CommandOptions options, Client client, WorkingSession session, String originalGavString, String newGavString )
+	@Help("Changes the GAV version and also in dependent projects. Parameters : gav, newVersion")
+	public static String gav(CommandOptions options, Client client, WorkingSession session, String originalGavString,
+			String newGavString)
 	{
-		GAV originalGav = Tools.string2Gav( originalGavString );
-		GAV newGav = Tools.string2Gav( newGavString );
+		GAV originalGav = Tools.string2Gav(originalGavString);
+		GAV newGav = Tools.string2Gav(newGavString);
 
-		if( originalGav == null || newGav == null )
+		if (originalGav == null || newGav == null)
 			return "specify the GAV with the group:artifact:version format please";
 
 		StringBuilder log = new StringBuilder();
 
-		log.append( "<b>Changing</b> " + originalGav + " to " + newGav + "<br/><br/>" );
+		log.append("<b>Changing</b> " + originalGav + " to " + newGav + "<br/><br/>");
 
 		Set<Change<? extends Location>> changes = new HashSet<>();
 
 		GavLocation loc = GavLocation.createProjectGavLocation(session, originalGav, log);
-		changes.add(new GavChange(loc, new GAV(loc.getGav().getGroupId(), loc.getGav().getArtifactId(), newGav
-				.getVersion())));
+		if (loc != null)
+			changes.add(new GavChange(loc, new GAV(loc.getGav().getGroupId(), loc.getGav().getArtifactId(), newGav
+					.getVersion())));
+		else
+			log.append(Tools.warningMessage("cannot find location for project " + originalGav));
+
 		log.append(Tools.changeGav(client, session, originalGav, newGav, changes, new HashSet<GAV>()));
-		Tools.printChangeList( log, changes );
+		Tools.printChangeList(log, changes);
 
 		CommandTools.maybeApplyChanges(session, options, log, changes);
 
