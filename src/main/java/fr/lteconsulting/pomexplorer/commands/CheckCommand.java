@@ -11,6 +11,7 @@ import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
@@ -51,6 +52,21 @@ public class CheckCommand
 				sb.append( "</ul></li>" );
 			}
 			sb.append( "</ul>" );
+		}
+
+		sb.append( "<br/><br/><b>Projects without version</b><br/>" );
+		for( Project project : session.projects().values() )
+		{
+			// project version should be null
+			if( project.getUnresolvedPom().getModel().getVersion() != null )
+				continue;
+
+			// and project should have a parent
+			GAV parentProjectGav = session.graph().parent( project.getGav() );
+			if( parentProjectGav == null )
+				continue;
+
+			sb.append( project.toString() + "<br/>" );
 		}
 
 		return sb.toString();

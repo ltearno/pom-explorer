@@ -1,17 +1,25 @@
 package fr.lteconsulting.pomexplorer.changes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.changes.processor.FollowGavProcessor;
+import fr.lteconsulting.pomexplorer.changes.processor.GavToPropertyProcessor;
+import fr.lteconsulting.pomexplorer.changes.processor.NoVersionProjectProcessor;
+import fr.lteconsulting.pomexplorer.changes.processor.ReopenerProcessor;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 /**
  * Manages a set of changes.<br/>
  * 
- * As changes are added to this ChangeSet, they are processed to check whether other changes should be generated, or if
- * some should be removed
+ * As changes are added to this ChangeSet, they are processed to check whether
+ * other changes should be generated, or if some should be removed
  * 
  * - allows to transform changes according to the situation
  * 
@@ -19,64 +27,105 @@ import fr.lteconsulting.pomexplorer.depanalyze.Location;
  * 
  * - allows to check consistency between changes
  */
-public class ChangeSetManager implements IChangeSet
+public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends Location>>
 {
 	private final List<IChangeProcessor> processors = new ArrayList<>();
-	private final Set<ChangeInfo> changes = new HashSet<>();
 
-	public void addProcessor(IChangeProcessor processor)
+	private final Map<ChangeInfo, ChangeInfo> changes = new HashMap<>();
+
+	public ChangeSetManager()
 	{
-		processors.add(processor);
+		addProcessor( new NoVersionProjectProcessor() );
+		addProcessor( new FollowGavProcessor() );
+		addProcessor( new GavToPropertyProcessor() );
+		addProcessor( new ReopenerProcessor() );
+	}
+
+	public void addProcessor( IChangeProcessor processor )
+	{
+		processors.add( processor );
 	}
 
 	@Override
-	public void addChange(Change<? extends Location> change)
+	public void addChange( Change<? extends Location> change, String causingMessage )
 	{
-		ChangeInfo info = new ChangeInfo(change);
+		ChangeInfo existingChange = addChange( change );
 
-		changes.add(info);
+		if( causingMessage != null )
+			existingChange.getChange().setCausingMessage( causingMessage );
 	}
 
 	@Override
-	public void removeChange(Change<? extends Location> change)
+	public void addChange( Change<? extends Location> change, Change<? extends Location> causingChange )
 	{
-		ChangeInfo info = new ChangeInfo(change);
+		ChangeInfo existingChange = addChange( change );
 
-		changes.remove(info);
+		if( causingChange != null )
+			existingChange.getChange().addCause( causingChange );
+	}
+
+	private ChangeInfo addChange( Change<? extends Location> change )
+	{
+		ChangeInfo info = new ChangeInfo( change );
+
+		ChangeInfo existingChange = changes.get( info );
+		if( existingChange == null )
+		{
+			changes.put( info, info );
+			existingChange = info;
+		}
+
+		return existingChange;
+	}
+
+	@Override
+	public void removeChange( Change<? extends Location> change )
+	{
+		ChangeInfo info = new ChangeInfo( change );
+
+		changes.remove( info );
 	}
 
 	/**
 	 * Process change resolution
 	 */
-	public void resolveChanges()
+	public void resolveChanges( WorkingSession session, StringBuilder log )
 	{
-		while (true)
+		log.append( "<br/>Resolving changes...<br/><br/>" );
+
+		int round = 0;
+
+		while( true )
 		{
 			// while there are not yet processed changes
 			List<ChangeInfo> notProcessed = new ArrayList<>();
-			for (ChangeInfo info : changes)
-				if (!info.isProcessed())
-					notProcessed.add(info);
+			for( ChangeInfo info : changes.values() )
+				if( !info.isProcessed() )
+					notProcessed.add( info );
 
-			if (notProcessed.isEmpty())
+			if( notProcessed.isEmpty() )
 				break;
 
 			// process them : run each processor on it
-			for (ChangeInfo info : notProcessed)
+			for( ChangeInfo info : notProcessed )
 			{
-				processChange(info);
+				log.append( "[" + round + "] processing change " + info.getChange().getLocation() + "<br/>" );
+
+				processChange( session, log, info );
 
 				// mark them as processed
-				info.setProcessed(true);
+				info.setProcessed( true );
 			}
 
+			round++;
 		}
 	}
 
-	private void processChange(ChangeInfo info)
+	private void processChange( WorkingSession session, StringBuilder log, ChangeInfo info )
 	{
-		for (IChangeProcessor processor : processors)
-			processor.processChange(info.getChange(), this);
+
+		for( IChangeProcessor processor : processors )
+			processor.processChange( session, log, info.getChange(), this );
 	}
 
 	private static class ChangeInfo
@@ -85,7 +134,7 @@ public class ChangeSetManager implements IChangeSet
 
 		private boolean isProcessed;
 
-		public ChangeInfo(Change<? extends Location> change)
+		public ChangeInfo( Change<? extends Location> change )
 		{
 			this.change = change;
 		}
@@ -95,7 +144,7 @@ public class ChangeSetManager implements IChangeSet
 			return change;
 		}
 
-		public void setProcessed(boolean isProcessed)
+		public void setProcessed( boolean isProcessed )
 		{
 			this.isProcessed = isProcessed;
 		}
@@ -115,23 +164,34 @@ public class ChangeSetManager implements IChangeSet
 		}
 
 		@Override
-		public boolean equals(Object obj)
+		public boolean equals( Object obj )
 		{
-			if (this == obj)
+			if( this == obj )
 				return true;
-			if (obj == null)
+			if( obj == null )
 				return false;
-			if (getClass() != obj.getClass())
+			if( getClass() != obj.getClass() )
 				return false;
-			ChangeInfo other = (ChangeInfo)obj;
-			if (change == null)
+			ChangeInfo other = (ChangeInfo) obj;
+			if( change == null )
 			{
-				if (other.change != null)
+				if( other.change != null )
 					return false;
 			}
-			else if (!change.equals(other.change))
+			else if( !change.equals( other.change ) )
 				return false;
 			return true;
 		}
+	}
+
+	@Override
+	public Iterator<Change<? extends Location>> iterator()
+	{
+		Set<Change<? extends Location>> res = new HashSet<>();
+
+		for( ChangeInfo info : changes.values() )
+			res.add( info.getChange() );
+
+		return res.iterator();
 	}
 }

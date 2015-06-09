@@ -22,6 +22,8 @@ public abstract class Change<L extends Location>
 
 	private List<Change<? extends Location>> causes;
 
+	private String causingMessage;
+
 	public Change( L location )
 	{
 		this.location = location;
@@ -31,20 +33,29 @@ public abstract class Change<L extends Location>
 	{
 		return location;
 	}
-	
+
+	public void setCausingMessage( String causingMessage )
+	{
+		this.causingMessage = causingMessage;
+	}
+
 	/**
 	 * Register the change that was the cause of the creation of this change
 	 * 
 	 * @param causingChange
 	 */
-	public void addCause(Change<? extends Location> causingChange)
+	public void addCause( Change<? extends Location> causingChange )
 	{
+		if( causingChange == null )
+			return;
+
 		ensureCausesList();
-		causes.add(causingChange);
+		causes.add( causingChange );
 	}
-	
+
 	/**
-	 * Returns the list of changes which were the cause of the creation of this one.
+	 * Returns the list of changes which were the cause of the creation of this
+	 * one.
 	 */
 	public List<Change<? extends Location>> getCauses()
 	{
@@ -53,7 +64,7 @@ public abstract class Change<L extends Location>
 
 	private void ensureCausesList()
 	{
-		if( causes == null)
+		if( causes == null )
 			causes = new ArrayList<>();
 	}
 
@@ -66,6 +77,14 @@ public abstract class Change<L extends Location>
 		else
 			res = "in: [!project not found!]<br/>";
 		res += "location: " + location + "<br/>";
+
+		if( causingMessage != null )
+			res += " cause:" + causingMessage + "<br/>";
+
+		if( causes != null && !causes.isEmpty() )
+		{
+			res += " " + causes.size() + " causes" + "<br/>";
+		}
 		return res;
 	}
 
