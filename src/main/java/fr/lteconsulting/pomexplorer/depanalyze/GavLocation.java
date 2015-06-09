@@ -54,6 +54,11 @@ public class GavLocation extends Location
 
 		setReadDependency(readden);
 	}
+	
+	public GavLocation(Project project, PomSection section, GAV gav)
+	{
+		this( project, section, gav, gav );
+	}
 
 	public GavLocation(Project project, PomSection section, GAV resolvedGav, GAV unresolvedGav)
 	{
