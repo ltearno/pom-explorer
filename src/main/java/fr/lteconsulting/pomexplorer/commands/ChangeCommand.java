@@ -30,7 +30,6 @@ public class ChangeCommand
 		GavLocation loc = new GavLocation(session.projects().get(originalGav), PomSection.PROJECT, originalGav);
 		changes.addChange(new GavChange(loc, newGav), "changing " + originalGav + " to " + newGav);
 
-		log.append("<br/>resolving changes...<br/>");
 		changes.resolveChanges(session, log);
 
 		Tools.printChangeList(log, changes);

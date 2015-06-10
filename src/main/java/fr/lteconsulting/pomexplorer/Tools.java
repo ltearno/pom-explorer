@@ -34,8 +34,10 @@ public class Tools
 		return gav;
 	}
 
-	public static void printChangeList( StringBuilder res, ChangeSetManager changes )
+	public static void printChangeList(StringBuilder log, ChangeSetManager changes)
 	{
+		log.append("<br/>Change list...<br/><br/>");
+
 		List<Change<? extends Location>> changeList = new ArrayList<>();
 		for( Change<? extends Location> c : changes )
 			changeList.add( c );
@@ -61,7 +63,7 @@ public class Tools
 
 		for( Change<? extends Location> c : changeList )
 		{
-			res.append( c.toString() );
+			log.append(c.toString());
 		}
 	}
 

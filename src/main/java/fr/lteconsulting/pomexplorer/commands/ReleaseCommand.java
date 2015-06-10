@@ -121,7 +121,6 @@ public class ReleaseCommand
 			changes.addChange(Change.create(dependencyLocation, to), causeMessage);
 		}
 
-		log.append("<br/>resolving changes...<br/>");
 		changes.resolveChanges(session, log);
 
 		Tools.printChangeList(log, changes);

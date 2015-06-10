@@ -89,6 +89,8 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 	 */
 	public void resolveChanges(WorkingSession session, StringBuilder log)
 	{
+		log.append("<br/>Resolving changes...<br/><br/>");
+
 		int round = 0;
 
 		while (true)
