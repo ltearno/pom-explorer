@@ -52,6 +52,8 @@ public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 				return;
 			}
 
+			log.append( Tools.warningMessage( "updating the '" + property + "' property" ) );
+
 			Project definitionProject = Tools.getPropertyDefinitionProject( session, depLoc.getProject(), property );
 			if( definitionProject != null )
 			{

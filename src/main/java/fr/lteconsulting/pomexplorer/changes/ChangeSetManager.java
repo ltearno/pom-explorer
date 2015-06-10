@@ -11,7 +11,8 @@ import java.util.Set;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.changes.processor.FollowGavProcessor;
 import fr.lteconsulting.pomexplorer.changes.processor.GavToPropertyProcessor;
-import fr.lteconsulting.pomexplorer.changes.processor.ProjectVersionProcessor;
+import fr.lteconsulting.pomexplorer.changes.processor.NoVersionProjectProcessor;
+import fr.lteconsulting.pomexplorer.changes.processor.ReopenerProcessor;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 /**
@@ -34,9 +35,10 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 
 	public ChangeSetManager()
 	{
-		addProcessor( new ProjectVersionProcessor() );
+		addProcessor( new NoVersionProjectProcessor() );
 		addProcessor( new FollowGavProcessor() );
 		addProcessor( new GavToPropertyProcessor() );
+		addProcessor( new ReopenerProcessor() );
 	}
 
 	public void addProcessor( IChangeProcessor processor )

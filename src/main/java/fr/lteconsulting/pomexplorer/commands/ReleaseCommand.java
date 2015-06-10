@@ -2,8 +2,6 @@ package fr.lteconsulting.pomexplorer.commands;
 
 import java.util.Set;
 
-import fr.lteconsulting.hexa.client.tools.Func;
-import fr.lteconsulting.pomexplorer.AppFactory;
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.PomSection;
@@ -20,68 +18,14 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ReleaseCommand
 {
-	interface Task extends Func<String>
-	{
-	}
-
-	static class ChangeVersionTask implements Task
-	{
-		private final GAV gav;
-
-		private final Client client;
-
-		public ChangeVersionTask( GAV gav, Client client )
-		{
-			this.gav = gav;
-			this.client = client;
-		}
-
-		@Override
-		public String exec()
-		{
-			return AppFactory.get().commands().takeCommand( client, "de on " + gav.toString() );
-		}
-
-		@Override
-		public int hashCode()
-		{
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((gav == null) ? 0 : gav.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals( Object obj )
-		{
-			if( this == obj )
-				return true;
-			if( obj == null )
-				return false;
-			if( getClass() != obj.getClass() )
-				return false;
-			ChangeVersionTask other = (ChangeVersionTask) obj;
-			if( gav == null )
-			{
-				if( other.gav != null )
-					return false;
-			}
-			else if( !gav.equals( other.gav ) )
-				return false;
-			return true;
-		}
-	}
-
-	private final static String SNAPSHOT_SUFFIX = "-SNAPSHOT";
-
 	private void releaseGav( Client client, WorkingSession session, GAV gav, ChangeSetManager changes, StringBuilder log )
 	{
 		String causeMessage = "release of " + gav;
 
-		if( !isReleased( gav ) )
+		if( !Tools.isReleased( gav ) )
 		{
 			GavLocation loc = new GavLocation( session.projects().get( gav ), PomSection.PROJECT, gav );
-			changes.addChange( new GavChange( loc, releasedGav( loc.getGav() ) ), causeMessage );
+			changes.addChange( new GavChange( loc, Tools.releasedGav( loc.getGav() ) ), causeMessage );
 		}
 
 		Set<GAVRelation<Relation>> relations = session.graph().relationsRec( gav );
@@ -93,11 +37,11 @@ public class ReleaseCommand
 				continue;
 			}
 
-			if( isReleased( r.getTarget() ) )
+			if( Tools.isReleased( r.getTarget() ) )
 				continue;
 
 			GAV source = r.getSource();
-			GAV to = releasedGav( r.getTarget() );
+			GAV to = Tools.releasedGav( r.getTarget() );
 
 			Project project = session.projects().get( source );
 			if( project == null )
@@ -107,7 +51,7 @@ public class ReleaseCommand
 			}
 
 			GavLocation targetLoc = new GavLocation( session.projects().get( r.getTarget() ), PomSection.PROJECT, r.getTarget() );
-			changes.addChange( new GavChange( targetLoc, releasedGav( targetLoc.getGav() ) ), causeMessage );
+			changes.addChange( new GavChange( targetLoc, Tools.releasedGav( targetLoc.getGav() ) ), causeMessage );
 
 			Location dependencyLocation = Tools.findDependencyLocation( session, project, r );
 			if( dependencyLocation == null )
@@ -118,10 +62,6 @@ public class ReleaseCommand
 
 			changes.addChange( Change.create( dependencyLocation, to ), causeMessage );
 		}
-
-		changes.resolveChanges( session, log );
-
-		Tools.printChangeList( log, changes );
 	}
 
 	@Help( "releases a gav, all dependencies are also released. GAVs depending on released GAVs are updated." )
@@ -139,6 +79,10 @@ public class ReleaseCommand
 		ChangeSetManager changes = new ChangeSetManager();
 
 		releaseGav( client, session, gav, changes, log );
+		
+		changes.resolveChanges( session, log );
+		
+		Tools.printChangeList( log, changes );
 
 		CommandTools.maybeApplyChanges( session, options, log, changes );
 
@@ -159,27 +103,19 @@ public class ReleaseCommand
 				continue;
 			}
 
-			if( isReleased( gav ) )
+			if( Tools.isReleased( gav ) )
 				continue;
 
 			releaseGav( client, session, gav, changes, log );
+			
 		}
+
+		changes.resolveChanges( session, log );
+		
+		Tools.printChangeList( log, changes );
 
 		CommandTools.maybeApplyChanges( session, options, log, changes );
 
 		return log.toString();
-	}
-
-	private boolean isReleased( GAV gav )
-	{
-		return !gav.getVersion().endsWith( SNAPSHOT_SUFFIX );
-	}
-
-	private GAV releasedGav( GAV gav )
-	{
-		if( !isReleased( gav ) )
-			return new GAV( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
-
-		return gav;
 	}
 }

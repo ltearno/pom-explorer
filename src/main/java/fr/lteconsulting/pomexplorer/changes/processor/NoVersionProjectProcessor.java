@@ -16,7 +16,7 @@ import fr.lteconsulting.pomexplorer.changes.IChangeSet;
  * @author Arnaud
  *
  */
-public class ProjectVersionProcessor extends AbstractGavChangeProcessor
+public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 {
 	@Override
 	public void processChange( WorkingSession session, StringBuilder log, GavChange change, IChangeSet changeSet )
@@ -48,6 +48,8 @@ public class ProjectVersionProcessor extends AbstractGavChangeProcessor
 		// TODO should be only done if the version changes. And the GAV change
 		// may apply partilally on the current project if it concerns its
 		// groupId or artifactId
+
+		log.append( Tools.warningMessage( "updating the parent version, because the project itself lacks a version" ) );
 
 		// remove the change from the change set
 		changeSet.removeChange( change );

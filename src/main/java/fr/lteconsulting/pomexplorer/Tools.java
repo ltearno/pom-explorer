@@ -349,4 +349,23 @@ public class Tools
 	{
 		return "<span style='color:red;'>" + message + "</span><br/>";
 	}
+
+	/**
+	 * 
+	 */
+
+	private final static String SNAPSHOT_SUFFIX = "-SNAPSHOT";
+
+	public static boolean isReleased( GAV gav )
+	{
+		return !gav.getVersion().endsWith( SNAPSHOT_SUFFIX );
+	}
+
+	public static GAV releasedGav( GAV gav )
+	{
+		if( !isReleased( gav ) )
+			return new GAV( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
+
+		return gav;
+	}
 }
