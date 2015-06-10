@@ -31,20 +31,21 @@ public abstract class Change<L extends Location>
 	{
 		return location;
 	}
-	
+
 	/**
 	 * Register the change that was the cause of the creation of this change
 	 * 
 	 * @param causingChange
 	 */
-	public void addCause(Change<? extends Location> causingChange)
+	public void addCause( Change<? extends Location> causingChange )
 	{
 		ensureCausesList();
-		causes.add(causingChange);
+		causes.add( causingChange );
 	}
-	
+
 	/**
-	 * Returns the list of changes which were the cause of the creation of this one.
+	 * Returns the list of changes which were the cause of the creation of this
+	 * one.
 	 */
 	public List<Change<? extends Location>> getCauses()
 	{
@@ -53,7 +54,7 @@ public abstract class Change<L extends Location>
 
 	private void ensureCausesList()
 	{
-		if( causes == null)
+		if( causes == null )
 			causes = new ArrayList<>();
 	}
 

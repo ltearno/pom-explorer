@@ -2,10 +2,13 @@ package fr.lteconsulting.pomexplorer.changes;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.changes.processor.FollowGavProcessor;
+import fr.lteconsulting.pomexplorer.changes.processor.ProjectVersionProcessor;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 /**
@@ -20,10 +23,16 @@ import fr.lteconsulting.pomexplorer.depanalyze.Location;
  * 
  * - allows to check consistency between changes
  */
-public class ChangeSetManager implements IChangeSet
+public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends Location>>
 {
 	private final List<IChangeProcessor> processors = new ArrayList<>();
 	private final Set<ChangeInfo> changes = new HashSet<>();
+
+	public ChangeSetManager()
+	{
+		addProcessor( new ProjectVersionProcessor() );
+		addProcessor( new FollowGavProcessor() );
+	}
 
 	public void addProcessor( IChangeProcessor processor )
 	{
@@ -134,5 +143,16 @@ public class ChangeSetManager implements IChangeSet
 				return false;
 			return true;
 		}
+	}
+
+	@Override
+	public Iterator<Change<? extends Location>> iterator()
+	{
+		Set<Change<? extends Location>> res = new HashSet<>();
+
+		for( ChangeInfo info : changes )
+			res.add( info.getChange() );
+
+		return res.iterator();
 	}
 }

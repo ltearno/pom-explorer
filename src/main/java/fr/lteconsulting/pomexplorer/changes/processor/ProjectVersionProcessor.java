@@ -44,12 +44,14 @@ public class ProjectVersionProcessor extends AbstractGavChangeProcessor
 			return;
 
 		// in this case:
-		
-		// TODO should be only done if the version changes. And the GAV change may apply partilally on the current project if it concerns its groupId or artifactId
+
+		// TODO should be only done if the version changes. And the GAV change
+		// may apply partilally on the current project if it concerns its
+		// groupId or artifactId
 
 		// remove the change from the change set
 		changeSet.removeChange( change );
-		
+
 		// add changing the parent's version in the change set
 		GAV parentProjectGavModified = new GAV( parentProjectGav.getGroupId(), parentProjectGav.getArtifactId(), change.getNewGav().getVersion() );
 		changeSet.addChange( new GavChange( session.projects().get( parentProjectGav ), PomSection.PROJECT, parentProjectGav, parentProjectGavModified ) );

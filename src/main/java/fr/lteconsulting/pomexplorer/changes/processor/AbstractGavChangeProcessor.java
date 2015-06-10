@@ -16,7 +16,7 @@ public abstract class AbstractGavChangeProcessor implements IChangeProcessor
 	{
 		if( !(change instanceof GavChange) )
 			return;
-		
-		processChange( session, log, (GavChange)change, changeSet );
+
+		processChange( session, log, (GavChange) change, changeSet );
 	}
 }

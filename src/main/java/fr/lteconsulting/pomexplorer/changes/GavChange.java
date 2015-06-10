@@ -8,7 +8,7 @@ import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 public class GavChange extends Change<GavLocation>
 {
 	private final GAV newGav;
-	
+
 	public GavChange( Project project, PomSection pomSection, GAV gav, GAV newGav )
 	{
 		this( new GavLocation( project, pomSection, gav ), newGav );
