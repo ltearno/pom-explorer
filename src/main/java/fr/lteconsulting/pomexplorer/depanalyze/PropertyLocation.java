@@ -23,7 +23,8 @@ public class PropertyLocation extends Location
 	@Override
 	public String toString()
 	{
-		return "property '" + propertyName + "' " + (propertyValue != null ? ("with current value '" + propertyValue + "'") : "(null value)");
+		return "[PROPERTY] '" + propertyName + "' "
+				+ (propertyValue != null ? ("with current value '" + propertyValue + "'") : "(null value)");
 	}
 
 	@Override

@@ -54,6 +54,7 @@ public class ProjectVersionProcessor extends AbstractGavChangeProcessor
 
 		// add changing the parent's version in the change set
 		GAV parentProjectGavModified = new GAV( parentProjectGav.getGroupId(), parentProjectGav.getArtifactId(), change.getNewGav().getVersion() );
-		changeSet.addChange( new GavChange( session.projects().get( parentProjectGav ), PomSection.PROJECT, parentProjectGav, parentProjectGavModified ) );
+		changeSet.addChange(new GavChange(session.projects().get(parentProjectGav), PomSection.PROJECT, parentProjectGav,
+				parentProjectGavModified), change);
 	}
 }

@@ -7,7 +7,12 @@ public interface IChangeSet
 	/**
 	 * Adds a change in the change set.
 	 */
-	void addChange( Change<? extends Location> change );
+	void addChange(Change<? extends Location> change, String causeMessage);
+
+	/**
+	 * Adds a change in the change set.
+	 */
+	void addChange(Change<? extends Location> change, Change<? extends Location> cause);
 
 	/**
 	 * Removes a change from the change set.

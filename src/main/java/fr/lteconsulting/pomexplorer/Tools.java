@@ -18,7 +18,6 @@ import fr.lteconsulting.pomexplorer.changes.Change;
 import fr.lteconsulting.pomexplorer.changes.ChangeSetManager;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
-import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
 import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
@@ -187,41 +186,7 @@ public class Tools
 				break;
 		}
 
-		dependencyLocation = maybeFindPropertyLocation( session, dependencyLocation );
-
 		return dependencyLocation;
-	}
-
-	public static Location maybeFindPropertyLocation( WorkingSession session, Location loc )
-	{
-		if( loc == null )
-			return null;
-
-		if( !(loc instanceof GavLocation) )
-			return loc;
-
-		GavLocation depLoc = (GavLocation) loc;
-
-		if( depLoc.getUnresolvedGav() == null )
-			return depLoc;
-
-		if( !Tools.isMavenVariable( depLoc.getUnresolvedGav().getVersion() ) )
-			return depLoc;
-
-		String property = getPropertyNameFromPropertyReference( depLoc.getUnresolvedGav().getVersion() );
-
-		// if property == 'project.version', manage this special case...
-		if( "project.version".equals( property ) )
-		{
-			GavLocation projectLoc = new GavLocation( loc.getProject(), PomSection.PROJECT, loc.getProject().getGav() );
-			return projectLoc;
-		}
-
-		Project definitionProject = Tools.getPropertyDefinitionProject( session, depLoc.getProject(), property );
-		if( definitionProject != null )
-			return new PropertyLocation( definitionProject, depLoc, property, definitionProject.getUnresolvedPom().getProperties().getProperty( property ) );
-
-		return null;
 	}
 
 	public static String getPropertyNameFromPropertyReference( String name )
@@ -266,7 +231,7 @@ public class Tools
 			if( searchedDependency.getGroupId().equals( d.getGroupId() ) && searchedDependency.getArtifactId().equals( d.getArtifactId() ) )
 			{
 				GAV g = new GAV( d.getGroupId(), d.getArtifactId(), d.getVersion() );
-				return new GavLocation( project, PomSection.DEPENDENCY_MNGT, g, searchedDependency );
+				return new GavLocation(project, PomSection.DEPENDENCY_MNGT, searchedDependency, g);
 			}
 		}
 
@@ -375,6 +340,11 @@ public class Tools
 
 	public static Object warningMessage( String message )
 	{
-		return "<span style='color:orange'>" + message + "</span><br/>";
+		return "<span style='color:orange;'>" + message + "</span><br/>";
+	}
+
+	public static Object errorMessage(String message)
+	{
+		return "<span style='color:red;'>" + message + "</span><br/>";
 	}
 }
