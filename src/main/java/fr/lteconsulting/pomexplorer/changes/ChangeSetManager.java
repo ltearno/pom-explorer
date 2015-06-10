@@ -17,8 +17,8 @@ import fr.lteconsulting.pomexplorer.depanalyze.Location;
 /**
  * Manages a set of changes.<br/>
  * 
- * As changes are added to this ChangeSet, they are processed to check whether other changes should be generated, or if
- * some should be removed
+ * As changes are added to this ChangeSet, they are processed to check whether
+ * other changes should be generated, or if some should be removed
  * 
  * - allows to transform changes according to the situation
  * 
@@ -34,42 +34,42 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 
 	public ChangeSetManager()
 	{
-		addProcessor(new ProjectVersionProcessor());
-		addProcessor(new FollowGavProcessor());
-		addProcessor(new GavToPropertyProcessor());
+		addProcessor( new ProjectVersionProcessor() );
+		addProcessor( new FollowGavProcessor() );
+		addProcessor( new GavToPropertyProcessor() );
 	}
 
-	public void addProcessor(IChangeProcessor processor)
+	public void addProcessor( IChangeProcessor processor )
 	{
-		processors.add(processor);
-	}
-
-	@Override
-	public void addChange(Change<? extends Location> change, String causingMessage)
-	{
-		ChangeInfo existingChange = addChange(change);
-
-		if (causingMessage != null)
-			existingChange.getChange().setCausingMessage(causingMessage);
+		processors.add( processor );
 	}
 
 	@Override
-	public void addChange(Change<? extends Location> change, Change<? extends Location> causingChange)
+	public void addChange( Change<? extends Location> change, String causingMessage )
 	{
-		ChangeInfo existingChange = addChange(change);
+		ChangeInfo existingChange = addChange( change );
 
-		if (causingChange != null)
-			existingChange.getChange().addCause(causingChange);
+		if( causingMessage != null )
+			existingChange.getChange().setCausingMessage( causingMessage );
 	}
 
-	private ChangeInfo addChange(Change<? extends Location> change)
+	@Override
+	public void addChange( Change<? extends Location> change, Change<? extends Location> causingChange )
 	{
-		ChangeInfo info = new ChangeInfo(change);
+		ChangeInfo existingChange = addChange( change );
 
-		ChangeInfo existingChange = changes.get(info);
-		if (existingChange == null)
+		if( causingChange != null )
+			existingChange.getChange().addCause( causingChange );
+	}
+
+	private ChangeInfo addChange( Change<? extends Location> change )
+	{
+		ChangeInfo info = new ChangeInfo( change );
+
+		ChangeInfo existingChange = changes.get( info );
+		if( existingChange == null )
 		{
-			changes.put(info, info);
+			changes.put( info, info );
 			existingChange = info;
 		}
 
@@ -77,53 +77,53 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 	}
 
 	@Override
-	public void removeChange(Change<? extends Location> change)
+	public void removeChange( Change<? extends Location> change )
 	{
-		ChangeInfo info = new ChangeInfo(change);
+		ChangeInfo info = new ChangeInfo( change );
 
-		changes.remove(info);
+		changes.remove( info );
 	}
 
 	/**
 	 * Process change resolution
 	 */
-	public void resolveChanges(WorkingSession session, StringBuilder log)
+	public void resolveChanges( WorkingSession session, StringBuilder log )
 	{
-		log.append("<br/>Resolving changes...<br/><br/>");
+		log.append( "<br/>Resolving changes...<br/><br/>" );
 
 		int round = 0;
 
-		while (true)
+		while( true )
 		{
 			// while there are not yet processed changes
 			List<ChangeInfo> notProcessed = new ArrayList<>();
-			for (ChangeInfo info : changes.values())
-				if (!info.isProcessed())
-					notProcessed.add(info);
+			for( ChangeInfo info : changes.values() )
+				if( !info.isProcessed() )
+					notProcessed.add( info );
 
-			if (notProcessed.isEmpty())
+			if( notProcessed.isEmpty() )
 				break;
 
 			// process them : run each processor on it
-			for (ChangeInfo info : notProcessed)
+			for( ChangeInfo info : notProcessed )
 			{
-				log.append("[" + round + "] processing change " + info.getChange().getLocation() + "<br/>");
+				log.append( "[" + round + "] processing change " + info.getChange().getLocation() + "<br/>" );
 
-				processChange(session, log, info);
+				processChange( session, log, info );
 
 				// mark them as processed
-				info.setProcessed(true);
+				info.setProcessed( true );
 			}
 
 			round++;
 		}
 	}
 
-	private void processChange(WorkingSession session, StringBuilder log, ChangeInfo info)
+	private void processChange( WorkingSession session, StringBuilder log, ChangeInfo info )
 	{
 
-		for (IChangeProcessor processor : processors)
-			processor.processChange(session, log, info.getChange(), this);
+		for( IChangeProcessor processor : processors )
+			processor.processChange( session, log, info.getChange(), this );
 	}
 
 	private static class ChangeInfo
@@ -132,7 +132,7 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 
 		private boolean isProcessed;
 
-		public ChangeInfo(Change<? extends Location> change)
+		public ChangeInfo( Change<? extends Location> change )
 		{
 			this.change = change;
 		}
@@ -142,7 +142,7 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 			return change;
 		}
 
-		public void setProcessed(boolean isProcessed)
+		public void setProcessed( boolean isProcessed )
 		{
 			this.isProcessed = isProcessed;
 		}
@@ -162,21 +162,21 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 		}
 
 		@Override
-		public boolean equals(Object obj)
+		public boolean equals( Object obj )
 		{
-			if (this == obj)
+			if( this == obj )
 				return true;
-			if (obj == null)
+			if( obj == null )
 				return false;
-			if (getClass() != obj.getClass())
+			if( getClass() != obj.getClass() )
 				return false;
-			ChangeInfo other = (ChangeInfo)obj;
-			if (change == null)
+			ChangeInfo other = (ChangeInfo) obj;
+			if( change == null )
 			{
-				if (other.change != null)
+				if( other.change != null )
 					return false;
 			}
-			else if (!change.equals(other.change))
+			else if( !change.equals( other.change ) )
 				return false;
 			return true;
 		}
@@ -187,8 +187,8 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 	{
 		Set<Change<? extends Location>> res = new HashSet<>();
 
-		for (ChangeInfo info : changes.values())
-			res.add(info.getChange());
+		for( ChangeInfo info : changes.values() )
+			res.add( info.getChange() );
 
 		return res.iterator();
 	}

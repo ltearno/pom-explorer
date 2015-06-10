@@ -34,9 +34,9 @@ public class Tools
 		return gav;
 	}
 
-	public static void printChangeList(StringBuilder log, ChangeSetManager changes)
+	public static void printChangeList( StringBuilder log, ChangeSetManager changes )
 	{
-		log.append("<br/>Change list...<br/><br/>");
+		log.append( "<br/>Change list...<br/><br/>" );
 
 		List<Change<? extends Location>> changeList = new ArrayList<>();
 		for( Change<? extends Location> c : changes )
@@ -63,7 +63,7 @@ public class Tools
 
 		for( Change<? extends Location> c : changeList )
 		{
-			log.append(c.toString());
+			log.append( c.toString() );
 		}
 	}
 
@@ -233,7 +233,7 @@ public class Tools
 			if( searchedDependency.getGroupId().equals( d.getGroupId() ) && searchedDependency.getArtifactId().equals( d.getArtifactId() ) )
 			{
 				GAV g = new GAV( d.getGroupId(), d.getArtifactId(), d.getVersion() );
-				return new GavLocation(project, PomSection.DEPENDENCY_MNGT, searchedDependency, g);
+				return new GavLocation( project, PomSection.DEPENDENCY_MNGT, searchedDependency, g );
 			}
 		}
 
@@ -345,7 +345,7 @@ public class Tools
 		return "<span style='color:orange;'>" + message + "</span><br/>";
 	}
 
-	public static Object errorMessage(String message)
+	public static Object errorMessage( String message )
 	{
 		return "<span style='color:red;'>" + message + "</span><br/>";
 	}

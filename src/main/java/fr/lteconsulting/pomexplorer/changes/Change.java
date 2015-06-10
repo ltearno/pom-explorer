@@ -24,7 +24,7 @@ public abstract class Change<L extends Location>
 
 	private String causingMessage;
 
-	public Change(L location)
+	public Change( L location )
 	{
 		this.location = location;
 	}
@@ -34,7 +34,7 @@ public abstract class Change<L extends Location>
 		return location;
 	}
 
-	public void setCausingMessage(String causingMessage)
+	public void setCausingMessage( String causingMessage )
 	{
 		this.causingMessage = causingMessage;
 	}
@@ -44,17 +44,18 @@ public abstract class Change<L extends Location>
 	 * 
 	 * @param causingChange
 	 */
-	public void addCause(Change<? extends Location> causingChange)
+	public void addCause( Change<? extends Location> causingChange )
 	{
-		if (causingChange == null)
+		if( causingChange == null )
 			return;
 
 		ensureCausesList();
-		causes.add(causingChange);
+		causes.add( causingChange );
 	}
 
 	/**
-	 * Returns the list of changes which were the cause of the creation of this one.
+	 * Returns the list of changes which were the cause of the creation of this
+	 * one.
 	 */
 	public List<Change<? extends Location>> getCauses()
 	{
@@ -63,7 +64,7 @@ public abstract class Change<L extends Location>
 
 	private void ensureCausesList()
 	{
-		if (causes == null)
+		if( causes == null )
 			causes = new ArrayList<>();
 	}
 
@@ -71,30 +72,29 @@ public abstract class Change<L extends Location>
 	public String toString()
 	{
 		String res = "";
-		if (location.getProject() != null)
-			res = "in: " + location.getProject().getGav() + " (<i>" + location.getProject().getPomFile().getAbsolutePath()
-					+ "</i>)<br/>";
+		if( location.getProject() != null )
+			res = "in: " + location.getProject().getGav() + " (<i>" + location.getProject().getPomFile().getAbsolutePath() + "</i>)<br/>";
 		else
 			res = "in: [!project not found!]<br/>";
 		res += "location: " + location + "<br/>";
 
-		if (causingMessage != null)
+		if( causingMessage != null )
 			res += " cause:" + causingMessage + "<br/>";
 
-		if (causes != null && !causes.isEmpty())
+		if( causes != null && !causes.isEmpty() )
 		{
 			res += " " + causes.size() + " causes" + "<br/>";
 		}
 		return res;
 	}
 
-	public static Change<? extends Location> create(Location location, GAV newGav)
+	public static Change<? extends Location> create( Location location, GAV newGav )
 	{
-		if (location instanceof GavLocation)
-			return new GavChange(((GavLocation)location), newGav);
+		if( location instanceof GavLocation )
+			return new GavChange( ((GavLocation) location), newGav );
 
-		if (location instanceof PropertyLocation)
-			return new PropertyChange((PropertyLocation)location, newGav.getVersion());
+		if( location instanceof PropertyLocation )
+			return new PropertyChange( (PropertyLocation) location, newGav.getVersion() );
 
 		return null;
 	}
@@ -109,22 +109,22 @@ public abstract class Change<L extends Location>
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (this == obj)
+		if( this == obj )
 			return true;
-		if (obj == null)
+		if( obj == null )
 			return false;
-		if (getClass() != obj.getClass())
+		if( getClass() != obj.getClass() )
 			return false;
-		@SuppressWarnings("unchecked")
-		Change<? extends Location> other = (Change<? extends Location>)obj;
-		if (location == null)
+		@SuppressWarnings( "unchecked" )
+		Change<? extends Location> other = (Change<? extends Location>) obj;
+		if( location == null )
 		{
-			if (other.location != null)
+			if( other.location != null )
 				return false;
 		}
-		else if (!location.equals(other.location))
+		else if( !location.equals( other.location ) )
 			return false;
 		return true;
 	}

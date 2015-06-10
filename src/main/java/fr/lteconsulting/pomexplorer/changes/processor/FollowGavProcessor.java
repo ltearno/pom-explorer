@@ -11,8 +11,8 @@ import fr.lteconsulting.pomexplorer.changes.IChangeSet;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 /**
- * When a project's gav is changed, the change is repercuted on projects which depends on this project TODO Javadoc de
- * la classe FollowGavProcessor.
+ * When a project's gav is changed, the change is repercuted on projects which
+ * depends on this project TODO Javadoc de la classe FollowGavProcessor.
  */
 public class FollowGavProcessor extends AbstractGavChangeProcessor
 {
@@ -26,6 +26,6 @@ public class FollowGavProcessor extends AbstractGavChangeProcessor
 		Set<Location> locations = Tools.getDirectDependenciesLocations( session, log, change.getLocation().getGav() );
 
 		for( Location location : locations )
-			changeSet.addChange(Change.create(location, change.getNewGav()), change);
+			changeSet.addChange( Change.create( location, change.getNewGav() ), change );
 	}
 }
