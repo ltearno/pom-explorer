@@ -13,11 +13,19 @@ import fr.lteconsulting.pomexplorer.WebServer.XWebServer;
 /**
  * POM Explorer main class
  */
-public class App
+public class PomExporerApp
 {
 	public static void main( String[] args )
 	{
-		App app = new App();
+		System.out.println( "" );
+		System.out.println( "" );
+		System.out.println( "Welcome to POM Explorer (beta) !" );
+		System.out.println( "================================" );
+		System.out.println( "visit http://localhost:90 with a browser to access the application." );
+		System.out.println( "" );
+		System.out.println( "" );
+
+		PomExporerApp app = new PomExporerApp();
 		app.run();
 	}
 
@@ -52,7 +60,7 @@ public class App
 			@Override
 			public void onClientLeft( Client client )
 			{
-				System.out.println( "Bye bye client !" );
+				System.out.println( "Client left." );
 			}
 		};
 

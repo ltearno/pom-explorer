@@ -32,12 +32,12 @@ public class GavsCommand
 
 		StringBuilder log = new StringBuilder();
 
-		log.append("<br/>GAV list " + (gavFilter != null ? ("filtering with '" + gavFilter + "'") : "") + ":<br/>");
+		log.append( "<br/>GAV list " + (gavFilter != null ? ("filtering with '" + gavFilter + "'") : "") + ":<br/>" );
 		for( GAV gav : gavs )
 		{
 			if( gavFilter != null && !gav.toString().toLowerCase().contains( gavFilter ) )
 				continue;
-			log.append(gav + "<br/>");
+			log.append( gav + "<br/>" );
 		}
 
 		return log.toString();

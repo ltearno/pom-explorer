@@ -50,13 +50,13 @@ public class ReopenerProcessor extends AbstractGavChangeProcessor
 			if( index >= 0 && index != version.length() - 1 )
 			{
 				Integer num = Integer.parseInt( version.substring( index + 1 ) );
-				return version.substring( 0, index+1 ) + (num+1);
+				return version.substring( 0, index + 1 ) + (num + 1);
 			}
 		}
 		catch( Exception e )
 		{
 		}
-		
+
 		return version + "-open";
 	}
 }

@@ -97,12 +97,14 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
+							<finalName>pom-explorer</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
 							<archive>
 								<manifest>
-									<mainClass>fr.lteconsulting.pomexplorer.App</mainClass>
+									<mainClass>fr.lteconsulting.pomexplorer.PomExporerApp</mainClass>
 									<packageName>fr.lteconsulting.pomexplorer</packageName>
 								</manifest>
 							</archive>
@@ -116,7 +118,6 @@
 				<directory>src/main/resources</directory>
 				<includes>
 					<include>**/*.java</include>
-					<include>**/*.gwt.xml</include>
 					<include>**/*.js</include>
 					<include>**/*.html</include>
 					<include>**/*.*</include>
@@ -126,7 +127,6 @@
 				<directory>src/main/java</directory>
 				<includes>
 					<include>**/*.java</include>
-					<include>**/*.gwt.xml</include>
 					<include>**/*.js</include>
 					<include>**/*.html</include>
 					<include>**/*.*</include>

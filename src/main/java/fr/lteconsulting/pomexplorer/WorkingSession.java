@@ -30,8 +30,6 @@ public class WorkingSession
 
 	public void registerProject( Project project )
 	{
-		System.out.println( "registered project " + project.getGav() );
-
 		projects.put( project.getGav(), project );
 	}
 

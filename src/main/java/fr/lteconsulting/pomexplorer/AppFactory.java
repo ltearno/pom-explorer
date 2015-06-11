@@ -59,7 +59,7 @@ public class AppFactory
 			commands.addCommand( new BuildCommand() );
 			commands.addCommand( new GraphXCommand() );
 			commands.addCommand( new CheckCommand() );
-			commands.addCommand(new ClassesCommand());
+			commands.addCommand( new ClassesCommand() );
 		}
 
 		return commands;

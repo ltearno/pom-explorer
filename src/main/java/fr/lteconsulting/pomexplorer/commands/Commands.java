@@ -62,7 +62,7 @@ public class Commands
 
 				for( Class<?> pCls : m.getParameterTypes() )
 				{
-					if( pCls == Client.class || pCls == WorkingSession.class )
+					if( pCls == Client.class || pCls == WorkingSession.class || pCls == CommandOptions.class )
 						continue;
 
 					sb.append( " <b><i>" + pCls.getSimpleName() + "</i></b>" );
@@ -203,6 +203,7 @@ public class Commands
 		}
 		catch( Exception e )
 		{
+			System.out.println( "Error when interpreting a command !" );
 			System.out.println( args.length + " arguments of type :" );
 			for( Object a : args )
 				System.out.println( a != null ? a.getClass() : "(null)" );

@@ -18,87 +18,89 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class ClassesCommand
 {
-	public String main(WorkingSession session, Client client)
+	@Help( "Gives the java classes provided by the session's gavs" )
+	public String main( WorkingSession session, Client client )
 	{
-		return by(session, client, null);
+		return by( session, client, null );
 	}
 
-	public String by(WorkingSession session, Client client, String gavFilter)
+	@Help( "Gives the java classes provided by the session's gavs, filtered by the given parameter" )
+	public String by( WorkingSession session, Client client, String gavFilter )
 	{
-		if (gavFilter != null)
+		if( gavFilter != null )
 			gavFilter = gavFilter.toLowerCase();
 
-		ArrayList<GAV> gavs = new ArrayList<>(session.graph().gavs());
-		Collections.sort(gavs, Tools.gavAlphabeticalComparator);
+		ArrayList<GAV> gavs = new ArrayList<>( session.graph().gavs() );
+		Collections.sort( gavs, Tools.gavAlphabeticalComparator );
 
 		StringBuilder log = new StringBuilder();
 
-		log.append("<br/>GAV list " + (gavFilter != null ? ("filtering with '" + gavFilter + "'") : "") + ":<br/>");
-		for (GAV gav : gavs)
+		log.append( "<br/>GAV list " + (gavFilter != null ? ("filtering with '" + gavFilter + "'") : "") + ":<br/>" );
+		for( GAV gav : gavs )
 		{
-			if (gavFilter != null && !gav.toString().toLowerCase().contains(gavFilter))
+			if( gavFilter != null && !gav.toString().toLowerCase().contains( gavFilter ) )
 				continue;
 
-			analyseProvidedClasses(session, gav, log);
+			analyseProvidedClasses( session, gav, log );
 		}
 
 		return log.toString();
 	}
 
-	private void analyseProvidedClasses(WorkingSession session, GAV gav, StringBuilder log)
+	private void analyseProvidedClasses( WorkingSession session, GAV gav, StringBuilder log )
 	{
-		log.append("<br/><b>Java classes provided by gav " + gav + "</b> :<br/>");
+		log.append( "<br/><b>Java classes provided by gav " + gav + "</b> :<br/>" );
 
 		String mavenSettingsFilePath = session.getMavenSettingsFilePath();
 
 		MavenResolverSystem resolver;
-		if (mavenSettingsFilePath != null && !mavenSettingsFilePath.isEmpty())
-			resolver = Maven.configureResolver().fromFile(mavenSettingsFilePath);
+		if( mavenSettingsFilePath != null && !mavenSettingsFilePath.isEmpty() )
+			resolver = Maven.configureResolver().fromFile( mavenSettingsFilePath );
 		else
 			resolver = Maven.resolver();
 
 		File resolvedFile = null;
 		try
 		{
-			resolvedFile = resolver.resolve(gav.toString()).withoutTransitivity().asSingleFile();
+			resolvedFile = resolver.resolve( gav.toString() ).withoutTransitivity().asSingleFile();
 		}
-		catch (Exception e)
+		catch( Exception e )
 		{
-			log.append(Tools.errorMessage("shrinkwrap error : " + e.getMessage()));
+			log.append( Tools.errorMessage( "shrinkwrap error : " + e.getMessage() ) );
 		}
 
-		if (resolvedFile == null)
+		if( resolvedFile == null )
 		{
-			log.append(Tools.warningMessage("cannot resolve the gav " + gav));
+			log.append( Tools.warningMessage( "cannot resolve the gav " + gav ) );
 			return;
 		}
 
-		log.append("resolved file : " + resolvedFile.getAbsolutePath() + "<br/>");
+		log.append( "resolved file : " + resolvedFile.getAbsolutePath() + "<br/>" );
 
 		try
 		{
 			List<String> classNames = new ArrayList<String>();
-			ZipInputStream zip = new ZipInputStream(new FileInputStream(resolvedFile));
-			for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry())
+			ZipInputStream zip = new ZipInputStream( new FileInputStream( resolvedFile ) );
+			for( ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry() )
 			{
-				if (!entry.isDirectory() && entry.getName().endsWith(".class"))
+				if( !entry.isDirectory() && entry.getName().endsWith( ".class" ) )
 				{
-					String className = entry.getName().replace('/', '.');
-					classNames.add(className.substring(0, className.length() - ".class".length()));
+					String className = entry.getName().replace( '/', '.' );
+					classNames.add( className.substring( 0, className.length() - ".class".length() ) );
 				}
 			}
 			zip.close();
 
-			Collections.sort(classNames);
+			Collections.sort( classNames );
 
-			for (String className : classNames)
+			for( String className : classNames )
 			{
-				log.append(className + "<br/>");
+				log.append( className + "<br/>" );
 			}
 		}
-		catch (Exception e)
+		catch( Exception e )
 		{
-			log.append(Tools.errorMessage("error during file inspection ! " + e.getMessage()));
+			log.append( Tools.errorMessage( "error during file inspection ! " + e.getMessage() ) );
 		}
 	}
 }

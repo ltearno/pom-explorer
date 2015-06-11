@@ -79,9 +79,9 @@ public class ReleaseCommand
 		ChangeSetManager changes = new ChangeSetManager();
 
 		releaseGav( client, session, gav, changes, log );
-		
+
 		changes.resolveChanges( session, log );
-		
+
 		Tools.printChangeList( log, changes );
 
 		CommandTools.maybeApplyChanges( session, options, log, changes );
@@ -107,11 +107,11 @@ public class ReleaseCommand
 				continue;
 
 			releaseGav( client, session, gav, changes, log );
-			
+
 		}
 
 		changes.resolveChanges( session, log );
-		
+
 		Tools.printChangeList( log, changes );
 
 		CommandTools.maybeApplyChanges( session, options, log, changes );
