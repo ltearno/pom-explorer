@@ -30,16 +30,16 @@ public class GavsCommand
 		ArrayList<GAV> gavs = new ArrayList<>( session.graph().gavs() );
 		Collections.sort( gavs, Tools.gavAlphabeticalComparator );
 
-		StringBuilder res = new StringBuilder();
+		StringBuilder log = new StringBuilder();
 
-		res.append( "<br/>GAV list " + (gavFilter != null ? ("filtering with '" + gavFilter + "'") : "") + ":<br/>" );
+		log.append("<br/>GAV list " + (gavFilter != null ? ("filtering with '" + gavFilter + "'") : "") + ":<br/>");
 		for( GAV gav : gavs )
 		{
 			if( gavFilter != null && !gav.toString().toLowerCase().contains( gavFilter ) )
 				continue;
-			res.append( gav + "<br/>" );
+			log.append(gav + "<br/>");
 		}
 
-		return res.toString();
+		return log.toString();
 	}
 }

@@ -28,6 +28,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
+@SuppressWarnings("deprecation")
 public class Changer
 {
 	DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
