@@ -99,7 +99,7 @@ public class ReleaseCommand
 		{
 			if( gav.getVersion() == null )
 			{
-				log.append( "<span style='color:orange;'>No target version (" + gav + ") !</span><br/>" );
+				log.append( Tools.warningMessage( "no target version (" + gav + ") !" ) );
 				continue;
 			}
 
