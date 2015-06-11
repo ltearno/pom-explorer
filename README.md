@@ -1,4 +1,7 @@
 # pom-explorer
+
+[![Build Status](https://travis-ci.org/ltearno/pom-explorer.svg?branch=master)](https://travis-ci.org/ltearno/pom-explorer)
+
 The Maven's swiss knife
 
 ## Description
