@@ -22,7 +22,7 @@ Main functions :
 - manages properties, dependency management, and so on. Pom-explorer knows what pom.xml to update and where to update it. If a dependency specifies `<version>${foobar.version}</version>`, pom-explorer will go to update the `foobar.version` property...
 - statistics and check functions are also available...
 
-This project came as i had the need for a productivity tool to manage projects which needs to be released often. It is used to manage the versions, connections and dependencies of 43 projects. If you have ideas or anything like that, don't hesitate to write a pull request.
+This project is in development and serves also as a platform to work on usefull use cases that can manifest. It is used to manage the versions, connections and dependencies of 43 projects. If you have ideas or anything like that, don't hesitate to write a pull request.
 
 ## Build and run
 
