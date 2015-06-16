@@ -6,4 +6,10 @@ public class ParentRelation extends Relation
 	{
 		super( RelationType.PARENT );
 	}
+
+	@Override
+	public String toString()
+	{
+		return "parent";
+	}
 }

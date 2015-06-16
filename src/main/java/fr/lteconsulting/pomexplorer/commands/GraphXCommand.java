@@ -7,7 +7,7 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DirectedSubgraph;
 
-import com.mxgraph.layout.mxFastOrganicLayout;
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.GraphFrame;
@@ -33,6 +33,8 @@ public class GraphXCommand
 		Set<GAV> vertexSubset = new HashSet<>();
 		for (GAV gav : fullGraph.vertexSet())
 		{
+			// if (gav.toString().contains("socle-test") || gav.toString().contains("legacy"))
+			// continue;
 			if (filter == null || gav.toString().toLowerCase().contains(filter))
 			{
 				vertexSubset.add(gav);
@@ -52,9 +54,10 @@ public class GraphXCommand
 
 		new GraphFrame( ga );
 
-		mxFastOrganicLayout layout = new mxFastOrganicLayout( ga );
+		mxHierarchicalLayout layout = new mxHierarchicalLayout(ga);
+		// mxFastOrganicLayout layout = new mxFastOrganicLayout( ga );
 		layout.setUseBoundingBox( true );
-		layout.setForceConstant( 200 );
+		// layout.setForceConstant( 200 );
 		layout.execute( ga.getDefaultParent() );
 
 		return "ok, graph displayed on the server.";
