@@ -53,7 +53,7 @@ public class ReleaseCommand
 			GavLocation targetLoc = new GavLocation( session.projects().get( r.getTarget() ), PomSection.PROJECT, r.getTarget() );
 			changes.addChange( new GavChange( targetLoc, Tools.releasedGav( targetLoc.getGav() ) ), causeMessage );
 
-			Location dependencyLocation = Tools.findDependencyLocation( session, project, r );
+			Location dependencyLocation = Tools.findDependencyLocation(session, log, project, r);
 			if( dependencyLocation == null )
 			{
 				log.append( Tools.errorMessage( "Cannot find the location of dependency to " + r.getTarget() + " in this project " + project ) );
