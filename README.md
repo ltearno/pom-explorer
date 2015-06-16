@@ -99,3 +99,14 @@ There is a default script that can be executed when a new client connects. If a 
 If a `config.properties` file is found in the working directory it is used to configure sessions when created. Here is the list of the possible flags :
 
 - **defaultMavenSettingsFile** : if you want to use a specific Maven configuration file, you can set its path here.
+
+## Roadmap / Todo list
+
+### Questions the program should answer
+
+- in a project, which are declared dependency management which are not used in a dependency ?
+- where is defined such property, available in such project ?
+
+### Functionalities
+
+- user wants the project X to be always build with latest dependencies. If code is modified in a depended project, required projects should be rebuilt.
