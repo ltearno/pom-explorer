@@ -110,3 +110,4 @@ If a `config.properties` file is found in the working directory it is used to co
 ### Functionalities
 
 - user wants the project X to be always build with latest dependencies. If code is modified in a depended project, required projects should be rebuilt.
+- display a graph of selected gavs and selected relation type (parent relation ship for instance)
