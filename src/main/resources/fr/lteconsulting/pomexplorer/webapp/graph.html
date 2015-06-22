@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Pom Explorer graph visualization</title>
+<script src="vivagraph.js"></script>
+
+<script type='text/javascript'>
+            /*global Viva*/
+            function onLoad() {
+                var graphGenerator = Viva.Graph.generator();
+
+                //var graph = graphGenerator.grid(50, 10);
+                var graph = Viva.Graph.graph();
+
+                var layout = Viva.Graph.Layout.forceDirected(graph, {
+                   springLength : 70,//30,
+                   springCoeff : 0.0002,//0.0008,
+                   dragCoeff : 0.01,
+                   gravity : -1.2,
+                   theta : 1
+                });
+
+                var graphics = Viva.Graph.View.webglGraphics();
+
+                var renderer = Viva.Graph.View.renderer(graph,
+                    {
+                        layout     : layout,
+                        graphics   : graphics,
+                        renderLinks : true,
+                        prerender  : true
+                    });
+
+                renderer.run();
+                
+                var req = new XMLHttpRequest();
+				req.open('GET', '/graph', true);
+				req.onreadystatechange = function (aEvt) {
+				  if (req.readyState == 4) {
+				     if(req.status == 200) {
+				     	var d = JSON.parse(req.responseText);
+				     	console.log( d );
+				     	
+				     	graph.beginUpdate();
+				     	for(var ri in d.relations)
+				     	{
+				     		var r = d.relations[ri];
+				     		graph.addLink(r.from, r.to, r.label);
+				     	}
+				     	graph.endUpdate();
+				     }
+				     else {
+				      console.log("Erreur pendant le chargement de la page.\n");
+				     }
+				  }
+				};
+				req.send(null);
+            }
+        </script>
+<style type='text/css'>
+body {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	overflow: hidden;
+}
+
+canvas {
+	width: 100%;
+	height: 100%;
+}
+</style>
+</head>
+<body onload="onLoad()" style="background-color: black;">
+
+</body>
+</html>
