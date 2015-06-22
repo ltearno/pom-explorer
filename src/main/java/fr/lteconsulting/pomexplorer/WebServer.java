@@ -63,7 +63,7 @@ public class WebServer
 				clients.put( client.getId(), client );
 
 				xWebServer.onNewClient( client );
-
+				
 				channel.getReceiveSetter().set( new AbstractReceiveListener()
 				{
 					@Override
@@ -82,6 +82,7 @@ public class WebServer
 						clients.remove( System.identityHashCode( channel ) );
 					}
 				} );
+				
 				channel.resumeReceives();
 			}
 		} ) );
