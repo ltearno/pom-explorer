@@ -72,7 +72,7 @@ It is possible to visualize dynamically the graph dependency. The graph is using
 
 First you need to create a session, then you might go to this url :
 
-	http://localhost:90/graph2.html
+	http://localhost:90/graph.html
 
 ![](pomgraph.png)
 

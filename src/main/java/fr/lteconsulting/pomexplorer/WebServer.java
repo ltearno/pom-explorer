@@ -64,12 +64,16 @@ public class WebServer
 		String to;
 
 		String label;
+		
+		Relation relation;
 
-		public EdgeDto(String from, String to, String label)
+		public EdgeDto(String from, String to, Relation relation)
 		{
 			this.from = from;
 			this.to = to;
-			this.label = label;
+			this.relation = relation;
+			
+			label = relation.toString();
 		}
 	}
 
@@ -93,14 +97,14 @@ public class WebServer
 		{
 			boolean takeGav(GAV gav)
 			{
-				return gav.getGroupId().startsWith("fr");
+				return true;//gav.getGroupId().startsWith("fr");
 			}
 
 			boolean takeRelation(Relation relation)
 			{
-				return (relation instanceof DependencyRelation)
+				return true;/*(relation instanceof DependencyRelation)
 						&& (((DependencyRelation)relation).getScope() == null || "COMPILE"
-								.equals(((DependencyRelation)relation).getScope()));
+								.equals(((DependencyRelation)relation).getScope()));*/
 			}
 
 			@Override
@@ -133,7 +137,7 @@ public class WebServer
 						if (!takeGav(target))
 							continue;
 
-						EdgeDto edge = new EdgeDto(gav.toString(), target.toString(), relation.toString());
+						EdgeDto edge = new EdgeDto(gav.toString(), target.toString(), relation);
 						dto.relations.add(edge);
 					}
 				}

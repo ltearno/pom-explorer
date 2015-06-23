@@ -16,5 +16,34 @@
 </head>
 <body>
   <script src="bundle.js"></script>
+  
+  <div style="position:fixed;right:0;top:0;width:25%;bottom:0;z-index:10000;background-color:white;">
+  	<textarea id="filtersArea" style="width:100%;height:90%;">
+({
+confirmNode: function(gav) {
+  //var g = gavString.split(':');
+  //gav = {groupId:g[0], artifactId:g[1], version:g[2]};
+  // if(gav.indexOf("fr.lteconsulting")!=0) return false;
+  // if(gav.indexOf("com")!=0) return false;
+  return true;
+},
+confirmRelation: function(relation) {
+  // if(relation.type!="BUILD_DEPENDENCY") return false;
+  if(relation.type!="DEPENDENCY") return false;
+  // if(relation.type!="PARENT") return false;
+  return true;
+},
+linkColor: function(relation) {
+  return { fromColor:0xff0000, toColor:0x00ffff};
+},
+node: function(node) {
+  if(node.data.groupId=="fr.lteconsulting")
+    return 0xff0000;
+  return { size:21 + node.links.length * 0, color:0xffffff };
+}
+})
+  	</textarea>
+  	<button id="refreshButton">Refresh</button>
+  </div>
 </body>
 </html>
