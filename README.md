@@ -66,9 +66,19 @@ Here's an example of a result :
 
 ![](gali.png)
 
+## Visualization of the dependency graph
+
+It is possible to visualize dynamically the graph dependency. The graph is using WebGL and allows to walk in the 3D space with the W, S, A, D, Q and E keys. It is using the VivaGraph and NGraph libraries.
+
+First you need to create a session, then you might go to this url :
+
+	http://localhost:90/graph2.html
+
+![](pomgraph.png)
+
 ## Analysing dependencies
 
-...
+... Documentation to be written ...
 
 ## Manipulating the pom graph
 
