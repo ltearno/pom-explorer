@@ -20,3 +20,4 @@ target/
 hs_err_pid*
 welcome.commands
 config.properties
+.factorypath

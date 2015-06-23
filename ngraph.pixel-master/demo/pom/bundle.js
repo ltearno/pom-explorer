@@ -14,18 +14,14 @@ req.onreadystatechange = function (e) {
             var graph = Viva.Graph.graph();
 
             refreshButton.addEventListener('click', function() {
+                updateGraph();
+            });
+
+            function updateGraph() {
                 var t = filtersArea.value;
                 filters = eval( t );
                 console.log(filters);
 
-                updateGraph();
-
-                //for(var i=0;i<100;i++) {
-                //    graph.addNode("toto:toto:v-"+i, {groupId:"toto", artifactId:"toto", version:"v-"+i});
-                //}
-            });
-
-            function updateGraph() {
                 graph.beginUpdate();
                 
                 for(var gi in rootData.gavs) {
@@ -43,25 +39,26 @@ req.onreadystatechange = function (e) {
 
                 for (var ri in rootData.relations) {
                     var r = rootData.relations[ri];
-                    if( filters==null || (filters.confirmNode(r.from)&&filters.confirmNode(r.to)&&filters.confirmRelation(r.relation)) )
+                    if( filters==null || (filters.confirmNode(r.from)&&filters.confirmNode(r.to)&&filters.confirmRelation(r)) )
                         graph.addLink(r.from, r.to, r);
                 }
 
                 graph.endUpdate();
 
-                graph.beginUpdate();
-
                 var toRemove = [];
                 graph.forEachLink(function(link) {
-                    if(filters!=null && !filters.confirmRelation(link.data.relation))
+                    if(filters!=null && !filters.confirmRelation(link.data))
                         toRemove.push(link);
                 });
+
+                graph.beginUpdate();
+
                 for(var r in toRemove)
                     graph.removeLink(toRemove[r]);
 
                 graph.endUpdate();
 
-                if(filters) {
+                if(filters && renderer) {
                     graph.forEachNode(function(node) {
                         var t = filters.node(node);
                          renderer.nodeColor(node.id, t.color);
@@ -75,41 +72,11 @@ req.onreadystatechange = function (e) {
             }
 
             updateGraph();
-            
+
             var renderGraph = require('../..');
             var renderer = window.r = renderGraph(graph);
 
-            // we are going to remember node colors, so that edges can get same color as well
-            var nodeColor = Object.create(null);
-
-            function setCustomNodeUI(node) {
-                var color;
-                if( node.data.groupId == 'fr.lteconsulting' )
-                    color = 0xff0000;
-                else
-                    color = 0xffffff;
-              //var color = nodeColor[node.id] = Math.random() * 0xFFFFFF | 0;
-              renderer.nodeColor(node.id, color);
-              //renderer.nodeSize(node.id, Math.random() * 21 + 10);
-            }
-
-            function setCustomLinkUI(link) {
-                var fromColor = nodeColor[link.fromId];
-                var toColor = nodeColor[link.toId];
-                if( link.data.relation.scope == "TEST") {
-                 fromColor = 0x0ff000;
-                 toColor = 0x0ff000;
-                }
-                if( link.data.relation.type == "PARENT") {
-                    fromColor = 0x000ff0;
-                    toColor = 0x000ff0;
-                }
-                if( link.data.relation.type == "BUILD_DEPENDENCY") {
-                    fromColor = 0xf0000f;
-                    toColor = 0xf0000f;
-                }
-              renderer.linkColor(link.id, fromColor, toColor);
-            }
+            updateGraph();
         } else {
             console.log("Erreur pendant le chargement de la page.\n");
         }
