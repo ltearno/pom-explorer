@@ -39,7 +39,7 @@ public class WebServer
 
 	private final Map<Integer, Client> clients = new HashMap<>();
 
-	public WebServer( XWebServer xWebServer, Func2<Client, String, String> socketCallback )
+	public WebServer(XWebServer xWebServer, Func2<Client, String, String> socketCallback)
 	{
 		this.xWebServer = xWebServer;
 		this.socketCallback = socketCallback;
@@ -47,23 +47,25 @@ public class WebServer
 
 	public interface XWebServer
 	{
-		void onNewClient( Client client );
+		void onNewClient(Client client);
 
-		void onClientLeft( Client client );
+		void onClientLeft(Client client);
 	}
 
-	private Client getClient( Channel channel )
+	private Client getClient(Channel channel)
 	{
-		return clients.get( System.identityHashCode( channel ) );
+		return clients.get(System.identityHashCode(channel));
 	}
 
 	static class EdgeDto
 	{
 		String from;
+
 		String to;
+
 		String label;
 
-		public EdgeDto( String from, String to, String label )
+		public EdgeDto(String from, String to, String label)
 		{
 			this.from = from;
 			this.to = to;
@@ -74,6 +76,7 @@ public class WebServer
 	static class GraphDto
 	{
 		Set<String> gavs;
+
 		Set<EdgeDto> relations;
 	}
 
@@ -82,85 +85,100 @@ public class WebServer
 		PathHandler pathHandler = new PathHandler();
 
 		// web app static files
-		pathHandler.addPrefixPath( "/", new ResourceHandler( new ClassPathResourceManager( getClass().getClassLoader(), "fr/lteconsulting/pomexplorer/webapp" ) ).addWelcomeFiles( "index.html" ) );
+		pathHandler.addPrefixPath("/", new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
+				"fr/lteconsulting/pomexplorer/webapp")).addWelcomeFiles("index.html"));
 
 		// http end point
-		pathHandler.addExactPath( "/graph", new HttpHandler()
+		pathHandler.addExactPath("/graph", new HttpHandler()
 		{
+			boolean takeGav(GAV gav)
+			{
+				return gav.getGroupId().startsWith("fr");
+			}
+
+			boolean takeRelation(Relation relation)
+			{
+				return (relation instanceof DependencyRelation)
+						&& (((DependencyRelation)relation).getScope() == null || "COMPILE"
+								.equals(((DependencyRelation)relation).getScope()));
+			}
+
 			@Override
-			public void handleRequest( HttpServerExchange exchange ) throws Exception
+			public void handleRequest(HttpServerExchange exchange) throws Exception
 			{
 				List<WorkingSession> sessions = AppFactory.get().sessions();
-				if( sessions == null || sessions.isEmpty() )
+				if (sessions == null || sessions.isEmpty())
 					return;
 
-				WorkingSession session = sessions.get( 0 );
+				WorkingSession session = sessions.get(0);
 
 				DirectedGraph<GAV, Relation> g = session.graph().internalGraph();
 
 				GraphDto dto = new GraphDto();
 				dto.gavs = new HashSet<>();
 				dto.relations = new HashSet<>();
-				for( GAV gav : g.vertexSet() )
+				for (GAV gav : g.vertexSet())
 				{
-					if( !gav.getGroupId().startsWith( "fr" ) )
+					if (!takeGav(gav))
 						continue;
-					dto.gavs.add( gav.toString() );
 
-					for( Relation relation : g.outgoingEdgesOf( gav ) )
+					dto.gavs.add(gav.toString());
+
+					for (Relation relation : g.outgoingEdgesOf(gav))
 					{
-						if( !(relation instanceof DependencyRelation) )
+						if (!takeRelation(relation))
 							continue;
-						GAV target = g.getEdgeTarget( relation );
-						if( !target.getGroupId().startsWith( "fr" ) )
+
+						GAV target = g.getEdgeTarget(relation);
+						if (!takeGav(target))
 							continue;
-						EdgeDto edge = new EdgeDto( gav.toString(), target.toString(), relation.toString() );
-						dto.relations.add( edge );
+
+						EdgeDto edge = new EdgeDto(gav.toString(), target.toString(), relation.toString());
+						dto.relations.add(edge);
 					}
 				}
 
 				Gson gson = new Gson();
-				exchange.getResponseSender().send( gson.toJson( dto ) );
-
-				exchange.endExchange();
+				exchange.getResponseSender().send(gson.toJson(dto));
 			}
-		} );
+		});
 
 		// web socket end point
-		pathHandler.addPrefixPath( "/ws", websocket( new WebSocketConnectionCallback()
+		pathHandler.addPrefixPath("/ws", websocket(new WebSocketConnectionCallback()
 		{
 			@Override
-			public void onConnect( WebSocketHttpExchange exchange, WebSocketChannel channel )
+			public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel channel)
 			{
-				Client client = new Client( System.identityHashCode( channel ), channel );
-				clients.put( client.getId(), client );
+				Client client = new Client(System.identityHashCode(channel), channel);
+				clients.put(client.getId(), client);
 
-				xWebServer.onNewClient( client );
+				xWebServer.onNewClient(client);
 
-				channel.getReceiveSetter().set( new AbstractReceiveListener()
+				channel.getReceiveSetter().set(new AbstractReceiveListener()
 				{
 					@Override
-					protected void onFullTextMessage( WebSocketChannel channel, BufferedTextMessage message )
+					protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message)
 					{
-						String messageData = socketCallback.exec( getClient( channel ), message.getData() );
-						WebSockets.sendText( messageData, channel, null );
+						String messageData = socketCallback.exec(getClient(channel), message.getData());
+						WebSockets.sendText(messageData, channel, null);
 					}
 
 					@Override
-					protected void onClose( WebSocketChannel webSocketChannel, StreamSourceFrameChannel channel ) throws IOException
+					protected void onClose(WebSocketChannel webSocketChannel, StreamSourceFrameChannel channel)
+							throws IOException
 					{
-						super.onClose( webSocketChannel, channel );
+						super.onClose(webSocketChannel, channel);
 
-						xWebServer.onClientLeft( getClient( channel ) );
-						clients.remove( System.identityHashCode( channel ) );
+						xWebServer.onClientLeft(getClient(channel));
+						clients.remove(System.identityHashCode(channel));
 					}
-				} );
+				});
 
 				channel.resumeReceives();
 			}
-		} ) );
+		}));
 
-		Undertow server = Undertow.builder().addHttpListener( 90, "localhost" ).setHandler( pathHandler ).build();
+		Undertow server = Undertow.builder().addHttpListener(90, "0.0.0.0").setHandler(pathHandler).build();
 		server.start();
 	}
 }
