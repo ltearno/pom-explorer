@@ -13,10 +13,8 @@
 =Creating your session
 =
 session create
-session mavenSettingsFilePath C:\pgih\maven\3.2.1\conf\settings.xml
+
 =
 =Analyzing the default directory
 =
-analyze directory C:\gr\
-#analyze directory C:\gr\socle.pgih-parent
-analyze directory C:\tmp\pgih-oracle\
+analyze directory C:\documents\repos

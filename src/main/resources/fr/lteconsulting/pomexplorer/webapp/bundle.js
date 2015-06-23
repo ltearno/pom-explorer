@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var req = new XMLHttpRequest();
 req.open('GET', '/graph', true);
-req.onreadystatechange = function (aEvt) {
+req.onreadystatechange = function (e) {
     if (req.readyState == 4) {
         if (req.status == 200) {
             var d = JSON.parse(req.responseText);
@@ -9,15 +9,33 @@ req.onreadystatechange = function (aEvt) {
             
             var graph = Viva.Graph.graph();
 
-            graph.beginUpdate();
+            //graph.beginUpdate();
             for (var ri in d.relations) {
                 var r = d.relations[ri];
                 graph.addLink(r.from, r.to, r.label);
             }
-            graph.endUpdate();
+            //graph.endUpdate();
             
             var renderGraph = require('../..');
-            window.r = renderGraph(graph);
+            var renderer = window.r = renderGraph(graph);
+
+            // we are going to remember node colors, so that edges can get same color as well
+            var nodeColor = Object.create(null);
+
+            graph.forEachNode(setCustomNodeUI);
+            graph.forEachLink(setCustomLinkUI);
+
+            function setCustomNodeUI(node) {
+              var color = nodeColor[node.id] = Math.random() * 0xFFFFFF | 0;
+              renderer.nodeColor(node.id, color);
+              renderer.nodeSize(node.id, Math.random() * 21 + 10);
+            }
+
+            function setCustomLinkUI(link) {
+              var fromColor = nodeColor[link.fromId];
+              var toColor = nodeColor[link.toId];
+              renderer.linkColor(link.id, fromColor, toColor);
+            }
         } else {
             console.log("Erreur pendant le chargement de la page.\n");
         }
