@@ -70,11 +70,18 @@ Here's an example of a result :
 
 It is possible to visualize dynamically the graph dependency. The graph is using WebGL and allows to walk in the 3D space with the W, S, A, D, Q and E keys. It is using the VivaGraph and NGraph libraries.
 
-First you need to create a session, then you might go to this url :
+You can enter the `graph` command :
 
-	http://localhost:90/graph.html
+	> graph
+	To display the graph, go to : graph.html?session=1441798206
+
+Then click on the given link to see the graph for your current session.
 
 ![](pomgraph.png)
+
+### The graph window
+
+In the main part, you can navigate with W,A,S,D,E,A and the arrow keys. On the right side, you can edit javascript filters and customizers for node and links.
 
 ## Analysing dependencies
 

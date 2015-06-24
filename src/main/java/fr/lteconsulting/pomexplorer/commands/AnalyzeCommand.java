@@ -9,9 +9,15 @@ public class AnalyzeCommand
 	@Help( "analyse all the pom files in a directory, recursively" )
 	public String directory( Client client, WorkingSession session, String directory )
 	{
+		StringBuilder log = new StringBuilder();
+
+		client.send( "Analyzing directoy '" + directory + "'...<br/>" );
+
 		PomAnalyzer analyzer = new PomAnalyzer();
 		analyzer.analyze( directory, session, client );
 
-		return "Analyzis completed for '" + directory + "'.";
+		log.append( "Analyzis completed for '" + directory + "'." );
+
+		return log.toString();
 	}
 }

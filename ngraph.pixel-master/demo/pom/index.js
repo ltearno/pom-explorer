@@ -10,8 +10,15 @@ document.addEventListener('DOMContentLoaded', function() {
         window.animatedGraph = animateCheckbox.checked;
     });
 
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
     var req = new XMLHttpRequest();
-    req.open('GET', '/graph', true);
+    req.open('GET', '/graph?session=' + getParameterByName('session'), true);
     req.onreadystatechange = function (e) {
         if (req.readyState == 4) {
             if (req.status == 200) {
