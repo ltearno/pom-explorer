@@ -164,7 +164,8 @@ function pixel(graph, options) {
       beforeFrameCallback();
     }
     if (!isStable) {
-      isStable = layout.step();
+      if( window.animatedGraph )
+        isStable = layout.step();
       nodeView.update();
       edgeView.update();
     } else {

@@ -9,7 +9,8 @@
     "colors": "browserify demo/colors/index.js > demo/colors/bundle.js",
     "config": "browserify demo/config/index.js > demo/config/bundle.js",
     "edit": "browserify demo/edit/index.js > demo/edit/bundle.js",
-    "start": "npm run basic && npm run colors && npm run config && npm run edit"
+    "start": "npm run basic && npm run colors && npm run config && npm run edit",
+    "pom": "browserify demo/pom/index.js > demo/pom/bundle.js"
   },
   "keywords": [
     "graph",
