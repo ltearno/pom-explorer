@@ -2,10 +2,11 @@ package fr.lteconsulting.pomexplorer.commands;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.Client;
@@ -39,11 +40,13 @@ public class Commands
 
 		sb.append( "<b>List of commands</b><br/>" );
 		sb.append( "<i>You can type only the first letters of commands, for example '<b>ga li</b>' instead of '<b>gavs list</b>'</i><br/><br/>" );
+		
+		List<String> cs = new ArrayList<String>(commands.keySet());
+		Collections.sort( cs );
 
-		for( Entry<String, Object> e : commands.entrySet() )
+		for( String shortcut : cs )
 		{
-			Object c = e.getValue();
-			String shortcut = e.getKey();
+			Object c = commands.get(  shortcut );
 
 			for( Method m : c.getClass().getDeclaredMethods() )
 			{

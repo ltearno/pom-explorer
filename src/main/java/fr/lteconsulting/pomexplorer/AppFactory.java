@@ -11,6 +11,7 @@ import fr.lteconsulting.pomexplorer.commands.ClassesCommand;
 import fr.lteconsulting.pomexplorer.commands.Commands;
 import fr.lteconsulting.pomexplorer.commands.DependsCommand;
 import fr.lteconsulting.pomexplorer.commands.GavsCommand;
+import fr.lteconsulting.pomexplorer.commands.GitCommand;
 import fr.lteconsulting.pomexplorer.commands.GraphCommand;
 import fr.lteconsulting.pomexplorer.commands.HelpCommand;
 import fr.lteconsulting.pomexplorer.commands.ProjectsCommand;
@@ -60,6 +61,7 @@ public class AppFactory
 			commands.addCommand( new GraphCommand() );
 			commands.addCommand( new CheckCommand() );
 			commands.addCommand( new ClassesCommand() );
+			commands.addCommand( new GitCommand() );
 		}
 
 		return commands;
