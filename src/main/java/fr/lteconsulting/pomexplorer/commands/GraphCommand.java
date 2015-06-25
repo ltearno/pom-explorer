@@ -1,6 +1,9 @@
 package fr.lteconsulting.pomexplorer.commands;
 
+import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,9 +21,13 @@ import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.GraphFrame;
+import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.Repository;
+import fr.lteconsulting.pomexplorer.graph.RepositoryRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class GraphCommand
@@ -38,7 +45,7 @@ public class GraphCommand
 
 	private boolean isOkGav(GAV gav)
 	{
-		return gav.toString().contains("fr.pgih");
+		return gav.toString().contains("fr");
 	}
 
 	private boolean isOkRelation(Relation relation)
@@ -60,7 +67,6 @@ public class GraphCommand
 	{
 		try
 		{
-			FileWriter fileWriter = new FileWriter("myExportedGraph2.graphml");
 			GraphMLExporter<GAV, Relation> exporter = new GraphMLExporter<GAV, Relation>(
 					new IntegerNameProvider<GAV>(),
 					new VertexNameProvider<GAV>()
@@ -76,6 +82,26 @@ public class GraphCommand
 					{
 						@Override
 						public String getEdgeName(Relation edge)
+						{
+							return edge.toString();
+						}
+					});
+
+			GraphMLExporter<Repository, RepositoryRelation> repoExporter = new GraphMLExporter<Repository, RepositoryRelation>(
+					new IntegerNameProvider<Repository>(),
+					new VertexNameProvider<Repository>()
+					{
+						@Override
+						public String getVertexName(Repository vertex)
+						{
+							return vertex.toString();
+						}
+					},
+					new IntegerEdgeNameProvider<RepositoryRelation>(),
+					new EdgeNameProvider<RepositoryRelation>()
+					{
+						@Override
+						public String getEdgeName(RepositoryRelation edge)
 						{
 							return edge.toString();
 						}
@@ -107,14 +133,90 @@ public class GraphCommand
 				}
 			}
 
+			DirectedGraph<Repository, RepositoryRelation> repoGraph = new DirectedMultigraph<Repository, RepositoryRelation>(
+					RepositoryRelation.class);
+			for (GAV gav : ng.vertexSet())
+			{
+				String repoPath = getGAVRepository(session, gav);
+				if (repoPath == null)
+					continue;
+
+				Repository repo = new Repository(new File(repoPath).toPath());
+				repoGraph.addVertex(repo);
+
+				for (Relation relation : ng.outgoingEdgesOf(gav))
+				{
+					GAV target = ng.getEdgeTarget(relation);
+					String targetRepoPath = getGAVRepository(session, target);
+					if (targetRepoPath == null)
+						continue;
+
+					Repository targetRepo = new Repository(new File(targetRepoPath).toPath());
+
+
+					if (repo.equals(targetRepo))
+						continue;
+
+					repoGraph.addVertex(targetRepo);
+
+					RepositoryRelation rr = repoGraph.getEdge(repo, targetRepo);
+					if (rr == null)
+					{
+						rr = new RepositoryRelation();
+
+						System.out.println(repo + " ---> " + targetRepo + "   rel " + System.identityHashCode(relation));
+						repoGraph.addEdge(repo, targetRepo, rr);
+					}
+
+					if (relation.getClass() == ParentRelation.class)
+						rr.addRelation("PARENT");
+					else if (relation.getClass() == DependencyRelation.class)
+						rr.addRelation("DEP");
+					else if (relation.getClass() == BuildDependencyRelation.class)
+						rr.addRelation("BUILD");
+				}
+			}
+
+			FileWriter fileWriter = new FileWriter("exportedGraph.graphml");
 			exporter.export(fileWriter, ng);
 			fileWriter.close();
+
+			fileWriter = new FileWriter("exportedGraphRepos.graphml");
+			repoExporter.export(fileWriter, repoGraph);
+			fileWriter.close();
+
 			return "done.<br/>";
 		}
 		catch (Exception e)
 		{
 			return "Error ! : " + e.getMessage() + "<br/>";
 		}
+	}
+
+	private String getGAVRepository(WorkingSession session, GAV gav)
+	{
+		Project project = session.projects().get(gav);
+		if (project == null)
+			return null;
+
+		return findGitRoot(project.getPomFile().getParent());
+	}
+
+	private String findGitRoot(String path)
+	{
+		if (path == null)
+			return null;
+
+		Path gitPath = Paths.get(path, ".git");
+		File gitPathFile = gitPath.toFile();
+		if (gitPathFile.exists() && gitPathFile.isDirectory())
+			return path;
+
+		Path parentPath = Paths.get(path).getParent();
+		if (parentPath == null)
+			return null;
+
+		return findGitRoot(parentPath.toString());
 	}
 
 	@Help("displays a graph on the server machine")
