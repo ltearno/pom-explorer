@@ -25,7 +25,7 @@ public class ApplicationSettings
 		}
 		catch( IOException e )
 		{
-			System.out.println( "Impossible to read the configuration file : " + configFile.getAbsolutePath() );
+			System.out.println( "No configuration file found, skipping. You can create the '" + configFile.getAbsolutePath() + "' file if you need." );
 		}
 	}
 

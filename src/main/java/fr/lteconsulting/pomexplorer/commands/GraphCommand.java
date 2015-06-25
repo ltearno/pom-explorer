@@ -163,8 +163,6 @@ public class GraphCommand
 					if (rr == null)
 					{
 						rr = new RepositoryRelation();
-
-						System.out.println(repo + " ---> " + targetRepo + "   rel " + System.identityHashCode(relation));
 						repoGraph.addEdge(repo, targetRepo, rr);
 					}
 

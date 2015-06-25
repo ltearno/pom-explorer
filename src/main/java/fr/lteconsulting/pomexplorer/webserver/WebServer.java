@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer;
+package fr.lteconsulting.pomexplorer.webserver;
 
 import static io.undertow.Handlers.websocket;
 import io.undertow.Undertow;
@@ -19,69 +19,27 @@ import java.io.IOException;
 import java.nio.channels.Channel;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import org.jgrapht.DirectedGraph;
-
-import com.google.gson.Gson;
-
-import fr.lteconsulting.hexa.client.tools.Func2;
-import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.Client;
 
 public class WebServer
 {
+	private final ExecutorService executor = Executors.newCachedThreadPool();
 	private final XWebServer xWebServer;
-
-	private final Func2<Client, String, String> socketCallback;
 
 	private final Map<Integer, Client> clients = new HashMap<>();
 
-	public WebServer( XWebServer xWebServer, Func2<Client, String, String> socketCallback )
+	public WebServer( XWebServer xWebServer )
 	{
 		this.xWebServer = xWebServer;
-		this.socketCallback = socketCallback;
-	}
-
-	public interface XWebServer
-	{
-		void onNewClient( Client client );
-
-		void onClientLeft( Client client );
 	}
 
 	private Client getClient( Channel channel )
 	{
 		return clients.get( System.identityHashCode( channel ) );
-	}
-
-	static class EdgeDto
-	{
-		String from;
-
-		String to;
-
-		String label;
-
-		Relation relation;
-
-		public EdgeDto( String from, String to, Relation relation )
-		{
-			this.from = from;
-			this.to = to;
-			this.relation = relation;
-
-			label = relation.toString();
-		}
-	}
-
-	static class GraphDto
-	{
-		Set<String> gavs;
-
-		Set<EdgeDto> relations;
 	}
 
 	private String getQueryParameter( HttpServerExchange exchange, String name )
@@ -108,56 +66,14 @@ public class WebServer
 			@Override
 			public void handleRequest( HttpServerExchange exchange ) throws Exception
 			{
-				List<WorkingSession> sessions = AppFactory.get().sessions();
-				if( sessions == null || sessions.isEmpty() )
+				if( exchange.isInIoThread() )
 				{
-					exchange.getResponseSender().send( "No session available. Go to main page !" );
+					exchange.dispatch(this);
 					return;
 				}
-
-				WorkingSession session = null;
-
-				try
-				{
-					Integer sessionId = Integer.parseInt( getQueryParameter( exchange, "session" ) );
-					if( sessionId != null )
-					{
-						for( WorkingSession s : sessions )
-						{
-							if( System.identityHashCode( s ) == sessionId )
-							{
-								session = s;
-								break;
-							}
-						}
-					}
-				}
-				catch( Exception e )
-				{
-				}
 				
-				if(session == null )
-					session = sessions.get( 0 );
-
-				DirectedGraph<GAV, Relation> g = session.graph().internalGraph();
-
-				GraphDto dto = new GraphDto();
-				dto.gavs = new HashSet<>();
-				dto.relations = new HashSet<>();
-				for( GAV gav : g.vertexSet() )
-				{
-					dto.gavs.add( gav.toString() );
-
-					for( Relation relation : g.outgoingEdgesOf( gav ) )
-					{
-						GAV target = g.getEdgeTarget( relation );
-						EdgeDto edge = new EdgeDto( gav.toString(), target.toString(), relation );
-						dto.relations.add( edge );
-					}
-				}
-
-				Gson gson = new Gson();
-				exchange.getResponseSender().send( gson.toJson( dto ) );
+				String result = xWebServer.onGraphQuery(getQueryParameter( exchange, "session" ));
+				exchange.getResponseSender().send( result );
 			}
 		} );
 
@@ -175,10 +91,17 @@ public class WebServer
 				channel.getReceiveSetter().set( new AbstractReceiveListener()
 				{
 					@Override
-					protected void onFullTextMessage( WebSocketChannel channel, BufferedTextMessage message )
+					protected void onFullTextMessage( final WebSocketChannel channel, final BufferedTextMessage message )
 					{
-						String messageData = socketCallback.exec( getClient( channel ), message.getData() );
-						WebSockets.sendText( messageData, channel, null );
+						executor.submit( new Runnable()
+						{
+							@Override
+							public void run()
+							{
+								String messageData = xWebServer.onWebsocketMessage( getClient( channel ), message.getData() );
+								WebSockets.sendText( messageData, channel, null );
+							}
+						} );
 					}
 
 					@Override

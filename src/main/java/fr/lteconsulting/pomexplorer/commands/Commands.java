@@ -203,14 +203,16 @@ public class Commands
 		}
 		catch( Exception e )
 		{
-			System.out.println( "Error when interpreting a command !" );
-			System.out.println( args.length + " arguments of type :" );
+			StringBuilder log = new StringBuilder();
+			log.append( "Error when interpreting a command !<br/>" );
+			log.append( args.length + " arguments of type :<br/>" );
 			for( Object a : args )
-				System.out.println( a != null ? a.getClass() : "(null)" );
+				log.append( (a != null ? a.getClass() : "(null)" )+"<br/>");
+			
 
-			e.printStackTrace();
+			log.append("<pre>"+e.getMessage()+"</pre>");
 
-			return e.getMessage();
+			return log.toString();
 		}
 	}
 

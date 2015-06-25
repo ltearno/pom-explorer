@@ -5,10 +5,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import fr.lteconsulting.hexa.client.tools.Func2;
-import fr.lteconsulting.pomexplorer.WebServer.XWebServer;
+import org.jgrapht.DirectedGraph;
+
+import com.google.gson.Gson;
+
+import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.webserver.WebServer;
+import fr.lteconsulting.pomexplorer.webserver.XWebServer;
 
 /**
  * POM Explorer main class
@@ -29,56 +36,135 @@ public class PomExporerApp
 		app.run();
 	}
 
+
+	static class EdgeDto
+	{
+		String from;
+
+		String to;
+
+		String label;
+
+		Relation relation;
+
+		public EdgeDto( String from, String to, Relation relation )
+		{
+			this.from = from;
+			this.to = to;
+			this.relation = relation;
+
+			label = relation.toString();
+		}
+	}
+
+	static class GraphDto
+	{
+		Set<String> gavs;
+
+		Set<EdgeDto> relations;
+	}
+
 	private void run()
 	{
-		XWebServer xWebServer = new XWebServer()
+		WebServer server = new WebServer( xWebServer );
+		server.start();
+	}
+	
+	private XWebServer xWebServer = new XWebServer()
+	{
+		@Override
+		public void onNewClient( Client client )
 		{
-			@Override
-			public void onNewClient( Client client )
+			System.out.println( "New client " + client.getId() );
+
+			// running the default script
+			List<String> commands = readFileLines( "welcome.commands" );
+			for( String command : commands )
 			{
-				System.out.println( "New client " + client.getId() );
+				if( command.isEmpty() || command.startsWith( "#" ) )
+					continue;
 
-				// running the default script
-				List<String> commands = readFileLines( "welcome.commands" );
-				for( String command : commands )
+				if( command.startsWith( "=" ) )
 				{
-					if( command.isEmpty() || command.startsWith( "#" ) )
-						continue;
+					String message = command.substring( 1 );
+					if( message.isEmpty() )
+						message = "<br/>";
+					client.send( message );
+				}
+				else
+					client.send( AppFactory.get().commands().takeCommand( client, command ) );
+			}
+		}
+		
+		@Override
+		public String onWebsocketMessage( Client client, String message )
+		{
+			if( message == null || message.isEmpty() )
+				return "nop.";
 
-					if( command.startsWith( "=" ) )
+			return AppFactory.get().commands().takeCommand( client, message );
+		}
+		
+		@Override
+		public String onGraphQuery( String sessionIdString )
+		{
+			List<WorkingSession> sessions = AppFactory.get().sessions();
+			if( sessions == null || sessions.isEmpty() )
+				return "No session available. Go to main page !";
+
+			WorkingSession session = null;
+
+			try
+			{
+				Integer sessionId = Integer.parseInt( sessionIdString );
+				if( sessionId != null )
+				{
+					for( WorkingSession s : sessions )
 					{
-						String message = command.substring( 1 );
-						if( message.isEmpty() )
-							message = "<br/>";
-						client.send( message );
+						if( System.identityHashCode( s ) == sessionId )
+						{
+							session = s;
+							break;
+						}
 					}
-					else
-						client.send( AppFactory.get().commands().takeCommand( client, command ) );
+				}
+			}
+			catch( Exception e )
+			{
+			}
+
+			if( session == null )
+				session = sessions.get( 0 );
+
+			DirectedGraph<GAV, Relation> g = session.graph().internalGraph();
+
+			GraphDto dto = new GraphDto();
+			dto.gavs = new HashSet<>();
+			dto.relations = new HashSet<>();
+			for( GAV gav : g.vertexSet() )
+			{
+				dto.gavs.add( gav.toString() );
+
+				for( Relation relation : g.outgoingEdgesOf( gav ) )
+				{
+					GAV target = g.getEdgeTarget( relation );
+					EdgeDto edge = new EdgeDto( gav.toString(), target.toString(), relation );
+					dto.relations.add( edge );
 				}
 			}
 
-			@Override
-			public void onClientLeft( Client client )
-			{
-				System.out.println( "Client left." );
-			}
-		};
+			Gson gson = new Gson();
+			String result = gson.toJson( dto );
+			
+			return result;
+		}
 
-		Func2<Client, String, String> socket = new Func2<Client, String, String>()
+		@Override
+		public void onClientLeft( Client client )
 		{
-			@Override
-			public String exec( Client client, String query )
-			{
-				if( query == null || query.isEmpty() )
-					return "nop.";
-
-				return AppFactory.get().commands().takeCommand( client, query );
-			}
-		};
-
-		WebServer server = new WebServer( xWebServer, socket );
-		server.start();
-	}
+			System.out.println( "Client left." );
+		}
+	};
 
 	private static List<String> readFileLines( String path )
 	{
