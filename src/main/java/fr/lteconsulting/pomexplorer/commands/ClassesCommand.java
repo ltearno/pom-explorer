@@ -18,13 +18,13 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class ClassesCommand
 {
-	@Help( "Gives the java classes provided by the session's gavs" )
+	@Help( "gives the java classes provided by the session's gavs" )
 	public String main( WorkingSession session, Client client )
 	{
 		return by( session, client, null );
 	}
 
-	@Help( "Gives the java classes provided by the session's gavs, filtered by the given parameter" )
+	@Help( "gives the java classes provided by the session's gavs, filtered by the given parameter" )
 	public String by( WorkingSession session, Client client, String gavFilter )
 	{
 		if( gavFilter != null )
