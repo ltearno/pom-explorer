@@ -366,12 +366,12 @@ public class Tools
 		}
 	};
 
-	public static Object warningMessage(String message)
+	public static String warningMessage(String message)
 	{
 		return "<span style='color:orange;'>" + message + "</span><br/>";
 	}
 
-	public static Object errorMessage(String message)
+	public static String errorMessage(String message)
 	{
 		return "<span style='color:red;'>" + message + "</span><br/>";
 	}

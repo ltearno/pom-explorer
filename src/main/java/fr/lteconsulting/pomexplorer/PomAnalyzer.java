@@ -12,10 +12,10 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jboss.shrinkwrap.resolver.api.InvalidConfigurationFileException;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenWorkingSession;
-import org.jboss.shrinkwrap.resolver.api.maven.ScopeType;
+import org.jboss.shrinkwrap.resolver.api.maven.*;
 import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
+import org.jboss.shrinkwrap.resolver.api.maven.strategy.AcceptAllStrategy;
 import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
 import org.jboss.shrinkwrap.resolver.impl.maven.task.AddScopedDependenciesTask;
 import org.jboss.shrinkwrap.resolver.impl.maven.task.ConfigureSettingsFromFileTask;
@@ -51,6 +51,51 @@ public class PomAnalyzer
 		}
 	}
 
+	/**
+	 * Takes a GAV, download it if needed, analyse its dependencies and add them to the graph
+	 *
+	 * @param gav gav to be analyzed
+	 * @param session working session
+	 */
+	public void registerExternalDependency( WorkingSession session, Client client, StringBuilder log, GAV gav )
+	{
+		String mavenSettingsFilePath = session.getMavenSettingsFilePath();
+
+		MavenResolverSystem resolver;
+		if( mavenSettingsFilePath != null && !mavenSettingsFilePath.isEmpty() )
+			resolver = Maven.configureResolver().fromFile( mavenSettingsFilePath );
+		else
+			resolver = Maven.resolver();
+
+		MavenResolvedArtifact resolvedArtifact = null;
+		try
+		{
+			resolvedArtifact = resolver.resolve( gav.toString() ).withoutTransitivity().asSingle(MavenResolvedArtifact.class);
+		}
+		catch( Exception e )
+		{
+			log.append( Tools.errorMessage( "shrinkwrap error : " + e.getMessage() ) );
+		}
+
+		if( resolvedArtifact == null )
+		{
+			log.append(Tools.warningMessage("cannot resolve the artifact " + gav));
+			return;
+		}
+
+		log.append( "resolved artifact : " + resolvedArtifact.getCoordinate().toString() + "<br/>" );
+
+		// Big hack here !
+		String pomPath = resolvedArtifact.asFile().getAbsolutePath();
+		int idx = pomPath.lastIndexOf('.');
+		if( idx <0 )
+			return;
+
+		pomPath = pomPath.substring(0, idx+1 ) + "pom";
+
+		processPom(new File(pomPath), session, client);
+	}
+
 	private void processPom( File pomFile, WorkingSession session, Client client )
 	{
 		MavenProject unresolved = readPomFile( pomFile );
@@ -60,7 +105,7 @@ public class PomAnalyzer
 			return;
 		}
 
-		ParsedPomFile resolved = loadPomFile( pomFile, session.getMavenSettingsFilePath() );
+		ParsedPomFile resolved = loadPomFile( session, pomFile );
 		if( resolved == null )
 		{
 			client.send( "<span style='color:orange;'>cannot load pom " + unresolved.getGroupId() + ":" + unresolved.getArtifactId() + ":" + unresolved.getVersion() + " (<i>" + pomFile.getAbsolutePath() + "</i>)</span><br/>" );
@@ -119,23 +164,34 @@ public class PomAnalyzer
 		client.send( "processed project " + projectInfo.getGav() );
 	}
 
-	private ParsedPomFile loadPomFile( File pomFile, String mavenSettingsFilePath )
+	private static MavenWorkingSession createMavenWorkingSession( WorkingSession workingSession )
 	{
 		try
 		{
+			String mavenSettingsFilePath = workingSession.getMavenSettingsFilePath();
+
 			MavenWorkingSession session = new MavenWorkingSessionImpl();
 			if( mavenSettingsFilePath != null )
 				session = new ConfigureSettingsFromFileTask( mavenSettingsFilePath ).execute( session );
 
 			session = new AddScopedDependenciesTask( ScopeType.COMPILE, ScopeType.IMPORT, ScopeType.SYSTEM, ScopeType.RUNTIME ).execute( session );
 
-			session.loadPomFromFile( pomFile );
-			return session.getParsedPomFile();
+			return session;
 		}
 		catch( InvalidConfigurationFileException e )
 		{
 			return null;
 		}
+	}
+
+	private ParsedPomFile loadPomFile( WorkingSession workingSession, File pomFile )
+	{
+		MavenWorkingSession session = createMavenWorkingSession(workingSession);
+		if(session == null)
+			return null;
+
+		session.loadPomFromFile( pomFile );
+		return session.getParsedPomFile();
 	}
 
 	private MavenProject readPomFile( File pom )

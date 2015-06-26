@@ -3,9 +3,7 @@ package fr.lteconsulting.pomexplorer.commands;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import fr.lteconsulting.pomexplorer.GAV;
-import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.*;
 
 public class GavsCommand
 {
@@ -39,6 +37,42 @@ public class GavsCommand
 				continue;
 			log.append( gav + "<br/>" );
 		}
+
+		return log.toString();
+	}
+
+	@Help( "adds a gav in the pom graph." )
+	public String add( WorkingSession session, Client client, String gavName )
+	{
+		GAV gav;
+		if( gavName == null || gavName.isEmpty() || (gav = Tools.string2Gav( gavName )) == null )
+			return Tools.errorMessage( "You should supply a GAV in the correct G:A:V format" );
+
+		StringBuilder log = new StringBuilder();
+
+		PomAnalyzer analyzer = new PomAnalyzer();
+
+		analyzer.registerExternalDependency( session, client, log, gav );
+
+		log.append( "finished !<br/>" );
+
+		return log.toString();
+	}
+
+	@Help( "analyze gavs which have no associated project" )
+	public String resolve( WorkingSession session, Client client )
+	{
+		StringBuilder log = new StringBuilder();
+
+		PomAnalyzer analyzer = new PomAnalyzer();
+
+		session.graph().gavs().stream().filter( gav -> session.projects().get( gav ) == null ).parallel().forEach( gav -> {
+			log.append( "analyzing " + gav + "...<br/>" );
+			client.send( "analyzing " + gav + "...<br/>" );
+			analyzer.registerExternalDependency( session, client, log, gav );
+		} );
+
+		log.append( "finished !<br/>" );
 
 		return log.toString();
 	}
