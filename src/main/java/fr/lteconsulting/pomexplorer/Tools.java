@@ -1,11 +1,14 @@
 package fr.lteconsulting.pomexplorer;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 import org.apache.maven.model.Dependency;
@@ -388,5 +391,21 @@ public class Tools
 					gav.getVersion().length() - SNAPSHOT_SUFFIX.length()));
 
 		return gav;
+	}
+	
+	/**
+	 * 
+	 */
+	
+	public static String readFile(File file)
+	{
+		try
+		{
+			return new Scanner(file, "UTF-8").useDelimiter("\\A").next();
+		}
+		catch (FileNotFoundException e)
+		{
+			return null;
+		}
 	}
 }

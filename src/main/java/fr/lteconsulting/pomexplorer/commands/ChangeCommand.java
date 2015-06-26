@@ -11,7 +11,7 @@ import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 
 public class ChangeCommand
 {
-	@Help( "Changes the GAV version and also in dependent projects. Parameters : gav, newVersion" )
+	@Help( "changes the GAV version and also in dependent projects. Parameters : gav, newVersion" )
 	public static String gav( CommandOptions options, Client client, WorkingSession session, String originalGavString, String newGavString )
 	{
 		GAV originalGav = Tools.string2Gav( originalGavString );

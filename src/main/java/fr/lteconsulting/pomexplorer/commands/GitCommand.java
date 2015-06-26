@@ -35,9 +35,8 @@ public class GitCommand
 		} ) );
 
 		groups.keySet().stream().sorted().forEachOrdered( repo -> {
-			log.append( "= Repository : '" + repo + "' contains projects :<br/>" );
-			System.out.println( repo );
 			List<Project> projects = groups.get( repo );
+			log.append( "= Repository : '" + repo + "' contains "+projects.size()+" projects :<br/>" );
 			for( Project project : projects )
 				log.append( project + "<br/>" );
 			log.append( "<br/>" );

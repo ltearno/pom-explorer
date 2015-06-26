@@ -61,7 +61,7 @@ public class GraphCommand
 		return true;
 	}
 
-	@Help( "Exports a GraphML file" )
+	@Help( "exports a GraphML file" )
 	public String export( WorkingSession session )
 	{
 		try

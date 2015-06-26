@@ -10,6 +10,7 @@ import fr.lteconsulting.pomexplorer.commands.CheckCommand;
 import fr.lteconsulting.pomexplorer.commands.ClassesCommand;
 import fr.lteconsulting.pomexplorer.commands.Commands;
 import fr.lteconsulting.pomexplorer.commands.DependsCommand;
+import fr.lteconsulting.pomexplorer.commands.GarbageCommand;
 import fr.lteconsulting.pomexplorer.commands.GavsCommand;
 import fr.lteconsulting.pomexplorer.commands.GitCommand;
 import fr.lteconsulting.pomexplorer.commands.GraphCommand;
@@ -62,6 +63,7 @@ public class AppFactory
 			commands.addCommand( new CheckCommand() );
 			commands.addCommand( new ClassesCommand() );
 			commands.addCommand( new GitCommand() );
+			commands.addCommand( new GarbageCommand() );
 		}
 
 		return commands;
