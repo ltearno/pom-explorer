@@ -246,13 +246,10 @@ If a `config.properties` file is found in the working directory it is used to co
 
 - find where dependencies override demendency management
 - user wants the project X to be always build with latest dependencies. If code is modified in a depended project, required projects should be rebuilt.
-- display a graph of selected gavs and selected relation type (parent relation ship for instance)
 - resolve all projects from external dependencies -> download files and add them in the graph, until the last one !
 
 ### Graph functionalities
 
-- filter displayed poms
-- filter displayed relations (parent, build, dependency, scope, classifier...)
 - aggregate pom nodes (those with same G & A but different versions, classifiers or scopes)
 - go to a specific pom
 - show multiple roads from one pom to another
