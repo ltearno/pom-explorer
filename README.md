@@ -86,6 +86,8 @@ Then click on the given link to see the graph for your current session.
 
 ![](pomgraph.png)
 
+![](pomgraph2.png)
+
 #### The graph window
 
 In the main part, you can navigate with W,A,S,D,E,A and the arrow keys. On the right side, you can edit javascript filters and customizers for node and links.
