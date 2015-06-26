@@ -41,7 +41,7 @@ public class GavsCommand
 		return log.toString();
 	}
 
-	@Help( "adds a gav in the pom graph." )
+	@Help( "analyze all the gav's dependencies and add them in the pom graph." )
 	public String add( WorkingSession session, Client client, String gavName )
 	{
 		GAV gav;
