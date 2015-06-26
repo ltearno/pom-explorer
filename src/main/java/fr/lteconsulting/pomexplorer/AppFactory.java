@@ -1,7 +1,13 @@
 package fr.lteconsulting.pomexplorer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.jgrapht.DirectedGraph;
+
+import com.google.gson.Gson;
 
 import fr.lteconsulting.pomexplorer.commands.AnalyzeCommand;
 import fr.lteconsulting.pomexplorer.commands.BuildCommand;
@@ -19,6 +25,9 @@ import fr.lteconsulting.pomexplorer.commands.ProjectsCommand;
 import fr.lteconsulting.pomexplorer.commands.ReleaseCommand;
 import fr.lteconsulting.pomexplorer.commands.SessionCommand;
 import fr.lteconsulting.pomexplorer.commands.StatsCommand;
+import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.webserver.WebServer;
+import fr.lteconsulting.pomexplorer.webserver.XWebServer;
 
 public class AppFactory
 {
@@ -34,13 +43,14 @@ public class AppFactory
 	}
 
 	private final List<WorkingSession> sessions = new ArrayList<>();
+	private Commands commands;
+	private ApplicationSettings settings;
+	private WebServer webServer;
 
 	public List<WorkingSession> sessions()
 	{
 		return sessions;
 	}
-
-	private Commands commands;
 
 	public Commands commands()
 	{
@@ -69,8 +79,6 @@ public class AppFactory
 		return commands;
 	}
 
-	private ApplicationSettings settings;
-
 	public ApplicationSettings getSettings()
 	{
 		if( settings == null )
@@ -80,5 +88,136 @@ public class AppFactory
 		}
 
 		return settings;
+	}
+
+	public WebServer webServer()
+	{
+		if( webServer == null )
+			webServer = new WebServer( xWebServer );
+
+		return webServer;
+	}
+
+	private XWebServer xWebServer = new XWebServer()
+	{
+		@Override
+		public void onNewClient( Client client )
+		{
+			System.out.println( "New client " + client.getId() );
+
+			// running the default script
+			List<String> commands = Tools.readFileLines( "welcome.commands" );
+			for( String command : commands )
+			{
+				if( command.isEmpty() || command.startsWith( "#" ) )
+					continue;
+
+				if( command.startsWith( "=" ) )
+				{
+					String message = command.substring( 1 );
+					if( message.isEmpty() )
+						message = "<br/>";
+					client.send( message );
+				}
+				else
+					client.send( AppFactory.get().commands().takeCommand( client, command ) );
+			}
+		}
+
+		@Override
+		public String onWebsocketMessage( Client client, String message )
+		{
+			if( message == null || message.isEmpty() )
+				return "nop.";
+
+			return AppFactory.get().commands().takeCommand( client, message );
+		}
+
+		@Override
+		public String onGraphQuery( String sessionIdString )
+		{
+			List<WorkingSession> sessions = AppFactory.get().sessions();
+			if( sessions == null || sessions.isEmpty() )
+				return "No session available. Go to main page !";
+
+			WorkingSession session = null;
+
+			try
+			{
+				Integer sessionId = Integer.parseInt( sessionIdString );
+				if( sessionId != null )
+				{
+					for( WorkingSession s : sessions )
+					{
+						if( System.identityHashCode( s ) == sessionId )
+						{
+							session = s;
+							break;
+						}
+					}
+				}
+			}
+			catch( Exception e )
+			{
+			}
+
+			if( session == null )
+				session = sessions.get( 0 );
+
+			DirectedGraph<GAV, Relation> g = session.graph().internalGraph();
+
+			GraphDto dto = new GraphDto();
+			dto.gavs = new HashSet<>();
+			dto.relations = new HashSet<>();
+			for( GAV gav : g.vertexSet() )
+			{
+				dto.gavs.add( gav.toString() );
+
+				for( Relation relation : g.outgoingEdgesOf( gav ) )
+				{
+					GAV target = g.getEdgeTarget( relation );
+					EdgeDto edge = new EdgeDto( gav.toString(), target.toString(), relation );
+					dto.relations.add( edge );
+				}
+			}
+
+			Gson gson = new Gson();
+			String result = gson.toJson( dto );
+
+			return result;
+		}
+
+		@Override
+		public void onClientLeft( Client client )
+		{
+			System.out.println( "Client left." );
+		}
+	};
+	
+	static class EdgeDto
+	{
+		String from;
+
+		String to;
+
+		String label;
+
+		Relation relation;
+
+		public EdgeDto( String from, String to, Relation relation )
+		{
+			this.from = from;
+			this.to = to;
+			this.relation = relation;
+
+			label = relation.toString();
+		}
+	}
+
+	static class GraphDto
+	{
+		Set<String> gavs;
+
+		Set<EdgeDto> relations;
 	}
 }

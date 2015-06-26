@@ -1,7 +1,10 @@
 package fr.lteconsulting.pomexplorer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -407,5 +410,33 @@ public class Tools
 		{
 			return null;
 		}
+	}
+	
+	public static List<String> readFileLines( String path )
+	{
+		ArrayList<String> res = new ArrayList<String>();
+
+		File file = new File( path );
+		if( !file.exists() )
+			return res;
+
+		try
+		{
+			BufferedReader in = new BufferedReader( new InputStreamReader( new FileInputStream( file ), "UTF8" ) );
+
+			String str;
+
+			while( (str = in.readLine()) != null )
+			{
+				res.add( str );
+			}
+
+			in.close();
+		}
+		catch( Exception e )
+		{
+		}
+
+		return res;
 	}
 }

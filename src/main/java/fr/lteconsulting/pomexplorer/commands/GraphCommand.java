@@ -1,7 +1,8 @@
 package fr.lteconsulting.pomexplorer.commands;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.Writer;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +18,7 @@ import org.jgrapht.graph.DirectedSubgraph;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 
+import fr.lteconsulting.pomexplorer.AppFactory;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.GitTools;
 import fr.lteconsulting.pomexplorer.GraphFrame;
@@ -44,7 +46,7 @@ public class GraphCommand
 
 	private boolean isOkGav( GAV gav )
 	{
-		return gav.toString().contains( "fr" );
+		return true;
 	}
 
 	private boolean isOkRelation( Relation relation )
@@ -164,15 +166,24 @@ public class GraphCommand
 				}
 			}
 
-			FileWriter fileWriter = new FileWriter( "exportedGraph.graphml" );
-			exporter.export( fileWriter, ng );
-			fileWriter.close();
+			String graphFileName = "graph-session-" + System.identityHashCode( session ) + "-" + new Date().getTime() + ".graphml";
+			Writer writer = AppFactory.get().webServer().pushFile( graphFileName );
+			exporter.export( writer, ng );
+			writer.close();
 
-			fileWriter = new FileWriter( "exportedGraphRepos.graphml" );
-			repoExporter.export( fileWriter, repoGraph );
-			fileWriter.close();
+			String graphReposFileName = "graph-repos-session-" + System.identityHashCode( session ) + "-" + new Date().getTime() + ".graphml";
+			writer = AppFactory.get().webServer().pushFile( graphReposFileName );
+			repoExporter.export( writer, repoGraph );
+			writer.close();
 
-			return "done.<br/>";
+			StringBuilder log = new StringBuilder();
+
+			String url = AppFactory.get().webServer().getFileUrl( graphFileName );
+
+			log.append( "GraphML file for the whole dependency graph is available here : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
+			log.append( "GraphML file for the git repositories is available here : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
+
+			return log.toString();
 		}
 		catch( Exception e )
 		{
