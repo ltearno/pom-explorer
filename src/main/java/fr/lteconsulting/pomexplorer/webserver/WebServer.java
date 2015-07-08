@@ -104,22 +104,24 @@ public class WebServer
 			@Override
 			public void handleRequest( HttpServerExchange exchange ) throws Exception
 			{
-				String name = exchange.getRelativePath();
+				executor.submit( ( ) -> {
+					String name = exchange.getRelativePath();
 
-				File dataDir = new File( DATA_FILE_STORE_DIR );
-				dataDir.mkdirs();
+					File dataDir = new File( DATA_FILE_STORE_DIR );
+					dataDir.mkdirs();
 
-				ByteBuffer buf = readFile( Paths.get( dataDir.toPath().toString(), name ).toString() );
+					ByteBuffer buf = readFile( Paths.get( dataDir.toPath().toString(), name ).toString() );
 
-				if( buf != null )
-				{
-					exchange.getResponseHeaders().put( Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"" );
-					exchange.getResponseSender().send( buf );
-				}
-				else
-				{
-					exchange.getResponseSender().send( "not found !" );
-				}
+					if( buf != null )
+					{
+						exchange.getResponseHeaders().put( Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"" );
+						exchange.getResponseSender().send( buf );
+					}
+					else
+					{
+						exchange.getResponseSender().send( "not found !" );
+					}
+				} );
 			}
 
 			private ByteBuffer readFile( String path )
@@ -148,14 +150,10 @@ public class WebServer
 			@Override
 			public void handleRequest( HttpServerExchange exchange ) throws Exception
 			{
-				if( exchange.isInIoThread() )
-				{
-					exchange.dispatch( this );
-					return;
-				}
-
-				String result = xWebServer.onGraphQuery( getQueryParameter( exchange, "session" ) );
-				exchange.getResponseSender().send( result );
+				executor.submit( ( ) -> {
+					String result = xWebServer.onGraphQuery( getQueryParameter( exchange, "session" ) );
+					exchange.getResponseSender().send( result );
+				} );
 			}
 		} );
 
@@ -175,14 +173,9 @@ public class WebServer
 					@Override
 					protected void onFullTextMessage( final WebSocketChannel channel, final BufferedTextMessage message )
 					{
-						executor.submit( new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								String messageData = xWebServer.onWebsocketMessage( getClient( channel ), message.getData() );
-								WebSockets.sendText( messageData, channel, null );
-							}
+						executor.submit( ( ) -> {
+							String messageData = xWebServer.onWebsocketMessage( getClient( channel ), message.getData() );
+							WebSockets.sendText( messageData, channel, null );
 						} );
 					}
 

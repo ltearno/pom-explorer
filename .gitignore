@@ -21,3 +21,6 @@ hs_err_pid*
 welcome.commands
 config.properties
 .factorypath
+.idea/
+pom-explorer.iml
+served-data/
