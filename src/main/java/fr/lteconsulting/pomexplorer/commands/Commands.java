@@ -1,5 +1,6 @@
 package fr.lteconsulting.pomexplorer.commands;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -40,13 +41,13 @@ public class Commands
 
 		sb.append( "<b>List of commands</b><br/>" );
 		sb.append( "<i>You can type only the first letters of commands, for example '<b>gav li</b>' instead of '<b>gavs list</b>'</i><br/><br/>" );
-		
-		List<String> cs = new ArrayList<String>(commands.keySet());
+
+		List<String> cs = new ArrayList<String>( commands.keySet() );
 		Collections.sort( cs );
 
 		for( String shortcut : cs )
 		{
-			Object c = commands.get(  shortcut );
+			Object c = commands.get( shortcut );
 
 			for( Method m : c.getClass().getDeclaredMethods() )
 			{
@@ -207,16 +208,25 @@ public class Commands
 		catch( Exception e )
 		{
 			StringBuilder log = new StringBuilder();
-			log.append( "Error when interpreting a command !<br/>" );
-			log.append( args.length + " arguments of type :<br/>" );
+			log.append( "Error when interpreting command '<b>" + text + "</b>'<br/>" );
+			log.append( "Command class : <b>" + command.getClass().getSimpleName() + "</b><br/>" );
+			log.append( "Command method : <b>" + m.getName() + "</b><br/>" );
 			for( Object a : args )
-				log.append( (a != null ? a.getClass() : "(null)" )+"<br/>");
+				log.append( "Argument : " + (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString())) + "<br/>" );
 			
+			Throwable t = e;
+			if( t instanceof InvocationTargetException )
+				t = ((InvocationTargetException)t).getTargetException();
+			
+			log.append( "<pre>" + t.toString() + "\r\n" );
+			for( StackTraceElement st : t.getStackTrace())
+			{
+				log.append( st.toString() + "\r\n" );
+			}
+			log.append( "</pre>" );
 
-			log.append("<pre>"+e.getMessage()+"</pre>");
-
-			return log.toString();
-		}
+			return Tools.errorMessage( log.toString() );
+		}		
 	}
 
 	private Method findMethodWith( Object o, final String verb, final int nbParamsGiven )

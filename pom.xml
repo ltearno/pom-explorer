@@ -75,23 +75,6 @@
 			<artifactId>org.eclipse.jdt.core</artifactId>
 			<version>3.10.0</version>
 		</dependency>
-		<dependency>
-			<groupId>co.paralleluniverse</groupId>
-			<artifactId>quasar-core</artifactId>
-			<version>0.7.2</version>
-			<classifier>jdk8</classifier>
-		</dependency>
-		<dependency>
-			<groupId>co.paralleluniverse</groupId>
-			<artifactId>quasar-actors</artifactId>
-			<version>0.7.2</version>
-		</dependency>
-		<dependency>
-			<groupId>io.gatling</groupId>
-			<artifactId>jsr166e</artifactId>
-			<version>1.0</version>
-			<scope>compile</scope>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -118,31 +101,6 @@
 								</manifest>
 							</archive>
 						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>instrument-classes</id>
-						<phase>compile</phase>
-						<configuration>
-							<tasks>
-								<property name="ant_classpath" refid="maven.dependency.classpath" />
-								<taskdef name="instrumentationTask"
-									classname="co.paralleluniverse.fibers.instrument.InstrumentationTask"
-									classpath="${ant_classpath}" />
-								<instrumentationTask verbose="true">
-									<fileset dir="${project.build.directory}/classes/"
-										includes="**/*.class" />
-								</instrumentationTask>
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
