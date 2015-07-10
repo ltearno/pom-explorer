@@ -163,6 +163,8 @@ public class PomAnalyzer
 
 		Project projectInfo = new Project( pomFile, resolved, unresolved );
 		session.projects().add( projectInfo );
+		
+		session.repositories().add( projectInfo );
 
 		client.send( "processed project " + projectInfo.getGav() );
 	}

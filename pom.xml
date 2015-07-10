@@ -75,6 +75,11 @@
 			<artifactId>org.eclipse.jdt.core</artifactId>
 			<version>3.10.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>4.0.1.201506240215-r</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

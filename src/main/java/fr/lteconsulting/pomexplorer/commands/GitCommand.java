@@ -11,13 +11,30 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 public class GitCommand
 {
 	@Help( "displays the list of git repos found" )
-	public String main( WorkingSession session )
+	public String main( WorkingSession session, CommandOptions options )
+	{
+		return status( session, options );
+	}
+
+	@Help( "displays the list of git repos found" )
+	public String status( WorkingSession session, CommandOptions options )
+	{
+		return status( session, options, null );
+	}
+
+	@Help( "displays the list of git repos found. Filtered by repository path or contained projects' gavs." )
+	public String status( WorkingSession session, CommandOptions options, String filter )
 	{
 		StringBuilder log = new StringBuilder();
 
 		log.append( "List git repositories :<br/>" );
+		log.append( "<i>Those marked with [*] have not a clean head</i><br/><br/>" );
 
-		session.projects().values().stream().map( project -> GitTools.findGitRoot( project.getPomFile().getParent() ) ).filter( s -> s != null ).distinct().sorted().forEachOrdered( repoPath -> log.append( repoPath + "<br/>" ) );
+		session.repositories().values().stream()
+				.filter( r -> filter == null || r.getPath().toFile().getAbsolutePath().toLowerCase().contains( filter.toLowerCase() ) || r.getProjects().stream().anyMatch( p -> p.getGav().toString().toLowerCase().contains( filter.toLowerCase() ) ) )
+				.sorted( ( a, b ) -> a.getPath().compareTo( b.getPath() ) ).forEachOrdered( repo -> {
+					repo.getStatus( log, options.getFlag( "v" ) );
+				} );
 
 		return log.toString();
 	}
@@ -36,7 +53,7 @@ public class GitCommand
 
 		groups.keySet().stream().sorted().forEachOrdered( repo -> {
 			List<Project> projects = groups.get( repo );
-			log.append( "= Repository : '" + repo + "' contains "+projects.size()+" projects :<br/>" );
+			log.append( "= Repository : '" + repo + "' contains " + projects.size() + " projects :<br/>" );
 			for( Project project : projects )
 				log.append( project + "<br/>" );
 			log.append( "<br/>" );
