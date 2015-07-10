@@ -150,10 +150,10 @@ public class WebServer
 			@Override
 			public void handleRequest( HttpServerExchange exchange ) throws Exception
 			{
-				executor.submit( ( ) -> {
+				//executor.submit( ( ) -> {
 					String result = xWebServer.onGraphQuery( getQueryParameter( exchange, "session" ) );
 					exchange.getResponseSender().send( result );
-				} );
+				//} );
 			}
 		} );
 
