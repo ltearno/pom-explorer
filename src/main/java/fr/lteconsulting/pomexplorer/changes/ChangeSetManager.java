@@ -79,7 +79,7 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 	}
 
 	@Override
-	public void removeChange( Change<? extends Location> change )
+	public void invalidateChange( Change<? extends Location> change )
 	{
 		ChangeInfo info = new ChangeInfo( change );
 

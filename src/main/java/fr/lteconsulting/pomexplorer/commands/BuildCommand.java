@@ -23,7 +23,7 @@ public class BuildCommand
 
 		// build the project and all which depends on it
 
-		Project project = session.projects().get( gav );
+		Project project = session.projects().forGav( gav );
 		if( project == null )
 			return "cannot find the project for GAV " + gav;
 
@@ -54,7 +54,7 @@ public class BuildCommand
 
 		for( GAV gav : toBuild )
 		{
-			Project subProject = session.projects().get( gav );
+			Project subProject = session.projects().forGav( gav );
 			if( subProject == null )
 			{
 				log.append( "cannot find project for GAV " + gav + "<br/>" );

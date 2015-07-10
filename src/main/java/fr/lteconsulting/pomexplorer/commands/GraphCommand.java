@@ -193,7 +193,7 @@ public class GraphCommand
 
 	private String getGAVRepository( WorkingSession session, GAV gav )
 	{
-		Project project = session.projects().get( gav );
+		Project project = session.projects().forGav( gav );
 		if( project == null )
 			return null;
 

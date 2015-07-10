@@ -66,7 +66,7 @@ public class GavsCommand
 
 		PomAnalyzer analyzer = new PomAnalyzer();
 
-		session.graph().gavs().stream().filter( gav -> session.projects().get( gav ) == null ).parallel().forEach( gav -> {
+		session.graph().gavs().stream().filter( gav -> session.projects().forGav( gav ) == null ).parallel().forEach( gav -> {
 			log.append( "analyzing " + gav + "...<br/>" );
 			client.send( "analyzing " + gav + "...<br/>" );
 			analyzer.registerExternalDependency( session, client, log, gav );

@@ -24,7 +24,7 @@ public class ReleaseCommand
 
 		if( !Tools.isReleased( gav ) )
 		{
-			GavLocation loc = new GavLocation( session.projects().get( gav ), PomSection.PROJECT, gav );
+			GavLocation loc = new GavLocation( session.projects().forGav( gav ), PomSection.PROJECT, gav );
 			changes.addChange( new GavChange( loc, Tools.releasedGav( loc.getGav() ) ), causeMessage );
 		}
 
@@ -43,14 +43,14 @@ public class ReleaseCommand
 			GAV source = r.getSource();
 			GAV to = Tools.releasedGav( r.getTarget() );
 
-			Project project = session.projects().get( source );
+			Project project = session.projects().forGav( source );
 			if( project == null )
 			{
 				log.append( Tools.warningMessage( "Project not found for this GAV ! " + source ) );
 				continue;
 			}
 
-			GavLocation targetLoc = new GavLocation( session.projects().get( r.getTarget() ), PomSection.PROJECT, r.getTarget() );
+			GavLocation targetLoc = new GavLocation( session.projects().forGav( r.getTarget() ), PomSection.PROJECT, r.getTarget() );
 			changes.addChange( new GavChange( targetLoc, Tools.releasedGav( targetLoc.getGav() ) ), causeMessage );
 
 			Location dependencyLocation = Tools.findDependencyLocation(session, log, project, r);

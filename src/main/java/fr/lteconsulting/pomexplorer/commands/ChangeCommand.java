@@ -26,7 +26,7 @@ public class ChangeCommand
 
 		ChangeSetManager changes = new ChangeSetManager();
 
-		GavLocation loc = new GavLocation( session.projects().get( originalGav ), PomSection.PROJECT, originalGav );
+		GavLocation loc = new GavLocation( session.projects().forGav( originalGav ), PomSection.PROJECT, originalGav );
 		changes.addChange( new GavChange( loc, newGav ), "changing " + originalGav + " to " + newGav );
 
 		changes.resolveChanges( session, log );

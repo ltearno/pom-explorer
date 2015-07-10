@@ -15,7 +15,7 @@ public interface IChangeSet
 	void addChange( Change<? extends Location> change, Change<? extends Location> cause );
 
 	/**
-	 * Removes a change from the change set.
+	 * Invalidate and remove a change from the change set.
 	 */
-	void removeChange( Change<? extends Location> change );
+	void invalidateChange( Change<? extends Location> change );
 }

@@ -27,8 +27,7 @@ public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 
 		if( Tools.isMavenVariable( depLoc.getUnresolvedGav().getVersion() ) )
 		{
-			// invalid the current change
-			changeSet.removeChange( change );
+			changeSet.invalidateChange( change );
 
 			String property = Tools.getPropertyNameFromPropertyReference( depLoc.getUnresolvedGav().getVersion() );
 
@@ -43,7 +42,7 @@ public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 			if( "project.parent.version".equals( property ) )
 			{
 				GAV parentProjectGav = session.graph().parent( depLoc.getProject().getGav() );
-				Project parentProject = session.projects().get( parentProjectGav );
+				Project parentProject = session.projects().forGav( parentProjectGav );
 				if( parentProject == null )
 					return;
 

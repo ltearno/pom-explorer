@@ -26,7 +26,7 @@ public class GarbageCommand
 		List<GAV> gavs = GavTools.filterGavs( session.graph().gavs(), gavFilter );
 		for( GAV gav : gavs )
 		{
-			Project project = session.projects().get( gav );
+			Project project = session.projects().forGav( gav );
 			if( project == null )
 			{
 				log.append( Tools.warningMessage( "No project for the gav " + gav + ", ignoring" ) );

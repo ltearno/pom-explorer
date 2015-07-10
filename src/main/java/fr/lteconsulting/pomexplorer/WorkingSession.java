@@ -1,15 +1,13 @@
 package fr.lteconsulting.pomexplorer;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import fr.lteconsulting.pomexplorer.graph.PomGraph;
+import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
 
 public class WorkingSession
 {
 	private String mavenSettingsFilePath = null;
 
-	private Map<GAV, Project> projects = new HashMap<>();
+	private ProjectRepository projects = new ProjectRepository();
 
 	private PomGraph graph = new PomGraph();
 
@@ -23,17 +21,7 @@ public class WorkingSession
 		return graph;
 	}
 
-	public boolean hasProject( GAV gav )
-	{
-		return projects.containsKey( gav );
-	}
-
-	public void registerProject( Project project )
-	{
-		projects.put( project.getGav(), project );
-	}
-
-	public Map<GAV, Project> projects()
+	public ProjectRepository projects()
 	{
 		return projects;
 	}

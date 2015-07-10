@@ -50,7 +50,7 @@ public class ClassesCommand
 
 		for( GAV gav : GavTools.filterGavs( session.graph().gavs(), gavFilter ) )
 		{
-			Project project = session.projects().get( gav );
+			Project project = session.projects().forGav( gav );
 			if( project == null )
 				continue;
 

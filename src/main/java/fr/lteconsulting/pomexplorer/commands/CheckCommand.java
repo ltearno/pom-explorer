@@ -104,7 +104,7 @@ public class CheckCommand
 
 		for( GAV gav : session.graph().gavs() )
 		{
-			if( !session.projects().keySet().contains( gav ) )
+			if( !session.projects().contains( gav ) )
 				res.add( gav );
 		}
 

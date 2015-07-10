@@ -86,7 +86,7 @@ public class Tools
 		{
 			GAV updatedGav = relation.getSource();
 
-			Project updatedProject = session.projects().get(updatedGav);
+			Project updatedProject = session.projects().forGav(updatedGav);
 			if (updatedProject == null)
 			{
 				if (log != null)
@@ -154,7 +154,7 @@ public class Tools
 		GAV parentGav = session.graph().parent(startingProject.getGav());
 		Project parentProject = null;
 		if (parentGav != null)
-			parentProject = session.projects().get(parentGav);
+			parentProject = session.projects().forGav(parentGav);
 
 		if (parentProject != null)
 		{
@@ -229,7 +229,7 @@ public class Tools
 		GAV parentGav = session.graph().parent(project.getGav());
 		if (parentGav != null)
 		{
-			Project parentProject = session.projects().get(parentGav);
+			Project parentProject = session.projects().forGav(parentGav);
 			if (parentProject == null)
 			{
 				log.append(Tools.warningMessage("Cannot find the '" + project.getGav() + "' parent project '" + parentGav
@@ -277,7 +277,7 @@ public class Tools
 		// TODO search in the plugin management section
 
 		// find in parent
-		return findDependencyLocationInPlugins(session, session.projects().get(session.graph().parent(project.getGav())),
+		return findDependencyLocationInPlugins(session, session.projects().forGav(session.graph().parent(project.getGav())),
 				searchedPlugin);
 	}
 

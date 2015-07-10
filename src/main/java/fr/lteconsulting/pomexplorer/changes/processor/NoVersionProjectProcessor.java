@@ -26,7 +26,7 @@ public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 			return;
 
 		GAV projectGav = change.getLocation().getGav();
-		Project project = session.projects().get( projectGav );
+		Project project = session.projects().forGav( projectGav );
 		if( project == null )
 		{
 			if( log != null )
@@ -52,10 +52,10 @@ public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 		log.append( Tools.warningMessage( "updating the parent version, because the project itself lacks a version" ) );
 
 		// remove the change from the change set
-		changeSet.removeChange( change );
+		changeSet.invalidateChange( change );
 
 		// add changing the parent's version in the change set
 		GAV parentProjectGavModified = new GAV( parentProjectGav.getGroupId(), parentProjectGav.getArtifactId(), change.getNewGav().getVersion() );
-		changeSet.addChange( new GavChange( session.projects().get( parentProjectGav ), PomSection.PROJECT, parentProjectGav, parentProjectGavModified ), change );
+		changeSet.addChange( new GavChange( session.projects().forGav( parentProjectGav ), PomSection.PROJECT, parentProjectGav, parentProjectGavModified ), change );
 	}
 }

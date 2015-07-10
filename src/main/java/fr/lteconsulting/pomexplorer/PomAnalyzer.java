@@ -117,7 +117,7 @@ public class PomAnalyzer
 
 		GAV gav = new GAV( resolved.getGroupId(), resolved.getArtifactId(), resolved.getVersion() );
 
-		if( session.hasProject( gav ) )
+		if( session.projects().contains( gav ) )
 		{
 			client.send( "<span style='color:orange;'>pom already processed '" + pomFile.getAbsolutePath() + "' ! Ignoring.</span><br/>" );
 			return;
@@ -162,7 +162,7 @@ public class PomAnalyzer
 		}
 
 		Project projectInfo = new Project( pomFile, resolved, unresolved );
-		session.registerProject( projectInfo );
+		session.projects().add( projectInfo );
 
 		client.send( "processed project " + projectInfo.getGav() );
 	}
