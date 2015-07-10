@@ -92,6 +92,27 @@ Then click on the given link to see the graph for your current session.
 
 In the main part, you can navigate with W,A,S,D,E,A and the arrow keys. On the right side, you can edit javascript filters and customizers for node and links.
 
+You can filter edges and vertices, and even change their color and
+size with the right panel of the window. The graph is given unfiltered by the server to the client, and you can then
+customize what to render and how to render it.
+
+The panel on the right side of the graph page allows to stop the animation (*the checkbox at the bottom*) and also to customize
+the rendering. This is done by customizing javascript callback functions that are called by the rendering engine. Click the `Refresh` button
+to make your changes live.
+
+For instance in the **confirmNode** function, you can add the following
+code to only accept gavs containing the string "my.groupIds' :
+
+	if( gav.indexOf( "my.groupIds" ) < 0 )
+		return false;
+
+Then you hit the **Refresh** button to update the graph.
+
+There are three other functions to filter the relations
+(**confirmRelation**), to customize the node appearance (**node**) and to
+customize the relation appearance (**linkColor**). There are a few samples in the
+panel itself, written as code comments.
+
 ### GraphML export
 
 You can export a graphml file with the `graph export` command. This will create a .graphml file in the current directory.
