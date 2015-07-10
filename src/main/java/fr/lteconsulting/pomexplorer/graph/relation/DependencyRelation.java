@@ -26,6 +26,21 @@ public class DependencyRelation extends Relation
 	@Override
 	public String toString()
 	{
-		return "scope: " + scope + ", classifier:" + classifier;
+		String res = "";
+		String sep = "";
+		
+		if( scope != null && ! scope.isEmpty() )
+		{
+			res += "scope:" + scope;
+			sep = ", ";
+		}
+
+		if( classifier != null && ! classifier.isEmpty() )
+		{
+			res += sep + "classifier:" + classifier;
+			sep = ", ";
+		}
+
+		return res;
 	}
 }
