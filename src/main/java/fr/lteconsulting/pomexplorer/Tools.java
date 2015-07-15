@@ -27,10 +27,8 @@ import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
-public class Tools
-{
-	public static GAV string2Gav(String gavString)
-	{
+public class Tools {
+	public static GAV string2Gav(String gavString) {
 		String[] parts = gavString.split(":");
 		if (parts.length != 3)
 			return null;
@@ -40,19 +38,16 @@ public class Tools
 		return gav;
 	}
 
-	public static void printChangeList(StringBuilder log, ChangeSetManager changes)
-	{
+	public static void printChangeList(StringBuilder log, ChangeSetManager changes) {
 		log.append("<br/>Change list...<br/><br/>");
 
 		List<Change<? extends Location>> changeList = new ArrayList<>();
 		for (Change<? extends Location> c : changes)
 			changeList.add(c);
 
-		Collections.sort(changeList, new Comparator<Change<? extends Location>>()
-		{
+		Collections.sort(changeList, new Comparator<Change<? extends Location>>() {
 			@Override
-			public int compare(Change<? extends Location> o1, Change<? extends Location> o2)
-			{
+			public int compare(Change<? extends Location> o1, Change<? extends Location> o2) {
 				Project p1 = o1.getLocation().getProject();
 				Project p2 = o2.getLocation().getProject();
 
@@ -67,8 +62,7 @@ public class Tools
 			}
 		});
 
-		for (Change<? extends Location> c : changeList)
-		{
+		for (Change<? extends Location> c : changeList) {
 			log.append(c.toString());
 		}
 	}
@@ -77,18 +71,15 @@ public class Tools
 	 * Maven tools
 	 */
 
-	public static Set<Location> getDirectDependenciesLocations(WorkingSession session, StringBuilder log, GAV gav)
-	{
+	public static Set<Location> getDirectDependenciesLocations(WorkingSession session, StringBuilder log, GAV gav) {
 		Set<Location> set = new HashSet<>();
 
 		Set<GAVRelation<Relation>> relations = session.graph().relationsReverse(gav);
-		for (GAVRelation<Relation> relation : relations)
-		{
+		for (GAVRelation<Relation> relation : relations) {
 			GAV updatedGav = relation.getSource();
 
 			Project updatedProject = session.projects().forGav(updatedGav);
-			if (updatedProject == null)
-			{
+			if (updatedProject == null) {
 				if (log != null)
 					log.append(Tools.warningMessage("Cannot find project for GAV " + updatedGav
 							+ " which dependency should be modified ! skipping."));
@@ -96,8 +87,7 @@ public class Tools
 			}
 
 			Location dependencyLocation = Tools.findDependencyLocation(session, log, updatedProject, relation);
-			if (dependencyLocation == null)
-			{
+			if (dependencyLocation == null) {
 				if (log != null)
 					log.append(Tools.errorMessage("Cannot find the location of dependency to " + relation.getTarget()
 							+ " in this project " + updatedProject));
@@ -110,8 +100,7 @@ public class Tools
 		return set;
 	}
 
-	public static List<String> getMavenProperties(GAV gav)
-	{
+	public static List<String> getMavenProperties(GAV gav) {
 		if (gav == null)
 			return null;
 
@@ -129,19 +118,17 @@ public class Tools
 		return res;
 	}
 
-	public static boolean isMavenVariable(String text)
-	{
+	public static boolean isMavenVariable(String text) {
 		return text != null && text.startsWith("${") && text.endsWith("}");
 	}
 
-	private static String extractMavenProperty(String variable)
-	{
+	private static String extractMavenProperty(String variable) {
 		assert isMavenVariable(variable);
 		return variable.substring(2, variable.length() - 1);
 	}
 
-	public static Project getPropertyDefinitionProject(WorkingSession session, Project startingProject, String property)
-	{
+	public static Project getPropertyDefinitionProject(WorkingSession session, Project startingProject,
+			String property) {
 		if (property.startsWith("project."))
 			return startingProject;
 
@@ -156,8 +143,7 @@ public class Tools
 		if (parentGav != null)
 			parentProject = session.projects().forGav(parentGav);
 
-		if (parentProject != null)
-		{
+		if (parentProject != null) {
 			Project definition = getPropertyDefinitionProject(session, parentProject, property);
 			if (definition != null)
 				return definition;
@@ -166,42 +152,39 @@ public class Tools
 		return null;
 	}
 
-	private static String propertyValue(Project startingProject, String property)
-	{
+	private static String propertyValue(Project startingProject, String property) {
 		Object res = startingProject.getUnresolvedPom().getProperties().get(property);
 		if (res instanceof String)
-			return (String)res;
+			return (String) res;
 		return null;
 	}
 
 	public static Location findDependencyLocation(WorkingSession session, StringBuilder log, Project project,
-			GAVRelation<Relation> relation)
-	{
+			GAVRelation<Relation> relation) {
 		if (project.getGav().equals(relation.getTarget()))
 			return new GavLocation(project, PomSection.PROJECT, project.getGav());
 
 		Location dependencyLocation = null;
 
-		switch (relation.getRelation().getRelationType())
-		{
-			case DEPENDENCY:
-				dependencyLocation = findDependencyLocationInDependencies(session, log, project, relation.getTarget());
-				break;
+		switch (relation.getRelation().getRelationType()) {
+		case DEPENDENCY:
+			dependencyLocation = findDependencyLocationInDependencies(session, log, project, relation.getTarget());
+			break;
 
-			case BUILD_DEPENDENCY:
-				dependencyLocation = findDependencyLocationInPlugins(session, project, relation.getTarget());
-				break;
+		case BUILD_DEPENDENCY:
+			dependencyLocation = findDependencyLocationInPlugins(session, project, relation.getTarget());
+			break;
 
-			case PARENT:
-				dependencyLocation = new GavLocation(project, PomSection.PARENT, relation.getTarget(), relation.getTarget());
-				break;
+		case PARENT:
+			dependencyLocation = new GavLocation(project, PomSection.PARENT, relation.getTarget(),
+					relation.getTarget());
+			break;
 		}
 
 		return dependencyLocation;
 	}
 
-	public static String getPropertyNameFromPropertyReference(String name)
-	{
+	public static String getPropertyNameFromPropertyReference(String name) {
 		if (!(name.startsWith("${") && name.endsWith("}")))
 			return name;
 
@@ -209,9 +192,7 @@ public class Tools
 	}
 
 	public static GavLocation findDependencyLocationInDependencies(WorkingSession session, StringBuilder log,
-			Project project,
-			GAV searchedDependency)
-	{
+			Project project, GAV searchedDependency) {
 		if (project == null)
 			return null;
 
@@ -221,23 +202,22 @@ public class Tools
 			return info;
 
 		// dependency management
-		GavLocation locationInDepMngt = findDependencyLocationInDependencyManagement(session, project, searchedDependency);
+		GavLocation locationInDepMngt = findDependencyLocationInDependencyManagement(session, project,
+				searchedDependency);
 		if (locationInDepMngt != null)
 			return locationInDepMngt;
 
 		// parent
 		GAV parentGav = session.graph().parent(project.getGav());
-		if (parentGav != null)
-		{
+		if (parentGav != null) {
 			Project parentProject = session.projects().forGav(parentGav);
-			if (parentProject == null)
-			{
-				log.append(Tools.warningMessage("Cannot find the '" + project.getGav() + "' parent project '" + parentGav
-						+ "' to examine where the dependency '" + searchedDependency + "' is defined."));
+			if (parentProject == null) {
+				log.append(Tools.warningMessage("Cannot find the '" + project.getGav() + "' parent project '"
+						+ parentGav + "' to examine where the dependency '" + searchedDependency + "' is defined."));
 				return null;
 			}
-			GavLocation locationInParent = findDependencyLocationInDependencies(session, log,
-					parentProject, searchedDependency);
+			GavLocation locationInParent = findDependencyLocationInDependencies(session, log, parentProject,
+					searchedDependency);
 			if (locationInParent != null)
 				return locationInParent;
 		}
@@ -246,17 +226,14 @@ public class Tools
 	}
 
 	public static GavLocation findDependencyLocationInDependencyManagement(WorkingSession session, Project project,
-			GAV searchedDependency)
-	{
+			GAV searchedDependency) {
 		if (project.getUnresolvedPom().getDependencyManagement() == null)
 			return null;
 		if (project.getUnresolvedPom().getDependencyManagement().getDependencies() == null)
 			return null;
-		for (Dependency d : project.getUnresolvedPom().getDependencyManagement().getDependencies())
-		{
+		for (Dependency d : project.getUnresolvedPom().getDependencyManagement().getDependencies()) {
 			if (searchedDependency.getGroupId().equals(d.getGroupId())
-					&& searchedDependency.getArtifactId().equals(d.getArtifactId()))
-			{
+					&& searchedDependency.getArtifactId().equals(d.getArtifactId())) {
 				GAV g = new GAV(d.getGroupId(), d.getArtifactId(), d.getVersion());
 				return new GavLocation(project, PomSection.DEPENDENCY_MNGT, searchedDependency, g);
 			}
@@ -265,8 +242,8 @@ public class Tools
 		return null;
 	}
 
-	public static GavLocation findDependencyLocationInPlugins(WorkingSession session, Project project, GAV searchedPlugin)
-	{
+	public static GavLocation findDependencyLocationInPlugins(WorkingSession session, Project project,
+			GAV searchedPlugin) {
 		if (project == null)
 			return null;
 
@@ -277,36 +254,28 @@ public class Tools
 		// TODO search in the plugin management section
 
 		// find in parent
-		return findDependencyLocationInPlugins(session, session.projects().forGav(session.graph().parent(project.getGav())),
-				searchedPlugin);
+		return findDependencyLocationInPlugins(session,
+				session.projects().forGav(session.graph().parent(project.getGav())), searchedPlugin);
 	}
 
 	private static Field modelField;
 
-	public static Model getParsedPomFileModel(ParsedPomFile parsedPomFile)
-	{
-		if (modelField == null)
-		{
-			try
-			{
+	public static Model getParsedPomFileModel(ParsedPomFile parsedPomFile) {
+		if (modelField == null) {
+			try {
 				modelField = ParsedPomFileImpl.class.getDeclaredField("model");
 				modelField.setAccessible(true);
 
-			}
-			catch (NoSuchFieldException | SecurityException | IllegalArgumentException e)
-			{
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException e) {
 				e.printStackTrace();
 				return null;
 			}
 		}
 
-		try
-		{
-			Model model = (Model)modelField.get(parsedPomFile);
+		try {
+			Model model = (Model) modelField.get(parsedPomFile);
 			return model;
-		}
-		catch (IllegalArgumentException | IllegalAccessException e)
-		{
+		} catch (IllegalArgumentException | IllegalAccessException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -316,8 +285,7 @@ public class Tools
 	 * Collection utilities
 	 */
 
-	public static <T> List<T> filter(Iterable<T> list, Func1<T, Boolean> predicate)
-	{
+	public static <T> List<T> filter(Iterable<T> list, Func1<T, Boolean> predicate) {
 		List<T> res = new ArrayList<>();
 		if (list == null)
 			return res;
@@ -328,8 +296,7 @@ public class Tools
 		return res;
 	}
 
-	public static <T> List<T> filter(T[] list, Func1<T, Boolean> predicate)
-	{
+	public static <T> List<T> filter(T[] list, Func1<T, Boolean> predicate) {
 		List<T> res = new ArrayList<>();
 		if (list == null)
 			return res;
@@ -340,11 +307,9 @@ public class Tools
 		return res;
 	}
 
-	public static final Comparator<GAV> gavAlphabeticalComparator = new Comparator<GAV>()
-	{
+	public static final Comparator<GAV> gavAlphabeticalComparator = new Comparator<GAV>() {
 		@Override
-		public int compare(GAV o1, GAV o2)
-		{
+		public int compare(GAV o1, GAV o2) {
 			int r = o1.getGroupId().compareTo(o2.getGroupId());
 			if (r != 0)
 				return r;
@@ -366,13 +331,11 @@ public class Tools
 		}
 	};
 
-	public static String warningMessage(String message)
-	{
+	public static String warningMessage(String message) {
 		return "<span style='color:orange;'>" + message + "</span><br/>";
 	}
 
-	public static String errorMessage(String message)
-	{
+	public static String errorMessage(String message) {
 		return "<span style='color:red;'>" + message + "</span><br/>";
 	}
 
@@ -382,59 +345,93 @@ public class Tools
 
 	private final static String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
-	public static boolean isReleased(GAV gav)
-	{
+	public static boolean isReleased(GAV gav) {
 		return !gav.getVersion().endsWith(SNAPSHOT_SUFFIX);
 	}
 
-	public static GAV releasedGav(GAV gav)
-	{
+	public static GAV releasedGav(GAV gav) {
 		if (!isReleased(gav))
-			return new GAV(gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring(0,
-					gav.getVersion().length() - SNAPSHOT_SUFFIX.length()));
+			return new GAV(gav.getGroupId(), gav.getArtifactId(),
+					gav.getVersion().substring(0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length()));
 
 		return gav;
 	}
-	
-	/**
-	 * 
-	 */
-	
-	public static String readFile(File file)
-	{
-		try
-		{
-			return new Scanner(file, "UTF-8").useDelimiter("\\A").next();
+
+	public static GAV openGavVersion(GAV gav) {
+		if (!isReleased(gav))
+			return gav;
+
+		String version = gav.getVersion();
+
+		int major = 0;
+		int minor = 0;
+		int patch = 0;
+
+		String[] parts = version.split("\\.");
+		if (parts.length > 0) {
+			try {
+				major = Integer.parseInt(parts[0]);
+			} catch (Exception e) {
+			}
 		}
-		catch (FileNotFoundException e)
-		{
+		if (parts.length > 1) {
+			try {
+				minor = Integer.parseInt(parts[1]);
+			} catch (Exception e) {
+			}
+		}
+		if (parts.length > 2) {
+			try {
+				patch = Integer.parseInt(parts[2]);
+			} catch (Exception e) {
+			}
+		}
+
+		// new version, hard coded major version upgrade !
+		major++;
+
+		if (parts.length == 3)
+			version = String.format("%1d.%1d.%1d", major, minor, patch);
+		else if (parts.length == 2)
+			version = String.format("%1d.%1d", major, minor);
+		else if (parts.length == 1)
+			version = String.format("%1d", major);
+		else
+			version += "-open";
+
+		return gav.copyWithVersion(version + SNAPSHOT_SUFFIX);
+	}
+
+	/**
+	 * Reads a whole file into a String assuming the file is UTF-8 encoded
+	 */
+	@SuppressWarnings("resource")
+	public static String readFile(File file) {
+		try {
+			return new Scanner(file, "UTF-8").useDelimiter("\\A").next();
+		} catch (FileNotFoundException e) {
 			return null;
 		}
 	}
-	
-	public static List<String> readFileLines( String path )
-	{
+
+	public static List<String> readFileLines(String path) {
 		ArrayList<String> res = new ArrayList<String>();
 
-		File file = new File( path );
-		if( !file.exists() )
+		File file = new File(path);
+		if (!file.exists())
 			return res;
 
-		try
-		{
-			BufferedReader in = new BufferedReader( new InputStreamReader( new FileInputStream( file ), "UTF8" ) );
+		try {
+			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
 
 			String str;
 
-			while( (str = in.readLine()) != null )
-			{
-				res.add( str );
+			while ((str = in.readLine()) != null) {
+				res.add(str);
 			}
 
 			in.close();
-		}
-		catch( Exception e )
-		{
+		} catch (Exception e) {
 		}
 
 		return res;
