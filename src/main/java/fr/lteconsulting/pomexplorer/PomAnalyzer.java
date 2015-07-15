@@ -195,8 +195,15 @@ public class PomAnalyzer
 		if(session == null)
 			return null;
 
-		session.loadPomFromFile( pomFile );
-		return session.getParsedPomFile();
+		try
+		{
+			session.loadPomFromFile(pomFile);
+			return session.getParsedPomFile();
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
 	}
 
 	private MavenProject readPomFile( File pom )
