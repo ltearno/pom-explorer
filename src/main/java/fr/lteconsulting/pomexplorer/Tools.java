@@ -396,6 +396,55 @@ public class Tools
 		return gav;
 	}
 	
+	public static GAV openGavVersion(GAV gav)
+	{
+		if (!isReleased(gav))
+			return gav;
+
+		int newMonth = 6;
+		int newPatch = 2;
+
+		String version = gav.getVersion();
+
+		int year = 0;
+		int month = 0;
+		int patch = 0;
+		int si = 0;
+		int siPatch = 0;
+
+		String[] parts = version.split("\\.");
+		if (parts[0].length() == 2)
+		{
+			year = Integer.parseInt(parts[0]);
+			month = Integer.parseInt(parts[1]);
+			patch = Integer.parseInt(parts[2]);
+
+			version = String.format("%02d.%1d.%1d", year, newMonth, newPatch);
+		}
+		else
+		{
+			year = Integer.parseInt(parts[0].substring(0, 2));
+			month = Integer.parseInt(parts[0].substring(2, 4));
+			patch = Integer.parseInt(parts[0].substring(4));
+
+			version = String.format("%02d%02d%1d", year, newMonth, newPatch);
+
+			if (parts.length >= 2)
+			{
+				si = Integer.parseInt(parts[1]);
+				version += "." + String.format("%1d", si);
+			}
+
+			if (parts.length >= 3)
+			{
+				siPatch = Integer.parseInt(parts[2]);
+				version += "." + String.format("%1d", siPatch);
+			}
+		}
+
+		return gav.copyWithVersion(version + SNAPSHOT_SUFFIX);
+	}
+
 	/**
 	 * 
 	 */

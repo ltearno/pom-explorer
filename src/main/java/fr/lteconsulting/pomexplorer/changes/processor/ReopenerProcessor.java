@@ -34,29 +34,10 @@ public class ReopenerProcessor extends AbstractGavChangeProcessor
 		log.append( Tools.warningMessage( "modifying a released gav (" + gav + "), reopening it" ) );
 
 		// find the opened version
-		String nextVersion = nextVersion( gav.getVersion() );
-		GAV newGav = new GAV( gav.getGroupId(), gav.getArtifactId(), nextVersion + "-SNAPSHOT" );
+		GAV newGav = Tools.openGavVersion(gav);
 
 		// add the change to the changeset
 		// TODO add the comment : "reopening"
 		changeSet.addChange( new GavChange( new GavLocation( change.getLocation().getProject(), PomSection.PROJECT, gav ), newGav ), change );
-	}
-
-	private String nextVersion( String version )
-	{
-		try
-		{
-			int index = version.lastIndexOf( "." );
-			if( index >= 0 && index != version.length() - 1 )
-			{
-				Integer num = Integer.parseInt( version.substring( index + 1 ) );
-				return version.substring( 0, index + 1 ) + (num + 1);
-			}
-		}
-		catch( Exception e )
-		{
-		}
-
-		return version + "-open";
 	}
 }
