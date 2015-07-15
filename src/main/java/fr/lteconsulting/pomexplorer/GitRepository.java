@@ -68,17 +68,25 @@ public class GitRepository
 			if( details )
 			{
 				log.append( "<br/>" );
-				log.append( "Added: " + status.getAdded() + "<br/>" );
-				log.append( "Changed: " + status.getChanged() + "<br/>" );
-				log.append( "Conflicting: " + status.getConflicting() + "<br/>" );
-				log.append( "ConflictingStageState: " + status.getConflictingStageState() + "<br/>" );
-				// log.append("IgnoredNotInIndex: " +
-				// status.getIgnoredNotInIndex()+"<br/>");
-				log.append( "Missing: " + status.getMissing() + "<br/>" );
-				log.append( "Modified: " + status.getModified() + "<br/>" );
-				log.append( "Removed: " + status.getRemoved() + "<br/>" );
-				log.append( "Untracked: " + status.getUntracked() + "<br/>" );
-				log.append( "UntrackedFolders: " + status.getUntrackedFolders() + "<br/>" );
+				if (!status.getAdded().isEmpty())
+					log.append("Added: " + status.getAdded() + "<br/>");
+				if (!status.getChanged().isEmpty())
+					log.append("Changed: " + status.getChanged() + "<br/>");
+				if (!status.getConflicting().isEmpty())
+				{
+					log.append("Conflicting: " + status.getConflicting() + "<br/>");
+					log.append("ConflictingStageState: " + status.getConflictingStageState() + "<br/>");
+				}
+				if (!status.getMissing().isEmpty())
+					log.append("Missing: " + status.getMissing() + "<br/>");
+				if (!status.getModified().isEmpty())
+					log.append("Modified: " + status.getModified() + "<br/>");
+				if (!status.getRemoved().isEmpty())
+					log.append("Removed: " + status.getRemoved() + "<br/>");
+				if (!status.getUntracked().isEmpty())
+					log.append("Untracked: " + status.getUntracked() + "<br/>");
+				if (!status.getUntrackedFolders().isEmpty())
+					log.append("UntrackedFolders: " + status.getUntrackedFolders() + "<br/>");
 				log.append( "<br/>" );
 			}
 		}
