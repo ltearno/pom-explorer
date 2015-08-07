@@ -24,3 +24,5 @@ config.properties
 .idea/
 pom-explorer.iml
 served-data/
+
+*.graphml
