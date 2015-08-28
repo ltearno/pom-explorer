@@ -63,7 +63,9 @@ public class GitRepository
 			status = git.status().call();
 			int nb = status.getAdded().size() + status.getChanged().size() + status.getConflicting().size() + status.getMissing().size() + status.getModified().size() + status.getRemoved().size();
 
-			log.append( (nb > 0 ? "[*] " : "[ ] ") + path.toAbsolutePath().toString() + (nb > 0 ? (" <b>(" + nb + " changes</b>)") : "") + "<br/>" );
+			log.append((nb > 0 ? "[*] " : "[ ] ") + path.toAbsolutePath().toString());
+			log.append(" " + git.getRepository().getBranch());
+			log.append((nb > 0 ? (" <b>(" + nb + " changes</b>)") : "") + "<br/>");
 
 			if( details )
 			{
