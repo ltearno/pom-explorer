@@ -6,6 +6,7 @@ import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.GavTools;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.javac.JavaSourceAnalyzer;
 
@@ -27,6 +28,12 @@ public class ClassesCommand
 		for( GAV gav : GavTools.filterGavs( session.graph().gavs(), gavFilter ) )
 		{
 			List<String> classes = GavTools.analyseProvidedClasses( session, gav, log );
+			if( classes == null )
+			{
+				log.append(Tools.warningMessage("No class provided by gav " + gav));
+				continue;
+			}
+			
 			for( String className : classes )
 				log.append( className + "<br/>" );
 		}
