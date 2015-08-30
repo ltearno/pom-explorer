@@ -217,25 +217,18 @@ public class PomAnalyzer
 	private MavenProject readPomFile(File pom)
 	{
 		Model model = null;
-		FileReader reader = null;
 		MavenXpp3Reader mavenreader = new MavenXpp3Reader();
-		try
-		{
-			reader = new FileReader(pom);
-		}
-		catch (FileNotFoundException e1)
-		{
-		}
-		try
+		try(FileReader reader = new FileReader(pom))
 		{
 			model = mavenreader.read(reader);
 			model.setPomFile(pom);
+
+			MavenProject project = new MavenProject(model);
+			return project;
 		}
 		catch (IOException | XmlPullParserException e1)
 		{
+			return null;
 		}
-		MavenProject project = new MavenProject(model);
-
-		return project;
 	}
 }
