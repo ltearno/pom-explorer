@@ -2,6 +2,11 @@ package fr.lteconsulting.pomexplorer.graph.relation;
 
 public abstract class Relation
 {
+	/**
+	 * Whether it's a normal dependency, a build one or a parent one.
+	 * @author Arnaud
+	 *
+	 */
 	public enum RelationType
 	{
 		DEPENDENCY( "D" ),
