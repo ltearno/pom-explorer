@@ -193,7 +193,7 @@ public class AppFactory
 			System.out.println( "Client left." );
 		}
 	};
-	
+
 	static class EdgeDto
 	{
 		String from;

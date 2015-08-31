@@ -1,6 +1,5 @@
 package fr.lteconsulting.pomexplorer;
 
-
 /**
  * POM Explorer main class
  */
@@ -15,7 +14,7 @@ public class PomExporerApp
 		System.out.println( "visit http://localhost:90 with a browser to access the application." );
 		System.out.println( "" );
 		System.out.println( "" );
-		
+
 		AppFactory.get().webServer().start();
 	}
 }

@@ -213,20 +213,20 @@ public class Commands
 			log.append( "Command method : <b>" + m.getName() + "</b><br/>" );
 			for( Object a : args )
 				log.append( "Argument : " + (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString())) + "<br/>" );
-			
+
 			Throwable t = e;
 			if( t instanceof InvocationTargetException )
-				t = ((InvocationTargetException)t).getTargetException();
-			
+				t = ((InvocationTargetException) t).getTargetException();
+
 			log.append( "<pre>" + t.toString() + "\r\n" );
-			for( StackTraceElement st : t.getStackTrace())
+			for( StackTraceElement st : t.getStackTrace() )
 			{
 				log.append( st.toString() + "\r\n" );
 			}
 			log.append( "</pre>" );
 
 			return Tools.errorMessage( log.toString() );
-		}		
+		}
 	}
 
 	private Method findMethodWith( Object o, final String verb, final int nbParamsGiven )

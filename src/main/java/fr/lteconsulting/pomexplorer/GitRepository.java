@@ -63,32 +63,32 @@ public class GitRepository
 			status = git.status().call();
 			int nb = status.getAdded().size() + status.getChanged().size() + status.getConflicting().size() + status.getMissing().size() + status.getModified().size() + status.getRemoved().size();
 
-			log.append((nb > 0 ? "[*] " : "[ ] ") + path.toAbsolutePath().toString());
-			log.append(" " + git.getRepository().getBranch());
-			log.append((nb > 0 ? (" <b>(" + nb + " changes</b>)") : "") + "<br/>");
+			log.append( (nb > 0 ? "[*] " : "[ ] ") + path.toAbsolutePath().toString() );
+			log.append( " " + git.getRepository().getBranch() );
+			log.append( (nb > 0 ? (" <b>(" + nb + " changes</b>)") : "") + "<br/>" );
 
 			if( details )
 			{
 				log.append( "<br/>" );
-				if (!status.getAdded().isEmpty())
-					log.append("Added: " + status.getAdded() + "<br/>");
-				if (!status.getChanged().isEmpty())
-					log.append("Changed: " + status.getChanged() + "<br/>");
-				if (!status.getConflicting().isEmpty())
+				if( !status.getAdded().isEmpty() )
+					log.append( "Added: " + status.getAdded() + "<br/>" );
+				if( !status.getChanged().isEmpty() )
+					log.append( "Changed: " + status.getChanged() + "<br/>" );
+				if( !status.getConflicting().isEmpty() )
 				{
-					log.append("Conflicting: " + status.getConflicting() + "<br/>");
-					log.append("ConflictingStageState: " + status.getConflictingStageState() + "<br/>");
+					log.append( "Conflicting: " + status.getConflicting() + "<br/>" );
+					log.append( "ConflictingStageState: " + status.getConflictingStageState() + "<br/>" );
 				}
-				if (!status.getMissing().isEmpty())
-					log.append("Missing: " + status.getMissing() + "<br/>");
-				if (!status.getModified().isEmpty())
-					log.append("Modified: " + status.getModified() + "<br/>");
-				if (!status.getRemoved().isEmpty())
-					log.append("Removed: " + status.getRemoved() + "<br/>");
-				if (!status.getUntracked().isEmpty())
-					log.append("Untracked: " + status.getUntracked() + "<br/>");
-				if (!status.getUntrackedFolders().isEmpty())
-					log.append("UntrackedFolders: " + status.getUntrackedFolders() + "<br/>");
+				if( !status.getMissing().isEmpty() )
+					log.append( "Missing: " + status.getMissing() + "<br/>" );
+				if( !status.getModified().isEmpty() )
+					log.append( "Modified: " + status.getModified() + "<br/>" );
+				if( !status.getRemoved().isEmpty() )
+					log.append( "Removed: " + status.getRemoved() + "<br/>" );
+				if( !status.getUntracked().isEmpty() )
+					log.append( "Untracked: " + status.getUntracked() + "<br/>" );
+				if( !status.getUntrackedFolders().isEmpty() )
+					log.append( "UntrackedFolders: " + status.getUntrackedFolders() + "<br/>" );
 				log.append( "<br/>" );
 			}
 		}

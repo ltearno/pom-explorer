@@ -21,7 +21,8 @@ public class GarbageCommand
 	{
 		StringBuilder log = new StringBuilder();
 
-		log.append( "<i>Note : although this tool will follow all the transitive dependencies inside your own projects, it will not recursively fetch all your externaly dependencies. For example, if you declare 'undertow-servlet' and depend only on 'undertow-core', you will get warnings that undetow class references have no provider found. This is a sign that you depend on a transitive dependency (from an external library) without declaring it in your maven project.</i><br/>" );
+		log.append(
+				"<i>Note : although this tool will follow all the transitive dependencies inside your own projects, it will not recursively fetch all your externaly dependencies. For example, if you declare 'undertow-servlet' and depend only on 'undertow-core', you will get warnings that undetow class references have no provider found. This is a sign that you depend on a transitive dependency (from an external library) without declaring it in your maven project.</i><br/>" );
 
 		List<GAV> gavs = GavTools.filterGavs( session.graph().gavs(), gavFilter );
 		for( GAV gav : gavs )
@@ -128,7 +129,7 @@ public class GarbageCommand
 					// else
 					// {
 					// for( String user : users.get( referencedFqn ) )
-					// System.out.println( "   used by " + user );
+					// System.out.println( " used by " + user );
 					// }
 				}
 			}

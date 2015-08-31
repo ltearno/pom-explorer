@@ -7,9 +7,9 @@ public class RepositoryRelation
 {
 	private final Set<String> relations = new HashSet<>();
 
-	public void addRelation(String name)
+	public void addRelation( String name )
 	{
-		relations.add(name);
+		relations.add( name );
 	}
 
 	@Override

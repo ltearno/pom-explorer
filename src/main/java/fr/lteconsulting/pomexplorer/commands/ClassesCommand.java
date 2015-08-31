@@ -30,10 +30,10 @@ public class ClassesCommand
 			List<String> classes = GavTools.analyseProvidedClasses( session, gav, log );
 			if( classes == null )
 			{
-				log.append(Tools.warningMessage("No class provided by gav " + gav));
+				log.append( Tools.warningMessage( "No class provided by gav " + gav ) );
 				continue;
 			}
-			
+
 			for( String className : classes )
 				log.append( className + "<br/>" );
 		}

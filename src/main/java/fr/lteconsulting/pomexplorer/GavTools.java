@@ -28,7 +28,7 @@ public class GavTools
 		{
 			stream = gavs.stream();
 		}
-		
+
 		List<GAV> res = new ArrayList<>();
 
 		stream.sorted( Tools.gavAlphabeticalComparator ).forEachOrdered( gav -> res.add( gav ) );
@@ -72,7 +72,7 @@ public class GavTools
 			ZipInputStream zip = new ZipInputStream( new FileInputStream( resolvedFile ) );
 			for( ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry() )
 			{
-				System.out.println(entry.getName());
+				System.out.println( entry.getName() );
 				if( !entry.isDirectory() && entry.getName().endsWith( ".class" ) )
 				{
 					String className = entry.getName().replace( '/', '.' );
@@ -82,7 +82,7 @@ public class GavTools
 			zip.close();
 
 			Collections.sort( classNames );
-			
+
 			return classNames;
 		}
 		catch( Exception e )

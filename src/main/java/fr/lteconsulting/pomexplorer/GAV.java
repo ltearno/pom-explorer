@@ -8,9 +8,9 @@ public class GAV
 
 	private final String version;
 
-	public GAV copyWithVersion(String version)
+	public GAV copyWithVersion( String version )
 	{
-		return new GAV(groupId, artifactId, version);
+		return new GAV( groupId, artifactId, version );
 	}
 
 	public GAV( String groupId, String artifactId, String version )

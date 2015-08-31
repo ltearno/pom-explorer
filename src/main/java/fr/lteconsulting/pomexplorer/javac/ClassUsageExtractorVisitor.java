@@ -28,51 +28,51 @@ public class ClassUsageExtractorVisitor extends ASTVisitor
 		return fqnUsage;
 	}
 
-	public void setParsedFile(String path)
+	public void setParsedFile( String path )
 	{
 		currentFilePath = path;
 	}
 
 	@Override
-	public boolean visit(ImportDeclaration node)
+	public boolean visit( ImportDeclaration node )
 	{
-		maybeAddName(node.getName().getFullyQualifiedName());
+		maybeAddName( node.getName().getFullyQualifiedName() );
 		return true;
 	}
 
 	@Override
-	public boolean visit(QualifiedName node)
+	public boolean visit( QualifiedName node )
 	{
-		maybeAddName(node.getFullyQualifiedName());
+		maybeAddName( node.getFullyQualifiedName() );
 		return true;
 	}
 
-	private void maybeAddName(String name)
+	private void maybeAddName( String name )
 	{
 		String partToCheck;
 
-		int dot = name.lastIndexOf('.');
-		if (dot < 0)
+		int dot = name.lastIndexOf( '.' );
+		if( dot < 0 )
 			partToCheck = name;
 		else
-			partToCheck = name.substring(dot + 1);
+			partToCheck = name.substring( dot + 1 );
 
-		if (partToCheck.isEmpty())
+		if( partToCheck.isEmpty() )
 			return;
 
-		String firstLetter = partToCheck.substring(0, 1);
-		if (!firstLetter.toUpperCase().equals(firstLetter))
+		String firstLetter = partToCheck.substring( 0, 1 );
+		if( !firstLetter.toUpperCase().equals( firstLetter ) )
 			return;
 
-		List<String> users = fqnUsage.get(name);
-		if (users == null)
+		List<String> users = fqnUsage.get( name );
+		if( users == null )
 		{
 			users = new ArrayList<>();
-			fqnUsage.put(name, users);
+			fqnUsage.put( name, users );
 		}
 
-		users.add(currentFilePath);
+		users.add( currentFilePath );
 
-		qualifiedNames.add(name);
+		qualifiedNames.add( name );
 	}
 }

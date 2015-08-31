@@ -28,14 +28,14 @@ public class DependencyRelation extends Relation
 	{
 		String res = "";
 		String sep = "";
-		
-		if( scope != null && ! scope.isEmpty() )
+
+		if( scope != null && !scope.isEmpty() )
 		{
 			res += "scope:" + scope;
 			sep = ", ";
 		}
 
-		if( classifier != null && ! classifier.isEmpty() )
+		if( classifier != null && !classifier.isEmpty() )
 		{
 			res += sep + "classifier:" + classifier;
 			sep = ", ";

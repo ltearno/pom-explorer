@@ -11,32 +11,32 @@ import fr.lteconsulting.pomexplorer.Project;
 public class ProjectRepository
 {
 	private final Map<GAV, Project> projects = new HashMap<>();
-	
-	public boolean contains(GAV gav)
+
+	public boolean contains( GAV gav )
 	{
 		return projects.containsKey( gav );
 	}
-	
-	public void add(Project project)
+
+	public void add( Project project )
 	{
 		projects.put( project.getGav(), project );
 	}
-	
-	public Project forGav(GAV gav)
+
+	public Project forGav( GAV gav )
 	{
 		return projects.get( gav );
 	}
-	
+
 	public int size()
 	{
 		return projects.size();
 	}
-	
+
 	public Set<GAV> keySet()
 	{
 		return projects.keySet();
 	}
-	
+
 	public Collection<Project> values()
 	{
 		return projects.values();

@@ -6,7 +6,7 @@ public class Repository
 {
 	private final Path path;
 
-	public Repository(Path path)
+	public Repository( Path path )
 	{
 		this.path = path;
 	}
@@ -27,21 +27,21 @@ public class Repository
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (this == obj)
+		if( this == obj )
 			return true;
-		if (obj == null)
+		if( obj == null )
 			return false;
-		if (getClass() != obj.getClass())
+		if( getClass() != obj.getClass() )
 			return false;
-		Repository other = (Repository)obj;
-		if (path == null)
+		Repository other = (Repository) obj;
+		if( path == null )
 		{
-			if (other.path != null)
+			if( other.path != null )
 				return false;
 		}
-		else if (!path.equals(other.path))
+		else if( !path.equals( other.path ) )
 			return false;
 		return true;
 	}

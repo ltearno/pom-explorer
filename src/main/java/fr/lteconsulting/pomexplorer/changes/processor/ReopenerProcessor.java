@@ -34,7 +34,7 @@ public class ReopenerProcessor extends AbstractGavChangeProcessor
 		log.append( Tools.warningMessage( "modifying a released gav (" + gav + "), reopening it" ) );
 
 		// find the opened version
-		GAV newGav = Tools.openGavVersion(gav);
+		GAV newGav = Tools.openGavVersion( gav );
 
 		// add the change to the changeset
 		// TODO add the comment : "reopening"

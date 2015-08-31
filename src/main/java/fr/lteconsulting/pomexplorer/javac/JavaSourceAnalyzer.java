@@ -26,9 +26,8 @@ public class JavaSourceAnalyzer
 	public void analyzeDirectory( String directory, boolean logFqns, StringBuilder log )
 	{
 		log.append( "processing parsing java directory : " + directory + "<br/>" );
-		log.append( "<i><b>warning</b> : the analyzed fqns may contain false positives, because the java parsing is not fine tuned yet.<br/>" 
-				+ "Also it does not detect references made to inner classes (that can be fixed) and through reflection (cannot be fixed), like Class.forName(...) calls.<br/>"
-				+ "Feel free to submit a pull request !</i><br/>" );
+		log.append( "<i><b>warning</b> : the analyzed fqns may contain false positives, because the java parsing is not fine tuned yet.<br/>"
+				+ "Also it does not detect references made to inner classes (that can be fixed) and through reflection (cannot be fixed), like Class.forName(...) calls.<br/>" + "Feel free to submit a pull request !</i><br/>" );
 
 		processFile( new File( directory ) );
 
