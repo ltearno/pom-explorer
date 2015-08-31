@@ -63,7 +63,7 @@
         <dependency>
             <groupId>fr.lteconsulting</groupId>
             <artifactId>hexa.utils</artifactId>
-            <version>1.4-SNAPSHOT</version>
+            <version>1.3</version>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>
