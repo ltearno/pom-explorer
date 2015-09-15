@@ -38,12 +38,8 @@ public class GavsCommand
 	}
 
 	@Help( "analyze all the gav's dependencies and add them in the pom graph." )
-	public String add( WorkingSession session, Client client, String gavName )
+	public String add(WorkingSession session, Client client, GAV gav)
 	{
-		GAV gav;
-		if( gavName == null || gavName.isEmpty() || (gav = Tools.string2Gav( gavName )) == null )
-			return Tools.errorMessage( "You should supply a GAV in the correct G:A:V format" );
-
 		StringBuilder log = new StringBuilder();
 
 		PomAnalyzer analyzer = new PomAnalyzer();

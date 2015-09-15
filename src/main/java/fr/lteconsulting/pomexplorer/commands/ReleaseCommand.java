@@ -19,12 +19,8 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 public class ReleaseCommand
 {
 	@Help( "releases a gav, all dependencies are also released. GAVs depending on released GAVs are updated." )
-	public String gav( CommandOptions options, final Client client, WorkingSession session, String gavString )
+	public String gav(CommandOptions options, final Client client, WorkingSession session, GAV gav)
 	{
-		GAV gav = Tools.string2Gav( gavString );
-		if( gav == null )
-			return "specify the GAV with the group:artifact:version format please";
-
 		StringBuilder log = new StringBuilder();
 
 		log.append( "<b>Releasing</b> project " + gav + "<br/>" );
@@ -44,7 +40,7 @@ public class ReleaseCommand
 	}
 
 	@Help( "releases all gavs, all dependencies are also released. GAVs depending on released GAVs are updated." )
-	public String allGavs( CommandOptions options, final Client client, WorkingSession session )
+	public String allGavs(CommandOptions options, Client client, WorkingSession session)
 	{
 		final StringBuilder log = new StringBuilder();
 		ChangeSetManager changes = new ChangeSetManager();

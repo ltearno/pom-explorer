@@ -16,12 +16,8 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation.RelationType;
 public class DependsCommand
 {
 	@Help( "lists the GAVs directly depending on the one given in parameter" )
-	public String on( WorkingSession session, String gavString )
+	public String on(WorkingSession session, GAV gav)
 	{
-		GAV gav = Tools.string2Gav( gavString );
-		if( gav == null )
-			return "specify the GAV with the group:artifact:version format please";
-
 		StringBuilder res = new StringBuilder();
 
 		Set<GAVRelation<Relation>> relations = session.graph().relationsReverse( gav );
@@ -59,12 +55,8 @@ public class DependsCommand
 	}
 
 	@Help( "lists the GAVs that the GAV passed in parameters depends on" )
-	public String by( WorkingSession session, String gavString )
+	public String by(WorkingSession session, GAV gav)
 	{
-		GAV gav = Tools.string2Gav( gavString );
-		if( gav == null )
-			return "specify the GAV with the group:artifact:version format please";
-
 		StringBuilder res = new StringBuilder();
 
 		Set<GAVRelation<Relation>> relations = session.graph().relations( gav );

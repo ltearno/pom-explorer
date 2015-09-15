@@ -12,17 +12,9 @@ import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 public class ChangeCommand
 {
 	@Help( "changes the GAV version and also in dependent projects. Parameters : gav, newVersion" )
-	public static String gav( CommandOptions options, Client client, WorkingSession session, String originalGavString, String newGavString )
+	public static String gav(CommandOptions options, Client client, WorkingSession session, GAV originalGav,
+			GAV newGav)
 	{
-		GAV originalGav = Tools.string2Gav( originalGavString );
-		GAV newGav = Tools.string2Gav( newGavString );
-
-		if (originalGav == null)
-			return "specify the GAV to be changed with the group:artifact:version format please";
-
-		if (newGav == null)
-			return "specify the target GAV with the group:artifact:version format please";
-
 		StringBuilder log = new StringBuilder();
 
 		log.append( "<b>Changing</b> " + originalGav + " to " + newGav + "<br/><br/>" );

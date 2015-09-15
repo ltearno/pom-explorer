@@ -11,6 +11,7 @@ import java.util.Map;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.Client;
+import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
@@ -194,6 +195,18 @@ public class Commands
 				{
 					args[curArg] = new FilteredGAVs(parts[curPart]);
 					curArg++;
+					curPart++;
+					continue;
+				}
+
+				if (argTypes[curArg] == GAV.class)
+				{
+					args[curArg] = parts[curPart] == null ? null : Tools.string2Gav(parts[curPart]);
+					if (args[curArg] == null)
+						return Tools.warningMessage("Argument " + (curArg + 1)
+								+ " should be a GAV specified with the group:artifact:version format please");
+					curArg++;
+					curPart++;
 					continue;
 				}
 			}

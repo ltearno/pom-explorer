@@ -6,22 +6,17 @@ import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 
 public class BuildCommand
 {
-	public String gav( WorkingSession session, String gavString )
+	@Help("build the project and all which depends on it")
+	public String gav(WorkingSession session, GAV gav)
 	{
-		GAV gav = Tools.string2Gav( gavString );
-		if( gav == null )
-			return "specify the GAV with the group:artifact:version format please";
-
 		StringBuilder res = new StringBuilder();
 
-		// build the project and all which depends on it
 
 		Project project = session.projects().forGav( gav );
 		if( project == null )
