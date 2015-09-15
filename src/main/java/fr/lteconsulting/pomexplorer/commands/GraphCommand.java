@@ -217,13 +217,8 @@ public class GraphCommand
 		Set<GAV> vertexSubset = new HashSet<>();
 		for( GAV gav : fullGraph.vertexSet() )
 		{
-			// if (gav.toString().contains("socle-test") ||
-			// gav.toString().contains("legacy"))
-			// continue;
 			if( filter == null || gav.toString().toLowerCase().contains( filter ) )
-			{
 				vertexSubset.add( gav );
-			}
 		}
 
 		Set<Relation> edgeSubset = new HashSet<>();

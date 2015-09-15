@@ -52,21 +52,18 @@ public class ProjectsCommand
 	}
 
 	@Help( "list the session's projects - with details. Parameter is a filter for the GAVs" )
-	public String details( WorkingSession session, String gavFilter )
+	public String details(WorkingSession session, FilteredGAVs gavFilter)
 	{
-		if( gavFilter != null )
-			gavFilter = gavFilter.toLowerCase();
-
 		StringBuilder res = new StringBuilder();
 
-		res.append( "Projects details. Filter with: '" + gavFilter + "'<br/>" );
+		res.append("Projects details. Filter with: '" + gavFilter.getFilter() + "'<br/>");
 
 		for( Project project : session.projects().values() )
 		{
 			ParsedPomFile resolvedPom = project.getResolvedPom();
 			MavenProject unresolvedProject = project.getUnresolvedPom();
 
-			if( gavFilter != null && !project.getGav().toString().toLowerCase().contains( gavFilter ) )
+			if (!gavFilter.accept(project.getGav()))
 				continue;
 
 			res.append( "file : " + project.getPomFile().getAbsolutePath() + "<br/>" );

@@ -19,13 +19,16 @@ public class ClassesCommand
 	}
 
 	@Help( "gives the java classes provided by the session's gavs, filtered by the given parameter" )
-	public String providedBy( WorkingSession session, Client client, String gavFilter )
+	public String providedBy(WorkingSession session, Client client, FilteredGAVs gavFilter)
 	{
+		if (gavFilter == null)
+			return Tools.warningMessage("You should specify a GAV filter");
+
 		StringBuilder log = new StringBuilder();
 
-		log.append( "<br/>GAV list " + (gavFilter != null ? ("filtering with '" + gavFilter + "'") : "") + ":<br/>" );
+		log.append("<br/>GAV list filtered with '" + gavFilter + "' :<br/>");
 
-		for( GAV gav : GavTools.filterGavs( session.graph().gavs(), gavFilter ) )
+		for (GAV gav : gavFilter.getGavs(session))
 		{
 			List<String> classes = GavTools.analyseProvidedClasses( session, gav, log );
 			if( classes == null )
@@ -41,21 +44,19 @@ public class ClassesCommand
 		return log.toString();
 	}
 
+	/*
+	 * parse all the Java source files in the gav's project directory and extract all referenced fqns.
+	 * 
+	 * substract the gav's provided classes from this set, to get external references
+	 */
 	@Help( "gives the fqn list of referenced classes by the session's gavs, filtered by the given parameter" )
-	public String referencedBy( WorkingSession session, String gavFilter )
+	public String referencedBy(WorkingSession session, FilteredGAVs gavFilter)
 	{
-		/*
-		 * parse all the Java source files in the gav's project directory and
-		 * extract all referenced fqns.
-		 * 
-		 * substract the gav's provided classes from this set, to get external
-		 * references
-		 */
 		StringBuilder log = new StringBuilder();
 
 		JavaSourceAnalyzer analyzer = new JavaSourceAnalyzer();
 
-		for( GAV gav : GavTools.filterGavs( session.graph().gavs(), gavFilter ) )
+		for (GAV gav : gavFilter.getGavs(session))
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )

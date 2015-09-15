@@ -17,8 +17,11 @@ public class ChangeCommand
 		GAV originalGav = Tools.string2Gav( originalGavString );
 		GAV newGav = Tools.string2Gav( newGavString );
 
-		if( originalGav == null || newGav == null )
-			return "specify the GAV with the group:artifact:version format please";
+		if (originalGav == null)
+			return "specify the GAV to be changed with the group:artifact:version format please";
+
+		if (newGav == null)
+			return "specify the target GAV with the group:artifact:version format please";
 
 		StringBuilder log = new StringBuilder();
 

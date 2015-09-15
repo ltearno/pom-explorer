@@ -1,9 +1,10 @@
 package fr.lteconsulting.pomexplorer.commands;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-import fr.lteconsulting.pomexplorer.*;
+import fr.lteconsulting.pomexplorer.Client;
+import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.PomAnalyzer;
+import fr.lteconsulting.pomexplorer.Tools;
+import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class GavsCommand
 {
@@ -20,23 +21,18 @@ public class GavsCommand
 	}
 
 	@Help( "list the session's GAVs, with filtering" )
-	public String list( WorkingSession session, String gavFilter )
+	public String list(WorkingSession session, FilteredGAVs gavFilter)
 	{
-		if( gavFilter != null )
-			gavFilter = gavFilter.toLowerCase();
-
-		ArrayList<GAV> gavs = new ArrayList<>( session.graph().gavs() );
-		Collections.sort( gavs, Tools.gavAlphabeticalComparator );
+		if (gavFilter == null)
+			return Tools.warningMessage("You should specify a GAV filter !");
 
 		StringBuilder log = new StringBuilder();
 
-		log.append( "<br/>GAV list " + (gavFilter != null ? ("filtering with '" + gavFilter + "'") : "") + ":<br/>" );
-		for( GAV gav : gavs )
+		log.append("<br/>GAV list filtered with '" + gavFilter.getFilter() + "' :<br/>");
+		gavFilter.getGavs(session).forEach(gav ->
 		{
-			if( gavFilter != null && !gav.toString().toLowerCase().contains( gavFilter ) )
-				continue;
 			log.append( gav + "<br/>" );
-		}
+		});
 
 		return log.toString();
 	}

@@ -18,52 +18,6 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ReleaseCommand
 {
-	private void releaseGav( Client client, WorkingSession session, GAV gav, ChangeSetManager changes, StringBuilder log )
-	{
-		String causeMessage = "release of " + gav;
-
-		if( !Tools.isReleased( gav ) )
-		{
-			GavLocation loc = new GavLocation( session.projects().forGav( gav ), PomSection.PROJECT, gav );
-			changes.addChange( new GavChange( loc, Tools.releasedGav( loc.getGav() ) ), causeMessage );
-		}
-
-		Set<GAVRelation<Relation>> relations = session.graph().relationsRec( gav );
-		for( GAVRelation<Relation> r : relations )
-		{
-			if( r.getTarget().getVersion() == null )
-			{
-				log.append( "<span style='color:orange;'>No target version (" + r.getTarget() + ") !</span><br/>" );
-				continue;
-			}
-
-			if( Tools.isReleased( r.getTarget() ) )
-				continue;
-
-			GAV source = r.getSource();
-			GAV to = Tools.releasedGav( r.getTarget() );
-
-			Project project = session.projects().forGav( source );
-			if( project == null )
-			{
-				log.append( Tools.warningMessage( "Project not found for this GAV ! " + source ) );
-				continue;
-			}
-
-			GavLocation targetLoc = new GavLocation( session.projects().forGav( r.getTarget() ), PomSection.PROJECT, r.getTarget() );
-			changes.addChange( new GavChange( targetLoc, Tools.releasedGav( targetLoc.getGav() ) ), causeMessage );
-
-			Location dependencyLocation = Tools.findDependencyLocation( session, log, project, r );
-			if( dependencyLocation == null )
-			{
-				log.append( Tools.errorMessage( "Cannot find the location of dependency to " + r.getTarget() + " in this project " + project ) );
-				continue;
-			}
-
-			changes.addChange( Change.create( dependencyLocation, to ), causeMessage );
-		}
-	}
-
 	@Help( "releases a gav, all dependencies are also released. GAVs depending on released GAVs are updated." )
 	public String gav( CommandOptions options, final Client client, WorkingSession session, String gavString )
 	{
@@ -117,5 +71,51 @@ public class ReleaseCommand
 		CommandTools.maybeApplyChanges( session, options, log, changes );
 
 		return log.toString();
+	}
+
+	private void releaseGav( Client client, WorkingSession session, GAV gav, ChangeSetManager changes, StringBuilder log )
+	{
+		String causeMessage = "release of " + gav;
+	
+		if( !Tools.isReleased( gav ) )
+		{
+			GavLocation loc = new GavLocation( session.projects().forGav( gav ), PomSection.PROJECT, gav );
+			changes.addChange( new GavChange( loc, Tools.releasedGav( loc.getGav() ) ), causeMessage );
+		}
+	
+		Set<GAVRelation<Relation>> relations = session.graph().relationsRec( gav );
+		for( GAVRelation<Relation> r : relations )
+		{
+			if( r.getTarget().getVersion() == null )
+			{
+				log.append( "<span style='color:orange;'>No target version (" + r.getTarget() + ") !</span><br/>" );
+				continue;
+			}
+	
+			if( Tools.isReleased( r.getTarget() ) )
+				continue;
+	
+			GAV source = r.getSource();
+			GAV to = Tools.releasedGav( r.getTarget() );
+	
+			Project project = session.projects().forGav( source );
+			if( project == null )
+			{
+				log.append( Tools.warningMessage( "Project not found for this GAV ! " + source ) );
+				continue;
+			}
+	
+			GavLocation targetLoc = new GavLocation( session.projects().forGav( r.getTarget() ), PomSection.PROJECT, r.getTarget() );
+			changes.addChange( new GavChange( targetLoc, Tools.releasedGav( targetLoc.getGav() ) ), causeMessage );
+	
+			Location dependencyLocation = Tools.findDependencyLocation( session, log, project, r );
+			if( dependencyLocation == null )
+			{
+				log.append( Tools.errorMessage( "Cannot find the location of dependency to " + r.getTarget() + " in this project " + project ) );
+				continue;
+			}
+	
+			changes.addChange( Change.create( dependencyLocation, to ), causeMessage );
+		}
 	}
 }

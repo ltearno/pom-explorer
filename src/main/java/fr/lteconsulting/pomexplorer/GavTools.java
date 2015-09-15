@@ -3,10 +3,8 @@ package fr.lteconsulting.pomexplorer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -15,27 +13,6 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
 
 public class GavTools
 {
-	public static List<GAV> filterGavs( Collection<GAV> gavs, String gavFilter )
-	{
-		Stream<GAV> stream;
-
-		if( gavFilter != null )
-		{
-			String filter = gavFilter.toLowerCase();
-			stream = gavs.stream().filter( gav -> gav.toString().toLowerCase().contains( filter ) );
-		}
-		else
-		{
-			stream = gavs.stream();
-		}
-
-		List<GAV> res = new ArrayList<>();
-
-		stream.sorted( Tools.gavAlphabeticalComparator ).forEachOrdered( gav -> res.add( gav ) );
-
-		return res;
-	}
-
 	public static List<String> analyseProvidedClasses( WorkingSession session, GAV gav, StringBuilder log )
 	{
 		log.append( "<br/><b>Java classes provided by gav " + gav + "</b> :<br/>" );

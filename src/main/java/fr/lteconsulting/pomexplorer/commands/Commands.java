@@ -189,6 +189,13 @@ public class Commands
 					curArg++;
 					continue;
 				}
+
+				if (argTypes[curArg] == FilteredGAVs.class)
+				{
+					args[curArg] = new FilteredGAVs(parts[curPart]);
+					curArg++;
+					continue;
+				}
 			}
 
 			if( argTypes[curArg] == Integer.class )

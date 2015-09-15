@@ -17,15 +17,14 @@ import fr.lteconsulting.pomexplorer.javac.JavaSourceAnalyzer;
 public class GarbageCommand
 {
 	@Help( "displays the list of dependencies declared but not used in the java code of a project and referenced transitive dependencies not declared in the pom file, arguments : gav_filter" )
-	public String dependencies( WorkingSession session, CommandOptions options, String gavFilter )
+	public String dependencies(WorkingSession session, CommandOptions options, FilteredGAVs gavFilter)
 	{
 		StringBuilder log = new StringBuilder();
 
 		log.append(
 				"<i>Note : although this tool will follow all the transitive dependencies inside your own projects, it will not recursively fetch all your externaly dependencies. For example, if you declare 'undertow-servlet' and depend only on 'undertow-core', you will get warnings that undetow class references have no provider found. This is a sign that you depend on a transitive dependency (from an external library) without declaring it in your maven project.</i><br/>" );
 
-		List<GAV> gavs = GavTools.filterGavs( session.graph().gavs(), gavFilter );
-		for( GAV gav : gavs )
+		for (GAV gav : gavFilter.getGavs(session))
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )
