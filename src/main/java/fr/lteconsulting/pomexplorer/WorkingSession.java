@@ -3,6 +3,21 @@ package fr.lteconsulting.pomexplorer;
 import fr.lteconsulting.pomexplorer.graph.PomGraph;
 import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
 
+/**
+ * Some projects can be pinned as needed to be always up to date
+ * 
+ * <p>
+ * watch all recursive dependencies with local project.
+ * <p>
+ * for each one, build the project if a change is detected
+ * <p>
+ * process changes with a customizable delay, so builds are made in the best possible order
+ * <p>
+ * builds should be cancellable (kill the build process simply)
+ * 
+ * @author Arnaud
+ *
+ */
 public class WorkingSession
 {
 	private String mavenSettingsFilePath = null;
