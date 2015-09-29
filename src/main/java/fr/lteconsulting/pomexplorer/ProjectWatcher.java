@@ -2,24 +2,23 @@ package fr.lteconsulting.pomexplorer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProjectWatcher
 {
-	private WatchService service;
-	private Path projectPath;
+	private final WatchService service;
 
-	private final Set<WatchKey> keys = new HashSet<>();
-	private final List<Path> paths = new ArrayList<>();
+	private final Path projectPath;
+
+	private final Map<Path, WatchKey> keys = new HashMap<>();
 
 	public ProjectWatcher( Path projectPath, WatchService service )
 	{
@@ -29,67 +28,152 @@ public class ProjectWatcher
 
 	public void register() throws IOException
 	{
-		getSubPaths( projectPath.toFile(), paths );
+		watchPath( projectPath );
 
-		for( Path path : paths )
+		System.out.println( "registered project files..." );
+	}
+
+	public boolean waitChange()
+	{
+		WatchKey key = null;
+		try
 		{
-			watchFile( path );
+			key = service.take();
 		}
-	}
+		catch( InterruptedException e )
+		{
+			System.out.println( "Interrupted while waiting changes on files..." );
+			e.printStackTrace();
+		}
 
-	private void watchFile( Path path ) throws IOException
-	{
-		System.out.println( "Watch item " + path.toString() );
-		WatchKey key = path.register( service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY );
-		keys.add( key );
-	}
-
-	private void unwatchFile( Path path, WatchKey key )
-	{
-		System.out.println( "Unwatch file " + path.toString() );
-		key.cancel();
-		keys.remove( key );
-		paths.remove( path );
-	}
-
-	public boolean waitChange() throws InterruptedException, IOException
-	{
-		WatchKey key = service.take();
 		if( key == null )
 			return false;
 
-		key.reset();
-
 		for( WatchEvent<?> event : key.pollEvents() )
 		{
-			System.out.println( "Happenened event " + event.kind() + " on item " + event.context() );
-
+			Path eventTarget = Paths.get( key.watchable().toString(), event.context().toString() ).toAbsolutePath();
 			if( event.kind() == StandardWatchEventKinds.ENTRY_CREATE )
 			{
-				Path path = Paths.get( projectPath.toString(), event.context().toString() );
-				if( path != null && path.toFile().isDirectory() )
-					watchFile( path );
+				System.out.println( "=> created " + eventTarget.toString() );
+
+				watchPath( Paths.get( projectPath.toString(), event.context().toString() ) );
 			}
 			else if( event.kind() == StandardWatchEventKinds.ENTRY_DELETE )
 			{
-				unwatchFile( Paths.get( projectPath.toString(), event.context().toString() ), key );
+				System.out.println( "=> deleted " + eventTarget.toString() );
+
+				unwatchPath( Paths.get( projectPath.toString(), event.context().toString() ) );
+			}
+			else if( event.kind() == StandardWatchEventKinds.ENTRY_MODIFY )
+			{
+				System.out.println( "=> modified " + eventTarget.toString() );
 			}
 		}
+
+		key.reset();
 
 		return true;
 	}
 
-	private void getSubPaths( File file, List<Path> paths )
+	private void watchPath( Path path )
 	{
-		if( file == null )
+		if( path == null )
 			return;
 
-		if( file.isDirectory() )
-		{
-			paths.add( file.toPath() );
+		watchPath( path.toFile() );
+	}
 
-			for( File child : file.listFiles() )
-				getSubPaths( child, paths );
+	private void watchPath( File file )
+	{
+		if( file == null || !file.isDirectory() )
+			return;
+
+		Path path = file.toPath();
+
+		if( keys.containsKey( path ) )
+		{
+			System.out.println( "warning : already watched " + path.toString() );
+			return;
 		}
+
+		if( !shouldBeWatched( file ) )
+		{
+			System.out.println( "warning : not watched directory " + file.getAbsolutePath() );
+			return;
+		}
+
+		try
+		{
+			System.out.println( "watch : " + path.toString() );
+			WatchKey key = path.register( service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY );
+
+			keys.put( path, key );
+		}
+		catch( IOException e )
+		{
+			e.printStackTrace();
+		}
+
+		for( File child : file.listFiles() )
+			watchPath( child );
+	}
+
+	private void unwatchPath( Path path )
+	{
+		if( path == null || !path.toFile().isDirectory() )
+			return;
+	
+		WatchKey key = keys.get( path );
+		if( key == null )
+		{
+			System.out.println( "warning : not watched path " + path + ", nothing to do..." );
+			return;
+		}
+	
+		key.cancel();
+		keys.remove( path );
+	}
+
+	/**
+	 * Search in the .gitignore file and other clues to know if a directory
+	 * should be watched
+	 * 
+	 * @param file
+	 * @return
+	 */
+	private boolean shouldBeWatched( File file )
+	{
+		if( file.getName().equals( "target" ) )
+			return false;
+
+		File current = file.getParentFile();
+		Path remaining = Paths.get( file.getName() );
+		while( current != null )
+		{
+			File gitignore = Paths.get( current.getAbsolutePath(), ".gitignore" ).toFile();
+			if( gitignore != null && gitignore.exists() && gitignore.isFile() )
+			{
+				try
+				{
+					for( String line : Files.readAllLines( gitignore.toPath() ) )
+					{
+						if( line.contains( "*" ) || line.contains( "//" ) || line.contains( "?" ) )
+							continue;
+
+						if( remaining.compareTo( Paths.get( line ) ) == 0 )
+							return false;
+					}
+				}
+				catch( IOException e )
+				{
+					e.printStackTrace();
+				}
+			}
+
+			remaining = Paths.get( current.getName(), remaining.toString() );
+			current = current.getParentFile();
+		}
+
+		return true;
 	}
 }
