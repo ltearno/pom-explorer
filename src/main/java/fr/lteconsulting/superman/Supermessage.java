@@ -4,17 +4,17 @@ import java.util.Arrays;
 
 public class Supermessage
 {
-	private final String methodId;
+	private final int methodId;
 
 	private final Object[] parameters;
 
-	private Thread callerThread;
-
 	private volatile boolean waitingResult;
+
+	private volatile boolean aborted;
 
 	private Object result;
 
-	public Supermessage(String methodId, Object[] parameters)
+	public Supermessage(int methodId, Object[] parameters)
 	{
 		this.methodId = methodId;
 		this.parameters = parameters;
@@ -35,7 +35,17 @@ public class Supermessage
 		}
 	}
 
-	public String getMethodId()
+	public void abort()
+	{
+		synchronized (this)
+		{
+			this.waitingResult = false;
+			this.aborted = true;
+			this.notify();
+		}
+	}
+
+	public int getMethodId()
 	{
 		return methodId;
 	}
@@ -51,14 +61,9 @@ public class Supermessage
 		return "Supermessage [methodId=" + methodId + ", parameters=" + Arrays.toString(parameters) + "]";
 	}
 
-	public Thread getCallerThread()
+	public boolean isAborted()
 	{
-		return callerThread;
-	}
-
-	public void setCallerThread(Thread callerThread)
-	{
-		this.callerThread = callerThread;
+		return aborted;
 	}
 
 	public boolean isWaitingResult()

@@ -11,8 +11,10 @@ import java.util.concurrent.BlockingQueue;
  * <li>Une file d'attente de traitement des messages,
  * <li>Une interface implémentée par : un proxy pour appeler, un proxy pour implémenter
  */
-public class BaseSuperman
+public abstract class BaseSuperman
 {
+	abstract protected Object processMessage(Supermessage message);
+
 	private final Thread thread;
 
 	private final BlockingQueue<Supermessage> queue;
@@ -53,15 +55,15 @@ public class BaseSuperman
 		}
 	}
 
-	public Object sendMessage(Supermessage message)
+	protected Object sendMessage(Supermessage message)
 	{
+		// TODO : optionally capture call stack...
 		synchronized (message)
 		{
 			message.setWaitingResult(true);
 
 			try
 			{
-				message.setCallerThread(Thread.currentThread());
 				queue.put(message);
 			}
 			catch (InterruptedException e)
@@ -83,7 +85,11 @@ public class BaseSuperman
 			}
 		}
 
-		return message.getResult();
+		if (message.isAborted())
+			throw new IllegalStateException(
+					"call has been aborted because the callee has exited ! It was processing this message : " + message);
+		else
+			return message.getResult();
 	}
 
 	private void run()
@@ -104,14 +110,20 @@ public class BaseSuperman
 				log("interrupted while waiting in message loop");
 			}
 		}
-	}
 
-	private volatile int nb = 1;
+		while (!queue.isEmpty())
+		{
+			try
+			{
+				queue.take().abort();
+			}
+			catch (InterruptedException e)
+			{
+				log("interrupted while emptying message queue");
+			}
+		}
 
-	private Object processMessage(Supermessage message)
-	{
-		log("received " + message);
-		return "RESULTAT NUMBER " + nb++;
+		queue.clear();
 	}
 
 	private void log(String message)
