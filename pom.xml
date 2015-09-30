@@ -80,6 +80,11 @@
             <artifactId>org.eclipse.jgit</artifactId>
             <version>4.0.1.201506240215-r</version>
         </dependency>
+        <dependency>
+			<groupId>fr.lteconsulting</groupId>
+			<artifactId>superman</artifactId>
+			<version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

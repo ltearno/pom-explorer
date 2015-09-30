@@ -1,0 +1,27 @@
+package PACKAGE;
+
+import fr.lteconsulting.superman.BaseSuperman;
+import fr.lteconsulting.superman.Supermessage;
+
+public class CLASS_NAME extends BaseSuperman implements INTERFACE
+{
+	private final INTERFACE implementation;
+
+	public CLASS_NAME( INTERFACE implementation )
+	{
+		this.implementation = implementation;
+	}
+
+	@Override
+	protected Object processMessage( Supermessage message )
+	{
+		switch( message.getMethodId() )
+		{
+			DELEGATE
+		}
+
+		throw new IllegalStateException( "Unknown message : " + message );
+	}
+	
+	METHODS
+}

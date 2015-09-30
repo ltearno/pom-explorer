@@ -446,7 +446,6 @@ public class Tools
 	/**
 	 * Reads a whole file into a String assuming the file is UTF-8 encoded
 	 */
-	@SuppressWarnings( "resource" )
 	public static String readFile( File file )
 	{
 		try
