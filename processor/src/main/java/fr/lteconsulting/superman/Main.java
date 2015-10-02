@@ -5,7 +5,7 @@ public class Main
 {
 	public static void main( String[] args )
 	{
-		IPersonRegistrySuperman persons = new IPersonRegistrySuperman( new PersonRegistry() );
+		final IPersonRegistrySuperman persons = new IPersonRegistrySuperman( new PersonRegistry() );
 
 		persons.start();
 

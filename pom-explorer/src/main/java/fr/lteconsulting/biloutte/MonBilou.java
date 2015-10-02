@@ -7,10 +7,12 @@ public class MonBilou
 {
 	public String testMoi( String caca )
 	{
-		return "salut";
+		return "salut, tu m'as dit " + caca + " ?";
 	}
 	
 	public void parle()
 	{
+		System.out.println("voilà, je parle... (thread " + Thread.currentThread().getName() + ":"
+				+ Thread.currentThread().getId() + ")");
 	}
 }

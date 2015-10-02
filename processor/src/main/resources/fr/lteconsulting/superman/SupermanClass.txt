@@ -2,6 +2,7 @@ package PACKAGE;
 
 import fr.lteconsulting.superman.BaseSuperman;
 import fr.lteconsulting.superman.Supermessage;
+import java.util.concurrent.Future;
 
 public class CLASS_NAME extends BASE_CLASS_NAME
 {
@@ -22,6 +23,11 @@ DELEGATE
 	public CLASS_NAME()
 	{
 		superman.start();
+	}
+	
+	public void stop()
+	{
+		superman.stop();
 	}
 		
 METHODS

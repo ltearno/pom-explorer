@@ -14,6 +14,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -22,7 +23,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 @SupportedAnnotationTypes( SupermanProcessor.AnnotationFqn )
-@SupportedSourceVersion( SourceVersion.RELEASE_8 )
+@SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class SupermanProcessor extends AbstractProcessor
 {
 	public final static String AnnotationFqn = "fr.lteconsulting.superman.Superman";
@@ -58,6 +59,9 @@ public class SupermanProcessor extends AbstractProcessor
 		for( Element child : element.getEnclosedElements() )
 		{
 			if( child.getKind() != ElementKind.METHOD )
+				continue;
+
+			if (!child.getModifiers().contains(Modifier.PUBLIC))
 				continue;
 
 			id++;
@@ -156,32 +160,55 @@ public class SupermanProcessor extends AbstractProcessor
 			if( child.getKind() != ElementKind.METHOD )
 				continue;
 
+			if (!child.getModifiers().contains(Modifier.PUBLIC))
+				continue;
+
 			id++;
 
 			ExecutableElement method = (ExecutableElement) child;
 
 			String returnTypeFqn = method.getReturnType().toString();
 
+			int pi = 0;
+
 			/**
 			 * Délégation à on_XXX
 			 */
 			delegate.append( "            case " + id + ":\n" );
-			delegate.append( "                return on_" + method.getSimpleName() + "( " );
-			int pi = 0;
-			for( VariableElement p : method.getParameters() )
+			if ("void".equals(returnTypeFqn))
 			{
-				if( pi > 0 )
-					delegate.append( ", " );
-				delegate.append( "(" + p.asType() + ") message.getParameters()[" + pi + "]" );
-				pi++;
+				delegate.append("                on_" + method.getSimpleName() + "( ");
+				pi = 0;
+				for (VariableElement p : method.getParameters())
+				{
+					if (pi > 0)
+						delegate.append(", ");
+					delegate.append("(" + p.asType() + ") message.getParameters()[" + pi + "]");
+					pi++;
+				}
+				delegate.append(" );\n");
+				delegate.append("                return null;\n");
 			}
-			delegate.append( " );\n\n" );
+			else
+			{
+				delegate.append("                return on_" + method.getSimpleName() + "( ");
+				pi = 0;
+				for (VariableElement p : method.getParameters())
+				{
+					if (pi > 0)
+						delegate.append(", ");
+					delegate.append("(" + p.asType() + ") message.getParameters()[" + pi + "]");
+					pi++;
+				}
+				delegate.append(" );\n");
+			}
+			delegate.append("\n");
 
 			/**
 			 * Méthode XXX de l'interface
 			 */
-			methods.append( "        @Override\n" );
-			methods.append( "        public " + returnTypeFqn + " " + method.getSimpleName() + "(" );
+			methods.append("    @Override\n");
+			methods.append("    public " + returnTypeFqn + " " + method.getSimpleName() + "(");
 			pi = 0;
 			for( VariableElement p : method.getParameters() )
 			{
@@ -195,11 +222,12 @@ public class SupermanProcessor extends AbstractProcessor
 			if( pi > 0 )
 				methods.append( " " );
 			methods.append( ")\n" );
-			methods.append( "        {\n" );
+			methods.append("    {\n");
 			if( "void".equals(returnTypeFqn))
-				methods.append( "            superman.sendMessage( new Supermessage( " + id + ", new Object[] {" );
+				methods.append("        superman.sendMessage( new Supermessage( " + id + ", new Object[] {");
 			else
-				methods.append( "            return (" + returnTypeFqn + ") superman.sendMessage( new Supermessage( " + id + ", new Object[] {" );
+				methods.append("        return (" + returnTypeFqn + ") superman.sendMessage( new Supermessage( " + id
+						+ ", new Object[] {");
 			pi = 0;
 			for( VariableElement p : method.getParameters() )
 			{
@@ -213,12 +241,56 @@ public class SupermanProcessor extends AbstractProcessor
 			if( pi > 0 )
 				methods.append( " " );
 			methods.append( "} ) );\n" );
-			methods.append( "	    }\n\n" );
+			methods.append("    }\n\n");
 			
+			/**
+			 * Méthode asynchrone XXX de l'interface
+			 */
+			methods.append("    @SuppressWarnings(\"unchecked\")\n");
+			if ("void".equals(returnTypeFqn))
+				methods.append("    public Future<Void> " + method.getSimpleName() + "Async(");
+			else
+				methods.append("    public Future<" + returnTypeFqn + "> " + method.getSimpleName() + "Async(");
+			pi = 0;
+			for (VariableElement p : method.getParameters())
+			{
+				if (pi == 0)
+					methods.append(" ");
+				if (pi > 0)
+					methods.append(", ");
+				methods.append(p.asType() + " " + p.getSimpleName());
+				pi++;
+			}
+			if (pi > 0)
+				methods.append(" ");
+			methods.append(")\n");
+			methods.append("    {\n");
+			if ("void".equals(returnTypeFqn))
+				methods.append("        return (Future<Void>)(Future<?>) superman.postMessage( new Supermessage( " + id
+						+ ", new Object[] {");
+			else
+				methods.append("        return (Future<" + returnTypeFqn
+						+ ">)(Future<?>) superman.postMessage( new Supermessage( " + id
+						+ ", new Object[] {");
+			pi = 0;
+			for (VariableElement p : method.getParameters())
+			{
+				if (pi == 0)
+					methods.append(" ");
+				if (pi > 0)
+					methods.append(", ");
+				methods.append(p.getSimpleName().toString());
+				pi++;
+			}
+			if (pi > 0)
+				methods.append(" ");
+			methods.append("} ) );\n");
+			methods.append("    }\n\n");
+
 			/**
 			 * Méthode on_XXX
 			 */
-			methods.append( "        private " + returnTypeFqn + " on_" + method.getSimpleName() + "(" );
+			methods.append("    private " + returnTypeFqn + " on_" + method.getSimpleName() + "(");
 			pi = 0;
 			for( VariableElement p : method.getParameters() )
 			{
@@ -232,11 +304,11 @@ public class SupermanProcessor extends AbstractProcessor
 			if( pi > 0 )
 				methods.append( " " );
 			methods.append( ")\n" );
-			methods.append( "        {\n" );
+			methods.append("    {\n");
 			if( "void".equals(returnTypeFqn))
-				methods.append( "            super." + method.getSimpleName() + "(" );
+				methods.append("        super." + method.getSimpleName() + "(");
 			else
-				methods.append( "            return super." + method.getSimpleName() + "(" );
+				methods.append("        return super." + method.getSimpleName() + "(");
 			pi = 0;
 			for( VariableElement p : method.getParameters() )
 			{
@@ -250,7 +322,7 @@ public class SupermanProcessor extends AbstractProcessor
 			if( pi > 0 )
 				methods.append( " " );
 			methods.append( ");\n" );
-			methods.append( "	    }\n\n" );
+			methods.append("    }\n\n");
 		}
 
 		template = template.replaceAll( "PACKAGE", packageName );
@@ -269,7 +341,7 @@ public class SupermanProcessor extends AbstractProcessor
 			pw.close();
 			os.close();
 
-			processingEnv.getMessager().printMessage( Kind.MANDATORY_WARNING, "Superman généré !", element );
+			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Superman généré : " + supermanName, element);
 		}
 		catch( IOException e )
 		{

@@ -2,6 +2,10 @@ package fr.lteconsulting.superman;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A Superman has :
@@ -15,6 +19,10 @@ public abstract class BaseSuperman
 {
 	abstract protected Object processMessage(Supermessage message);
 
+	private static volatile int nextBaseSupermanId = 0;
+
+	private final int baseSupermanId;
+
 	private final Thread thread;
 
 	private final BlockingQueue<Supermessage> queue;
@@ -23,6 +31,7 @@ public abstract class BaseSuperman
 
 	public BaseSuperman()
 	{
+		baseSupermanId = nextBaseSupermanId++;
 		queue = new ArrayBlockingQueue<>(100);
 		thread = new Thread(new Runnable()
 		{
@@ -32,7 +41,7 @@ public abstract class BaseSuperman
 				BaseSuperman.this.run();
 			}
 		});
-		thread.setName(toString());
+		thread.setName(this.getClass().getSimpleName() + " Superman:" + baseSupermanId);
 	}
 
 	public void start()
@@ -90,6 +99,79 @@ public abstract class BaseSuperman
 					"call has been aborted because the callee has exited ! It was processing this message : " + message);
 		else
 			return message.getResult();
+	}
+
+	public Future<Object> postMessage(final Supermessage message)
+	{
+		// TODO : optionally capture call stack...
+		synchronized (message)
+		{
+			message.setWaitingResult(true);
+
+			try
+			{
+				queue.put(message);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		}
+
+		return new Future<Object>()
+		{
+			@Override
+			public boolean isDone()
+			{
+				return message.isWaitingResult();
+			}
+
+			@Override
+			public boolean isCancelled()
+			{
+				return message.isAborted();
+			}
+
+			@Override
+			public Object get(long arg0, TimeUnit arg1) throws InterruptedException, ExecutionException, TimeoutException
+			{
+				throw new UnsupportedOperationException("Not yet implemented");
+			}
+
+			@Override
+			public Object get() throws InterruptedException, ExecutionException
+			{
+				synchronized (message)
+				{
+					while (message.isWaitingResult())
+					{
+						try
+						{
+							message.wait();
+						}
+						catch (InterruptedException e)
+						{
+							log("interrupted while waiting result");
+						}
+					}
+				}
+
+				if (message.isAborted())
+					throw new ExecutionException(new IllegalStateException(
+							"call has been aborted because the callee has exited ! It was processing this message : "
+									+ message));
+				else
+					return message.getResult();
+			}
+
+			@Override
+			public boolean cancel(boolean arg0)
+			{
+				message.abort();
+				return false;
+			}
+		};
 	}
 
 	private void run()
