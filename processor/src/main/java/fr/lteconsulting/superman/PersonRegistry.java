@@ -8,10 +8,6 @@ public class PersonRegistry implements IPersonRegistry
 
 	private final HashMap<Integer, Person> map = new HashMap<>();
 	
-	public PersonRegistry(String name, int id, String other)
-	{
-	}
-
 	@Override
 	public Person getPerson(int id)
 	{

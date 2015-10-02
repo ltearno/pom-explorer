@@ -1,0 +1,28 @@
+package PACKAGE;
+
+import fr.lteconsulting.superman.BaseSuperman;
+import fr.lteconsulting.superman.Supermessage;
+
+public class CLASS_NAME extends BASE_CLASS_NAME
+{
+	private final BaseSuperman superman = new BaseSuperman()
+	{
+		@Override
+		protected Object processMessage( Supermessage message )
+		{
+			switch(message.getMethodId())
+			{
+DELEGATE
+			}
+			
+			throw new IllegalStateException( "Unknown message : " + message );
+		}
+	};
+	
+	public CLASS_NAME()
+	{
+		superman.start();
+	}
+		
+METHODS
+}

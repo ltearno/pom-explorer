@@ -32,7 +32,10 @@ public class SupermanProcessor extends AbstractProcessor
 	{
 		for( TypeElement element : ElementFilter.typesIn( roundEnv.getElementsAnnotatedWith( processingEnv.getElementUtils().getTypeElement( AnnotationFqn ) ) ) )
 		{
-			processType( element );
+			if( element.getKind()==ElementKind.INTERFACE )
+				processType( element );
+			else
+				processClass( element );
 		}
 
 		return true;
@@ -111,6 +114,148 @@ public class SupermanProcessor extends AbstractProcessor
 		template = template.replaceAll( "PACKAGE", packageName );
 		template = template.replaceAll( "CLASS_NAME", supermanName );
 		template = template.replaceAll( "INTERFACE", element.getSimpleName().toString() );
+		template = template.replaceAll( "DELEGATE", delegate.toString() );
+		template = template.replaceAll( "METHODS", methods.toString() );
+
+		try
+		{
+			JavaFileObject jfo = processingEnv.getFiler().createSourceFile( packageName + "." + supermanName, element );
+
+			OutputStream os = jfo.openOutputStream();
+			PrintWriter pw = new PrintWriter( os );
+			pw.print( template );
+			pw.close();
+			os.close();
+
+			processingEnv.getMessager().printMessage( Kind.MANDATORY_WARNING, "Superman généré !", element );
+		}
+		catch( IOException e )
+		{
+			e.printStackTrace();
+			processingEnv.getMessager().printMessage( Kind.ERROR, "Superman non généré !" + e, element );
+		}
+
+	}
+
+	private void processClass( TypeElement element )
+	{
+		String template = readResource( "fr/lteconsulting/superman/SupermanClass.txt" );
+
+		// le type est une classe.
+
+		String packageName = ((PackageElement) element.getEnclosingElement()).getQualifiedName().toString();
+		String supermanName = element.getSimpleName() + "Superman";
+
+		// ecrire la clase qui en hérite
+		StringBuilder delegate = new StringBuilder();
+		StringBuilder methods = new StringBuilder();
+
+		int id = -1;
+		for( Element child : element.getEnclosedElements() )
+		{
+			if( child.getKind() != ElementKind.METHOD )
+				continue;
+
+			id++;
+
+			ExecutableElement method = (ExecutableElement) child;
+
+			String returnTypeFqn = method.getReturnType().toString();
+
+			/**
+			 * Délégation à on_XXX
+			 */
+			delegate.append( "            case " + id + ":\n" );
+			delegate.append( "                return on_" + method.getSimpleName() + "( " );
+			int pi = 0;
+			for( VariableElement p : method.getParameters() )
+			{
+				if( pi > 0 )
+					delegate.append( ", " );
+				delegate.append( "(" + p.asType() + ") message.getParameters()[" + pi + "]" );
+				pi++;
+			}
+			delegate.append( " );\n\n" );
+
+			/**
+			 * Méthode XXX de l'interface
+			 */
+			methods.append( "        @Override\n" );
+			methods.append( "        public " + returnTypeFqn + " " + method.getSimpleName() + "(" );
+			pi = 0;
+			for( VariableElement p : method.getParameters() )
+			{
+				if( pi == 0 )
+					methods.append( " " );
+				if( pi > 0 )
+					methods.append( ", " );
+				methods.append( p.asType() + " " + p.getSimpleName() );
+				pi++;
+			}
+			if( pi > 0 )
+				methods.append( " " );
+			methods.append( ")\n" );
+			methods.append( "        {\n" );
+			if( "void".equals(returnTypeFqn))
+				methods.append( "            superman.sendMessage( new Supermessage( " + id + ", new Object[] {" );
+			else
+				methods.append( "            return (" + returnTypeFqn + ") superman.sendMessage( new Supermessage( " + id + ", new Object[] {" );
+			pi = 0;
+			for( VariableElement p : method.getParameters() )
+			{
+				if( pi == 0 )
+					methods.append( " " );
+				if( pi > 0 )
+					methods.append( ", " );
+				methods.append( p.getSimpleName().toString() );
+				pi++;
+			}
+			if( pi > 0 )
+				methods.append( " " );
+			methods.append( "} ) );\n" );
+			methods.append( "	    }\n\n" );
+			
+			/**
+			 * Méthode on_XXX
+			 */
+			methods.append( "        private " + returnTypeFqn + " on_" + method.getSimpleName() + "(" );
+			pi = 0;
+			for( VariableElement p : method.getParameters() )
+			{
+				if( pi == 0 )
+					methods.append( " " );
+				if( pi > 0 )
+					methods.append( ", " );
+				methods.append( p.asType() + " " + p.getSimpleName() );
+				pi++;
+			}
+			if( pi > 0 )
+				methods.append( " " );
+			methods.append( ")\n" );
+			methods.append( "        {\n" );
+			if( "void".equals(returnTypeFqn))
+				methods.append( "            super." + method.getSimpleName() + "(" );
+			else
+				methods.append( "            return super." + method.getSimpleName() + "(" );
+			pi = 0;
+			for( VariableElement p : method.getParameters() )
+			{
+				if( pi == 0 )
+					methods.append( " " );
+				if( pi > 0 )
+					methods.append( ", " );
+				methods.append( p.getSimpleName().toString() );
+				pi++;
+			}
+			if( pi > 0 )
+				methods.append( " " );
+			methods.append( ");\n" );
+			methods.append( "	    }\n\n" );
+		}
+
+		template = template.replaceAll( "PACKAGE", packageName );
+		template = template.replaceAll( "BASE_CLASS_NAME", element.getSimpleName().toString() );
+		template = template.replaceAll( "CLASS_NAME", supermanName );
 		template = template.replaceAll( "DELEGATE", delegate.toString() );
 		template = template.replaceAll( "METHODS", methods.toString() );
 

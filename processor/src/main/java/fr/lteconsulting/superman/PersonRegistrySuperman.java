@@ -10,15 +10,15 @@ public class PersonRegistrySuperman extends PersonRegistry
 			switch(message.getMethodId())
 			{
 				case 0:
-					return (Person) on_getPerson( (int ) message.getParameters()[0] );
+					return on_getPerson( (int ) message.getParameters()[0] );
 			}
-			return null;
+			
+			throw new IllegalStateException( "");
 		}
 	};
 	
-	public PersonRegistrySuperman( String name, int id, String other )
+	public PersonRegistrySuperman()
 	{
-		super( name, id, other );
 		superman.start();
 	}
 	

@@ -55,7 +55,7 @@ public abstract class BaseSuperman
 		}
 	}
 
-	protected Object sendMessage(Supermessage message)
+	public Object sendMessage(Supermessage message)
 	{
 		// TODO : optionally capture call stack...
 		synchronized (message)
