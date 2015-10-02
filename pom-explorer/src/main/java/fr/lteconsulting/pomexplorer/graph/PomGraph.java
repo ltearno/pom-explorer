@@ -187,6 +187,12 @@ public class PomGraph
 		return filterBuildDependencyRelations( relationsRec( gav ) );
 	}
 
+	/**
+	 * Returns the set of GAVs which depend directly on the one passed by parameter
+	 * 
+	 * @param gav
+	 * @return
+	 */
 	public Set<GAVRelation<DependencyRelation>> dependents( GAV gav )
 	{
 		return filterDependencyRelations( relationsReverse( gav ) );

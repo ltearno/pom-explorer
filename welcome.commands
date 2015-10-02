@@ -10,16 +10,13 @@
 =
 =The official repository is here : <a href="https://github.com/ltearno/pom-explorer" target="_blank">https://github.com/ltearno/pom-explorer</a>
 =
-= The commands that are executed now are written in the 'welcome.commands' configuration file
-=
 =Creating your session
 =
 session create
-
+session mavenSettingsFilePath C:\pgih\maven\3.2.1\conf\settings.xml
 =
 =Analyzing the default directory
-=(it is possible that this directory does not exist on your computer,
-=in that case, use the 'analyze directory PATH' command with a path
-=containing maven projects)
 =
-analyze directory C:\documents\repos
+analyze directory C:\gr\
+#analyze directory C:\gr\socle.pgih-parent
+analyze directory C:\tmp\pgih-oracle\

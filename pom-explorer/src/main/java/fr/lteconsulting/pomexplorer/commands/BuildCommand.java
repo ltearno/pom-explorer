@@ -37,7 +37,7 @@ public class BuildCommand
 
 		File directory = project.getPomFile().getParentFile();
 		log.append( "cd " + directory + "<br/>" );
-		log.append( "mvn install -DskipTests<br/>" );
+		log.append("mvn install -N -DskipTests<br/>");
 
 		Set<GAVRelation<DependencyRelation>> dependents = session.graph().dependents( project.getGav() );
 		Set<GAV> children = session.graph().children( project.getGav() );
