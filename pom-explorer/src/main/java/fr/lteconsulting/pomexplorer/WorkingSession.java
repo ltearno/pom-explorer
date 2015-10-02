@@ -1,5 +1,8 @@
 package fr.lteconsulting.pomexplorer;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import fr.lteconsulting.pomexplorer.graph.PomGraph;
 import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
 
@@ -27,6 +30,8 @@ public class WorkingSession
 	private final ProjectRepository projects = new ProjectRepository();
 
 	private final PomGraph graph = new PomGraph();
+
+	private final Set<Client> clients = new HashSet<>();
 
 	public void configure( ApplicationSettings settings )
 	{
@@ -62,5 +67,20 @@ public class WorkingSession
 	{
 		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : " + (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>" + projects.size() + " projects<br/>" + graph.gavs().size()
 				+ " GAVs<br/>" + graph.relations().size() + " relations<br/></div>";
+	}
+
+	public void addClient(Client client)
+	{
+		clients.add(client);
+	}
+
+	public void removeClient(Client client)
+	{
+		clients.remove(client);
+	}
+
+	public Set<Client> getClients()
+	{
+		return clients;
 	}
 }
