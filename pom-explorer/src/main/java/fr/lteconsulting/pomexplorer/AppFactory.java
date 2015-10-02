@@ -226,23 +226,4 @@ public class AppFactory
 
 		Set<EdgeDto> relations;
 	}
-
-	private WatchService watchService;
-
-	public WatchService getWatchService()
-	{
-		if (watchService == null)
-		{
-			try
-			{
-				watchService = FileSystems.getDefault().newWatchService();
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-
-		return watchService;
-	}
 }

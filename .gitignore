@@ -26,3 +26,4 @@ pom-explorer.iml
 served-data/
 
 *.graphml
+/target/

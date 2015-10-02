@@ -2,6 +2,7 @@ package fr.lteconsulting.pomexplorer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,10 +21,17 @@ public class ProjectWatcher
 
 	private final Map<Path, WatchKey> keys = new HashMap<>();
 
-	public ProjectWatcher( Path projectPath, WatchService service )
+	public ProjectWatcher( Path projectPath )
 	{
 		this.projectPath = projectPath;
-		this.service = service;
+		try
+		{
+			this.service = FileSystems.getDefault().newWatchService();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void register() throws IOException

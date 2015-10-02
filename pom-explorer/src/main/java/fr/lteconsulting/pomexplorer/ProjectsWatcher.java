@@ -15,7 +15,7 @@ public class ProjectsWatcher
 		if (watchers.containsKey(project))
 			return;
 
-		ProjectWatcher watcher = new ProjectWatcher(Paths.get(project.getPath()), AppFactory.get().getWatchService());
+		ProjectWatcher watcher = new ProjectWatcher(Paths.get(project.getPath()));
 		watchers.put(project, watcher);
 
 		watcher.register();
