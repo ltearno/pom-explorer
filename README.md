@@ -37,7 +37,7 @@ To build :
 
 To run :
 
-	java -jar target/pom-explorer.jar
+	java -jar pom-explorer/target/pom-explorer.jar
 	
 Then go with your browser on this address
 

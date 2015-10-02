@@ -1,0 +1,28 @@
+*.class
+bin/
+target/
+
+# Eclipse files
+.classpath
+.factorypath
+.project
+.settings/
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+welcome.commands
+config.properties
+.factorypath
+.idea/
+pom-explorer.iml
+served-data/
+
+*.graphml
