@@ -43,6 +43,14 @@ public class SessionCommand
 
 		return "Session's maven settings file set to " + (path != null ? path : "(system default)");
 	}
+	
+	@Help( "sets the maven shell command to execute maven" )
+	public String mavenShellCommand( Client client, WorkingSession session, String command )
+	{
+		session.setMavenShellCommand( command );
+
+		return "Session's maven shell command set to " + command;
+	}
 
 	@Help( "sets the current working session to the specified index" )
 	public String workOn( Client client, WorkingSession session, Integer index )

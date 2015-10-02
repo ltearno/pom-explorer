@@ -24,6 +24,8 @@ import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
 public class WorkingSession
 {
 	private String mavenSettingsFilePath = null;
+	
+	private String mavenShellCommand = "C:\\Program Files (x86)\\apache-maven-3.1.1\\bin\\mvn.bat";
 
 	private final GitRepositories gitRepositories = new GitRepositories();
 
@@ -69,6 +71,11 @@ public class WorkingSession
 	{
 		return maintainedProjects;
 	}
+	
+	public void cleanBuildList()
+	{
+		builder.clearJobs();
+	}
 
 	public String getMavenSettingsFilePath()
 	{
@@ -79,10 +86,23 @@ public class WorkingSession
 	{
 		this.mavenSettingsFilePath = mavenSettingsFilePath;
 	}
+	
+	public String getMavenShellCommand()
+	{
+		return mavenShellCommand;
+	}
+
+	public void setMavenShellCommand( String mavenShellCommand )
+	{
+		this.mavenShellCommand = mavenShellCommand;
+	}
 
 	public String getDescription()
 	{
-		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : " + (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>" + projects.size() + " projects<br/>" + graph.gavs().size()
+		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" 
+				+ "Maven configuration file : " + (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>"
+				+ "Maven shell command : " + (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>"
+				+ projects.size() + " projects<br/>" + graph.gavs().size()
 				+ " GAVs<br/>" + graph.relations().size() + " relations<br/></div>";
 	}
 

@@ -365,6 +365,16 @@ public class Tools
 	{
 		return "<span style='color:orange;'>" + message + "</span><br/>";
 	}
+	
+	public static String successMessage( String message )
+	{
+		return "<span style='color:green;'>" + message + "</span><br/>";
+	}
+	
+	public static String buildMessage( String message )
+	{
+		return "<span style='color:grey;font-size:90%;'>" + message + "</span><br/>";
+	}
 
 	public static String errorMessage( String message )
 	{

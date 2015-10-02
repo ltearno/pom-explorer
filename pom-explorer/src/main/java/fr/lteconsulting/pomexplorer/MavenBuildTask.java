@@ -1,0 +1,46 @@
+package fr.lteconsulting.pomexplorer;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import fr.lteconsulting.superman.Superman;
+
+@Superman
+public class MavenBuildTask
+{
+	public Boolean build( WorkingSession session, Project project )
+	{
+		try
+		{
+			log( session, project, "start ..." );
+			Process p = Runtime.getRuntime().exec( new String[] { session.getMavenShellCommand(), "install", "-N", "-DskipTests" }, null, project.getPomFile().getParentFile() );
+
+			BufferedReader reader = new BufferedReader( new InputStreamReader( p.getInputStream() ) );
+			String line = "";
+			while( (line = reader.readLine()) != null )
+			{
+				log( session, project, line );
+			}
+
+			p.waitFor();
+
+			log( session, project, "done (" + p.exitValue() + ")." );
+			
+			return p.exitValue() == 0;
+		}
+		catch( IOException | InterruptedException e )
+		{
+			log( session, project, "error ! " + e );
+			
+			return false;
+		}
+	}
+
+	private void log( WorkingSession session, Project project, String message )
+	{
+		message = Tools.buildMessage( "[building " + project.getGav() + "] " + message );
+		for( Client client : session.getClients() )
+			client.send( message );
+	}
+}

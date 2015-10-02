@@ -22,7 +22,7 @@ public class WatchFiles
 		
 		try
 		{
-			ProjectWatcher watcher = new ProjectWatcher( Paths.get( "c:\\tmp\\titi" ), watchService );
+			ProjectWatcher watcher = new ProjectWatcher( Paths.get( "c:\\tmp\\titi" ) );
 			watcher.register();
 			
 			while( watcher.waitChange() )

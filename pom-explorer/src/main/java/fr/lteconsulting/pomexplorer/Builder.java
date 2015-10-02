@@ -23,6 +23,11 @@ public class Builder
 	{
 		this.session = session;
 	}
+	
+	public void clearJobs()
+	{
+		projectsToBuild.clear();
+	}
 
 	public void run()
 	{
@@ -46,7 +51,19 @@ public class Builder
 
 			Project toBuild = findProjectToBuild();
 			if( toBuild != null )
-				build( toBuild );
+			{
+				boolean success = build( toBuild );
+				
+				if(success)
+				{
+					success("build succesful for project " + toBuild.getGav() + " : " + toBuild);
+				}
+				else
+				{
+					error("error during build ! this artifact and dependent ones are going to be removed from the build list.<br/>fix the problem and the build will restart automatically...");
+					projectsToBuild.removeAll( dependentsAndSelf( toBuild.getGav() ) );
+				}
+			}
 		}
 	}
 
@@ -57,20 +74,27 @@ public class Builder
 	 */
 	private Project findProjectToBuild()
 	{
-		TopologicalOrderIterator<GAV, Relation> iterator = new TopologicalOrderIterator<>( session.graph().internalGraph() );
-		List<GAV> gavs = new ArrayList<>();
-		while( iterator.hasNext() )
-			gavs.add( iterator.next() );
-		Collections.reverse( gavs );
-
-		for( GAV gav : gavs )
+		try
 		{
-			Project project = session.projects().forGav( gav );
-			if( project != null && projectsToBuild.contains( project ) && inDependenciesOfMaintainedProjects( project ) )
+			TopologicalOrderIterator<GAV, Relation> iterator = new TopologicalOrderIterator<>( session.graph().internalGraph() );
+			List<GAV> gavs = new ArrayList<>();
+			while( iterator.hasNext() )
+				gavs.add( iterator.next() );
+			Collections.reverse( gavs );
+
+			for( GAV gav : gavs )
 			{
-				projectsToBuild.remove( project );
-				return project;
+				Project project = session.projects().forGav( gav );
+				if( project != null && projectsToBuild.contains( project ) && inDependenciesOfMaintainedProjects( project ) )
+				{
+					projectsToBuild.remove( project );
+					return project;
+				}
 			}
+		}
+		catch( Exception e )
+		{
+			log( "error: " + e );
 		}
 
 		return null;
@@ -113,7 +137,7 @@ public class Builder
 	{
 		HashSet<GAV> res = new HashSet<>();
 		res.add( gav );
-		session.graph().dependenciesRec( gav ).stream().forEach( r -> res.add( r.getTarget() ) );
+		session.graph().relationsRec( gav ).stream().forEach( r -> res.add( r.getTarget() ) );
 		return res;
 	}
 
@@ -121,35 +145,56 @@ public class Builder
 	{
 		HashSet<GAV> res = new HashSet<>();
 		res.add( gav );
-		session.graph().dependentsRec( gav ).stream().forEach( r -> res.add( r.getSource() ) );
+		session.graph().relationsReverseRec( gav ).stream().forEach( r -> res.add( r.getSource() ) );
 		return res;
 	}
 
 	private boolean build( Project project )
 	{
-		log( "building " + project + "..." );
+		boolean demo = false;
 
-		File directory = project.getPomFile().getParentFile();
-
-		log( "cd " + directory + "<br/>" );
-		log( "mvn install -N -DskipTests<br/>" );
-
-		try
+		if( demo )
 		{
-			Thread.sleep( 500 );
+			log( "building " + project + "..." );
+			File directory = project.getPomFile().getParentFile();
+			log( "cd " + directory + "<br/>" );
+			log( "mvn install -N -DskipTests<br/>" );
+			try
+			{
+				Thread.sleep( 500 );
+			}
+			catch( InterruptedException e )
+			{
+			}
+			log( project + " build done" );
+			return true;
 		}
-		catch( InterruptedException e )
+		else
 		{
+			MavenBuildTaskSuperman builder = new MavenBuildTaskSuperman();
+			boolean res = builder.build( session, project );
+			builder.stop();
+			return res;
 		}
-
-		log( project + " build done" );
-
-		return true;
 	}
 
 	private void log( String message )
 	{
-		message = Tools.warningMessage( message );
+		message = Tools.buildMessage( message );
+		for( Client client : session.getClients() )
+			client.send( message );
+	}
+	
+	private void error( String message )
+	{
+		message = Tools.errorMessage( message );
+		for( Client client : session.getClients() )
+			client.send( message );
+	}
+	
+	private void success( String message )
+	{
+		message = Tools.successMessage( message );
 		for( Client client : session.getClients() )
 			client.send( message );
 	}

@@ -98,13 +98,13 @@ public class Commands
 		final String parts[] = text.split( " " );
 		if( parts.length < 1 )
 			return "syntax error (should be 'command [verb] [parameters]')";
-
+		
 		List<String> potentialCommands = Tools.filter( commands.keySet(), new Func1<String, Boolean>()
 		{
 			@Override
 			public Boolean exec( String c )
 			{
-				return c.startsWith( parts[0] );
+				return c.toLowerCase().startsWith( parts[0].toLowerCase() );
 			}
 		} );
 
@@ -256,7 +256,7 @@ public class Commands
 			@Override
 			public Boolean exec( Method m )
 			{
-				return Modifier.isPublic( m.getModifiers() ) && m.getName().startsWith( verb ) && getRealParametersCount( m ) == nbParamsGiven;
+				return Modifier.isPublic( m.getModifiers() ) && m.getName().toLowerCase().startsWith( verb.toLowerCase() ) && getRealParametersCount( m ) == nbParamsGiven;
 			}
 		} );
 
@@ -271,7 +271,7 @@ public class Commands
 		int c = 0;
 		for( Class<?> t : m.getParameterTypes() )
 		{
-			if( t != Client.class && t != WorkingSession.class && t != CommandOptions.class )
+			if( t != Client.class && t != WorkingSession.class && t != CommandOptions.class && t != FilteredGAVs.class )
 				c++;
 		}
 		return c;

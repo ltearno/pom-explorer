@@ -28,9 +28,9 @@ public class ProjectWatcher
 		{
 			this.service = FileSystems.getDefault().newWatchService();
 		}
-		catch (IOException e)
+		catch( IOException e )
 		{
-			throw new RuntimeException(e);
+			throw new RuntimeException( e );
 		}
 	}
 
@@ -45,7 +45,7 @@ public class ProjectWatcher
 	{
 		WatchKey key = service.poll();
 
-		processWatchKey(key);
+		processWatchKey( key );
 
 		return key != null;
 	}
@@ -63,14 +63,14 @@ public class ProjectWatcher
 			e.printStackTrace();
 		}
 
-		processWatchKey(key);
+		processWatchKey( key );
 
 		return key != null;
 	}
 
-	private void processWatchKey(WatchKey key)
+	private void processWatchKey( WatchKey key )
 	{
-		if (key == null)
+		if( key == null )
 			return;
 
 		key.reset();
@@ -103,11 +103,12 @@ public class ProjectWatcher
 			return;
 
 		watchPath( path.toFile() );
+		watchPathRec( Paths.get( path.toAbsolutePath().toString(), "src" ).toFile() );
 	}
 
 	private void watchPath( File file )
 	{
-		if( file == null || !file.isDirectory() )
+		if( file == null || !file.exists() || !file.isDirectory() )
 			return;
 
 		Path path = file.toPath();
@@ -135,23 +136,32 @@ public class ProjectWatcher
 		{
 			e.printStackTrace();
 		}
+	}
 
-		for( File child : file.listFiles() )
-			watchPath( child );
+	private void watchPathRec( File file )
+	{
+		watchPath( file );
+
+		File[] files = file.listFiles();
+		if( files != null )
+		{
+			for( File child : files )
+				watchPathRec( child );
+		}
 	}
 
 	private void unwatchPath( Path path )
 	{
 		if( path == null || !path.toFile().isDirectory() )
 			return;
-	
+
 		WatchKey key = keys.get( path );
 		if( key == null )
 		{
 			System.out.println( "warning : not watched path " + path + ", nothing to do..." );
 			return;
 		}
-	
+
 		key.cancel();
 		keys.remove( path );
 	}
@@ -165,8 +175,8 @@ public class ProjectWatcher
 	 */
 	private boolean shouldBeWatched( File file )
 	{
-		if( file.getName().equals( "target" ) )
-			return false;
+		// if( file.getName().equals( "target" ) )
+		// return false;
 
 		File current = file.getParentFile();
 		Path remaining = Paths.get( file.getName() );

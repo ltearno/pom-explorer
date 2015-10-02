@@ -15,6 +15,14 @@ import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 
 public class BuildCommand
 {
+	@Help("clear the build list. any currently building process will finish and no other will be started")
+	public String stop(WorkingSession session)
+	{
+		session.cleanBuildList();
+		
+		return "build list cleaned.";
+	}
+	
 	@Help("build the project and all which depends on it")
 	public String gav(WorkingSession session, GAV gav)
 	{
@@ -47,11 +55,12 @@ public class BuildCommand
 
 		Set<GAV> toWatch = new HashSet<>();
 		toWatch.add(gav);
-		session.graph().dependenciesRec(gav).stream().map(r -> r.getSource()).distinct().forEach(g ->
+		session.graph().relationsRec(gav).stream().map(r -> r.getTarget()).distinct().forEach(g -> toWatch.add(g));
+		for(GAV g : toWatch)
 		{
 			Project p = session.projects().forGav(g);
 			if (p == null)
-				return;
+				continue;
 
 			try
 			{
@@ -62,7 +71,7 @@ public class BuildCommand
 			{
 				log.append(Tools.errorMessage("error while trying to watch project ! " + e));
 			}
-		});
+		}
 
 		return log.toString();
 	}
