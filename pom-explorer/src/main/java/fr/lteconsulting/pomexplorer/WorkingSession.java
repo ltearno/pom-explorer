@@ -31,7 +31,19 @@ public class WorkingSession
 
 	private final PomGraph graph = new PomGraph();
 
+	private final Set<Project> maintainedProjects = new HashSet<>();
+
 	private final Set<Client> clients = new HashSet<>();
+
+	private final ProjectsWatcher projectsWatcher = new ProjectsWatcher();
+
+	private final BuilderSuperman builder = new BuilderSuperman();
+
+	public WorkingSession()
+	{
+		builder.setSession(this);
+		builder.runAsync();
+	}
 
 	public void configure( ApplicationSettings settings )
 	{
@@ -51,6 +63,11 @@ public class WorkingSession
 	public GitRepositories repositories()
 	{
 		return gitRepositories;
+	}
+
+	public Set<Project> maintainedProjects()
+	{
+		return maintainedProjects;
 	}
 
 	public String getMavenSettingsFilePath()
@@ -82,5 +99,10 @@ public class WorkingSession
 	public Set<Client> getClients()
 	{
 		return clients;
+	}
+
+	public ProjectsWatcher projectsWatcher()
+	{
+		return projectsWatcher;
 	}
 }

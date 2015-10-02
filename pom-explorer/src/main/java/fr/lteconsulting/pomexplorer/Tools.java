@@ -356,6 +356,11 @@ public class Tools
 		}
 	};
 
+	public static String logMessage(String message)
+	{
+		return "<span style=''>" + message + "</span><br/>";
+	}
+
 	public static String warningMessage( String message )
 	{
 		return "<span style='color:orange;'>" + message + "</span><br/>";

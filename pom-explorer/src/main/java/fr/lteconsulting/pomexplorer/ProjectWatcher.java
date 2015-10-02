@@ -33,6 +33,15 @@ public class ProjectWatcher
 		System.out.println( "registered project files..." );
 	}
 
+	public boolean hasChanges()
+	{
+		WatchKey key = service.poll();
+
+		processWatchKey(key);
+
+		return key != null;
+	}
+
 	public boolean waitChange()
 	{
 		WatchKey key = null;
@@ -46,8 +55,17 @@ public class ProjectWatcher
 			e.printStackTrace();
 		}
 
-		if( key == null )
-			return false;
+		processWatchKey(key);
+
+		return key != null;
+	}
+
+	private void processWatchKey(WatchKey key)
+	{
+		if (key == null)
+			return;
+
+		key.reset();
 
 		for( WatchEvent<?> event : key.pollEvents() )
 		{
@@ -69,10 +87,6 @@ public class ProjectWatcher
 				System.out.println( "=> modified " + eventTarget.toString() );
 			}
 		}
-
-		key.reset();
-
-		return true;
 	}
 
 	private void watchPath( Path path )

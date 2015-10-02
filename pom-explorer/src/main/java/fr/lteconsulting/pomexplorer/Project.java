@@ -19,7 +19,7 @@ import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
  */
 public class Project
 {
-	private File pomFile;
+	private final File pomFile;
 	private ParsedPomFile resolvedPom;
 	private MavenProject project;
 
@@ -109,9 +109,43 @@ public class Project
 		return pluginDependencies;
 	}
 
+	public String getPath()
+	{
+		return pomFile.getParentFile().getAbsolutePath();
+	}
+
 	@Override
 	public String toString()
 	{
 		return getGav() + " (<i>" + pomFile.getAbsolutePath() + "</i>)";
+	}
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((pomFile == null) ? 0 : pomFile.getAbsolutePath().hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Project other = (Project)obj;
+		if (pomFile == null)
+		{
+			if (other.pomFile != null)
+				return false;
+		}
+		else if (!pomFile.getAbsolutePath().equals(other.pomFile.getAbsolutePath()))
+			return false;
+		return true;
 	}
 }
