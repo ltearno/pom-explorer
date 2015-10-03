@@ -234,20 +234,20 @@ public class Builder
 	{
 		message = Tools.buildMessage( message );
 		for( Client client : session.getClients() )
-			client.send( talkId, message );
+			client.sendHtml( talkId, message );
 	}
 
 	private void error( String message )
 	{
 		message = Tools.errorMessage( message );
 		for( Client client : session.getClients() )
-			client.send( talkId, message );
+			client.sendHtml( talkId, message );
 	}
 
 	private void success( String message )
 	{
 		message = Tools.successMessage( message );
 		for( Client client : session.getClients() )
-			client.send( talkId, message );
+			client.sendHtml( talkId, message );
 	}
 }

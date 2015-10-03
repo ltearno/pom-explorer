@@ -41,6 +41,6 @@ public class MavenBuildTask
 	{
 		message = Tools.buildMessage( "[building " + project.getGav() + "] " + message );
 		for( Client client : session.getClients() )
-			client.send( talkId, message );
+			client.sendHtml( talkId, message );
 	}
 }

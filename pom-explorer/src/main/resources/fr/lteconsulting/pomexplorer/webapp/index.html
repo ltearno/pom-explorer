@@ -233,7 +233,7 @@
 			var msg = JSON.parse(event.data);
 			var payload = msg.payload;
 			var talkId = msg.talkGuid;
-			if(payload)
+			if(msg.payloadFormat == 'html')
 				terminal.print(payload, talkId);
 		}
 		socket.onerror = function (event) {

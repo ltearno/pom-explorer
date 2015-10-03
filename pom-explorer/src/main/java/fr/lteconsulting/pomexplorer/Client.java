@@ -47,7 +47,7 @@ public class Client
 		return channel;
 	}
 	
-	public void send( String talkGuid, String html )
+	public void sendHtml( String talkGuid, String html )
 	{
 		if( html == null )
 			return;

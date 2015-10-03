@@ -124,7 +124,7 @@ public class AppFactory
 					String message = command.substring( 1 );
 					if( message.isEmpty() )
 						message = "<br/>";
-					client.send( talkId, message );
+					client.sendHtml( talkId, message );
 				}
 				else
 					AppFactory.get().commands().takeCommand( client, talkId, command );
@@ -141,7 +141,7 @@ public class AppFactory
 			
 			if( message == null || !"text/command".equals(message.getPayloadFormat()) || message.getPayload()==null || message.getPayload().isEmpty() )
 			{
-				client.send( message.getTalkGuid(), "nop.<br/>" );
+				client.sendHtml( message.getTalkGuid(), "nop.<br/>" );
 				return;
 			}
 

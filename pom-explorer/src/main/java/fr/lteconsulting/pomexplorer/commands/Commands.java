@@ -95,7 +95,7 @@ public class Commands
 			@Override
 			public void html( String log )
 			{
-				client.send( talkId, log );
+				client.sendHtml( talkId, log );
 			}
 		};
 	
