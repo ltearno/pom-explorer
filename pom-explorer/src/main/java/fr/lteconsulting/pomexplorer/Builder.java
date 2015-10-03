@@ -22,6 +22,10 @@ public class Builder
 
 	private Set<Project> projectsToBuild = new HashSet<>();
 
+	private Project lastChangedProject;
+	
+	private Project lastErroredProject;
+
 	public void setSession( WorkingSession session )
 	{
 		this.session = session;
@@ -55,6 +59,11 @@ public class Builder
 			Project toBuild = findProjectToBuild();
 			if( toBuild != null )
 			{
+				lastErroredProject = null;
+				lastChangedProject = toBuild;
+
+				printBuildPipelineState(toBuild);
+
 				boolean success = build( toBuild );
 
 				if( success )
@@ -67,6 +76,44 @@ public class Builder
 					projectsToBuild.removeAll( dependentsAndSelf( toBuild.getGav() ) );
 				}
 			}
+		}
+	}
+
+	private void printBuildPipelineState(Project projectBuilding)
+	{
+		try
+		{
+			TopologicalOrderIterator<GAV, Relation> iterator = new TopologicalOrderIterator<>( session.graph().internalGraph() );
+			List<GAV> gavs = new ArrayList<>();
+			while( iterator.hasNext() )
+				gavs.add( iterator.next() );
+			Collections.reverse( gavs );
+
+			StringBuilder sb = new StringBuilder();
+
+			sb.append( "<br/>" );
+			sb.append( "build pipeline state:<br/>" );
+			for( GAV gav : gavs )
+			{
+				Project project = session.projects().forGav( gav );
+				if( project != null && inDependenciesOfMaintainedProjects( project ) )
+				{
+					sb.append( "<span class='" 
+							+ (project == lastChangedProject ? "refreshedProject " : "")
+							+ (projectsToBuild.contains( project ) ? "toBuildProject " : "")
+							+ (projectBuilding==project ? "buildingProject " : "")
+							+ (lastErroredProject==project ? "errorProject " : "")
+							+ (session.maintainedProjects().contains( project) ? "maintainedProject " : "")
+							+ "'>" + project.getGav() + "</span><br/>" );
+				}
+			}
+			sb.append( "<br/>" );
+
+			log( sb.toString() );
+		}
+		catch( Exception e )
+		{
+			log( "error: " + e );
 		}
 	}
 
@@ -177,6 +224,8 @@ public class Builder
 			MavenBuildTaskSuperman builder = new MavenBuildTaskSuperman();
 			boolean res = builder.build( session, project, talkId );
 			builder.stop();
+			if( ! res )
+				lastErroredProject = project;
 			return res;
 		}
 	}

@@ -84,7 +84,7 @@ public class Commands
 
 		return sb.toString();
 	}
-
+	
 	/**
 	 * Returns the error or null if success
 	 */
@@ -98,21 +98,168 @@ public class Commands
 				client.send( talkId, log );
 			}
 		};
-
+	
 		if( text == null || text.isEmpty() )
 		{
 			log.html( Tools.warningMessage( "no text" ) );
 			return;
 		}
-
+	
 		if( "?".equals( text ) )
 			text = "help";
-
+	
 		final String parts[] = text.split( " " );
+		CommandCallInfo info = findMethodForCommand( parts, log );
+	
+		if( info == null )
+		{
+			log.html( Tools.warningMessage( "verb not found (or with wrong parameters)" ) );
+			return;
+		}
+	
+		CommandOptions options = new CommandOptions();
+		WorkingSession session = null;
+		Class<?>[] argTypes = info.method.getParameterTypes();
+		Object[] args = new Object[argTypes.length];
+		int curPart = 2;
+		int curArg = 0;
+		while( curArg < argTypes.length || curPart < parts.length )
+		{
+			if( curPart < parts.length )
+			{
+				String val = parts[curPart];
+				if( val.startsWith( "--" ) )
+				{
+					options.setOption( val.substring( 2 ), parts[curPart + 1] );
+					curPart += 2;
+					continue;
+				}
+	
+				if( val.startsWith( "-" ) )
+				{
+					options.setOption( val.substring( 1 ), true );
+					curPart++;
+					continue;
+				}
+			}
+	
+			if( curArg < argTypes.length )
+			{
+				if( argTypes[curArg] == Client.class )
+				{
+					args[curArg] = client;
+					curArg++;
+					continue;
+				}
+	
+				if( argTypes[curArg] == ILogger.class )
+				{
+					args[curArg] = log;
+					curArg++;
+					continue;
+				}
+	
+				if( argTypes[curArg] == WorkingSession.class )
+				{
+					if( session == null )
+					{
+						session = client.getCurrentSession();
+						if( session == null )
+						{
+							log.html( Tools.warningMessage( "you should have a session, type 'session create'." ) );
+							return;
+						}
+					}
+	
+					args[curArg] = session;
+					curArg++;
+					continue;
+				}
+	
+				if( argTypes[curArg] == CommandOptions.class )
+				{
+					args[curArg] = options;
+					curArg++;
+					continue;
+				}
+	
+				if( argTypes[curArg] == FilteredGAVs.class )
+				{
+					args[curArg] = new FilteredGAVs( parts[curPart] );
+					curArg++;
+					curPart++;
+					continue;
+				}
+	
+				if( argTypes[curArg] == GAV.class )
+				{
+					args[curArg] = parts[curPart] == null ? null : Tools.string2Gav( parts[curPart] );
+					if( args[curArg] == null )
+					{
+						log.html( Tools.warningMessage( "Argument " + (curArg + 1) + " should be a GAV specified with the group:artifact:version format please" ) );
+						return;
+					}
+					curArg++;
+					curPart++;
+					continue;
+				}
+			}
+	
+			if( argTypes[curArg] == Integer.class )
+				args[curArg] = Integer.parseInt( parts[curPart] );
+			else
+				args[curArg] = parts[curPart];
+	
+			curPart++;
+			curArg++;
+		}
+	
+		try
+		{
+			info.method.invoke( info.command, args );
+		}
+		catch( Exception e )
+		{
+			log.html( "Error when interpreting command '<b>" + text + "</b>'<br/>" );
+			log.html( "Command class : <b>" + info.command.getClass().getSimpleName() + "</b><br/>" );
+			log.html( "Command method : <b>" + info.method.getName() + "</b><br/>" );
+			for( Object a : args )
+				log.html( "Argument : " + (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString())) + "<br/>" );
+	
+			Throwable t = e;
+			if( t instanceof InvocationTargetException )
+				t = ((InvocationTargetException) t).getTargetException();
+	
+			log.html( "<pre>" + t.toString() + "\r\n" );
+			for( StackTraceElement st : t.getStackTrace() )
+			{
+				log.html( st.toString() + "\r\n" );
+			}
+			log.html( "</pre>" );
+	
+			log.html( Tools.errorMessage( log.toString() ) );
+		}
+	}
+
+	public class CommandCallInfo
+	{
+		public final Object command;
+		public final Method method;
+	
+		public CommandCallInfo( Object command, Method method )
+		{
+			this.command = command;
+			this.method = method;
+		}
+	}
+
+	// public for testing
+	public CommandCallInfo findMethodForCommand( String[] parts, ILogger log )
+	{
 		if( parts.length < 1 )
 		{
 			log.html( Tools.warningMessage( "syntax error (should be 'command [verb] [parameters]')" ) );
-			return;
+			return null;
 		}
 
 		List<String> potentialCommands = Tools.filter( commands.keySet(), new Func1<String, Boolean>()
@@ -127,12 +274,12 @@ public class Commands
 		if( potentialCommands == null || potentialCommands.isEmpty() )
 		{
 			log.html( Tools.warningMessage( "command not found: " + parts[0] ) );
-			return;
+			return null;
 		}
 		if( potentialCommands.size() != 1 )
 		{
 			log.html( Tools.warningMessage( "ambiguous command: " + parts[0] + " possible are " + potentialCommands ) );
-			return;
+			return null;
 		}
 
 		Object command = commands.get( potentialCommands.get( 0 ) );
@@ -154,134 +301,8 @@ public class Commands
 		}
 
 		Method m = findMethodWith( command, verb, nbParamsGiven );
-		if( m == null )
-		{
-			log.html( Tools.warningMessage( "verb not found (or with wrong parameters)" ) );
-			return;
-		}
-
-		CommandOptions options = new CommandOptions();
-		WorkingSession session = null;
-		Class<?>[] argTypes = m.getParameterTypes();
-		Object[] args = new Object[argTypes.length];
-		int curPart = 2;
-		int curArg = 0;
-		while( curArg < argTypes.length || curPart < parts.length )
-		{
-			if( curPart < parts.length )
-			{
-				String val = parts[curPart];
-				if( val.startsWith( "--" ) )
-				{
-					options.setOption( val.substring( 2 ), parts[curPart + 1] );
-					curPart += 2;
-					continue;
-				}
-
-				if( val.startsWith( "-" ) )
-				{
-					options.setOption( val.substring( 1 ), true );
-					curPart++;
-					continue;
-				}
-			}
-
-			if( curArg < argTypes.length )
-			{
-				if( argTypes[curArg] == Client.class )
-				{
-					args[curArg] = client;
-					curArg++;
-					continue;
-				}
-
-				if( argTypes[curArg] == ILogger.class )
-				{
-					args[curArg] = log;
-					curArg++;
-					continue;
-				}
-
-				if( argTypes[curArg] == WorkingSession.class )
-				{
-					if( session == null )
-					{
-						session = client.getCurrentSession();
-						if( session == null )
-						{
-							log.html( Tools.warningMessage( "you should have a session, type 'session create'." ) );
-							return;
-						}
-					}
-
-					args[curArg] = session;
-					curArg++;
-					continue;
-				}
-
-				if( argTypes[curArg] == CommandOptions.class )
-				{
-					args[curArg] = options;
-					curArg++;
-					continue;
-				}
-
-				if( argTypes[curArg] == FilteredGAVs.class )
-				{
-					args[curArg] = new FilteredGAVs( parts[curPart] );
-					curArg++;
-					curPart++;
-					continue;
-				}
-
-				if( argTypes[curArg] == GAV.class )
-				{
-					args[curArg] = parts[curPart] == null ? null : Tools.string2Gav( parts[curPart] );
-					if( args[curArg] == null )
-					{
-						log.html( Tools.warningMessage( "Argument " + (curArg + 1) + " should be a GAV specified with the group:artifact:version format please" ) );
-						return;
-					}
-					curArg++;
-					curPart++;
-					continue;
-				}
-			}
-
-			if( argTypes[curArg] == Integer.class )
-				args[curArg] = Integer.parseInt( parts[curPart] );
-			else
-				args[curArg] = parts[curPart];
-
-			curPart++;
-			curArg++;
-		}
-
-		try
-		{
-			m.invoke( command, args );
-		}
-		catch( Exception e )
-		{
-			log.html( "Error when interpreting command '<b>" + text + "</b>'<br/>" );
-			log.html( "Command class : <b>" + command.getClass().getSimpleName() + "</b><br/>" );
-			log.html( "Command method : <b>" + m.getName() + "</b><br/>" );
-			for( Object a : args )
-				log.html( "Argument : " + (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString())) + "<br/>" );
-
-			Throwable t = e;
-			if( t instanceof InvocationTargetException )
-				t = ((InvocationTargetException) t).getTargetException();
-
-			log.html( "<pre>" + t.toString() + "\r\n" );
-			for( StackTraceElement st : t.getStackTrace() )
-			{
-				log.html( st.toString() + "\r\n" );
-			}
-			log.html( "</pre>" );
-
-			log.html( Tools.errorMessage( log.toString() ) );
-		}
+		
+		return new CommandCallInfo( command, m );
 	}
 
 	private Method findMethodWith( Object o, final String verb, final int nbParamsGiven )
@@ -306,7 +327,7 @@ public class Commands
 		int c = 0;
 		for( Class<?> t : m.getParameterTypes() )
 		{
-			if( t != Client.class && t != WorkingSession.class && t != CommandOptions.class && t != FilteredGAVs.class && t != ILogger.class )
+			if( t != Client.class && t != WorkingSession.class && t != CommandOptions.class && t != ILogger.class )
 				c++;
 		}
 		return c;
