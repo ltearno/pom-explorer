@@ -182,7 +182,9 @@
 			terminal.print("connected to the server.");
 		};
 		socket.onmessage = function (event) {
-			terminal.print(event.data);
+			var payload = JSON.parse(event.data).payload;
+			if(payload)
+				terminal.print(payload);
 		}
 		socket.onerror = function (event) {
 			terminal.print("server communication error");

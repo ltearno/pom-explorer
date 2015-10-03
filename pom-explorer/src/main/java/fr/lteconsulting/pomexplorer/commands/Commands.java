@@ -88,7 +88,7 @@ public class Commands
 	/**
 	 * Returns the error or null if success
 	 */
-	public String takeCommand( Client client, String text )
+	public String takeCommand( Client client, String talkId, String text )
 	{
 		if( text == null || text.isEmpty() )
 			return "no text";
@@ -178,7 +178,7 @@ public class Commands
 						@Override
 						public void html( String log )
 						{
-							client.send( log );
+							client.send( talkId, log );
 						}
 					};
 					curArg++;

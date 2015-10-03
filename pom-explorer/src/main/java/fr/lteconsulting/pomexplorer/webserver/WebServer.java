@@ -13,7 +13,6 @@ import io.undertow.websockets.core.AbstractReceiveListener;
 import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.StreamSourceFrameChannel;
 import io.undertow.websockets.core.WebSocketChannel;
-import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 
 import java.io.File;
@@ -173,11 +172,7 @@ public class WebServer
 					@Override
 					protected void onFullTextMessage( final WebSocketChannel channel, final BufferedTextMessage message )
 					{
-						executor.submit( ( ) -> {
-							String messageData = xWebServer.onWebsocketMessage( getClient( channel ), message.getData() );
-							if( messageData != null )
-								WebSockets.sendText( messageData, channel, null );
-						} );
+						executor.submit( ( ) -> xWebServer.onWebsocketMessage( getClient( channel ), message.getData() ) );
 					}
 
 					@Override

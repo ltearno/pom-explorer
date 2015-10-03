@@ -6,7 +6,7 @@ public interface XWebServer
 {
 	void onNewClient( Client client );
 
-	String onWebsocketMessage( Client client, String message );
+	void onWebsocketMessage( Client client, String message );
 
 	String onGraphQuery( String sessionIdString );
 

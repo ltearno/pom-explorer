@@ -10,10 +10,10 @@ public class AnalyzeCommand
 	@Help( "analyse all the pom files in a directory, recursively" )
 	public void directory( Client client, WorkingSession session, ILogger log, String directory )
 	{
-		client.send( "Analyzing directoy '" + directory + "'...<br/>" );
+		log.html( "Analyzing directoy '" + directory + "'...<br/>" );
 
 		PomAnalyzer analyzer = new PomAnalyzer();
-		analyzer.analyze( directory, session, client );
+		analyzer.analyze( directory, session, log );
 
 		log.html( "Analyzis completed for '" + directory + "'.<br/>" );
 	}

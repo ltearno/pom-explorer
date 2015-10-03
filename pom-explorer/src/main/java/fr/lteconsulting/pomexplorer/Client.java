@@ -1,5 +1,9 @@
 package fr.lteconsulting.pomexplorer;
 
+import com.google.gson.Gson;
+
+import fr.lteconsulting.pomexplorer.webserver.Message;
+import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 
@@ -42,12 +46,28 @@ public class Client
 	{
 		return channel;
 	}
-
-	public void send( String messageData )
+	
+	public void send( String talkGuid, String html )
 	{
-		if( messageData == null )
+		if( html == null || html.isEmpty() )
 			return;
+		
+		send( MessageFactory.htmlMessage( talkGuid, html ) );
+	}
+	
+	public void sendClose( String talkGuid )
+	{
+		send( MessageFactory.closeTalkMessage( talkGuid ) );
+	}
+	
+	public void send( Message message )
+	{
+		if( message == null )
+			return;
+		
+		Gson gson = new Gson();
+		String text = gson.toJson( message );
 
-		WebSockets.sendText( messageData, channel, null );
+		WebSockets.sendText( text, channel, null );
 	}
 }

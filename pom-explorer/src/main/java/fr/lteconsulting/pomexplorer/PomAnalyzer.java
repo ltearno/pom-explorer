@@ -28,12 +28,12 @@ import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 
 public class PomAnalyzer
 {
-	public void analyze( String directory, WorkingSession session, Client client )
+	public void analyze( String directory, WorkingSession session, ILogger log )
 	{
-		processFile( new File( directory ), session, client );
+		processFile( new File( directory ), session, log );
 	}
 
-	private void processFile( File file, WorkingSession session, Client client )
+	private void processFile( File file, WorkingSession session, ILogger log )
 	{
 		if( file == null )
 			return;
@@ -45,11 +45,11 @@ public class PomAnalyzer
 				return;
 
 			for( File f : file.listFiles() )
-				processFile( f, session, client );
+				processFile( f, session, log );
 		}
 		else if( file.getName().equalsIgnoreCase( "pom.xml" ) )
 		{
-			processPom( file, session, client );
+			processPom( file, session, log );
 		}
 	}
 
@@ -98,22 +98,22 @@ public class PomAnalyzer
 
 		pomPath = pomPath.substring( 0, idx + 1 ) + "pom";
 
-		processPom( new File( pomPath ), session, client );
+		processPom( new File( pomPath ), session, log );
 	}
 
-	private void processPom( File pomFile, WorkingSession session, Client client )
+	private void processPom( File pomFile, WorkingSession session, ILogger log )
 	{
 		MavenProject unresolved = readPomFile( pomFile );
 		if( unresolved == null )
 		{
-			client.send( "<span style='color:orange;'>cannot read pom " + pomFile.getAbsolutePath() + "</span><br/>" );
+			log.html( "<span style='color:orange;'>cannot read pom " + pomFile.getAbsolutePath() + "</span><br/>" );
 			return;
 		}
 
 		ParsedPomFile resolved = loadPomFile( session, pomFile );
 		if( resolved == null )
 		{
-			client.send( "<span style='color:orange;'>cannot load pom " + unresolved.getGroupId() + ":" + unresolved.getArtifactId() + ":" + unresolved.getVersion() + " (<i>" + pomFile.getAbsolutePath() + "</i>)</span><br/>" );
+			log.html( "<span style='color:orange;'>cannot load pom " + unresolved.getGroupId() + ":" + unresolved.getArtifactId() + ":" + unresolved.getVersion() + " (<i>" + pomFile.getAbsolutePath() + "</i>)</span><br/>" );
 			return;
 		}
 
@@ -121,7 +121,7 @@ public class PomAnalyzer
 
 		if( session.projects().contains( gav ) )
 		{
-			client.send( "<span style='color:orange;'>pom already processed '" + pomFile.getAbsolutePath() + "' ! Ignoring.</span><br/>" );
+			log.html( "<span style='color:orange;'>pom already processed '" + pomFile.getAbsolutePath() + "' ! Ignoring.</span><br/>" );
 			return;
 		}
 
@@ -168,7 +168,7 @@ public class PomAnalyzer
 
 		session.repositories().add( projectInfo );
 
-		client.send( "processed project " + projectInfo.getGav() );
+		log.html( "processed project " + projectInfo.getGav() );
 	}
 
 	private static MavenWorkingSession createMavenWorkingSession( WorkingSession workingSession )

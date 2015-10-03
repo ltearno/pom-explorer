@@ -10,11 +10,14 @@ import java.util.Set;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
 import fr.lteconsulting.superman.Superman;
 
 @Superman
 public class Builder
 {
+	private final String talkId = MessageFactory.newGuid();
+	
 	private WorkingSession session;
 
 	private Set<Project> projectsToBuild = new HashSet<>();
@@ -172,7 +175,7 @@ public class Builder
 		else
 		{
 			MavenBuildTaskSuperman builder = new MavenBuildTaskSuperman();
-			boolean res = builder.build( session, project );
+			boolean res = builder.build( session, project, talkId );
 			builder.stop();
 			return res;
 		}
@@ -182,20 +185,20 @@ public class Builder
 	{
 		message = Tools.buildMessage( message );
 		for( Client client : session.getClients() )
-			client.send( message );
+			client.send( talkId, message );
 	}
 
 	private void error( String message )
 	{
 		message = Tools.errorMessage( message );
 		for( Client client : session.getClients() )
-			client.send( message );
+			client.send( talkId, message );
 	}
 
 	private void success( String message )
 	{
 		message = Tools.successMessage( message );
 		for( Client client : session.getClients() )
-			client.send( message );
+			client.send( talkId, message );
 	}
 }

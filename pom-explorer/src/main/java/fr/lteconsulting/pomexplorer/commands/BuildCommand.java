@@ -47,7 +47,7 @@ public class BuildCommand
 			return;
 		}
 
-		client.send( "Adding project " + project + " to list of maintained projects, and watching dependencies...<br/>" );
+		log.html( "Adding project " + project + " to list of maintained projects, and watching dependencies...<br/>" );
 
 		session.maintainedProjects().add( project );
 		log.html( "Project " + project + " added to the list of maintained projects<br/>" );

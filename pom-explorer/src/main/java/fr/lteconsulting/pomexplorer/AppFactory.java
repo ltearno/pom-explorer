@@ -1,8 +1,5 @@
 package fr.lteconsulting.pomexplorer;
 
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +26,7 @@ import fr.lteconsulting.pomexplorer.commands.ReleaseCommand;
 import fr.lteconsulting.pomexplorer.commands.SessionCommand;
 import fr.lteconsulting.pomexplorer.commands.StatsCommand;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
 import fr.lteconsulting.pomexplorer.webserver.WebServer;
 import fr.lteconsulting.pomexplorer.webserver.XWebServer;
 
@@ -111,6 +109,8 @@ public class AppFactory
 		{
 			System.out.println( "New client " + client.getId() );
 
+			final String talkId = MessageFactory.newGuid();
+
 			// running the default script
 			List<String> commands = Tools.readFileLines( "welcome.commands" );
 			for( String command : commands )
@@ -123,20 +123,29 @@ public class AppFactory
 					String message = command.substring( 1 );
 					if( message.isEmpty() )
 						message = "<br/>";
-					client.send( message );
+					client.send( talkId, message );
 				}
 				else
-					client.send( AppFactory.get().commands().takeCommand( client, command ) );
+					client.send( talkId, AppFactory.get().commands().takeCommand( client, talkId, command ) );
 			}
+
+			client.sendClose( talkId );
 		}
 
 		@Override
-		public String onWebsocketMessage( Client client, String message )
+		public void onWebsocketMessage( Client client, String message )
 		{
+			final String talkId = MessageFactory.newGuid();
+			
 			if( message == null || message.isEmpty() )
-				return "nop.";
+			{
+				client.send( talkId, "nop.<br/>" );
+				return;
+			}
 
-			return AppFactory.get().commands().takeCommand( client, message );
+			AppFactory.get().commands().takeCommand( client, talkId, message );
+			
+			client.sendClose( talkId );
 		}
 
 		@Override

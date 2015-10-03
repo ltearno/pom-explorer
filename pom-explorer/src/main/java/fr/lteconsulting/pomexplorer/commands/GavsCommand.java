@@ -53,7 +53,6 @@ public class GavsCommand
 
 		session.graph().gavs().stream().filter( gav -> session.projects().forGav( gav ) == null ).parallel().forEach( gav -> {
 			log.html( "analyzing " + gav + "...<br/>" );
-			client.send( "analyzing " + gav + "...<br/>" );
 			analyzer.registerExternalDependency( session, client, log, gav );
 		} );
 
