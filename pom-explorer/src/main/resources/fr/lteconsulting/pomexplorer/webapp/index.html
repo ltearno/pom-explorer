@@ -71,6 +71,23 @@
                 transform: translateX(0);
             }
         }
+        
+        .talk {
+        	margin-top: 5px;
+        	margin-bottom: 5px;
+        	border-left: 7px solid grey;
+        	padding-left: 5px;
+        	border-top-left-radius: 5px;
+        	border-bottom-left-radius: 5px;
+        }
+        
+        .entry {
+        	background-color: #12a;
+        	color: white;
+        	font-size: 105%;
+        	border-radius: 5px;
+        	padding: 3px;
+        }
     </style>
 </head>
 
@@ -92,6 +109,8 @@
             
             var Terminal = function () {
                 var me = this;
+                
+                this.talks = {};
                 
                 this.oninput = null;
                 
@@ -154,13 +173,22 @@
                 }
             };
 
-            Terminal.prototype.print = function (text) {
+            Terminal.prototype.print = function (text, talkId) {
             	var me = this;
-                var div = document.createElement('div');
-                div.innerHTML = text;
-                this.html.children[0].appendChild(div);
+            	
+            	var talk = this.talks[talkId];
+            	if( ! talk )
+            	{
+	                talk = document.createElement('div');
+	                talk.className = 'talk';
+	                this.html.children[0].appendChild(talk);
+	                this.talks[talkId] = talk;
+	            }
+	            
+	            talk.innerHTML += text;
                 
-                this.container.scrollTop = this.container.scrollHeight;
+                if( talk == this.html.children[0].lastElementChild )
+                	this.container.scrollTop = this.container.scrollHeight;
             };
 
             Terminal.prototype.input = function (callback) {};
@@ -179,18 +207,20 @@
         
         var socket = new WebSocket("ws://localhost:90/ws");
 		socket.onopen = function (event) {
-			terminal.print("connected to the server.");
+			terminal.print("connected to the server.", "ff" + Math.random());
 		};
 		socket.onmessage = function (event) {
-			var payload = JSON.parse(event.data).payload;
+			var msg = JSON.parse(event.data);
+			var payload = msg.payload;
+			var talkId = msg.talkGuid;
 			if(payload)
-				terminal.print(payload);
+				terminal.print(payload, talkId);
 		}
 		socket.onerror = function (event) {
-			terminal.print("server communication error");
+			terminal.print("server communication error", "ff" + Math.random());
 		}
 		socket.onclose = function (event) {
-			terminal.print("disconnected from server");
+			terminal.print("disconnected from server", "ff" + Math.random());
 		}
         
         terminal.oninput = function( userInput ) {
@@ -200,9 +230,20 @@
                 return;
             }
             
-            terminal.print("<div style='color:white;margin-top:1.5em;'>&gt;&nbsp;" + userInput + "</div>");
+            var talkId = "command-" + Math.random();
+            
+            var message = {
+            	guid: "message-" + Math.random(),
+            	talkGuid: talkId,
+            	responseTo: null,
+            	isClosing: false,
+            	payloadFormat: 'text/command',
+            	payload: userInput
+            };
+            
+            terminal.print("<div class='entry'>" + userInput + "</div>", talkId);
 
-            socket.send(userInput);
+            socket.send(JSON.stringify(message));
         };
     </script>
 </body>

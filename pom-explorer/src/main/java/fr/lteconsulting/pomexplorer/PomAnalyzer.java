@@ -168,7 +168,7 @@ public class PomAnalyzer
 
 		session.repositories().add( projectInfo );
 
-		log.html( "processed project " + projectInfo.getGav() );
+		log.html( "processed project " + projectInfo.getGav()+"<br/>" );
 	}
 
 	private static MavenWorkingSession createMavenWorkingSession( WorkingSession workingSession )

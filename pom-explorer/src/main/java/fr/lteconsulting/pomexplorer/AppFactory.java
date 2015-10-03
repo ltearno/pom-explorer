@@ -26,6 +26,7 @@ import fr.lteconsulting.pomexplorer.commands.ReleaseCommand;
 import fr.lteconsulting.pomexplorer.commands.SessionCommand;
 import fr.lteconsulting.pomexplorer.commands.StatsCommand;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.webserver.Message;
 import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
 import fr.lteconsulting.pomexplorer.webserver.WebServer;
 import fr.lteconsulting.pomexplorer.webserver.XWebServer;
@@ -126,26 +127,27 @@ public class AppFactory
 					client.send( talkId, message );
 				}
 				else
-					client.send( talkId, AppFactory.get().commands().takeCommand( client, talkId, command ) );
+					AppFactory.get().commands().takeCommand( client, talkId, command );
 			}
 
 			client.sendClose( talkId );
 		}
 
 		@Override
-		public void onWebsocketMessage( Client client, String message )
+		public void onWebsocketMessage( Client client, String messageText )
 		{
-			final String talkId = MessageFactory.newGuid();
+			Gson gson = new Gson();
+			Message message = gson.fromJson( messageText, Message.class );
 			
-			if( message == null || message.isEmpty() )
+			if( message == null || !"text/command".equals(message.getPayloadFormat()) || message.getPayload()==null || message.getPayload().isEmpty() )
 			{
-				client.send( talkId, "nop.<br/>" );
+				client.send( message.getTalkGuid(), "nop.<br/>" );
 				return;
 			}
 
-			AppFactory.get().commands().takeCommand( client, talkId, message );
+			AppFactory.get().commands().takeCommand( client, message.getTalkGuid(), message.getPayload() );
 			
-			client.sendClose( talkId );
+			client.sendClose( message.getTalkGuid() );
 		}
 
 		@Override

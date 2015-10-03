@@ -49,7 +49,7 @@ public class Client
 	
 	public void send( String talkGuid, String html )
 	{
-		if( html == null || html.isEmpty() )
+		if( html == null )
 			return;
 		
 		send( MessageFactory.htmlMessage( talkGuid, html ) );

@@ -88,17 +88,32 @@ public class Commands
 	/**
 	 * Returns the error or null if success
 	 */
-	public String takeCommand( Client client, String talkId, String text )
+	public void takeCommand( Client client, String talkId, String text )
 	{
+		ILogger log = new ILogger()
+		{
+			@Override
+			public void html( String log )
+			{
+				client.send( talkId, log );
+			}
+		};
+
 		if( text == null || text.isEmpty() )
-			return "no text";
+		{
+			log.html( Tools.warningMessage( "no text" ) );
+			return;
+		}
 
 		if( "?".equals( text ) )
 			text = "help";
 
 		final String parts[] = text.split( " " );
 		if( parts.length < 1 )
-			return "syntax error (should be 'command [verb] [parameters]')";
+		{
+			log.html( Tools.warningMessage( "syntax error (should be 'command [verb] [parameters]')" ) );
+			return;
+		}
 
 		List<String> potentialCommands = Tools.filter( commands.keySet(), new Func1<String, Boolean>()
 		{
@@ -110,9 +125,15 @@ public class Commands
 		} );
 
 		if( potentialCommands == null || potentialCommands.isEmpty() )
-			return "command not found: " + parts[0];
+		{
+			log.html( Tools.warningMessage( "command not found: " + parts[0] ) );
+			return;
+		}
 		if( potentialCommands.size() != 1 )
-			return "ambiguous command: " + parts[0] + " possible are " + potentialCommands;
+		{
+			log.html( Tools.warningMessage( "ambiguous command: " + parts[0] + " possible are " + potentialCommands ) );
+			return;
+		}
 
 		Object command = commands.get( potentialCommands.get( 0 ) );
 
@@ -134,7 +155,10 @@ public class Commands
 
 		Method m = findMethodWith( command, verb, nbParamsGiven );
 		if( m == null )
-			return "verb not found (or with wrong parameters)";
+		{
+			log.html( Tools.warningMessage( "verb not found (or with wrong parameters)" ) );
+			return;
+		}
 
 		CommandOptions options = new CommandOptions();
 		WorkingSession session = null;
@@ -173,14 +197,7 @@ public class Commands
 
 				if( argTypes[curArg] == ILogger.class )
 				{
-					args[curArg] = new ILogger()
-					{
-						@Override
-						public void html( String log )
-						{
-							client.send( talkId, log );
-						}
-					};
+					args[curArg] = log;
 					curArg++;
 					continue;
 				}
@@ -191,7 +208,10 @@ public class Commands
 					{
 						session = client.getCurrentSession();
 						if( session == null )
-							return "You should have a session, type 'session create'.";
+						{
+							log.html( Tools.warningMessage( "you should have a session, type 'session create'." ) );
+							return;
+						}
 					}
 
 					args[curArg] = session;
@@ -218,7 +238,10 @@ public class Commands
 				{
 					args[curArg] = parts[curPart] == null ? null : Tools.string2Gav( parts[curPart] );
 					if( args[curArg] == null )
-						return Tools.warningMessage( "Argument " + (curArg + 1) + " should be a GAV specified with the group:artifact:version format please" );
+					{
+						log.html( Tools.warningMessage( "Argument " + (curArg + 1) + " should be a GAV specified with the group:artifact:version format please" ) );
+						return;
+					}
 					curArg++;
 					curPart++;
 					continue;
@@ -237,29 +260,27 @@ public class Commands
 		try
 		{
 			m.invoke( command, args );
-			return null;
 		}
 		catch( Exception e )
 		{
-			StringBuilder log = new StringBuilder();
-			log.append( "Error when interpreting command '<b>" + text + "</b>'<br/>" );
-			log.append( "Command class : <b>" + command.getClass().getSimpleName() + "</b><br/>" );
-			log.append( "Command method : <b>" + m.getName() + "</b><br/>" );
+			log.html( "Error when interpreting command '<b>" + text + "</b>'<br/>" );
+			log.html( "Command class : <b>" + command.getClass().getSimpleName() + "</b><br/>" );
+			log.html( "Command method : <b>" + m.getName() + "</b><br/>" );
 			for( Object a : args )
-				log.append( "Argument : " + (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString())) + "<br/>" );
+				log.html( "Argument : " + (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString())) + "<br/>" );
 
 			Throwable t = e;
 			if( t instanceof InvocationTargetException )
 				t = ((InvocationTargetException) t).getTargetException();
 
-			log.append( "<pre>" + t.toString() + "\r\n" );
+			log.html( "<pre>" + t.toString() + "\r\n" );
 			for( StackTraceElement st : t.getStackTrace() )
 			{
-				log.append( st.toString() + "\r\n" );
+				log.html( st.toString() + "\r\n" );
 			}
-			log.append( "</pre>" );
+			log.html( "</pre>" );
 
-			return Tools.errorMessage( log.toString() );
+			log.html( Tools.errorMessage( log.toString() ) );
 		}
 	}
 
