@@ -9,10 +9,9 @@ public class MonBilou
 	{
 		return "salut, tu m'as dit " + caca + " ?";
 	}
-	
+
 	public void parle()
 	{
-		System.out.println("voilà, je parle... (thread " + Thread.currentThread().getName() + ":"
-				+ Thread.currentThread().getId() + ")");
+		System.out.println( "voilà, je parle... (thread " + Thread.currentThread().getName() + ":" + Thread.currentThread().getId() + ")" );
 	}
 }

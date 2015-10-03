@@ -4,6 +4,7 @@ public abstract class Relation
 {
 	/**
 	 * Whether it's a normal dependency, a build one or a parent one.
+	 * 
 	 * @author Arnaud
 	 *
 	 */

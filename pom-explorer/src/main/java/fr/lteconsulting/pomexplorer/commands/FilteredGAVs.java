@@ -15,9 +15,9 @@ public class FilteredGAVs
 {
 	private final String filter;
 
-	public FilteredGAVs(String filter)
+	public FilteredGAVs( String filter )
 	{
-		if (filter != null)
+		if( filter != null )
 			filter = filter.toLowerCase();
 		this.filter = filter;
 	}
@@ -27,23 +27,23 @@ public class FilteredGAVs
 		return filter;
 	}
 
-	public boolean accept(GAV gav)
+	public boolean accept( GAV gav )
 	{
-		return gav != null && (filter == null || gav.toString().toLowerCase().contains(filter));
+		return gav != null && (filter == null || gav.toString().toLowerCase().contains( filter ));
 	}
 
-	List<GAV> getGavs(WorkingSession session)
+	List<GAV> getGavs( WorkingSession session )
 	{
 		Stream<GAV> stream;
 
-		if (filter != null)
-			stream = session.graph().gavs().stream().filter(gav -> gav.toString().toLowerCase().contains(filter));
+		if( filter != null )
+			stream = session.graph().gavs().stream().filter( gav -> gav.toString().toLowerCase().contains( filter ) );
 		else
 			stream = session.graph().gavs().stream();
 
 		List<GAV> res = new ArrayList<>();
 
-		stream.sorted(Tools.gavAlphabeticalComparator).forEachOrdered(gav -> res.add(gav));
+		stream.sorted( Tools.gavAlphabeticalComparator ).forEachOrdered( gav -> res.add( gav ) );
 
 		return res;
 	}

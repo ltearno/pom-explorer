@@ -62,7 +62,7 @@ public class PomAnalyzer
 	 * @param session
 	 *            working session
 	 */
-	public void registerExternalDependency( WorkingSession session, Client client, StringBuilder log, GAV gav )
+	public void registerExternalDependency( WorkingSession session, Client client, ILogger log, GAV gav )
 	{
 		String mavenSettingsFilePath = session.getMavenSettingsFilePath();
 
@@ -79,16 +79,16 @@ public class PomAnalyzer
 		}
 		catch( Exception e )
 		{
-			log.append( Tools.errorMessage( "shrinkwrap error : " + e.getMessage() ) );
+			log.html( Tools.errorMessage( "shrinkwrap error : " + e.getMessage() ) );
 		}
 
 		if( resolvedArtifact == null )
 		{
-			log.append( Tools.warningMessage( "cannot resolve the artifact " + gav ) );
+			log.html( Tools.warningMessage( "cannot resolve the artifact " + gav ) );
 			return;
 		}
 
-		log.append( "resolved artifact : " + resolvedArtifact.getCoordinate().toString() + "<br/>" );
+		log.html( "resolved artifact : " + resolvedArtifact.getCoordinate().toString() + "<br/>" );
 
 		// Big hack here !
 		String pomPath = resolvedArtifact.asFile().getAbsolutePath();

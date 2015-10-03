@@ -12,6 +12,7 @@ import java.util.Map;
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
@@ -67,7 +68,7 @@ public class Commands
 
 				for( Class<?> pCls : m.getParameterTypes() )
 				{
-					if( pCls == Client.class || pCls == WorkingSession.class || pCls == CommandOptions.class )
+					if( pCls == Client.class || pCls == WorkingSession.class || pCls == CommandOptions.class || pCls == ILogger.class )
 						continue;
 
 					sb.append( " <b><i>" + pCls.getSimpleName() + "</i></b>" );
@@ -98,7 +99,7 @@ public class Commands
 		final String parts[] = text.split( " " );
 		if( parts.length < 1 )
 			return "syntax error (should be 'command [verb] [parameters]')";
-		
+
 		List<String> potentialCommands = Tools.filter( commands.keySet(), new Func1<String, Boolean>()
 		{
 			@Override
@@ -170,6 +171,20 @@ public class Commands
 					continue;
 				}
 
+				if( argTypes[curArg] == ILogger.class )
+				{
+					args[curArg] = new ILogger()
+					{
+						@Override
+						public void html( String log )
+						{
+							client.send( log );
+						}
+					};
+					curArg++;
+					continue;
+				}
+
 				if( argTypes[curArg] == WorkingSession.class )
 				{
 					if( session == null )
@@ -191,20 +206,19 @@ public class Commands
 					continue;
 				}
 
-				if (argTypes[curArg] == FilteredGAVs.class)
+				if( argTypes[curArg] == FilteredGAVs.class )
 				{
-					args[curArg] = new FilteredGAVs(parts[curPart]);
+					args[curArg] = new FilteredGAVs( parts[curPart] );
 					curArg++;
 					curPart++;
 					continue;
 				}
 
-				if (argTypes[curArg] == GAV.class)
+				if( argTypes[curArg] == GAV.class )
 				{
-					args[curArg] = parts[curPart] == null ? null : Tools.string2Gav(parts[curPart]);
-					if (args[curArg] == null)
-						return Tools.warningMessage("Argument " + (curArg + 1)
-								+ " should be a GAV specified with the group:artifact:version format please");
+					args[curArg] = parts[curPart] == null ? null : Tools.string2Gav( parts[curPart] );
+					if( args[curArg] == null )
+						return Tools.warningMessage( "Argument " + (curArg + 1) + " should be a GAV specified with the group:artifact:version format please" );
 					curArg++;
 					curPart++;
 					continue;
@@ -222,8 +236,8 @@ public class Commands
 
 		try
 		{
-			Object result = m.invoke( command, args );
-			return result == null ? null : result.toString();
+			m.invoke( command, args );
+			return null;
 		}
 		catch( Exception e )
 		{
@@ -271,7 +285,7 @@ public class Commands
 		int c = 0;
 		for( Class<?> t : m.getParameterTypes() )
 		{
-			if( t != Client.class && t != WorkingSession.class && t != CommandOptions.class && t != FilteredGAVs.class )
+			if( t != Client.class && t != WorkingSession.class && t != CommandOptions.class && t != FilteredGAVs.class && t != ILogger.class )
 				c++;
 		}
 		return c;

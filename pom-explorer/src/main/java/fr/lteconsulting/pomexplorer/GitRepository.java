@@ -53,7 +53,7 @@ public class GitRepository
 		return path.hashCode();
 	}
 
-	public void getStatus( StringBuilder log, boolean details )
+	public void getStatus( ILogger log, boolean details )
 	{
 		ensureOpen();
 
@@ -63,33 +63,33 @@ public class GitRepository
 			status = git.status().call();
 			int nb = status.getAdded().size() + status.getChanged().size() + status.getConflicting().size() + status.getMissing().size() + status.getModified().size() + status.getRemoved().size();
 
-			log.append( (nb > 0 ? "[*] " : "[ ] ") + path.toAbsolutePath().toString() );
-			log.append( " " + git.getRepository().getBranch() );
-			log.append( (nb > 0 ? (" <b>(" + nb + " changes</b>)") : "") + "<br/>" );
+			log.html( (nb > 0 ? "[*] " : "[ ] ") + path.toAbsolutePath().toString() );
+			log.html( " " + git.getRepository().getBranch() );
+			log.html( (nb > 0 ? (" <b>(" + nb + " changes</b>)") : "") + "<br/>" );
 
 			if( details )
 			{
-				log.append( "<br/>" );
+				log.html( "<br/>" );
 				if( !status.getAdded().isEmpty() )
-					log.append( "Added: " + status.getAdded() + "<br/>" );
+					log.html( "Added: " + status.getAdded() + "<br/>" );
 				if( !status.getChanged().isEmpty() )
-					log.append( "Changed: " + status.getChanged() + "<br/>" );
+					log.html( "Changed: " + status.getChanged() + "<br/>" );
 				if( !status.getConflicting().isEmpty() )
 				{
-					log.append( "Conflicting: " + status.getConflicting() + "<br/>" );
-					log.append( "ConflictingStageState: " + status.getConflictingStageState() + "<br/>" );
+					log.html( "Conflicting: " + status.getConflicting() + "<br/>" );
+					log.html( "ConflictingStageState: " + status.getConflictingStageState() + "<br/>" );
 				}
 				if( !status.getMissing().isEmpty() )
-					log.append( "Missing: " + status.getMissing() + "<br/>" );
+					log.html( "Missing: " + status.getMissing() + "<br/>" );
 				if( !status.getModified().isEmpty() )
-					log.append( "Modified: " + status.getModified() + "<br/>" );
+					log.html( "Modified: " + status.getModified() + "<br/>" );
 				if( !status.getRemoved().isEmpty() )
-					log.append( "Removed: " + status.getRemoved() + "<br/>" );
+					log.html( "Removed: " + status.getRemoved() + "<br/>" );
 				if( !status.getUntracked().isEmpty() )
-					log.append( "Untracked: " + status.getUntracked() + "<br/>" );
+					log.html( "Untracked: " + status.getUntracked() + "<br/>" );
 				if( !status.getUntrackedFolders().isEmpty() )
-					log.append( "UntrackedFolders: " + status.getUntrackedFolders() + "<br/>" );
-				log.append( "<br/>" );
+					log.html( "UntrackedFolders: " + status.getUntrackedFolders() + "<br/>" );
+				log.html( "<br/>" );
 			}
 		}
 		catch( Exception e )

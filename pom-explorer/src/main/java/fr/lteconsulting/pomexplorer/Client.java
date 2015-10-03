@@ -11,7 +11,7 @@ public class Client
 
 	private WorkingSession currentSession;
 
-	public Client(int id, WebSocketChannel channel)
+	public Client( int id, WebSocketChannel channel )
 	{
 		this.id = id;
 		this.channel = channel;
@@ -22,15 +22,15 @@ public class Client
 		return currentSession;
 	}
 
-	public void setCurrentSession(WorkingSession currentSession)
+	public void setCurrentSession( WorkingSession currentSession )
 	{
-		if (this.currentSession != null)
-			this.currentSession.removeClient(this);
+		if( this.currentSession != null )
+			this.currentSession.removeClient( this );
 
 		this.currentSession = currentSession;
 
-		if (this.currentSession != null)
-			this.currentSession.addClient(this);
+		if( this.currentSession != null )
+			this.currentSession.addClient( this );
 	}
 
 	public int getId()
@@ -43,8 +43,11 @@ public class Client
 		return channel;
 	}
 
-	public void send(String messageData)
+	public void send( String messageData )
 	{
-		WebSockets.sendText(messageData, channel, null);
+		if( messageData == null )
+			return;
+
+		WebSockets.sendText( messageData, channel, null );
 	}
 }

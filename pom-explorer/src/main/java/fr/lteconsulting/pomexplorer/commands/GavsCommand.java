@@ -2,6 +2,7 @@ package fr.lteconsulting.pomexplorer.commands;
 
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomAnalyzer;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
@@ -9,63 +10,53 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 public class GavsCommand
 {
 	@Help( "list the session's GAVs" )
-	public String main( WorkingSession session )
+	public void main( WorkingSession session, ILogger log )
 	{
-		return list( session );
+		list( session, log );
 	}
 
 	@Help( "list the session's GAVs" )
-	public String list( WorkingSession session )
+	public void list( WorkingSession session, ILogger log )
 	{
-		return list( session, null );
+		list( session, null, log );
 	}
 
 	@Help( "list the session's GAVs, with filtering" )
-	public String list(WorkingSession session, FilteredGAVs gavFilter)
+	public void list( WorkingSession session, FilteredGAVs gavFilter, ILogger log )
 	{
-		if (gavFilter == null)
-			return Tools.warningMessage("You should specify a GAV filter !");
-
-		StringBuilder log = new StringBuilder();
-
-		log.append("<br/>GAV list filtered with '" + gavFilter.getFilter() + "' :<br/>");
-		gavFilter.getGavs(session).forEach(gav ->
+		if( gavFilter == null )
 		{
-			log.append( gav + "<br/>" );
-		});
+			log.html( Tools.warningMessage( "You should specify a GAV filter !" ) );
+			return;
+		}
 
-		return log.toString();
+		log.html( "<br/>GAV list filtered with '" + gavFilter.getFilter() + "' :<br/>" );
+		gavFilter.getGavs( session ).forEach( gav -> {
+			log.html( gav + "<br/>" );
+		} );
 	}
 
 	@Help( "analyze all the gav's dependencies and add them in the pom graph." )
-	public String add(WorkingSession session, Client client, GAV gav)
+	public void add( WorkingSession session, ILogger log, Client client, GAV gav )
 	{
-		StringBuilder log = new StringBuilder();
-
 		PomAnalyzer analyzer = new PomAnalyzer();
 
 		analyzer.registerExternalDependency( session, client, log, gav );
 
-		log.append( "finished !<br/>" );
-
-		return log.toString();
+		log.html( "finished !<br/>" );
 	}
 
 	@Help( "analyze gavs which have no associated project" )
-	public String resolve( WorkingSession session, Client client )
+	public void resolve( WorkingSession session, ILogger log, Client client )
 	{
-		StringBuilder log = new StringBuilder();
-
 		PomAnalyzer analyzer = new PomAnalyzer();
 
 		session.graph().gavs().stream().filter( gav -> session.projects().forGav( gav ) == null ).parallel().forEach( gav -> {
-			log.append( "analyzing " + gav + "...<br/>" );
+			log.html( "analyzing " + gav + "...<br/>" );
 			client.send( "analyzing " + gav + "...<br/>" );
 			analyzer.registerExternalDependency( session, client, log, gav );
 		} );
 
-		log.append( "finished !<br/>" );
-
-		return log.toString();
+		log.html( "finished !<br/>" );
 	}
 }

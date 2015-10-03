@@ -60,26 +60,26 @@ public class AppFactory
 
 	public Commands commands()
 	{
-		if (commands == null)
+		if( commands == null )
 		{
 			commands = new Commands();
 
 			// shell commands available
-			commands.addCommand(new HelpCommand());
-			commands.addCommand(new SessionCommand());
-			commands.addCommand(new AnalyzeCommand());
-			commands.addCommand(new StatsCommand());
-			commands.addCommand(new GavsCommand());
-			commands.addCommand(new ProjectsCommand());
-			commands.addCommand(new DependsCommand());
-			commands.addCommand(new ReleaseCommand());
-			commands.addCommand(new ChangeCommand());
-			commands.addCommand(new BuildCommand());
-			commands.addCommand(new GraphCommand());
-			commands.addCommand(new CheckCommand());
-			commands.addCommand(new ClassesCommand());
-			commands.addCommand(new GitCommand());
-			commands.addCommand(new GarbageCommand());
+			commands.addCommand( new HelpCommand() );
+			commands.addCommand( new SessionCommand() );
+			commands.addCommand( new AnalyzeCommand() );
+			commands.addCommand( new StatsCommand() );
+			commands.addCommand( new GavsCommand() );
+			commands.addCommand( new ProjectsCommand() );
+			commands.addCommand( new DependsCommand() );
+			commands.addCommand( new ReleaseCommand() );
+			commands.addCommand( new ChangeCommand() );
+			commands.addCommand( new BuildCommand() );
+			commands.addCommand( new GraphCommand() );
+			commands.addCommand( new CheckCommand() );
+			commands.addCommand( new ClassesCommand() );
+			commands.addCommand( new GitCommand() );
+			commands.addCommand( new GarbageCommand() );
 		}
 
 		return commands;
@@ -87,7 +87,7 @@ public class AppFactory
 
 	public ApplicationSettings getSettings()
 	{
-		if (settings == null)
+		if( settings == null )
 		{
 			settings = new ApplicationSettings();
 			settings.load();
@@ -98,8 +98,8 @@ public class AppFactory
 
 	public WebServer webServer()
 	{
-		if (webServer == null)
-			webServer = new WebServer(xWebServer);
+		if( webServer == null )
+			webServer = new WebServer( xWebServer );
 
 		return webServer;
 	}
@@ -107,55 +107,55 @@ public class AppFactory
 	private XWebServer xWebServer = new XWebServer()
 	{
 		@Override
-		public void onNewClient(Client client)
+		public void onNewClient( Client client )
 		{
-			System.out.println("New client " + client.getId());
+			System.out.println( "New client " + client.getId() );
 
 			// running the default script
-			List<String> commands = Tools.readFileLines("welcome.commands");
-			for (String command : commands)
+			List<String> commands = Tools.readFileLines( "welcome.commands" );
+			for( String command : commands )
 			{
-				if (command.isEmpty() || command.startsWith("#"))
+				if( command.isEmpty() || command.startsWith( "#" ) )
 					continue;
 
-				if (command.startsWith("="))
+				if( command.startsWith( "=" ) )
 				{
-					String message = command.substring(1);
-					if (message.isEmpty())
+					String message = command.substring( 1 );
+					if( message.isEmpty() )
 						message = "<br/>";
-					client.send(message);
+					client.send( message );
 				}
 				else
-					client.send(AppFactory.get().commands().takeCommand(client, command));
+					client.send( AppFactory.get().commands().takeCommand( client, command ) );
 			}
 		}
 
 		@Override
-		public String onWebsocketMessage(Client client, String message)
+		public String onWebsocketMessage( Client client, String message )
 		{
-			if (message == null || message.isEmpty())
+			if( message == null || message.isEmpty() )
 				return "nop.";
 
-			return AppFactory.get().commands().takeCommand(client, message);
+			return AppFactory.get().commands().takeCommand( client, message );
 		}
 
 		@Override
-		public String onGraphQuery(String sessionIdString)
+		public String onGraphQuery( String sessionIdString )
 		{
 			List<WorkingSession> sessions = AppFactory.get().sessions();
-			if (sessions == null || sessions.isEmpty())
+			if( sessions == null || sessions.isEmpty() )
 				return "No session available. Go to main page !";
 
 			WorkingSession session = null;
 
 			try
 			{
-				Integer sessionId = Integer.parseInt(sessionIdString);
-				if (sessionId != null)
+				Integer sessionId = Integer.parseInt( sessionIdString );
+				if( sessionId != null )
 				{
-					for (WorkingSession s : sessions)
+					for( WorkingSession s : sessions )
 					{
-						if (System.identityHashCode(s) == sessionId)
+						if( System.identityHashCode( s ) == sessionId )
 						{
 							session = s;
 							break;
@@ -163,40 +163,40 @@ public class AppFactory
 					}
 				}
 			}
-			catch (Exception e)
+			catch( Exception e )
 			{
 			}
 
-			if (session == null)
-				session = sessions.get(0);
+			if( session == null )
+				session = sessions.get( 0 );
 
 			DirectedGraph<GAV, Relation> g = session.graph().internalGraph();
 
 			GraphDto dto = new GraphDto();
 			dto.gavs = new HashSet<>();
 			dto.relations = new HashSet<>();
-			for (GAV gav : g.vertexSet())
+			for( GAV gav : g.vertexSet() )
 			{
-				dto.gavs.add(gav.toString());
+				dto.gavs.add( gav.toString() );
 
-				for (Relation relation : g.outgoingEdgesOf(gav))
+				for( Relation relation : g.outgoingEdgesOf( gav ) )
 				{
-					GAV target = g.getEdgeTarget(relation);
-					EdgeDto edge = new EdgeDto(gav.toString(), target.toString(), relation);
-					dto.relations.add(edge);
+					GAV target = g.getEdgeTarget( relation );
+					EdgeDto edge = new EdgeDto( gav.toString(), target.toString(), relation );
+					dto.relations.add( edge );
 				}
 			}
 
 			Gson gson = new Gson();
-			String result = gson.toJson(dto);
+			String result = gson.toJson( dto );
 
 			return result;
 		}
 
 		@Override
-		public void onClientLeft(Client client)
+		public void onClientLeft( Client client )
 		{
-			System.out.println("Client left.");
+			System.out.println( "Client left." );
 		}
 	};
 
@@ -210,7 +210,7 @@ public class AppFactory
 
 		Relation relation;
 
-		public EdgeDto(String from, String to, Relation relation)
+		public EdgeDto( String from, String to, Relation relation )
 		{
 			this.from = from;
 			this.to = to;

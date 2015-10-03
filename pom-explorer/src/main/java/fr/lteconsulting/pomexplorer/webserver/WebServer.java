@@ -104,7 +104,7 @@ public class WebServer
 			@Override
 			public void handleRequest( HttpServerExchange exchange ) throws Exception
 			{
-				executor.submit( () -> {
+				executor.submit( ( ) -> {
 					String name = exchange.getRelativePath();
 
 					File dataDir = new File( DATA_FILE_STORE_DIR );
@@ -173,9 +173,10 @@ public class WebServer
 					@Override
 					protected void onFullTextMessage( final WebSocketChannel channel, final BufferedTextMessage message )
 					{
-						executor.submit( () -> {
+						executor.submit( ( ) -> {
 							String messageData = xWebServer.onWebsocketMessage( getClient( channel ), message.getData() );
-							WebSockets.sendText( messageData, channel, null );
+							if( messageData != null )
+								WebSockets.sendText( messageData, channel, null );
 						} );
 					}
 

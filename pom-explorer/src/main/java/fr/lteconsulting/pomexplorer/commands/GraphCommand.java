@@ -22,7 +22,9 @@ import fr.lteconsulting.pomexplorer.AppFactory;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.GitTools;
 import fr.lteconsulting.pomexplorer.GraphFrame;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.Repository;
 import fr.lteconsulting.pomexplorer.graph.RepositoryRelation;
@@ -34,14 +36,10 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 public class GraphCommand
 {
 	@Help( "displays an interactive 3d WebGL graph of the pom data" )
-	public String main( WorkingSession session )
+	public void main( WorkingSession session, ILogger log )
 	{
-		StringBuilder log = new StringBuilder();
-
 		String url = "graph.html?session=" + System.identityHashCode( session );
-		log.append( "To display the graph, go to : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
-
-		return log.toString();
+		log.html( "To display the graph, go to : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
 	}
 
 	private boolean isOkGav( GAV gav )
@@ -64,7 +62,7 @@ public class GraphCommand
 	}
 
 	@Help( "exports a GraphML file" )
-	public String export( WorkingSession session )
+	public void export( WorkingSession session, ILogger log )
 	{
 		try
 		{
@@ -176,18 +174,14 @@ public class GraphCommand
 			repoExporter.export( writer, repoGraph );
 			writer.close();
 
-			StringBuilder log = new StringBuilder();
-
 			String url = AppFactory.get().webServer().getFileUrl( graphFileName );
 
-			log.append( "GraphML file for the whole dependency graph is available here : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
-			log.append( "GraphML file for the git repositories is available here : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
-
-			return log.toString();
+			log.html( "GraphML file for the whole dependency graph is available here : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
+			log.html( "GraphML file for the git repositories is available here : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
 		}
 		catch( Exception e )
 		{
-			return "Error ! : " + e.getMessage() + "<br/>";
+			log.html( Tools.errorMessage( "Error ! : " + e.getMessage() ) );
 		}
 	}
 
@@ -201,13 +195,13 @@ public class GraphCommand
 	}
 
 	@Help( "displays a graph on the server machine" )
-	public String server( WorkingSession session )
+	public void server( WorkingSession session, ILogger log )
 	{
-		return server( session, null );
+		server( session, null, log );
 	}
 
 	@Help( "displays a graph on the server machine. Parameter is the filter for GAVs" )
-	public String server( WorkingSession session, String filter )
+	public void server( WorkingSession session, String filter, ILogger log )
 	{
 		if( filter != null )
 			filter = filter.toLowerCase();
@@ -240,6 +234,6 @@ public class GraphCommand
 		// layout.setForceConstant( 200 );
 		layout.execute( ga.getDefaultParent() );
 
-		return "ok, graph displayed on the server.";
+		log.html( "ok, graph displayed on the server.<br/>" );
 	}
 }

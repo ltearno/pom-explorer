@@ -1,6 +1,7 @@
 package fr.lteconsulting.pomexplorer.changes.processor;
 
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -18,7 +19,7 @@ import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
 public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 {
 	@Override
-	protected void processChange( WorkingSession session, StringBuilder log, GavChange change, IChangeSet changeSet )
+	protected void processChange( WorkingSession session, ILogger log, GavChange change, IChangeSet changeSet )
 	{
 		GavLocation depLoc = change.getLocation();
 
@@ -51,7 +52,7 @@ public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 				return;
 			}
 
-			log.append( Tools.warningMessage( "updating the '" + property + "' property" ) );
+			log.html( Tools.warningMessage( "updating the '" + property + "' property" ) );
 
 			Project definitionProject = Tools.getPropertyDefinitionProject( session, depLoc.getProject(), property );
 			if( definitionProject != null )

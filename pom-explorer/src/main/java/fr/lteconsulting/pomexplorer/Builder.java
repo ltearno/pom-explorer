@@ -23,7 +23,7 @@ public class Builder
 	{
 		this.session = session;
 	}
-	
+
 	public void clearJobs()
 	{
 		projectsToBuild.clear();
@@ -53,14 +53,14 @@ public class Builder
 			if( toBuild != null )
 			{
 				boolean success = build( toBuild );
-				
-				if(success)
+
+				if( success )
 				{
-					success("build succesful for project " + toBuild.getGav() + " : " + toBuild);
+					success( "build succesful for project " + toBuild.getGav() + " : " + toBuild );
 				}
 				else
 				{
-					error("error during build ! this artifact and dependent ones are going to be removed from the build list.<br/>fix the problem and the build will restart automatically...");
+					error( "error during build ! this artifact and dependent ones are going to be removed from the build list.<br/>fix the problem and the build will restart automatically..." );
 					projectsToBuild.removeAll( dependentsAndSelf( toBuild.getGav() ) );
 				}
 			}
@@ -184,14 +184,14 @@ public class Builder
 		for( Client client : session.getClients() )
 			client.send( message );
 	}
-	
+
 	private void error( String message )
 	{
 		message = Tools.errorMessage( message );
 		for( Client client : session.getClients() )
 			client.send( message );
 	}
-	
+
 	private void success( String message )
 	{
 		message = Tools.successMessage( message );

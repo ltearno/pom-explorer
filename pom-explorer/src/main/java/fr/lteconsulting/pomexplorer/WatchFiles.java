@@ -19,12 +19,12 @@ public class WatchFiles
 		{
 			e.printStackTrace();
 		}
-		
+
 		try
 		{
 			ProjectWatcher watcher = new ProjectWatcher( Paths.get( "c:\\tmp\\titi" ) );
 			watcher.register();
-			
+
 			while( watcher.waitChange() )
 			{
 			}

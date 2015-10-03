@@ -188,7 +188,8 @@ public class PomGraph
 	}
 
 	/**
-	 * Returns the set of GAVs which depend directly on the one passed by parameter
+	 * Returns the set of GAVs which depend directly on the one passed by
+	 * parameter
 	 * 
 	 * @param gav
 	 * @return

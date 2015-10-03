@@ -6,11 +6,11 @@ import java.util.concurrent.Future;
 
 public class Main
 {
-	public static void main(String[] args)
+	public static void main( String[] args )
 	{
 		MonBilouSuperman bilou = new MonBilouSuperman();
 
-		for (int t = 0; t < 10; t++)
+		for( int t = 0; t < 10; t++ )
 		{
 			new Thread()
 			{
@@ -19,23 +19,23 @@ public class Main
 				{
 					int nb = 100;
 					ArrayList<Future<String>> futures = new ArrayList<>();
-					for (int i = 0; i < nb; i++)
+					for( int i = 0; i < nb; i++ )
 					{
-						futures.add(bilou.testMoiAsync("essai " + i + " sur thread " + Thread.currentThread().getId()));
+						futures.add( bilou.testMoiAsync( "essai " + i + " sur thread " + Thread.currentThread().getId() ) );
 						bilou.parleAsync();
 
 						Thread.yield();
 					}
 
-					for (Future<String> future : futures)
+					for( Future<String> future : futures )
 					{
 						Thread.yield();
 
 						try
 						{
-							System.out.println(future.get());
+							System.out.println( future.get() );
 						}
-						catch (InterruptedException | ExecutionException e)
+						catch( InterruptedException | ExecutionException e )
 						{
 							e.printStackTrace();
 						}
@@ -44,18 +44,18 @@ public class Main
 			}.start();
 		}
 
-		sleep(1000);
+		sleep( 1000 );
 
 		bilou.stop();
 	}
 
-	private static void sleep(int ms)
+	private static void sleep( int ms )
 	{
 		try
 		{
-			Thread.sleep(ms);
+			Thread.sleep( ms );
 		}
-		catch (InterruptedException e)
+		catch( InterruptedException e )
 		{
 			e.printStackTrace();
 		}

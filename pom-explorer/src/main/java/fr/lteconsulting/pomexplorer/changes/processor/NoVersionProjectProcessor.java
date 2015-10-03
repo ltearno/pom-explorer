@@ -1,6 +1,7 @@
 package fr.lteconsulting.pomexplorer.changes.processor;
 
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -19,7 +20,7 @@ import fr.lteconsulting.pomexplorer.changes.IChangeSet;
 public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 {
 	@Override
-	public void processChange( WorkingSession session, StringBuilder log, GavChange change, IChangeSet changeSet )
+	public void processChange( WorkingSession session, ILogger log, GavChange change, IChangeSet changeSet )
 	{
 		// change should be a PROJECT GavChange
 		if( change.getLocation().getSection() != PomSection.PROJECT )
@@ -30,7 +31,7 @@ public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 		if( project == null )
 		{
 			if( log != null )
-				log.append( Tools.warningMessage( "cannot find project for gav " + projectGav ) );
+				log.html( Tools.warningMessage( "cannot find project for gav " + projectGav ) );
 			return;
 		}
 
@@ -49,7 +50,7 @@ public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 		// may apply partilally on the current project if it concerns its
 		// groupId or artifactId
 
-		log.append( Tools.warningMessage( "updating the parent version, because the project itself lacks a version" ) );
+		log.html( Tools.warningMessage( "updating the parent version, because the project itself lacks a version" ) );
 
 		// remove the change from the change set
 		changeSet.invalidateChange( change );

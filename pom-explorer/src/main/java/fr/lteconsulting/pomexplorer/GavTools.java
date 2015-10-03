@@ -13,9 +13,9 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
 
 public class GavTools
 {
-	public static List<String> analyseProvidedClasses( WorkingSession session, GAV gav, StringBuilder log )
+	public static List<String> analyseProvidedClasses( WorkingSession session, GAV gav, ILogger log )
 	{
-		log.append( "<br/><b>Java classes provided by gav " + gav + "</b> :<br/>" );
+		log.html( "<br/><b>Java classes provided by gav " + gav + "</b> :<br/>" );
 
 		String mavenSettingsFilePath = session.getMavenSettingsFilePath();
 
@@ -32,16 +32,16 @@ public class GavTools
 		}
 		catch( Exception e )
 		{
-			log.append( Tools.errorMessage( "shrinkwrap error : " + e.getMessage() ) );
+			log.html( Tools.errorMessage( "shrinkwrap error : " + e.getMessage() ) );
 		}
 
 		if( resolvedFile == null )
 		{
-			log.append( Tools.warningMessage( "cannot resolve the gav " + gav ) );
+			log.html( Tools.warningMessage( "cannot resolve the gav " + gav ) );
 			return null;
 		}
 
-		log.append( "resolved file : " + resolvedFile.getAbsolutePath() + "<br/>" );
+		log.html( "resolved file : " + resolvedFile.getAbsolutePath() + "<br/>" );
 
 		try
 		{
@@ -64,7 +64,7 @@ public class GavTools
 		}
 		catch( Exception e )
 		{
-			log.append( Tools.errorMessage( "error during file inspection ! " + e.getMessage() ) );
+			log.html( Tools.errorMessage( "error during file inspection ! " + e.getMessage() ) );
 			return null;
 		}
 	}

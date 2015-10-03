@@ -14,7 +14,8 @@ import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
  * <p>
  * for each one, build the project if a change is detected
  * <p>
- * process changes with a customizable delay, so builds are made in the best possible order
+ * process changes with a customizable delay, so builds are made in the best
+ * possible order
  * <p>
  * builds should be cancellable (kill the build process simply)
  * 
@@ -24,7 +25,7 @@ import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
 public class WorkingSession
 {
 	private String mavenSettingsFilePath = null;
-	
+
 	private String mavenShellCommand = "C:\\Program Files (x86)\\apache-maven-3.1.1\\bin\\mvn.bat";
 
 	private final GitRepositories gitRepositories = new GitRepositories();
@@ -43,7 +44,7 @@ public class WorkingSession
 
 	public WorkingSession()
 	{
-		builder.setSession(this);
+		builder.setSession( this );
 		builder.runAsync();
 	}
 
@@ -71,7 +72,7 @@ public class WorkingSession
 	{
 		return maintainedProjects;
 	}
-	
+
 	public void cleanBuildList()
 	{
 		builder.clearJobs();
@@ -86,7 +87,7 @@ public class WorkingSession
 	{
 		this.mavenSettingsFilePath = mavenSettingsFilePath;
 	}
-	
+
 	public String getMavenShellCommand()
 	{
 		return mavenShellCommand;
@@ -99,21 +100,18 @@ public class WorkingSession
 
 	public String getDescription()
 	{
-		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" 
-				+ "Maven configuration file : " + (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>"
-				+ "Maven shell command : " + (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>"
-				+ projects.size() + " projects<br/>" + graph.gavs().size()
-				+ " GAVs<br/>" + graph.relations().size() + " relations<br/></div>";
+		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : " + (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>" + "Maven shell command : "
+				+ (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>" + projects.size() + " projects<br/>" + graph.gavs().size() + " GAVs<br/>" + graph.relations().size() + " relations<br/></div>";
 	}
 
-	public void addClient(Client client)
+	public void addClient( Client client )
 	{
-		clients.add(client);
+		clients.add( client );
 	}
 
-	public void removeClient(Client client)
+	public void removeClient( Client client )
 	{
-		clients.remove(client);
+		clients.remove( client );
 	}
 
 	public Set<Client> getClients()

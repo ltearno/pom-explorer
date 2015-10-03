@@ -4,6 +4,7 @@ import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -19,12 +20,10 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 public class ReleaseCommand
 {
 	@Help( "releases a gav, all dependencies are also released. GAVs depending on released GAVs are updated." )
-	public String gav(CommandOptions options, final Client client, WorkingSession session, GAV gav)
+	public void gav( ILogger log, CommandOptions options, final Client client, WorkingSession session, GAV gav )
 	{
-		StringBuilder log = new StringBuilder();
-
-		log.append( "<b>Releasing</b> project " + gav + "<br/>" );
-		log.append( "All dependencies will be updated to a release version.<br/><br/>" );
+		log.html( "<b>Releasing</b> project " + gav + "<br/>" );
+		log.html( "All dependencies will be updated to a release version.<br/><br/>" );
 
 		ChangeSetManager changes = new ChangeSetManager();
 
@@ -35,21 +34,18 @@ public class ReleaseCommand
 		Tools.printChangeList( log, changes );
 
 		CommandTools.maybeApplyChanges( session, options, log, changes );
-
-		return log.toString();
 	}
 
 	@Help( "releases all gavs, all dependencies are also released. GAVs depending on released GAVs are updated." )
-	public String allGavs(CommandOptions options, Client client, WorkingSession session)
+	public void allGavs( final ILogger log, CommandOptions options, Client client, WorkingSession session )
 	{
-		final StringBuilder log = new StringBuilder();
 		ChangeSetManager changes = new ChangeSetManager();
 
 		for( GAV gav : session.graph().gavs() )
 		{
 			if( gav.getVersion() == null )
 			{
-				log.append( Tools.warningMessage( "no target version (" + gav + ") !" ) );
+				log.html( Tools.warningMessage( "no target version (" + gav + ") !" ) );
 				continue;
 			}
 
@@ -65,52 +61,50 @@ public class ReleaseCommand
 		Tools.printChangeList( log, changes );
 
 		CommandTools.maybeApplyChanges( session, options, log, changes );
-
-		return log.toString();
 	}
 
-	private void releaseGav( Client client, WorkingSession session, GAV gav, ChangeSetManager changes, StringBuilder log )
+	private void releaseGav( Client client, WorkingSession session, GAV gav, ChangeSetManager changes, ILogger log )
 	{
 		String causeMessage = "release of " + gav;
-	
+
 		if( !Tools.isReleased( gav ) )
 		{
 			GavLocation loc = new GavLocation( session.projects().forGav( gav ), PomSection.PROJECT, gav );
 			changes.addChange( new GavChange( loc, Tools.releasedGav( loc.getGav() ) ), causeMessage );
 		}
-	
+
 		Set<GAVRelation<Relation>> relations = session.graph().relationsRec( gav );
 		for( GAVRelation<Relation> r : relations )
 		{
 			if( r.getTarget().getVersion() == null )
 			{
-				log.append( "<span style='color:orange;'>No target version (" + r.getTarget() + ") !</span><br/>" );
+				log.html( "<span style='color:orange;'>No target version (" + r.getTarget() + ") !</span><br/>" );
 				continue;
 			}
-	
+
 			if( Tools.isReleased( r.getTarget() ) )
 				continue;
-	
+
 			GAV source = r.getSource();
 			GAV to = Tools.releasedGav( r.getTarget() );
-	
+
 			Project project = session.projects().forGav( source );
 			if( project == null )
 			{
-				log.append( Tools.warningMessage( "Project not found for this GAV ! " + source ) );
+				log.html( Tools.warningMessage( "Project not found for this GAV ! " + source ) );
 				continue;
 			}
-	
+
 			GavLocation targetLoc = new GavLocation( session.projects().forGav( r.getTarget() ), PomSection.PROJECT, r.getTarget() );
 			changes.addChange( new GavChange( targetLoc, Tools.releasedGav( targetLoc.getGav() ) ), causeMessage );
-	
+
 			Location dependencyLocation = Tools.findDependencyLocation( session, log, project, r );
 			if( dependencyLocation == null )
 			{
-				log.append( Tools.errorMessage( "Cannot find the location of dependency to " + r.getTarget() + " in this project " + project ) );
+				log.html( Tools.errorMessage( "Cannot find the location of dependency to " + r.getTarget() + " in this project " + project ) );
 				continue;
 			}
-	
+
 			changes.addChange( Change.create( dependencyLocation, to ), causeMessage );
 		}
 	}

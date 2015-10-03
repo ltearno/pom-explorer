@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.changes.processor.FollowGavProcessor;
 import fr.lteconsulting.pomexplorer.changes.processor.GavToPropertyProcessor;
@@ -89,9 +90,9 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 	/**
 	 * Process change resolution
 	 */
-	public void resolveChanges( WorkingSession session, StringBuilder log )
+	public void resolveChanges( WorkingSession session, ILogger log )
 	{
-		log.append( "<br/>Resolving changes...<br/><br/>" );
+		log.html( "<br/>Resolving changes...<br/><br/>" );
 
 		int round = 0;
 
@@ -109,7 +110,7 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 			// process them : run each processor on it
 			for( ChangeInfo info : notProcessed )
 			{
-				log.append( "[" + round + "] processing change " + info.getChange().getLocation() + "<br/>" );
+				log.html( "[" + round + "] processing change " + info.getChange().getLocation() + "<br/>" );
 
 				processChange( session, log, info );
 
@@ -121,7 +122,7 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 		}
 	}
 
-	private void processChange( WorkingSession session, StringBuilder log, ChangeInfo info )
+	private void processChange( WorkingSession session, ILogger log, ChangeInfo info )
 	{
 
 		for( IChangeProcessor processor : processors )

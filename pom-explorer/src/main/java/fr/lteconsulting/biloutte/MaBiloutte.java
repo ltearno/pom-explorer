@@ -6,6 +6,6 @@ import fr.lteconsulting.superman.Superman;
 public interface MaBiloutte
 {
 	int activate();
-	
+
 	String demande( String sujet, int nb, MaBiloutte yesterdays );
 }

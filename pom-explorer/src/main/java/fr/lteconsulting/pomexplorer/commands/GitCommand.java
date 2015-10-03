@@ -5,46 +5,41 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import fr.lteconsulting.pomexplorer.GitTools;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class GitCommand
 {
 	@Help( "displays the list of git repos found" )
-	public String main( WorkingSession session, CommandOptions options )
+	public void main( WorkingSession session, ILogger log, CommandOptions options )
 	{
-		return status( session, options );
+		status( session, log, options );
 	}
 
 	@Help( "displays the list of git repos found" )
-	public String status( WorkingSession session, CommandOptions options )
+	public void status( WorkingSession session, ILogger log, CommandOptions options )
 	{
-		return status( session, options, null );
+		status( session, log, options, null );
 	}
 
 	@Help( "displays the list of git repos found. Filtered by repository path or contained projects' gavs." )
-	public String status( WorkingSession session, CommandOptions options, String filter )
+	public void status( WorkingSession session, ILogger log, CommandOptions options, String filter )
 	{
-		StringBuilder log = new StringBuilder();
-
-		log.append( "List git repositories :<br/>" );
-		log.append( "<i>Those marked with [*] have not a clean head</i><br/><br/>" );
+		log.html( "List git repositories :<br/>" );
+		log.html( "<i>Those marked with [*] have not a clean head</i><br/><br/>" );
 
 		session.repositories().values().stream()
 				.filter( r -> filter == null || r.getPath().toFile().getAbsolutePath().toLowerCase().contains( filter.toLowerCase() ) || r.getProjects().stream().anyMatch( p -> p.getGav().toString().toLowerCase().contains( filter.toLowerCase() ) ) )
 				.sorted( ( a, b ) -> a.getPath().compareTo( b.getPath() ) ).forEachOrdered( repo -> {
 					repo.getStatus( log, options.getFlag( "v" ) );
 				} );
-
-		return log.toString();
 	}
 
 	@Help( "displays the list of git repos, together with the projects they contain" )
-	public String projects( WorkingSession session )
+	public void projects( WorkingSession session, ILogger log )
 	{
-		StringBuilder log = new StringBuilder();
-
-		log.append( "List git repositories :<br/>" );
+		log.html( "List git repositories :<br/>" );
 
 		Map<String, List<Project>> groups = session.projects().values().stream().collect( Collectors.groupingBy( project -> {
 			String res = GitTools.findGitRoot( project.getPomFile().getParent() );
@@ -53,12 +48,10 @@ public class GitCommand
 
 		groups.keySet().stream().sorted().forEachOrdered( repo -> {
 			List<Project> projects = groups.get( repo );
-			log.append( "= Repository : '" + repo + "' contains " + projects.size() + " projects :<br/>" );
+			log.html( "= Repository : '" + repo + "' contains " + projects.size() + " projects :<br/>" );
 			for( Project project : projects )
-				log.append( project + "<br/>" );
-			log.append( "<br/>" );
+				log.html( project + "<br/>" );
+			log.html( "<br/>" );
 		} );
-
-		return log.toString();
 	}
 }

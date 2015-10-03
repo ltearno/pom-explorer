@@ -15,6 +15,7 @@ import org.apache.maven.project.MavenProject;
 import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
@@ -24,11 +25,9 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 public class ProjectsCommand
 {
 	@Help( "list the session's projects" )
-	public String main( WorkingSession session )
+	public void main( WorkingSession session, ILogger log )
 	{
-		StringBuilder res = new StringBuilder();
-
-		res.append( "<br/>Project list:<br/>" );
+		log.html( "<br/>Project list:<br/>" );
 		List<Project> list = new ArrayList<>();
 		list.addAll( session.projects().values() );
 		Collections.sort( list, new Comparator<Project>()
@@ -40,63 +39,57 @@ public class ProjectsCommand
 			}
 		} );
 		for( Project project : list )
-			res.append( project + "<br/>" );
-
-		return res.toString();
+			log.html( project + "<br/>" );
 	}
 
 	@Help( "list the session's projects - with details" )
-	public String details( WorkingSession session )
+	public void details( WorkingSession session, ILogger log )
 	{
-		return details( session, null );
+		details( session, null, log );
 	}
 
 	@Help( "list the session's projects - with details. Parameter is a filter for the GAVs" )
-	public String details(WorkingSession session, FilteredGAVs gavFilter)
+	public void details( WorkingSession session, FilteredGAVs gavFilter, ILogger log )
 	{
-		StringBuilder res = new StringBuilder();
-
-		res.append("Projects details. Filter with: '" + gavFilter.getFilter() + "'<br/>");
+		log.html( "Projects details. Filter with: '" + gavFilter.getFilter() + "'<br/>" );
 
 		for( Project project : session.projects().values() )
 		{
 			ParsedPomFile resolvedPom = project.getResolvedPom();
 			MavenProject unresolvedProject = project.getUnresolvedPom();
 
-			if (!gavFilter.accept(project.getGav()))
+			if( !gavFilter.accept( project.getGav() ) )
 				continue;
 
-			res.append( "file : " + project.getPomFile().getAbsolutePath() + "<br/>" );
-			res.append( "gav : " + project.getGav() + " " + resolvedPom.getPackagingType().getId() + ":" + resolvedPom.getPackagingType().getExtension() + ":" + resolvedPom.getPackagingType().getClassifier() + "<br/>" );
+			log.html( "file : " + project.getPomFile().getAbsolutePath() + "<br/>" );
+			log.html( "gav : " + project.getGav() + " " + resolvedPom.getPackagingType().getId() + ":" + resolvedPom.getPackagingType().getExtension() + ":" + resolvedPom.getPackagingType().getClassifier() + "<br/>" );
 
 			Parent parent = unresolvedProject.getModel().getParent();
 			if( parent != null )
-				res.append( "parent : " + parent.getId() + ":" + parent.getRelativePath() + "<br/>" );
+				log.html( "parent : " + parent.getId() + ":" + parent.getRelativePath() + "<br/>" );
 
 			Properties ptties = unresolvedProject.getProperties();
 			if( ptties != null )
 			{
 				for( Entry<Object, Object> e : ptties.entrySet() )
-					res.append( "property : " + e.getKey() + " = " + e.getValue() + "<br/>" );
+					log.html( "property : " + e.getKey() + " = " + e.getValue() + "<br/>" );
 			}
 
 			if( unresolvedProject.getDependencyManagement() != null )
 			{
 				for( Dependency dependency : unresolvedProject.getDependencyManagement().getDependencies() )
-					res.append( "dependency management : " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
+					log.html( "dependency management : " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
 			}
 
 			for( Dependency dependency : unresolvedProject.getDependencies() )
-				res.append( "dependency : " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
+				log.html( "dependency : " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
 
-			res.append( "effective dependencies :<br/>" );
+			log.html( "effective dependencies :<br/>" );
 			Set<GAVRelation<? extends Relation>> directDependencies = effectiveDependencies( session, project.getGav() );
-			directDependencies.forEach( d -> res.append( "[" + d.getRelation().getRelationType().shortName() + "] " + d.getTarget() + " " + d.getRelation().toString() + "<br/>" ) );
+			directDependencies.forEach( d -> log.html( "[" + d.getRelation().getRelationType().shortName() + "] " + d.getTarget() + " " + d.getRelation().toString() + "<br/>" ) );
 
-			res.append( "<br/>" );
+			log.html( "<br/>" );
 		}
-
-		return res.toString();
 	}
 
 	private Set<GAVRelation<? extends Relation>> effectiveDependencies( WorkingSession session, GAV gav )

@@ -1,6 +1,7 @@
 package fr.lteconsulting.pomexplorer.changes.processor;
 
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
@@ -17,7 +18,7 @@ import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 public class ReopenerProcessor extends AbstractGavChangeProcessor
 {
 	@Override
-	protected void processChange( WorkingSession session, StringBuilder log, GavChange change, IChangeSet changeSet )
+	protected void processChange( WorkingSession session, ILogger log, GavChange change, IChangeSet changeSet )
 	{
 		if( change.getLocation().getProject() == null )
 			return;
@@ -31,7 +32,7 @@ public class ReopenerProcessor extends AbstractGavChangeProcessor
 		if( !Tools.isReleased( gav ) )
 			return;
 
-		log.append( Tools.warningMessage( "modifying a released gav (" + gav + "), reopening it" ) );
+		log.html( Tools.warningMessage( "modifying a released gav (" + gav + "), reopening it" ) );
 
 		// find the opened version
 		GAV newGav = Tools.openGavVersion( gav );

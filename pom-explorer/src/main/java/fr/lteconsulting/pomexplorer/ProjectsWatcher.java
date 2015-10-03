@@ -10,22 +10,22 @@ public class ProjectsWatcher
 {
 	private final Map<Project, ProjectWatcher> watchers = new HashMap<>();
 
-	public void watchProject(Project project) throws IOException
+	public void watchProject( Project project ) throws IOException
 	{
-		if (watchers.containsKey(project))
+		if( watchers.containsKey( project ) )
 			return;
 
-		ProjectWatcher watcher = new ProjectWatcher(Paths.get(project.getPath()));
-		watchers.put(project, watcher);
+		ProjectWatcher watcher = new ProjectWatcher( Paths.get( project.getPath() ) );
+		watchers.put( project, watcher );
 
 		watcher.register();
 	}
 
 	public Project hasChanged()
 	{
-		for (Entry<Project, ProjectWatcher> e : watchers.entrySet())
+		for( Entry<Project, ProjectWatcher> e : watchers.entrySet() )
 		{
-			if (e.getValue().hasChanges())
+			if( e.getValue().hasChanges() )
 				return e.getKey();
 		}
 

@@ -2,6 +2,7 @@ package fr.lteconsulting.pomexplorer.commands;
 
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
@@ -12,12 +13,9 @@ import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 public class ChangeCommand
 {
 	@Help( "changes the GAV version and also in dependent projects. Parameters : gav, newVersion" )
-	public static String gav(CommandOptions options, Client client, WorkingSession session, GAV originalGav,
-			GAV newGav)
+	public static void gav( CommandOptions options, Client client, WorkingSession session, ILogger log, GAV originalGav, GAV newGav )
 	{
-		StringBuilder log = new StringBuilder();
-
-		log.append( "<b>Changing</b> " + originalGav + " to " + newGav + "<br/><br/>" );
+		log.html( "<b>Changing</b> " + originalGav + " to " + newGav + "<br/><br/>" );
 
 		ChangeSetManager changes = new ChangeSetManager();
 
@@ -29,7 +27,5 @@ public class ChangeCommand
 		Tools.printChangeList( log, changes );
 
 		CommandTools.maybeApplyChanges( session, options, log, changes );
-
-		return log.toString();
 	}
 }

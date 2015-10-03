@@ -26,13 +26,13 @@ public class MavenBuildTask
 			p.waitFor();
 
 			log( session, project, "done (" + p.exitValue() + ")." );
-			
+
 			return p.exitValue() == 0;
 		}
 		catch( IOException | InterruptedException e )
 		{
 			log( session, project, "error ! " + e );
-			
+
 			return false;
 		}
 	}

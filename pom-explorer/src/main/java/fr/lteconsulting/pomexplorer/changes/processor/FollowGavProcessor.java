@@ -2,6 +2,7 @@ package fr.lteconsulting.pomexplorer.changes.processor;
 
 import java.util.Set;
 
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
@@ -17,7 +18,7 @@ import fr.lteconsulting.pomexplorer.depanalyze.Location;
 public class FollowGavProcessor extends AbstractGavChangeProcessor
 {
 	@Override
-	protected void processChange( WorkingSession session, StringBuilder log, GavChange change, IChangeSet changeSet )
+	protected void processChange( WorkingSession session, ILogger log, GavChange change, IChangeSet changeSet )
 	{
 		// if only change is a project gav change,
 		if( change.getLocation().getSection() != PomSection.PROJECT )

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
@@ -18,43 +19,41 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 public class CheckCommand
 {
 	@Help( "checks some commons points of errors, at least of attention..." )
-	public String main( Client client, WorkingSession session )
+	public void main( Client client, WorkingSession session, ILogger log )
 	{
-		StringBuilder sb = new StringBuilder();
-
 		List<GAV> gavsWithoutProject = gavsWithoutProject( session );
-		sb.append( "<b>GAVs without projects</b><br/>" );
+		log.html( "<b>GAVs without projects</b><br/>" );
 		if( gavsWithoutProject.isEmpty() )
 		{
-			sb.append( "No GAV without project.<br/>" );
+			log.html( "No GAV without project.<br/>" );
 		}
 		else
 		{
-			sb.append( gavsWithoutProject.size() + " GAV(s) without project :" );
+			log.html( gavsWithoutProject.size() + " GAV(s) without project :" );
 			for( GAV gav : gavsWithoutProject )
-				sb.append( "<br/>" + gav );
+				log.html( "<br/>" + gav );
 		}
 
 		Map<MiniGAV, Set<GAV>> multipleGavs = multipleGavs( session );
-		sb.append( "<br/><br/><b>Multiple GAVs</b><br/>" );
+		log.html( "<br/><br/><b>Multiple GAVs</b><br/>" );
 		if( multipleGavs.isEmpty() )
 		{
-			sb.append( "No GAV with multiple versions.<br/>" );
+			log.html( "No GAV with multiple versions.<br/>" );
 		}
 		else
 		{
-			sb.append( multipleGavs.size() + " GAV(s) with multiple versions :<br/><ul>" );
+			log.html( multipleGavs.size() + " GAV(s) with multiple versions :<br/><ul>" );
 			for( Entry<MiniGAV, Set<GAV>> e : multipleGavs.entrySet() )
 			{
-				sb.append( "<li>" + e.getKey() + " :<ul>" );
+				log.html( "<li>" + e.getKey() + " :<ul>" );
 				for( GAV gav : e.getValue() )
-					sb.append( "<li>" + gav + "</li>" );
-				sb.append( "</ul></li>" );
+					log.html( "<li>" + gav + "</li>" );
+				log.html( "</ul></li>" );
 			}
-			sb.append( "</ul>" );
+			log.html( "</ul>" );
 		}
 
-		sb.append( "<br/><br/><b>Projects without version</b><br/>" );
+		log.html( "<br/><br/><b>Projects without version</b><br/>" );
 		for( Project project : session.projects().values() )
 		{
 			// project version should be null
@@ -66,10 +65,8 @@ public class CheckCommand
 			if( parentProjectGav == null )
 				continue;
 
-			sb.append( project.toString() + "<br/>" );
+			log.html( project.toString() + "<br/>" );
 		}
-
-		return sb.toString();
 	}
 
 	private Map<MiniGAV, Set<GAV>> multipleGavs( WorkingSession session )

@@ -40,9 +40,9 @@ public class Tools
 		return gav;
 	}
 
-	public static void printChangeList( StringBuilder log, ChangeSetManager changes )
+	public static void printChangeList( ILogger log, ChangeSetManager changes )
 	{
-		log.append( "<br/>Change list...<br/><br/>" );
+		log.html( "<br/>Change list...<br/><br/>" );
 
 		List<Change<? extends Location>> changeList = new ArrayList<>();
 		for( Change<? extends Location> c : changes )
@@ -69,7 +69,7 @@ public class Tools
 
 		for( Change<? extends Location> c : changeList )
 		{
-			log.append( c.toString() );
+			log.html( c.toString() );
 		}
 	}
 
@@ -77,7 +77,7 @@ public class Tools
 	 * Maven tools
 	 */
 
-	public static Set<Location> getDirectDependenciesLocations( WorkingSession session, StringBuilder log, GAV gav )
+	public static Set<Location> getDirectDependenciesLocations( WorkingSession session, ILogger log, GAV gav )
 	{
 		Set<Location> set = new HashSet<>();
 
@@ -90,7 +90,7 @@ public class Tools
 			if( updatedProject == null )
 			{
 				if( log != null )
-					log.append( Tools.warningMessage( "Cannot find project for GAV " + updatedGav + " which dependency should be modified ! skipping." ) );
+					log.html( Tools.warningMessage( "Cannot find project for GAV " + updatedGav + " which dependency should be modified ! skipping." ) );
 				continue;
 			}
 
@@ -98,7 +98,7 @@ public class Tools
 			if( dependencyLocation == null )
 			{
 				if( log != null )
-					log.append( Tools.errorMessage( "Cannot find the location of dependency to " + relation.getTarget() + " in this project " + updatedProject ) );
+					log.html( Tools.errorMessage( "Cannot find the location of dependency to " + relation.getTarget() + " in this project " + updatedProject ) );
 				continue;
 			}
 
@@ -172,7 +172,7 @@ public class Tools
 		return null;
 	}
 
-	public static Location findDependencyLocation( WorkingSession session, StringBuilder log, Project project, GAVRelation<Relation> relation )
+	public static Location findDependencyLocation( WorkingSession session, ILogger log, Project project, GAVRelation<Relation> relation )
 	{
 		if( project.getGav().equals( relation.getTarget() ) )
 			return new GavLocation( project, PomSection.PROJECT, project.getGav() );
@@ -205,7 +205,7 @@ public class Tools
 		return name.substring( 2, name.length() - 1 );
 	}
 
-	public static GavLocation findDependencyLocationInDependencies( WorkingSession session, StringBuilder log, Project project, GAV searchedDependency )
+	public static GavLocation findDependencyLocationInDependencies( WorkingSession session, ILogger log, Project project, GAV searchedDependency )
 	{
 		if( project == null )
 			return null;
@@ -227,7 +227,7 @@ public class Tools
 			Project parentProject = session.projects().forGav( parentGav );
 			if( parentProject == null )
 			{
-				log.append( Tools.warningMessage( "Cannot find the '" + project.getGav() + "' parent project '" + parentGav + "' to examine where the dependency '" + searchedDependency + "' is defined." ) );
+				log.html( Tools.warningMessage( "Cannot find the '" + project.getGav() + "' parent project '" + parentGav + "' to examine where the dependency '" + searchedDependency + "' is defined." ) );
 				return null;
 			}
 			GavLocation locationInParent = findDependencyLocationInDependencies( session, log, parentProject, searchedDependency );
@@ -356,7 +356,7 @@ public class Tools
 		}
 	};
 
-	public static String logMessage(String message)
+	public static String logMessage( String message )
 	{
 		return "<span style=''>" + message + "</span><br/>";
 	}
@@ -365,12 +365,12 @@ public class Tools
 	{
 		return "<span style='color:orange;'>" + message + "</span><br/>";
 	}
-	
+
 	public static String successMessage( String message )
 	{
 		return "<span style='color:green;'>" + message + "</span><br/>";
 	}
-	
+
 	public static String buildMessage( String message )
 	{
 		return "<span style='color:grey;font-size:90%;'>" + message + "</span><br/>";
