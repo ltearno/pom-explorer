@@ -21,4 +21,9 @@ public class MessageFactory
 	{
 		return new Message( newGuid(), talkGuid, null, true, null, null );
 	}
+	
+	public static Message hangOutTextMessage( String talkGuid, String question )
+	{
+		return new Message( newGuid(), talkGuid, null, false, "hangout/question", question );
+	}
 }

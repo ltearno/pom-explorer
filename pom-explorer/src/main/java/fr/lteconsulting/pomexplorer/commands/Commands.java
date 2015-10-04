@@ -88,17 +88,8 @@ public class Commands
 	/**
 	 * Returns the error or null if success
 	 */
-	public void takeCommand( Client client, String talkId, String text )
+	public void takeCommand( Client client, ILogger log, String text )
 	{
-		ILogger log = new ILogger()
-		{
-			@Override
-			public void html( String log )
-			{
-				client.sendHtml( talkId, log );
-			}
-		};
-	
 		if( text == null || text.isEmpty() )
 		{
 			log.html( Tools.warningMessage( "no text" ) );

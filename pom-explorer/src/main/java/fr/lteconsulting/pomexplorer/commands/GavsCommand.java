@@ -4,7 +4,6 @@ import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomAnalyzer;
-import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
 public class GavsCommand
@@ -24,16 +23,11 @@ public class GavsCommand
 	@Help( "list the session's GAVs, with filtering" )
 	public void list( WorkingSession session, FilteredGAVs gavFilter, ILogger log )
 	{
-		if( gavFilter == null )
-		{
-			log.html( Tools.warningMessage( "You should specify a GAV filter !" ) );
-			return;
-		}
-
-		log.html( "<br/>GAV list filtered with '" + gavFilter.getFilter() + "' :<br/>" );
-		gavFilter.getGavs( session ).forEach( gav -> {
-			log.html( gav + "<br/>" );
-		} );
+		log.html( "<br/>GAV list filtered with '" + (gavFilter != null ? gavFilter.getFilter() : "no filter") + "' :<br/>" );
+		if( gavFilter != null )
+			gavFilter.getGavs( session ).forEach( gav -> log.html( gav + "<br/>" ) );
+		else
+			session.graph().gavs().forEach( gav -> log.html( gav + "<br/>" ) );
 	}
 
 	@Help( "analyze all the gav's dependencies and add them in the pom graph." )

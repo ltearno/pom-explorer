@@ -2,120 +2,125 @@
 <html>
 
 <head>
-    <title>POM Explorer</title>
-    <link rel="stylesheet" href="normalize.css" />
+<title>POM Explorer</title>
+<link rel="stylesheet" href="normalize.css" />
 
-    <style>
-        body {
-            box-sizing: border-box;
-        }
-        
-        a, a:hover, a:active, a:visited {
-        	color:#ee0;
-        }
-        
-        .terminal {
-            color: #eee;
-            background: black;
-            font-family: Monaco, Courier;
-            font-size: 1em;
-        }
-        
-        .terminal.window {
-            padding: 0px;
-            position: absolute;
-            width: 100%;
-            height:100%;
-        }
-        
-        input[type=text].terminal {
-            color: white;
-            border: 0;
-            padding-top: 10px;
-            width: 90%;
-        }
-        
-        input[type=text]:focus.terminal {
-            outline: 0;
-        }
-        
-        .terminal>.container {
-            overflow: hidden;
+<style>
+body {
+	box-sizing: border-box;
+}
+
+a, a:hover, a:active, a:visited {
+	color: #ee0;
+}
+
+.terminal {
+	color: #eee;
+	background: black;
+	font-family: Monaco, Courier;
+	font-size: 1em;
+}
+
+.terminal.window {
+	padding: 0px;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+input[type=text].terminal {
+	color: white;
+	border: 0;
+	padding-top: 10px;
+	width: 90%;
+}
+
+input[type=text]:focus.terminal {
+	outline: 0;
+}
+
+.terminal>.container {
+	overflow: hidden;
+	overflow-y: auto;
+	position: absolute;
+	top: 1em;
+	left: 1em;
+	right: 1em;
+	bottom: 3em;
+}
+
+.terminal>.footer {
+	position: absolute;
+	height: 2em;
+	left: 1em;
+	right: 1em;
+	bottom: 1em;
+}
+
+.terminal>.container>div {
+	-webkit-animation: appear 0.2s ease 0s 1;
+}
+
+@
+-webkit-keyframes appear { 0% {
+	transform: translateX(50em);
+}
+
+100%
+{
+transform
+:
+ 
+translateX
+(0);
+
             
-            overflow-y: auto;
-            
-            position: absolute;
-            top: 1em;
-            left: 1em;
-            right: 1em;
-            bottom: 3em;
-        }
-        
-        .terminal>.footer {
-            position: absolute;
-            height: 2em;
-            left: 1em;
-            right: 1em;
-            bottom: 1em;
-        }
-        
-        .terminal>.container>div {
-            -webkit-animation: appear 0.2s ease 0s 1;
-        }
-        
-        @-webkit-keyframes appear {
-            0% {
-                transform: translateX(50em);
-            }
-            100% {
-                transform: translateX(0);
-            }
-        }
-        
-        .talk {
-        	margin-top: 5px;
-        	margin-bottom: 5px;
-        	border-left: 7px solid grey;
-        	padding-left: 7px;
-        	border-top-left-radius: 5px;
-        	border-bottom-left-radius: 5px;
-        }
-        
-        .entry {
-        	background-color: #12a;
-        	color: white;
-        	font-size: 105%;
-        	border-radius: 5px;
-        	padding: 3px;
-        }
-        
-        .refreshedProject {
-        	font-weight: bold;
-        }
-        
-        .toBuildProject {
-        	color: orange;
-        }
-        
-        .buildingProject {
-        	border: 1px solid grey;
-        }
-        
-        .errorProject {
-        	background-color: red;
-        }
-        
-        .maintainedProject {
-        	font-style: italic;
-        }
-    </style>
+}
+}
+.talk {
+	margin-top: 5px;
+	margin-bottom: 5px;
+	border-left: 7px solid grey;
+	padding-left: 7px;
+	border-top-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+
+.entry {
+	background-color: #12a;
+	color: white;
+	font-size: 105%;
+	border-radius: 5px;
+	padding: 3px;
+}
+
+.refreshedProject {
+	font-weight: bold;
+}
+
+.toBuildProject {
+	color: orange;
+}
+
+.buildingProject {
+	border: 1px solid grey;
+}
+
+.errorProject {
+	background-color: red;
+}
+
+.maintainedProject {
+	font-style: italic;
+}
+</style>
 </head>
 
 <body style=''>
-    <div id="terminal" style="position: absolute; width: 100%; height:100%;">
-    </div>
-    
-    <script type="text/javascript">
+	<div id="terminal"
+		style="position: absolute; width: 100%; height: 100%;"></div>
+
+	<script type="text/javascript">
         var Terminal = (function () {
             var history = [];
             var hIndex = 0;
@@ -131,6 +136,7 @@
                 var me = this;
                 
                 this.talks = {};
+                this.currentHangout = null;
                 
                 this.oninput = null;
                 
@@ -233,8 +239,15 @@
 			var msg = JSON.parse(event.data);
 			var payload = msg.payload;
 			var talkId = msg.talkGuid;
-			if(msg.payloadFormat == 'html')
+			
+			if(msg.payloadFormat == 'html'){
 				terminal.print(payload, talkId);
+			}
+			else if(msg.payloadFormat == 'hangout/question') {
+				terminal.input.placeholder = "question: " + msg.payload;
+				terminal.print("question: " + msg.payload, talkId);
+				terminal.currentHangout = msg;
+			}
 		}
 		socket.onerror = function (event) {
 			terminal.print("server communication error", "ff" + Math.random());
@@ -250,20 +263,38 @@
                 return;
             }
             
-            var talkId = "command-" + Math.random();
-            
-            var message = {
-            	guid: "message-" + Math.random(),
-            	talkGuid: talkId,
-            	responseTo: null,
-            	isClosing: false,
-            	payloadFormat: 'text/command',
-            	payload: userInput
-            };
-            
-            terminal.print("<div class='entry'>" + userInput + "</div>", talkId);
-
-            socket.send(JSON.stringify(message));
+            if( this.currentHangout == null ) {
+	            var talkId = "command-" + Math.random();
+	            
+	            var message = {
+	            	guid: "message-" + Math.random(),
+	            	talkGuid: talkId,
+	            	responseTo: null,
+	            	isClosing: false,
+	            	payloadFormat: 'text/command',
+	            	payload: userInput
+	            };
+	            
+	            terminal.print("<div class='entry'>" + userInput + "</div>", talkId);
+	
+	            socket.send(JSON.stringify(message));
+			}
+			else {
+				terminal.input.placeholder = 'enter a command, or just "?" to get help';
+				
+				var message = {
+	            	guid: "message-" + Math.random(),
+	            	talkGuid: this.currentHangout.talkGuid,
+	            	responseTo: this.currentHangout.guid,
+	            	isClosing: false,
+	            	payloadFormat: 'hangout/reply',
+	            	payload: 'userInput'
+	            };
+	            
+				this.currentHangout = null;
+				
+				socket.send(JSON.stringify(message));
+			}
         };
     </script>
 </body>

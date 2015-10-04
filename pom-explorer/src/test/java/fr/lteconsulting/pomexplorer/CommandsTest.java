@@ -23,6 +23,12 @@ public class CommandsTest extends TestCase
 			{
 				System.out.println( log );
 			}
+
+			@Override
+			public String prompt( String question )
+			{
+				return "";
+			}
 		};
 
 		assertCommand( cmd.findMethodForCommand( "gav li".split( " " ), log ), "GavsCommand", "list" );

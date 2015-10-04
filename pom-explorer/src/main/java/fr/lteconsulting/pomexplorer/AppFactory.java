@@ -127,7 +127,7 @@ public class AppFactory
 					client.sendHtml( talkId, message );
 				}
 				else
-					AppFactory.get().commands().takeCommand( client, talkId, command );
+					AppFactory.get().commands().takeCommand( client, createLogger( client, talkId ), command );
 			}
 
 			client.sendClose( talkId );
@@ -138,16 +138,39 @@ public class AppFactory
 		{
 			Gson gson = new Gson();
 			Message message = gson.fromJson( messageText, Message.class );
-			
-			if( message == null || !"text/command".equals(message.getPayloadFormat()) || message.getPayload()==null || message.getPayload().isEmpty() )
+			if( message == null )
 			{
-				client.sendHtml( message.getTalkGuid(), "nop.<br/>" );
+				client.sendHtml( MessageFactory.newGuid(), Tools.warningMessage( "null message received !" ) );
 				return;
 			}
 
-			AppFactory.get().commands().takeCommand( client, message.getTalkGuid(), message.getPayload() );
-			
+			if( "text/command".equals( message.getPayloadFormat() ) )
+			{
+				AppFactory.get().commands().takeCommand( client, createLogger( client, message.getTalkGuid() ), message.getPayload() );
+			}
+			else if( "hangout/reply".equals( message.getPayloadFormat() ) )
+			{
+				for( int i = 0; i < waitingHangouts.size(); i++ )
+				{
+					HangOutHandle handle = waitingHangouts.get( i );
+					if( handle.message.getGuid().equals( message.getResponseTo() ) )
+					{
+						handle.answer = message.getPayload();
+						handle.waitingAnswer = false;
+						synchronized( handle )
+						{
+							handle.notify();
+						}
+					}
+				}
+			}
+			else
+			{
+				client.sendHtml( message.getTalkGuid(), Tools.warningMessage( "ununderstood message " + messageText + ".<br/>" ) );
+			}
+
 			client.sendClose( message.getTalkGuid() );
+
 		}
 
 		@Override
@@ -210,6 +233,60 @@ public class AppFactory
 			System.out.println( "Client left." );
 		}
 	};
+
+	private final List<HangOutHandle> waitingHangouts = new ArrayList<>();
+
+	private class HangOutHandle
+	{
+		final Message message;
+
+		String answer;
+
+		boolean waitingAnswer;
+
+		public HangOutHandle( Message message )
+		{
+			this.message = message;
+		}
+	}
+
+	private ILogger createLogger( Client client, String talkId )
+	{
+		return new ILogger()
+		{
+			@Override
+			public void html( String log )
+			{
+				client.sendHtml( talkId, log );
+			}
+
+			@Override
+			public String prompt( String question )
+			{
+				Message message = client.sendHangOutText( talkId, question );
+				HangOutHandle handle = new HangOutHandle( message );
+				waitingHangouts.add( handle );
+
+				handle.waitingAnswer = true;
+				synchronized( handle )
+				{
+					while( handle.waitingAnswer )
+					{
+						try
+						{
+							handle.wait();
+						}
+						catch( InterruptedException e )
+						{
+							e.printStackTrace();
+						}
+					}
+				}
+
+				return handle.answer;
+			}
+		};
+	}
 
 	static class EdgeDto
 	{

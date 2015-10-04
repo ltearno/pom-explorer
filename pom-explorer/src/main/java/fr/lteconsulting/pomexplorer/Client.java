@@ -60,6 +60,13 @@ public class Client
 		send( MessageFactory.closeTalkMessage( talkGuid ) );
 	}
 	
+	public Message sendHangOutText( String talkGuid, String question )
+	{
+		Message message = MessageFactory.hangOutTextMessage( talkGuid, question );
+		send( message );
+		return message;
+	}
+	
 	public void send( Message message )
 	{
 		if( message == null )
