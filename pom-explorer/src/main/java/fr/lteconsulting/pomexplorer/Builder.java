@@ -17,13 +17,13 @@ import fr.lteconsulting.superman.Superman;
 public class Builder
 {
 	private final String talkId = MessageFactory.newGuid();
-	
+
 	private WorkingSession session;
 
 	private Set<Project> projectsToBuild = new HashSet<>();
 
 	private Project lastChangedProject;
-	
+
 	private Project lastErroredProject;
 
 	public void setSession( WorkingSession session )
@@ -38,6 +38,8 @@ public class Builder
 
 	public void run()
 	{
+		boolean justBuiltSomething = false;
+
 		while( true )
 		{
 			Project changed = session.projectsWatcher().hasChanged();
@@ -62,7 +64,7 @@ public class Builder
 				lastErroredProject = null;
 				lastChangedProject = toBuild;
 
-				printBuildPipelineState(toBuild);
+				printBuildPipelineState( toBuild );
 
 				boolean success = build( toBuild );
 
@@ -73,13 +75,26 @@ public class Builder
 				else
 				{
 					error( "error during build ! this artifact and dependent ones are going to be removed from the build list.<br/>fix the problem and the build will restart automatically..." );
-					projectsToBuild.removeAll( dependentsAndSelf( toBuild.getGav() ) );
+					projectsToBuild.clear();//.removeAll( dependentsAndSelf( toBuild.getGav() ) );
 				}
+
+				justBuiltSomething = true;
+			}
+			else
+			{
+				if( justBuiltSomething )
+				{
+					printBuildPipelineState( null );
+					
+					success("build artifacts all up to date !");
+				}
+
+				justBuiltSomething = false;
 			}
 		}
 	}
 
-	private void printBuildPipelineState(Project projectBuilding)
+	private void printBuildPipelineState( Project projectBuilding )
 	{
 		try
 		{
@@ -98,13 +113,9 @@ public class Builder
 				Project project = session.projects().forGav( gav );
 				if( project != null && inDependenciesOfMaintainedProjects( project ) )
 				{
-					sb.append( "<span class='" 
-							+ (project == lastChangedProject ? "refreshedProject " : "")
-							+ (projectsToBuild.contains( project ) ? "toBuildProject " : "")
-							+ (projectBuilding==project ? "buildingProject " : "")
-							+ (lastErroredProject==project ? "errorProject " : "")
-							+ (session.maintainedProjects().contains( project) ? "maintainedProject " : "")
-							+ "'>" + project.getGav() + "</span><br/>" );
+					sb.append( "<span class='" + (project == lastChangedProject ? "refreshedProject " : "") + (projectsToBuild.contains( project ) ? "toBuildProject " : "") + (projectBuilding == project ? "buildingProject " : "")
+							+ (lastErroredProject == project ? "errorProject " : "") + (session.maintainedProjects().contains( project ) ? "maintainedProject " : "") + "'>" + project.getGav() + (session.maintainedProjects().contains( project ) ? " [maintained]" : "")
+							+ (projectBuilding == project ? " [building]" : "") + (projectsToBuild.contains( project ) ? " [build waiting...]" : "") + (lastErroredProject == project ? " [project in error]" : "") + "</span><br/>" );
 				}
 			}
 			sb.append( "<br/>" );
@@ -224,7 +235,7 @@ public class Builder
 			MavenBuildTaskSuperman builder = new MavenBuildTaskSuperman();
 			boolean res = builder.build( session, project, talkId );
 			builder.stop();
-			if( ! res )
+			if( !res )
 				lastErroredProject = project;
 			return res;
 		}
