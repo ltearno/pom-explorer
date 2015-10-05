@@ -6,7 +6,7 @@ import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomAnalyzer;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 
-public class GavsCommand
+public class GavCommand
 {
 	@Help( "list the session's GAVs" )
 	public void main( WorkingSession session, ILogger log )
@@ -25,9 +25,9 @@ public class GavsCommand
 	{
 		log.html( "<br/>GAV list filtered with '" + (gavFilter != null ? gavFilter.getFilter() : "no filter") + "' :<br/>" );
 		if( gavFilter != null )
-			gavFilter.getGavs( session ).forEach( gav -> log.html( gav + "<br/>" ) );
+			gavFilter.getGavs( session ).stream().sorted( (g1, g2)->g1.toString().compareTo( g2.toString() ) ).forEach( gav -> log.html( gav + "<br/>" ) );
 		else
-			session.graph().gavs().forEach( gav -> log.html( gav + "<br/>" ) );
+			session.graph().gavs().stream().sorted( (g1, g2)->g1.toString().compareTo( g2.toString() ) ).forEach( gav -> log.html( gav + "<br/>" ) );
 	}
 
 	@Help( "analyze all the gav's dependencies and add them in the pom graph." )

@@ -17,7 +17,7 @@ import fr.lteconsulting.pomexplorer.commands.ClassesCommand;
 import fr.lteconsulting.pomexplorer.commands.Commands;
 import fr.lteconsulting.pomexplorer.commands.DependsCommand;
 import fr.lteconsulting.pomexplorer.commands.GarbageCommand;
-import fr.lteconsulting.pomexplorer.commands.GavsCommand;
+import fr.lteconsulting.pomexplorer.commands.GavCommand;
 import fr.lteconsulting.pomexplorer.commands.GitCommand;
 import fr.lteconsulting.pomexplorer.commands.GraphCommand;
 import fr.lteconsulting.pomexplorer.commands.HelpCommand;
@@ -68,7 +68,7 @@ public class AppFactory
 			commands.addCommand( new SessionCommand() );
 			commands.addCommand( new AnalyzeCommand() );
 			commands.addCommand( new StatsCommand() );
-			commands.addCommand( new GavsCommand() );
+			commands.addCommand( new GavCommand() );
 			commands.addCommand( new ProjectsCommand() );
 			commands.addCommand( new DependsCommand() );
 			commands.addCommand( new ReleaseCommand() );
