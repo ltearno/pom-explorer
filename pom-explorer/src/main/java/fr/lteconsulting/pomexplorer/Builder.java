@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -22,6 +23,8 @@ public class Builder
 
 	private Set<Project> projectsToBuild = new HashSet<>();
 
+	private Set<Project> projectsToBuildForced = new HashSet<>();
+
 	private Project lastChangedProject;
 
 	private Project lastErroredProject;
@@ -34,6 +37,12 @@ public class Builder
 	public void clearJobs()
 	{
 		projectsToBuild.clear();
+		projectsToBuildForced.clear();
+	}
+
+	public void buildProject( Project project )
+	{
+		projectsToBuildForced.add( project );
 	}
 
 	public void buildAll()
@@ -127,11 +136,12 @@ public class Builder
 			for( GAV gav : gavs )
 			{
 				Project project = session.projects().forGav( gav );
-				if( project != null && inDependenciesOfMaintainedProjects( project ) )
+				if( project != null && (inDependenciesOfMaintainedProjects( project ) || projectsToBuildForced.contains( project )) )
 				{
-					sb.append( "<span class='" + (project == lastChangedProject ? "refreshedProject " : "") + (projectsToBuild.contains( project ) ? "toBuildProject " : "") + (projectBuilding == project ? "buildingProject " : "")
-							+ (lastErroredProject == project ? "errorProject " : "") + (session.maintainedProjects().contains( project ) ? "maintainedProject " : "") + "'>" + project.getGav() + (session.maintainedProjects().contains( project ) ? " [maintained]" : "")
-							+ (projectBuilding == project ? " [building]" : "") + (projectsToBuild.contains( project ) ? " [build waiting...]" : "") + (lastErroredProject == project ? " [project in error]" : "") + "</span><br/>" );
+					sb.append( "<span class='" + (project == lastChangedProject ? "refreshedProject " : "") + (projectsToBuildForced.contains( project ) ? "BUILD FORCED " : "") + (projectsToBuild.contains( project ) ? "toBuildProject " : "")
+							+ (projectBuilding == project ? "buildingProject " : "") + (lastErroredProject == project ? "errorProject " : "") + (session.maintainedProjects().contains( project ) ? "maintainedProject " : "") + "'>" + project.getGav()
+							+ (session.maintainedProjects().contains( project ) ? " [maintained]" : "") + (projectBuilding == project ? " [building]" : "") + (projectsToBuild.contains( project ) ? " [build waiting...]" : "")
+							+ (lastErroredProject == project ? " [project in error]" : "") + "</span><br/>" );
 				}
 			}
 			sb.append( "<br/>" );
@@ -162,9 +172,10 @@ public class Builder
 			for( GAV gav : gavs )
 			{
 				Project project = session.projects().forGav( gav );
-				if( project != null && projectsToBuild.contains( project ) && inDependenciesOfMaintainedProjects( project ) )
+				if( project != null && (projectsToBuildForced.contains( project ) || (projectsToBuild.contains( project ) && inDependenciesOfMaintainedProjects( project ))) )
 				{
 					projectsToBuild.remove( project );
+					projectsToBuildForced.remove( project );
 					return project;
 				}
 			}

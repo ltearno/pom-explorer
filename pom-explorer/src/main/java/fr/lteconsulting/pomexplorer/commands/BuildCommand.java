@@ -24,17 +24,20 @@ public class BuildCommand
 		log.html( "build list cleaned.<br/>" );
 	}
 
-	@Help( "build the project and all which depends on it" )
-	public void gav( WorkingSession session, ILogger log, GAV gav )
+	@Help( "build the project(s) with the specified gav(s)" )
+	public void gav( WorkingSession session, ILogger log, FilteredGAVs gavs )
 	{
-		Project project = session.projects().forGav( gav );
-		if( project == null )
+		gavs.getGavs( session ).forEach( gav ->
 		{
-			log.html( "cannot find the project for GAV " + gav + "<br/>" );
-			return;
-		}
+			Project project = session.projects().forGav( gav );
+			if( project == null )
+			{
+				log.html( "cannot find the project for GAV " + gav + "<br/>" );
+				return;
+			}
 
-		buildRec( session, project, log );
+			session.builder().buildProject( project );
+		} );
 	}
 
 	@Help( "builds all the watched projects, like if they were touched" )
