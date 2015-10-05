@@ -18,6 +18,12 @@ DELEGATE
 			
 			throw new IllegalStateException( "Unknown message : " + message );
 		}
+		
+		@Override
+		protected void onLoopEntry()
+		{
+LOOPENTRY
+		}
 	};
 	
 	public CLASS_NAME()
@@ -29,6 +35,6 @@ DELEGATE
 	{
 		superman.stop();
 	}
-		
+
 METHODS
 }

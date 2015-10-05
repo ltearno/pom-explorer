@@ -3,8 +3,10 @@ package fr.lteconsulting.pomexplorer;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class ProjectsWatcher
 {
@@ -30,5 +32,12 @@ public class ProjectsWatcher
 		}
 
 		return null;
+	}
+
+	public Set<Project> watchedProjects()
+	{
+		Set<Project> res = new HashSet<>();
+		watchers.entrySet().stream().forEach(e -> res.add(e.getKey()));
+		return res;
 	}
 }

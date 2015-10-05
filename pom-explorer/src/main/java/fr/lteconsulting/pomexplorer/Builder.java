@@ -36,18 +36,23 @@ public class Builder
 		projectsToBuild.clear();
 	}
 
+	public void buildAll()
+	{
+		projectsToBuild.addAll(session.projectsWatcher().watchedProjects());
+	}
+
 	boolean justBuiltSomething = false;
 
-	public void run()
+	protected void onLoopEntry()
 	{
-		while( true )
-		{
-			step();
-		}
+		step();
 	}
 
 	private void step()
 	{
+		if (session == null)
+			return;
+
 		Project changed = session.projectsWatcher().hasChanged();
 		if( changed != null )
 		{

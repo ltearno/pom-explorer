@@ -19,6 +19,10 @@ public abstract class BaseSuperman
 {
 	abstract protected Object processMessage(Supermessage message);
 
+	protected void onLoopEntry()
+	{
+	}
+
 	private static volatile int nextBaseSupermanId = 0;
 
 	private final int baseSupermanId;
@@ -180,6 +184,8 @@ public abstract class BaseSuperman
 		{
 			try
 			{
+				onLoopEntry();
+
 				Supermessage message = queue.take();
 				if (message != null)
 				{

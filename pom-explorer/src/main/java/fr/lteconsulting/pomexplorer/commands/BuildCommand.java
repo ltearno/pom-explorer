@@ -37,7 +37,14 @@ public class BuildCommand
 		buildRec( session, project, log );
 	}
 
-	@Help( "Adds a GAV to the list of maintained projects. A project needs to be found for that GAV." )
+	@Help("builds all the watched projects, like if they were touched")
+	public void all(Client client, WorkingSession session, ILogger log)
+	{
+		log.html("All watched projects marked to be built.");
+		session.builder().buildAll();
+	}
+
+	@Help("adds a GAV to the list of maintained projects. A project needs to be found for that GAV.")
 	public void maintain( Client client, WorkingSession session, ILogger log, FilteredGAVs gavs )
 	{
 		Set<GAV> toWatch = new HashSet<>();

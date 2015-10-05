@@ -45,7 +45,6 @@ public class WorkingSession
 	public WorkingSession()
 	{
 		builder.setSession( this );
-		builder.runAsync();
 	}
 
 	public void configure( ApplicationSettings settings )
@@ -71,6 +70,11 @@ public class WorkingSession
 	public Set<Project> maintainedProjects()
 	{
 		return maintainedProjects;
+	}
+
+	public Builder builder()
+	{
+		return builder;
 	}
 
 	public void cleanBuildList()
