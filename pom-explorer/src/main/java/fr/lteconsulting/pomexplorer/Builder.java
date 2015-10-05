@@ -38,19 +38,28 @@ public class Builder
 
 	public void buildAll()
 	{
-		projectsToBuild.addAll(session.projectsWatcher().watchedProjects());
+		projectsToBuild.addAll( session.projectsWatcher().watchedProjects() );
 	}
 
 	boolean justBuiltSomething = false;
 
-	protected void onLoopEntry()
+	protected void onEmptyMessageQueue()
 	{
 		step();
 	}
 
 	private void step()
 	{
-		if (session == null)
+		try
+		{
+			Thread.sleep( 1000 );
+		}
+		catch( InterruptedException e )
+		{
+			e.printStackTrace();
+		}
+
+		if( session == null )
 			return;
 
 		Project changed = session.projectsWatcher().hasChanged();
@@ -60,14 +69,8 @@ public class Builder
 			return;
 		}
 
-		try
-		{
-			Thread.sleep( 1000 );
-		}
-		catch( InterruptedException e )
-		{
-			e.printStackTrace();
-		}
+		if( lastErroredProject != null )
+			return;
 
 		Project toBuild = findProjectToBuild();
 		if( toBuild != null )

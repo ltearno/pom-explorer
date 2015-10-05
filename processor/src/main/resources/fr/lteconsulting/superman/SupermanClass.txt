@@ -6,7 +6,7 @@ import java.util.concurrent.Future;
 
 public class CLASS_NAME extends BASE_CLASS_NAME
 {
-	private final BaseSuperman superman = new BaseSuperman()
+	private final BaseSuperman superman = new BaseSuperman(CONSTRUCTOR)
 	{
 		@Override
 		protected Object processMessage( Supermessage message )
@@ -20,9 +20,9 @@ DELEGATE
 		}
 		
 		@Override
-		protected void onLoopEntry()
+		protected void onEmptyMessageQueue()
 		{
-LOOPENTRY
+EMPTY_QUEUE
 		}
 	};
 	

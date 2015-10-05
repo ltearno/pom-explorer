@@ -21,7 +21,7 @@ public class SessionCommand
 	{
 		log.html( "There are " + AppFactory.get().sessions().size() + " opened work sessions:" );
 		for( WorkingSession session : AppFactory.get().sessions() )
-			log.html( "<br/>- " + session.hashCode() );
+			log.html( "<br/>- " + session.hashCode()+ ", "+(session.getClients().isEmpty()?"inactive":(session.getClients().size()+" connected users")) );
 	}
 
 	@Help( "create and attach a new session" )

@@ -19,7 +19,7 @@ public abstract class BaseSuperman
 {
 	abstract protected Object processMessage(Supermessage message);
 
-	protected void onLoopEntry()
+	protected void onEmptyMessageQueue()
 	{
 	}
 
@@ -30,11 +30,19 @@ public abstract class BaseSuperman
 	private final Thread thread;
 
 	private final BlockingQueue<Supermessage> queue;
+	
+	private final boolean processEmptyQueue;
 
 	private boolean stopping;
 
 	public BaseSuperman()
 	{
+		this( false );
+	}
+	
+	public BaseSuperman( boolean processEmptyQueue )
+	{
+		this.processEmptyQueue = processEmptyQueue;
 		baseSupermanId = nextBaseSupermanId++;
 		queue = new ArrayBlockingQueue<>(100);
 		thread = new Thread(new Runnable()
@@ -184,8 +192,12 @@ public abstract class BaseSuperman
 		{
 			try
 			{
-				onLoopEntry();
-
+				if( processEmptyQueue )
+				{
+					while( queue.isEmpty() )
+						onEmptyMessageQueue();
+				}
+				
 				Supermessage message = queue.take();
 				if (message != null)
 				{

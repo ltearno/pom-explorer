@@ -37,19 +37,19 @@ public class BuildCommand
 		buildRec( session, project, log );
 	}
 
-	@Help("builds all the watched projects, like if they were touched")
-	public void all(Client client, WorkingSession session, ILogger log)
+	@Help( "builds all the watched projects, like if they were touched" )
+	public void all( WorkingSession session, ILogger log )
 	{
-		log.html("All watched projects marked to be built.");
+		log.html( "all watched projects marked to be built." );
 		session.builder().buildAll();
 	}
 
-	@Help("adds a GAV to the list of maintained projects. A project needs to be found for that GAV.")
+	@Help( "adds a GAV to the list of maintained projects. A project needs to be found for that GAV." )
 	public void maintain( Client client, WorkingSession session, ILogger log, FilteredGAVs gavs )
 	{
 		Set<GAV> toWatch = new HashSet<>();
 
-		for(GAV gav : gavs.getGavs( session ))
+		for( GAV gav : gavs.getGavs( session ) )
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )
@@ -57,30 +57,30 @@ public class BuildCommand
 				log.html( Tools.warningMessage( "cannot find the project for GAV " + gav ) );
 				continue;
 			}
-	
+
 			log.html( "adding project " + project + " and its dependencies to the set of maintained projects<br/>" );
-	
+
 			session.maintainedProjects().add( project );
-	
+
 			toWatch.add( gav );
 			session.graph().relationsRec( gav ).stream().map( r -> r.getTarget() ).distinct().forEach( g -> toWatch.add( g ) );
 		}
-		
+
 		log.html( "<br/>" );
 
-		if(toWatch.isEmpty())
+		if( toWatch.isEmpty() )
 		{
-			log.html("no project added to watch list.<br/>");
+			log.html( "no project added to watch list.<br/>" );
 		}
 		else
 		{
-			log.html("projects added to watch list:<br/>");
+			log.html( "projects added to watch list:<br/>" );
 			for( GAV g : toWatch )
 			{
 				Project p = session.projects().forGav( g );
 				if( p == null )
 					continue;
-				
+
 				try
 				{
 					session.projectsWatcher().watchProject( p );
