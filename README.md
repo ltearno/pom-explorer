@@ -258,6 +258,10 @@ If a `config.properties` file is found in the working directory it is used to co
 
 ## Roadmap / Todo list
 
+- manage `gradle` and `npm` projects
+- distribute builds on slaves
+- git hooks
+
 ### Questions the program should answer
 
 - in a project, which are declared dependency management which are not used in a dependency ?
@@ -266,7 +270,6 @@ If a `config.properties` file is found in the working directory it is used to co
 ### Functionalities
 
 - find where dependencies override demendency management
-- user wants the project X to be always build with latest dependencies. If code is modified in a depended project, required projects should be rebuilt.
 - resolve all projects from external dependencies -> download files and add them in the graph, until the last one !
 
 ### Graph functionalities
@@ -274,3 +277,7 @@ If a `config.properties` file is found in the working directory it is used to co
 - aggregate pom nodes (those with same G & A but different versions, classifiers or scopes)
 - go to a specific pom
 - show multiple roads from one pom to another
+
+### Done
+
+- user wants the project X to be always build with latest dependencies. If code is modified in a depended project, required projects should be rebuilt.
