@@ -38,39 +38,51 @@ public class BuildCommand
 	}
 
 	@Help( "Adds a GAV to the list of maintained projects. A project needs to be found for that GAV." )
-	public void maintain( Client client, WorkingSession session, ILogger log, GAV gav )
+	public void maintain( Client client, WorkingSession session, ILogger log, FilteredGAVs gavs )
 	{
-		Project project = session.projects().forGav( gav );
-		if( project == null )
-		{
-			log.html( Tools.errorMessage( "cannot find the project for GAV " + gav ) );
-			return;
-		}
-
-		log.html( "Adding project " + project + " to list of maintained projects, and watching dependencies...<br/>" );
-
-		session.maintainedProjects().add( project );
-		log.html( "Project " + project + " added to the list of maintained projects<br/>" );
-
-		log.html( "detecting dependencies to be watched...<br/>" );
-
 		Set<GAV> toWatch = new HashSet<>();
-		toWatch.add( gav );
-		session.graph().relationsRec( gav ).stream().map( r -> r.getTarget() ).distinct().forEach( g -> toWatch.add( g ) );
-		for( GAV g : toWatch )
-		{
-			Project p = session.projects().forGav( g );
-			if( p == null )
-				continue;
 
-			try
+		for(GAV gav : gavs.getGavs( session ))
+		{
+			Project project = session.projects().forGav( gav );
+			if( project == null )
 			{
-				session.projectsWatcher().watchProject( p );
-				log.html( Tools.logMessage( "watching " + p ) );
+				log.html( Tools.warningMessage( "cannot find the project for GAV " + gav ) );
+				continue;
 			}
-			catch( IOException e )
+	
+			log.html( "adding project " + project + " and its dependencies to the set of maintained projects<br/>" );
+	
+			session.maintainedProjects().add( project );
+	
+			toWatch.add( gav );
+			session.graph().relationsRec( gav ).stream().map( r -> r.getTarget() ).distinct().forEach( g -> toWatch.add( g ) );
+		}
+		
+		log.html( "<br/>" );
+
+		if(toWatch.isEmpty())
+		{
+			log.html("no project added to watch list.<br/>");
+		}
+		else
+		{
+			log.html("projects added to watch list:<br/>");
+			for( GAV g : toWatch )
 			{
-				log.html( Tools.errorMessage( "error while trying to watch project ! " + e ) );
+				Project p = session.projects().forGav( g );
+				if( p == null )
+					continue;
+				
+				try
+				{
+					session.projectsWatcher().watchProject( p );
+					log.html( Tools.logMessage( "watching " + p ) );
+				}
+				catch( IOException e )
+				{
+					log.html( Tools.errorMessage( "error while trying to watch project ! " + e ) );
+				}
 			}
 		}
 	}

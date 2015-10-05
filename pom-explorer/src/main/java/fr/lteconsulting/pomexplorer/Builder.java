@@ -36,61 +36,69 @@ public class Builder
 		projectsToBuild.clear();
 	}
 
+	boolean justBuiltSomething = false;
+
 	public void run()
 	{
-		boolean justBuiltSomething = false;
-
 		while( true )
 		{
-			Project changed = session.projectsWatcher().hasChanged();
-			if( changed != null )
+			step();
+		}
+	}
+
+	private void step()
+	{
+		Project changed = session.projectsWatcher().hasChanged();
+		if( changed != null )
+		{
+			processProjectChange( session, changed );
+			return;
+		}
+
+		try
+		{
+			Thread.sleep( 1000 );
+		}
+		catch( InterruptedException e )
+		{
+			e.printStackTrace();
+		}
+
+		Project toBuild = findProjectToBuild();
+		if( toBuild != null )
+		{
+			lastErroredProject = null;
+			lastChangedProject = toBuild;
+
+			printBuildPipelineState( toBuild );
+
+			boolean success = build( toBuild );
+
+			if( success )
 			{
-				processProjectChange( session, changed );
-				continue;
-			}
-
-			try
-			{
-				Thread.sleep( 1000 );
-			}
-			catch( InterruptedException e )
-			{
-				e.printStackTrace();
-			}
-
-			Project toBuild = findProjectToBuild();
-			if( toBuild != null )
-			{
-				lastErroredProject = null;
-				lastChangedProject = toBuild;
-
-				printBuildPipelineState( toBuild );
-
-				boolean success = build( toBuild );
-
-				if( success )
-				{
-					success( "build succesful for project " + toBuild.getGav() + " : " + toBuild );
-				}
-				else
-				{
-					error( "error during build ! this artifact and dependent ones are going to be removed from the build list.<br/>fix the problem and the build will restart automatically..." );
-					projectsToBuild.clear();//.removeAll( dependentsAndSelf( toBuild.getGav() ) );
-				}
-
-				justBuiltSomething = true;
+				success( "build succesful for project " + toBuild.getGav() + " : " + toBuild );
 			}
 			else
 			{
-				if( justBuiltSomething )
-				{
-					printBuildPipelineState( null );
-					
-					success("build artifacts all up to date !");
-				}
-
-				justBuiltSomething = false;
+				error( "error during build ! this project and dependent ones are going to be removed from the build list.<br/>fix the problem which prevent the build to success and the build will restart automatically..." );
+				dependentsAndSelf( toBuild.getGav() ).stream().map( g -> session.projects().forGav( g ) ).filter( p -> p != null ).forEach( p -> projectsToBuild.remove( p ) );
 			}
+
+			justBuiltSomething = true;
+		}
+		else
+		{
+			if( justBuiltSomething )
+			{
+				printBuildPipelineState( null );
+
+				if( lastErroredProject == null )
+					success( "build pipeline all up to date ! All artifacts have been built." );
+				else
+					error( "build pipeline in error because of " + lastErroredProject + "." );
+			}
+
+			justBuiltSomething = false;
 		}
 	}
 
