@@ -51,18 +51,18 @@ public class ProjectsCommand
 	@Help( "list the session's projects - with details. Parameter is a filter for the GAVs" )
 	public void details( WorkingSession session, FilteredGAVs gavFilter, ILogger log )
 	{
-		log.html( "Projects details. Filter with: '" + gavFilter.getFilter() + "'<br/>" );
+		log.html( "projects details "+(gavFilter!=null?", filtered with '" + gavFilter.getFilter() + "'":"")+" :<br/><br/>" );
 
 		for( Project project : session.projects().values() )
 		{
 			ParsedPomFile resolvedPom = project.getResolvedPom();
 			MavenProject unresolvedProject = project.getUnresolvedPom();
 
-			if( !gavFilter.accept( project.getGav() ) )
+			if( gavFilter!=null && !gavFilter.accept( project.getGav() ) )
 				continue;
 
-			log.html( "file : " + project.getPomFile().getAbsolutePath() + "<br/>" );
 			log.html( "gav : " + project.getGav() + " " + resolvedPom.getPackagingType().getId() + ":" + resolvedPom.getPackagingType().getExtension() + ":" + resolvedPom.getPackagingType().getClassifier() + "<br/>" );
+			log.html( "file : " + project.getPomFile().getAbsolutePath() + "<br/>" );
 
 			Parent parent = unresolvedProject.getModel().getParent();
 			if( parent != null )
@@ -84,8 +84,11 @@ public class ProjectsCommand
 			for( Dependency dependency : unresolvedProject.getDependencies() )
 				log.html( "dependency : " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
 
-			log.html( "effective dependencies :<br/>" );
 			Set<GAVRelation<? extends Relation>> directDependencies = effectiveDependencies( session, project.getGav() );
+			if( ! directDependencies.isEmpty() )
+				log.html( "effective dependencies :<br/>" );
+			else
+				log.html( "no dependency<br/>" );
 			directDependencies.forEach( d -> log.html( "[" + d.getRelation().getRelationType().shortName() + "] " + d.getTarget() + " " + d.getRelation().toString() + "<br/>" ) );
 
 			log.html( "<br/>" );

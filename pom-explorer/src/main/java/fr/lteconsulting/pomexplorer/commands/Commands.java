@@ -41,7 +41,7 @@ public class Commands
 		StringBuilder sb = new StringBuilder();
 
 		sb.append( "<b>List of commands</b><br/>" );
-		sb.append( "<i>You can type only the first letters of commands, for example '<b>gav li</b>' instead of '<b>gavs list</b>'</i><br/><br/>" );
+		sb.append( "<i>You can type only the first letters of commands, for example '<b>st co</b>' instead of '<b>stats components</b>'</i><br/><br/>" );
 
 		List<String> cs = new ArrayList<String>( commands.keySet() );
 		Collections.sort( cs );
@@ -64,13 +64,15 @@ public class Commands
 					sb.append( shortcut + " " + mName );
 
 				sb.append( "</b>" );
-
-				for( Class<?> pCls : m.getParameterTypes() )
+				
+				for( int i=0; i<m.getParameterTypes().length; i++)
 				{
+					Class<?> pCls = m.getParameterTypes()[i];
+					
 					if( pCls == Client.class || pCls == WorkingSession.class || pCls == CommandOptions.class || pCls == ILogger.class )
 						continue;
 
-					sb.append( " <b><i>" + pCls.getSimpleName() + "</i></b>" );
+					sb.append( " <b><i>" + m.getParameters()[i].getName() + "</i></b>" );
 				}
 
 				Help help = m.getAnnotation( Help.class );
