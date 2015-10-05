@@ -73,8 +73,8 @@ public class DependsCommand
 		}
 
 		log.html( "<br/><b>" + gav + " indirectly depends on</b> " + indirectDependents.size() + " GAVs :<br/>" );
-		for( GAV d : indirectDependents )
-			log.html( d + "<br/>" );
+		indirectDependents.stream().sorted((a, b) -> a.toString().compareTo(b.toString()))
+				.forEach(d -> log.html(d + "<br/>"));
 	}
 
 	private void fillTextForDependency( WorkingSession session, ILogger log, GAVRelation<Relation> relation )
@@ -90,7 +90,11 @@ public class DependsCommand
 
 		log.html( "declared at : " );
 		Location location = Tools.findDependencyLocation( session, log, sourceProject, relation );
+		if (location != null)
 		log.html( location.toString() );
+		else
+			log.html(Tools.warningMessage("cannot find dependency location from " + sourceProject + " to "
+					+ relation.getTarget() + " (relation of type " + relation.toString() + ")"));
 
 		if( location instanceof GavLocation )
 		{
