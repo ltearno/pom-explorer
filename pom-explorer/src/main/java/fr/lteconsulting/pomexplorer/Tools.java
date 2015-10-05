@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -499,5 +500,19 @@ public class Tools
 		}
 
 		return res;
+	}
+
+	public static void dumpStacktrace(Exception e, ILogger log)
+	{
+		Throwable t = e;
+		if (t instanceof InvocationTargetException)
+			t = ((InvocationTargetException)t).getTargetException();
+
+		log.html("<pre>" + t.toString() + "\r\n");
+		for (StackTraceElement st : t.getStackTrace())
+		{
+			log.html(st.toString() + "\r\n");
+		}
+		log.html("</pre>");
 	}
 }

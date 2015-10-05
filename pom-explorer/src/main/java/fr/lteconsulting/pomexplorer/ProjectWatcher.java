@@ -37,8 +37,6 @@ public class ProjectWatcher
 	public void register() throws IOException
 	{
 		watchPath( projectPath );
-
-		System.out.println( "registered project files..." );
 	}
 
 	public boolean hasChanges()
@@ -114,20 +112,13 @@ public class ProjectWatcher
 		Path path = file.toPath();
 
 		if( keys.containsKey( path ) )
-		{
-			System.out.println( "warning : already watched " + path.toString() );
 			return;
-		}
 
 		if( !shouldBeWatched( file ) )
-		{
-			System.out.println( "warning : not watched directory " + file.getAbsolutePath() );
 			return;
-		}
 
 		try
 		{
-			System.out.println( "watch : " + path.toString() );
 			WatchKey key = path.register( service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY );
 
 			keys.put( path, key );
@@ -175,9 +166,6 @@ public class ProjectWatcher
 	 */
 	private boolean shouldBeWatched( File file )
 	{
-		// if( file.getName().equals( "target" ) )
-		// return false;
-
 		File current = file.getParentFile();
 		Path remaining = Paths.get( file.getName() );
 		while( current != null )

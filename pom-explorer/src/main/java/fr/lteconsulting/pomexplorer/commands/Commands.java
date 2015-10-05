@@ -1,6 +1,5 @@
 package fr.lteconsulting.pomexplorer.commands;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -211,24 +210,13 @@ public class Commands
 		}
 		catch( Exception e )
 		{
-			log.html( "Error when interpreting command '<b>" + text + "</b>'<br/>" );
+			log.html(Tools.errorMessage("Error when interpreting command '<b>" + text + "</b>'"));
 			log.html( "Command class : <b>" + info.command.getClass().getSimpleName() + "</b><br/>" );
 			log.html( "Command method : <b>" + info.method.getName() + "</b><br/>" );
 			for( Object a : args )
 				log.html( "Argument : " + (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString())) + "<br/>" );
-	
-			Throwable t = e;
-			if( t instanceof InvocationTargetException )
-				t = ((InvocationTargetException) t).getTargetException();
-	
-			log.html( "<pre>" + t.toString() + "\r\n" );
-			for( StackTraceElement st : t.getStackTrace() )
-			{
-				log.html( st.toString() + "\r\n" );
-			}
-			log.html( "</pre>" );
-	
-			log.html( Tools.errorMessage( log.toString() ) );
+
+			Tools.dumpStacktrace(e, log);
 		}
 	}
 
