@@ -121,6 +121,12 @@ translateX
 		style="position: absolute; width: 100%; height: 100%;"></div>
 
 	<script type="text/javascript">
+		function killTalk( talkDiv )
+		{
+			talkDiv = talkDiv.parentElement;
+			talkDiv.parentElement.removeChild( talkDiv );
+		}
+		
         var Terminal = (function () {
             var history = [];
             var hIndex = 0;
@@ -209,6 +215,8 @@ translateX
 	                talk.className = 'talk';
 	                this.html.children[0].appendChild(talk);
 	                this.talks[talkId] = talk;
+	                
+	                talk.innerHTML += "<div style='float:right;' onclick='killTalk(this)'>X</div>";
 	            }
 	            
 	            talk.innerHTML += text;
