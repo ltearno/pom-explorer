@@ -38,7 +38,7 @@ public class WorkingSession
 
 	private final Set<Client> clients = new HashSet<>();
 
-	private final ProjectsWatcher projectsWatcher = new ProjectsWatcher();
+	private final ProjectsWatcher projectsWatcher = new ProjectsWatcherSuperman();
 
 	private final BuilderSuperman builder = new BuilderSuperman();
 
