@@ -33,7 +33,8 @@ public class GarbageCommand
 
 			// get all dependencies of the gav
 			Set<GAV> dependencies = new HashSet<>();
-			session.graph().relationsRec( gav ).stream().filter( r -> !(r.getRelation() instanceof BuildDependencyRelation) ).map( r -> r.getTarget() ).forEach( dependencies::add );
+			session.graph().relationsRec(gav).stream().filter(r -> !(r instanceof BuildDependencyRelation))
+					.map(r -> r.getTarget()).forEach(dependencies::add);
 			Set<GAV> directDependencies = new HashSet<>();
 			session.graph().dependencies( gav ).stream().map( dep -> dep.getTarget() ).forEach( directDependencies::add );
 

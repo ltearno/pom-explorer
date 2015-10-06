@@ -18,7 +18,7 @@ public class Builder
 {
 	private final String talkId = MessageFactory.newGuid();
 
-	private final String pipelineStatusTalkId = MessageFactory.newGuid();
+	private final String pipelineStatusTalkId = "buildPipelineStatus";
 
 	private WorkingSession session;
 

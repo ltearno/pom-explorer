@@ -1,14 +1,16 @@
 package fr.lteconsulting.pomexplorer.graph.relation;
 
+import fr.lteconsulting.pomexplorer.GAV;
+
 public class DependencyRelation extends Relation
 {
 	private final String scope;
 
 	private final String classifier;
 
-	public DependencyRelation( String scope, String classifier )
+	public DependencyRelation(GAV source, GAV target, String scope, String classifier)
 	{
-		super( RelationType.DEPENDENCY );
+		super(source, target, RelationType.DEPENDENCY);
 		this.scope = scope;
 		this.classifier = classifier;
 	}

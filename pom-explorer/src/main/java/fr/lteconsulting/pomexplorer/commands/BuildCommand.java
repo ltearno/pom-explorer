@@ -1,6 +1,5 @@
 package fr.lteconsulting.pomexplorer.commands;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,8 +10,6 @@ import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 
 public class BuildCommand
 {
@@ -54,6 +51,7 @@ public class BuildCommand
 
 		for( GAV gav : gavs.getGavs( session ) )
 		{
+			System.out.println("<<< IN");
 			Project project = session.projects().forGav( gav );
 			if( project == null )
 			{
@@ -61,14 +59,18 @@ public class BuildCommand
 				continue;
 			}
 
+			System.out.println("=== STEP 1");
+
 			log.html( "adding project " + project + " and its dependencies to the set of maintained projects<br/>" );
 
 			session.maintainedProjects().add( project );
 
+			System.out.println("=== STEP 2");
+
 			toWatch.add( gav );
-			System.out.println("<<< IN");
+
 			System.out.println("NB RELATIONS " + project + " : " + session.graph().relationsRec(gav).size());
-			session.graph().relationsRec(gav).stream().limit(100).forEach(r -> log.html(r.toString() + "<br/>"));
+			// session.graph().relationsRec(gav).stream().limit(100).forEach(r -> log.html(r.toString() + "<br/>"));
 			session.graph().relationsRec(gav).stream().map(r -> r.getTarget()).forEach(g -> toWatch.add(g));
 			System.out.println("OUT >>>");
 		}
@@ -115,39 +117,6 @@ public class BuildCommand
 			for( Project project : session.maintainedProjects() )
 				log.html( "<li>" + project + "</li>" );
 			log.html( "</ul>" );
-		}
-	}
-
-	private void buildRec( WorkingSession session, Project project, ILogger log )
-	{
-		if( project == null )
-		{
-			log.html( "cannot find the project !" );
-			return;
-		}
-
-		File directory = project.getPomFile().getParentFile();
-		log.html( "cd " + directory + "<br/>" );
-		log.html( "mvn install -N -DskipTests<br/>" );
-
-		Set<GAVRelation<DependencyRelation>> dependents = session.graph().dependents( project.getGav() );
-		Set<GAV> children = session.graph().children( project.getGav() );
-
-		Set<GAV> toBuild = new HashSet<>();
-		for( GAVRelation<DependencyRelation> d : dependents )
-			toBuild.add( d.getSource() );
-		toBuild.addAll( children );
-
-		for( GAV gav : toBuild )
-		{
-			Project subProject = session.projects().forGav( gav );
-			if( subProject == null )
-			{
-				log.html( "cannot find project for GAV " + gav + "<br/>" );
-				continue;
-			}
-
-			buildRec( session, subProject, log );
 		}
 	}
 }

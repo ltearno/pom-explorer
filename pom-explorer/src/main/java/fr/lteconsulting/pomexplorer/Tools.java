@@ -25,7 +25,6 @@ import fr.lteconsulting.pomexplorer.changes.Change;
 import fr.lteconsulting.pomexplorer.changes.ChangeSetManager;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
-import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class Tools
@@ -82,8 +81,8 @@ public class Tools
 	{
 		Set<Location> set = new HashSet<>();
 
-		Set<GAVRelation<Relation>> relations = session.graph().relationsReverse( gav );
-		for( GAVRelation<Relation> relation : relations )
+		Set<Relation> relations = session.graph().relationsReverse(gav);
+		for (Relation relation : relations)
 		{
 			GAV updatedGav = relation.getSource();
 
@@ -173,14 +172,14 @@ public class Tools
 		return null;
 	}
 
-	public static Location findDependencyLocation( WorkingSession session, ILogger log, Project project, GAVRelation<Relation> relation )
+	public static Location findDependencyLocation(WorkingSession session, ILogger log, Project project, Relation relation)
 	{
 		if( project.getGav().equals( relation.getTarget() ) )
 			return new GavLocation( project, PomSection.PROJECT, project.getGav() );
 
 		Location dependencyLocation = null;
 
-		switch( relation.getRelation().getRelationType() )
+		switch (relation.getRelationType())
 		{
 			case DEPENDENCY:
 				dependencyLocation = findDependencyLocationInDependencies( session, log, project, relation.getTarget() );

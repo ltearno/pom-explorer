@@ -1,10 +1,12 @@
 package fr.lteconsulting.pomexplorer.graph.relation;
 
+import fr.lteconsulting.pomexplorer.GAV;
+
 public class BuildDependencyRelation extends Relation
 {
-	public BuildDependencyRelation()
+	public BuildDependencyRelation(GAV source, GAV target)
 	{
-		super( RelationType.BUILD_DEPENDENCY );
+		super(source, target, RelationType.BUILD_DEPENDENCY);
 	}
 
 	@Override

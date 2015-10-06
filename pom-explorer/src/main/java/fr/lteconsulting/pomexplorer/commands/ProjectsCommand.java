@@ -19,7 +19,6 @@ import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
-import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ProjectsCommand
@@ -84,20 +83,21 @@ public class ProjectsCommand
 			for( Dependency dependency : unresolvedProject.getDependencies() )
 				log.html( "dependency : " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
 
-			Set<GAVRelation<? extends Relation>> directDependencies = effectiveDependencies( session, project.getGav() );
+			Set<? extends Relation> directDependencies = effectiveDependencies(session, project.getGav());
 			if( ! directDependencies.isEmpty() )
 				log.html( "effective dependencies :<br/>" );
 			else
 				log.html( "no dependency<br/>" );
-			directDependencies.forEach( d -> log.html( "[" + d.getRelation().getRelationType().shortName() + "] " + d.getTarget() + " " + d.getRelation().toString() + "<br/>" ) );
+			directDependencies.forEach(d -> log.html("[" + d.getRelationType().shortName() + "] " + d.getTarget() + " "
+					+ d.toString() + "<br/>"));
 
 			log.html( "<br/>" );
 		}
 	}
 
-	private Set<GAVRelation<? extends Relation>> effectiveDependencies( WorkingSession session, GAV gav )
+	private Set<Relation> effectiveDependencies(WorkingSession session, GAV gav)
 	{
-		HashSet<GAVRelation<? extends Relation>> res = new HashSet<>();
+		HashSet<Relation> res = new HashSet<>();
 
 		GAV parent = session.graph().parent( gav );
 		if( parent != null )

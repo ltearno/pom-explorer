@@ -1,5 +1,7 @@
 package fr.lteconsulting.pomexplorer.graph.relation;
 
+import fr.lteconsulting.pomexplorer.GAV;
+
 public abstract class Relation
 {
 	/**
@@ -36,10 +38,16 @@ public abstract class Relation
 		void onParentRelation( ParentRelation relation );
 	}
 
+	private final GAV source;
+
+	private final GAV target;
+
 	private final RelationType type;
 
-	public Relation( RelationType type )
+	public Relation(GAV source, GAV target, RelationType type)
 	{
+		this.source = source;
+		this.target = target;
 		this.type = type;
 	}
 
@@ -88,11 +96,23 @@ public abstract class Relation
 		}
 	}
 
+	public GAV getSource()
+	{
+		return source;
+	}
+
+	public GAV getTarget()
+	{
+		return target;
+	}
+
 	@Override
 	public int hashCode()
 	{
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((source == null) ? 0 : source.hashCode());
+		result = prime * result + ((target == null) ? 0 : target.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
@@ -107,6 +127,20 @@ public abstract class Relation
 		if (getClass() != obj.getClass())
 			return false;
 		Relation other = (Relation)obj;
+		if (source == null)
+		{
+			if (other.source != null)
+				return false;
+		}
+		else if (!source.equals(other.source))
+			return false;
+		if (target == null)
+		{
+			if (other.target != null)
+				return false;
+		}
+		else if (!target.equals(other.target))
+			return false;
 		if (type != other.type)
 			return false;
 		return true;

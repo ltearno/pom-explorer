@@ -134,7 +134,7 @@ public class PomAnalyzer
 			GAV parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
 			session.graph().addGav( parentGav );
 
-			session.graph().addRelation( gav, parentGav, new ParentRelation() );
+			session.graph().addRelation(new ParentRelation(gav, parentGav));
 		}
 
 		// dependencies
@@ -143,7 +143,8 @@ public class PomAnalyzer
 			GAV depGav = new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
 			session.graph().addGav( depGav );
 
-			session.graph().addRelation( gav, depGav, new DependencyRelation( dependency.getScope().name(), dependency.getClassifier() ) );
+			session.graph().addRelation(
+					new DependencyRelation(gav, depGav, dependency.getScope().name(), dependency.getClassifier()));
 		}
 
 		// build dependencies
@@ -155,7 +156,7 @@ public class PomAnalyzer
 				GAV depGav = new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
 				session.graph().addGav( depGav );
 
-				session.graph().addRelation( gav, depGav, new BuildDependencyRelation() );
+				session.graph().addRelation(new BuildDependencyRelation(gav, depGav));
 			}
 		}
 		catch( IllegalArgumentException | SecurityException e )

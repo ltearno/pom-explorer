@@ -1,10 +1,12 @@
 package fr.lteconsulting.pomexplorer.graph.relation;
 
+import fr.lteconsulting.pomexplorer.GAV;
+
 public class ParentRelation extends Relation
 {
-	public ParentRelation()
+	public ParentRelation(GAV source, GAV target)
 	{
-		super( RelationType.PARENT );
+		super(source, target, RelationType.PARENT);
 	}
 
 	@Override

@@ -14,7 +14,6 @@ import fr.lteconsulting.pomexplorer.changes.ChangeSetManager;
 import fr.lteconsulting.pomexplorer.changes.GavChange;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
-import fr.lteconsulting.pomexplorer.graph.relation.GAVRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ReleaseCommand
@@ -73,8 +72,8 @@ public class ReleaseCommand
 			changes.addChange( new GavChange( loc, Tools.releasedGav( loc.getGav() ) ), causeMessage );
 		}
 
-		Set<GAVRelation<Relation>> relations = session.graph().relationsRec( gav );
-		for( GAVRelation<Relation> r : relations )
+		Set<Relation> relations = session.graph().relationsRec(gav);
+		for (Relation r : relations)
 		{
 			if( r.getTarget().getVersion() == null )
 			{
