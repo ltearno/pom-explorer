@@ -77,7 +77,7 @@ public class ProjectWatcher
 			tt = true;
 			Path eventTarget = Paths.get(key.watchable().toString(), event.context().toString()).toAbsolutePath();
 			String absPath = eventTarget.toAbsolutePath().toString();
-			somethingMeaningful |= !absPath.contains("target/");
+			somethingMeaningful |= !absPath.contains("target");
 
 			if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE)
 			{
