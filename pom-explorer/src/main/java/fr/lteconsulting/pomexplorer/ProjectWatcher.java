@@ -71,12 +71,13 @@ public class ProjectWatcher
 
 		key.reset();
 
+		boolean tt = false;
 		for (WatchEvent<?> event : key.pollEvents())
 		{
+			tt = true;
 			Path eventTarget = Paths.get(key.watchable().toString(), event.context().toString()).toAbsolutePath();
 			String absPath = eventTarget.toAbsolutePath().toString();
-			if (!(absPath.contains("target/") || absPath.contains("target\\") || absPath.endsWith("target")))
-				somethingMeaningful = true;
+			somethingMeaningful |= !absPath.contains("target/");
 
 			if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE)
 			{
@@ -95,6 +96,9 @@ public class ProjectWatcher
 				System.out.println("=> modified " + eventTarget.toString());
 			}
 		}
+
+		if (tt)
+			System.out.println("useful ? " + somethingMeaningful);
 
 		return somethingMeaningful;
 	}
