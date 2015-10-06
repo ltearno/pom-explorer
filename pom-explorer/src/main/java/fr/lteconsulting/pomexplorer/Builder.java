@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -18,6 +17,8 @@ import fr.lteconsulting.superman.Superman;
 public class Builder
 {
 	private final String talkId = MessageFactory.newGuid();
+
+	private final String pipelineStatusTalkId = MessageFactory.newGuid();
 
 	private WorkingSession session;
 
@@ -146,11 +147,11 @@ public class Builder
 			}
 			sb.append( "<br/>" );
 
-			log( sb.toString() );
+			logBuildPipeline(sb.toString());
 		}
 		catch( Exception e )
 		{
-			log( "error: " + e );
+			logBuildPipeline("error: " + e);
 		}
 	}
 
@@ -273,6 +274,13 @@ public class Builder
 		message = Tools.buildMessage( message );
 		for( Client client : session.getClients() )
 			client.sendHtml( talkId, message );
+	}
+
+	private void logBuildPipeline(String message)
+	{
+		message = Tools.buildMessage(message);
+		for (Client client : session.getClients())
+			client.sendHtml(pipelineStatusTalkId, message);
 	}
 
 	private void error( String message )

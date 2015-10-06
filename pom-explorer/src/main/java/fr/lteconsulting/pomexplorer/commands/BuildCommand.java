@@ -66,7 +66,11 @@ public class BuildCommand
 			session.maintainedProjects().add( project );
 
 			toWatch.add( gav );
-			session.graph().relationsRec( gav ).stream().map( r -> r.getTarget() ).distinct().forEach( g -> toWatch.add( g ) );
+			System.out.println("<<< IN");
+			System.out.println("NB RELATIONS " + project + " : " + session.graph().relationsRec(gav).size());
+			session.graph().relationsRec(gav).stream().limit(100).forEach(r -> log.html(r.toString() + "<br/>"));
+			session.graph().relationsRec(gav).stream().map(r -> r.getTarget()).forEach(g -> toWatch.add(g));
+			System.out.println("OUT >>>");
 		}
 
 		log.html( "<br/>" );

@@ -23,7 +23,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 @SupportedAnnotationTypes( SupermanProcessor.AnnotationFqn )
-@SupportedSourceVersion( SourceVersion.RELEASE_6 )
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class SupermanProcessor extends AbstractProcessor
 {
 	public final static String AnnotationFqn = "fr.lteconsulting.superman.Superman";

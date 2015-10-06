@@ -43,4 +43,41 @@ public class DependencyRelation extends Relation
 
 		return res;
 	}
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((classifier == null) ? 0 : classifier.hashCode());
+		result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DependencyRelation other = (DependencyRelation)obj;
+		if (classifier == null)
+		{
+			if (other.classifier != null)
+				return false;
+		}
+		else if (!classifier.equals(other.classifier))
+			return false;
+		if (scope == null)
+		{
+			if (other.scope != null)
+				return false;
+		}
+		else if (!scope.equals(other.scope))
+			return false;
+		return true;
+	}
 }
