@@ -120,7 +120,7 @@ translateX
 	<div id="terminal"
 		style="position: absolute; width: 100%; height: 100%;"></div>
 		
-	<div id="buildPipelineStatus" style="backgound-color:black; position:absolute; right:0; top:0;"></div>
+	<div id="buildPipelineStatus" style="background-color:black; position:absolute; right:35px; top:0;"></div>
 
 	<script type="text/javascript">
 		function killTalk( talkDiv )
@@ -226,7 +226,7 @@ translateX
 	            }
 
             	if( talkId == "buildPipelineStatus")
-            		talk.innerHTML = text;
+            		talk.innerHTML = "<div style='float:right;' onclick='killTalk(this)'>X</div>" + text;
             	else
             		talk.innerHTML += text;
                 
