@@ -94,6 +94,7 @@
 				<version>3.3</version>
 				<configuration>
 					<compilerArgument>-parameters</compilerArgument>
+					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
 			</plugin>
 			<plugin>
