@@ -14,7 +14,9 @@ public class MavenBuildTask
 		try
 		{
 			log( session, project, talkId, "start ..." );
-			Process p = Runtime.getRuntime().exec( new String[] { session.getMavenShellCommand(), "install", "-N", "-DskipTests" }, null, project.getPomFile().getParentFile() );
+			Process p = Runtime.getRuntime().exec(
+					new String[] { session.getMavenShellCommand(), "install", "-N", "-B", "-DskipTests" }, null,
+					project.getPomFile().getParentFile());
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream(), "ISO-8859-1"));
 			String line = "";
