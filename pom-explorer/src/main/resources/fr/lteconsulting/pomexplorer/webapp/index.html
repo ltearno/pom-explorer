@@ -228,7 +228,15 @@ translateX
             	if( talkId == "buildPipelineStatus")
             		talk.innerHTML = "<div style='float:right;' onclick='killTalk(this)'>X</div>" + text;
             	else
-            		talk.innerHTML += text;
+                {
+           			talk.innerHTML += text;
+
+           			var max = 100000;
+                    if( talk.innerHTML.length > max ) {
+                    	talk.innerHTML = talk.innerHTML.substr(-max);
+                    	talk.innerHTML = talk.innerHTML.substr(talk.innerHTML.indexOf('/>')+2);
+                    }
+                }
                 
                 if( talk == this.html.children[0].lastElementChild )
                 	this.container.scrollTop = this.container.scrollHeight;
