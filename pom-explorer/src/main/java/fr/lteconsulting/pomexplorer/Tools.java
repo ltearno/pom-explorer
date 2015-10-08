@@ -507,11 +507,8 @@ public class Tools
 		if (t instanceof InvocationTargetException)
 			t = ((InvocationTargetException)t).getTargetException();
 
-		log.html("<pre>" + t.toString() + "\r\n");
+		log.html(t.toString() + "<br/>");
 		for (StackTraceElement st : t.getStackTrace())
-		{
-			log.html(st.toString() + "\r\n");
-		}
-		log.html("</pre>");
+			log.html(st.toString() + "<br/>");
 	}
 }
