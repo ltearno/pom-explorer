@@ -86,9 +86,6 @@ public class ProjectWatcher
 			String relative = projectPath.relativize(eventTarget).toString();
 			somethingMeaningful |= relative != null && (relative.startsWith("src") || relative.equals("pom.xml"));
 
-			// String absPath = eventTarget.toAbsolutePath().toString();
-			// somethingMeaningful |= !absPath.contains("target");
-
 			if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE)
 			{
 				System.out.println("=> created " + eventTarget.toString());
