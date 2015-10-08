@@ -21,6 +21,12 @@ public class ProjectWatcher
 
 	private final Map<Path, WatchKey> keys = new HashMap<>();
 
+	/**
+	 * Create a ProjectWatcher
+	 * 
+	 * @param projectPath
+	 *        This is the path of the directory containing the pom.xml file
+	 */
 	public ProjectWatcher(Path projectPath)
 	{
 		this.projectPath = projectPath;
@@ -71,13 +77,17 @@ public class ProjectWatcher
 
 		key.reset();
 
-		boolean tt = false;
+		boolean useful = false;
 		for (WatchEvent<?> event : key.pollEvents())
 		{
-			tt = true;
+			useful = true;
 			Path eventTarget = Paths.get(key.watchable().toString(), event.context().toString()).toAbsolutePath();
-			String absPath = eventTarget.toAbsolutePath().toString();
-			somethingMeaningful |= !absPath.contains("target");
+
+			String relative = projectPath.relativize(eventTarget).toString();
+			somethingMeaningful |= relative != null && (relative.startsWith("src") || relative.equals("pom.xml"));
+
+			// String absPath = eventTarget.toAbsolutePath().toString();
+			// somethingMeaningful |= !absPath.contains("target");
 
 			if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE)
 			{
@@ -97,7 +107,7 @@ public class ProjectWatcher
 			}
 		}
 
-		if (tt)
+		if (useful)
 			System.out.println("useful ? " + somethingMeaningful);
 
 		return somethingMeaningful;
