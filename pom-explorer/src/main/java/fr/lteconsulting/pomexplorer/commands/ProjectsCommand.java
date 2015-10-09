@@ -88,7 +88,8 @@ public class ProjectsCommand
 				log.html( "effective dependencies :<br/>" );
 			else
 				log.html( "no dependency<br/>" );
-			directDependencies.forEach(d -> log.html("[" + d.getRelationType().shortName() + "] " + d.getTarget() + " "
+			directDependencies.stream().sorted((a, b) -> a.getTarget().toString().compareTo(b.getTarget().toString()))
+					.forEach(d -> log.html("[" + d.getRelationType().shortName() + "] " + d.getTarget() + " "
 					+ d.toString() + "<br/>"));
 
 			log.html( "<br/>" );
