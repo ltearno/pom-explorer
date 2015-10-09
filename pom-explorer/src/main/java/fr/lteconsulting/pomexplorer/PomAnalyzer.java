@@ -110,7 +110,7 @@ public class PomAnalyzer
 			return;
 		}
 
-		ParsedPomFile resolved = loadPomFile( session, pomFile );
+		ParsedPomFile resolved = loadPomFile(session, pomFile, log);
 		if( resolved == null )
 		{
 			log.html( "<span style='color:orange;'>cannot load pom " + unresolved.getGroupId() + ":" + unresolved.getArtifactId() + ":" + unresolved.getVersion() + " (<i>" + pomFile.getAbsolutePath() + "</i>)</span><br/>" );
@@ -192,7 +192,7 @@ public class PomAnalyzer
 		}
 	}
 
-	private ParsedPomFile loadPomFile( WorkingSession workingSession, File pomFile )
+	private ParsedPomFile loadPomFile(WorkingSession workingSession, File pomFile, ILogger log)
 	{
 		MavenWorkingSession session = createMavenWorkingSession( workingSession );
 		if( session == null )
@@ -205,6 +205,7 @@ public class PomAnalyzer
 		}
 		catch( Exception e )
 		{
+			log.html(Tools.errorMessage("error while loading pom " + pomFile.getAbsolutePath() + " : " + e.getMessage()));
 			return null;
 		}
 	}

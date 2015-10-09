@@ -34,6 +34,21 @@ public class CheckCommand
 				log.html("<br/>" + gav);
 		}
 
+		log.html("<br/><br/><b>Projects without version</b><br/>");
+		for (Project project : session.projects().values())
+		{
+			// project version should be null
+			if (project.getUnresolvedPom().getModel().getVersion() != null)
+				continue;
+
+			// and project should have a parent
+			GAV parentProjectGav = session.graph().parent(project.getGav());
+			if (parentProjectGav == null)
+				continue;
+
+			log.html(project.toString() + "<br/>");
+		}
+
 		Map<MiniGAV, Set<GAV>> multipleGavs = multipleGavs(session);
 		log.html("<br/><br/><b>Multiple GAVs</b><br/>");
 		if (multipleGavs.isEmpty())
@@ -42,7 +57,7 @@ public class CheckCommand
 		}
 		else
 		{
-			log.html(multipleGavs.size() + "GAV(s) with multiple versions :<br/>");
+			log.html(multipleGavs.size() + " GAVs with multiple versions :<br/>");
 			multipleGavs.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString()))
 					.forEach(e ->
 					{
@@ -60,20 +75,7 @@ public class CheckCommand
 					});
 		}
 
-		log.html("<br/><br/><b>Projects without version</b><br/>");
-		for (Project project : session.projects().values())
-		{
-			// project version should be null
-			if (project.getUnresolvedPom().getModel().getVersion() != null)
-				continue;
-
-			// and project should have a parent
-			GAV parentProjectGav = session.graph().parent(project.getGav());
-			if (parentProjectGav == null)
-				continue;
-
-			log.html(project.toString() + "<br/>");
-		}
+		log.html("done.<br/>");
 	}
 
 	private Map<MiniGAV, Set<GAV>> multipleGavs(WorkingSession session)

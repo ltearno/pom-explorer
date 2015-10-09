@@ -196,8 +196,10 @@ public class PomGraph
 
 	private void relations(GAV gav, Set<Relation> set)
 	{
-		Set<Relation> relations = g.outgoingEdgesOf(gav);
-		set.addAll(relations);
+		if (!g.containsVertex(gav))
+			return;
+
+		set.addAll(g.outgoingEdgesOf(gav));
 	}
 
 	private void relationsRec(GAV gav, Set<Relation> set, Set<GAV> visitedGavs)
