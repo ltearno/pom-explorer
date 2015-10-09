@@ -198,8 +198,15 @@ public class ProjectWatcher
 						if (line.contains("*") || line.contains("//") || line.contains("?"))
 							continue;
 
-						if (remaining.compareTo(Paths.get(line)) == 0)
-							return false;
+						try
+						{
+							if (remaining.compareTo(Paths.get(line)) == 0)
+								return false;
+						}
+						catch(Exception e )
+						{
+							e.printStackTrace();
+						}
 					}
 				}
 				catch (IOException e)

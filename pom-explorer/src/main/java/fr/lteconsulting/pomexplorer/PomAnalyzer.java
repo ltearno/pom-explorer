@@ -103,17 +103,17 @@ public class PomAnalyzer
 
 	private void processPom( File pomFile, WorkingSession session, ILogger log )
 	{
-		MavenProject unresolved = readPomFile( pomFile );
+		MavenProject unresolved = readPomFile( pomFile, log );
 		if( unresolved == null )
 		{
-			log.html( "<span style='color:orange;'>cannot read pom " + pomFile.getAbsolutePath() + "</span><br/>" );
+			log.html( Tools.warningMessage( "cannot read pom " + pomFile.getAbsolutePath() ) );
 			return;
 		}
 
-		ParsedPomFile resolved = loadPomFile(session, pomFile, log);
+		ParsedPomFile resolved = loadPomFile( session, pomFile, log );
 		if( resolved == null )
 		{
-			log.html( "<span style='color:orange;'>cannot load pom " + unresolved.getGroupId() + ":" + unresolved.getArtifactId() + ":" + unresolved.getVersion() + " (<i>" + pomFile.getAbsolutePath() + "</i>)</span><br/>" );
+			log.html( Tools.warningMessage( "cannot load pom " + unresolved.getGroupId() + ":" + unresolved.getArtifactId() + ":" + unresolved.getVersion() + " (<i>" + pomFile.getAbsolutePath() + "</i>)" ) );
 			return;
 		}
 
@@ -121,7 +121,7 @@ public class PomAnalyzer
 
 		if( session.projects().contains( gav ) )
 		{
-			log.html( "<span style='color:orange;'>pom already processed '" + pomFile.getAbsolutePath() + "' ! Ignoring.</span><br/>" );
+			log.html( Tools.warningMessage( "pom already processed '" + pomFile.getAbsolutePath() + "' ! Ignoring." ) );
 			return;
 		}
 
@@ -134,7 +134,7 @@ public class PomAnalyzer
 			GAV parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
 			session.graph().addGav( parentGav );
 
-			session.graph().addRelation(new ParentRelation(gav, parentGav));
+			session.graph().addRelation( new ParentRelation( gav, parentGav ) );
 		}
 
 		// dependencies
@@ -143,8 +143,7 @@ public class PomAnalyzer
 			GAV depGav = new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
 			session.graph().addGav( depGav );
 
-			session.graph().addRelation(
-					new DependencyRelation(gav, depGav, dependency.getScope().name(), dependency.getClassifier()));
+			session.graph().addRelation( new DependencyRelation( gav, depGav, dependency.getScope().name(), dependency.getClassifier() ) );
 		}
 
 		// build dependencies
@@ -156,7 +155,7 @@ public class PomAnalyzer
 				GAV depGav = new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
 				session.graph().addGav( depGav );
 
-				session.graph().addRelation(new BuildDependencyRelation(gav, depGav));
+				session.graph().addRelation( new BuildDependencyRelation( gav, depGav ) );
 			}
 		}
 		catch( IllegalArgumentException | SecurityException e )
@@ -169,7 +168,7 @@ public class PomAnalyzer
 
 		session.repositories().add( projectInfo );
 
-		log.html( "processed project " + projectInfo.getGav()+"<br/>" );
+		log.html( "processed project " + projectInfo.getGav() + "<br/>" );
 	}
 
 	private static MavenWorkingSession createMavenWorkingSession( WorkingSession workingSession )
@@ -192,7 +191,7 @@ public class PomAnalyzer
 		}
 	}
 
-	private ParsedPomFile loadPomFile(WorkingSession workingSession, File pomFile, ILogger log)
+	private ParsedPomFile loadPomFile( WorkingSession workingSession, File pomFile, ILogger log )
 	{
 		MavenWorkingSession session = createMavenWorkingSession( workingSession );
 		if( session == null )
@@ -205,12 +204,12 @@ public class PomAnalyzer
 		}
 		catch( Exception e )
 		{
-			log.html(Tools.errorMessage("error while loading pom " + pomFile.getAbsolutePath() + " : " + e.getMessage()));
+			log.html( Tools.errorMessage( "error while loading pom " + pomFile.getAbsolutePath() + " : " + e.getMessage() ) );
 			return null;
 		}
 	}
 
-	private MavenProject readPomFile( File pom )
+	private MavenProject readPomFile( File pom, ILogger log )
 	{
 		Model model = null;
 		MavenXpp3Reader mavenreader = new MavenXpp3Reader();
@@ -224,6 +223,8 @@ public class PomAnalyzer
 		}
 		catch( IOException | XmlPullParserException e1 )
 		{
+			log.html( Tools.errorMessage( "error reading project file : " + pom.getAbsolutePath() ) );
+			Tools.dumpStacktrace( e1, log );
 			return null;
 		}
 	}

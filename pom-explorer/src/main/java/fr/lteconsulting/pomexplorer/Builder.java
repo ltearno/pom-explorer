@@ -79,10 +79,10 @@ public class Builder
 			return;
 		}
 
-		if( lastErroredProject != null )
-			return;
-
-		Project toBuild = findProjectToBuild();
+		Project toBuild = null;
+		if( lastErroredProject == null )
+			toBuild = findProjectToBuild();
+		
 		if( toBuild != null )
 		{
 			lastErroredProject = null;
@@ -98,7 +98,10 @@ public class Builder
 			}
 			else
 			{
-				error( "error during build ! this project and dependent ones are going to be removed from the build list.<br/>fix the problem which prevent the build to success and the build will restart automatically..." );
+				if( !success )
+					lastErroredProject = toBuild;
+				
+				error( "error building "+toBuild+" !<br/>this project and dependent ones are going to be removed from the build list.<br/>fix the problem which prevent the build to success and the build will restart automatically..." );
 				dependentsAndSelf( toBuild.getGav() ).stream().map( g -> session.projects().forGav( g ) ).filter( p -> p != null ).forEach( p -> projectsToBuild.remove( p ) );
 			}
 
@@ -263,8 +266,6 @@ public class Builder
 			MavenBuildTaskSuperman builder = new MavenBuildTaskSuperman();
 			boolean res = builder.build( session, project, talkId );
 			builder.stop();
-			if( !res )
-				lastErroredProject = project;
 			return res;
 		}
 	}
