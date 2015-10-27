@@ -53,13 +53,13 @@ Let's start by typing `?` to get the available commands :
 
 *If you use a specific maven configuration file, you can specify it prior to the next commands with the `session mavenSettingsFilePath String` command.*
 
-First, you will want to analyse some projects. Depending on where they are on your computer, you can type something like this in the application console/web page :
+First, you will want to analyze some projects. Depending on where they are on your computer, you can type something like this in the application console/web page :
 
-	analyse directory c:\documents\repos
+	analyze directory c:\documents\repos
 
-The program will analyse the directory recursively to find all the `pom.xml` files. They are then processed with the traditionnal `MavenXpp3Reader` and also resolved through the `ShrinkWrap` component. A graph is then constructed in memory representing the dependencies between projects.
+The program will analyze the directory recursively to find all the `pom.xml` files. They are then processed with the traditionnal `MavenXpp3Reader` and also resolved through the `ShrinkWrap` component. A graph is then constructed in memory representing the dependencies between projects.
 
-If you need, you can add more analyses by repeating the `analyse directory` command again on another directory.
+If you need, you can add more analyzes by repeating the `analyze directory` command again on another directory.
 
 ## Basic commands
 
