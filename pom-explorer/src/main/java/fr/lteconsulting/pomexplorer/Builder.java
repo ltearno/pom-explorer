@@ -22,13 +22,13 @@ public class Builder
 
 	private WorkingSession session;
 
-	private Set<Project> projectsToBuild = new HashSet<>();
+	private final Set<Project> projectsToBuild = new HashSet<>();
 
-	private Set<Project> projectsToBuildForced = new HashSet<>();
+	private final Set<Project> projectsToBuildForced = new HashSet<>();
 
 	private Project lastChangedProject;
 
-	private Project lastErroredProject;
+	private final Set<Project> erroredProjects = new HashSet<>();
 
 	public void setSession( WorkingSession session )
 	{
@@ -39,19 +39,23 @@ public class Builder
 	{
 		projectsToBuild.clear();
 		projectsToBuildForced.clear();
+		
+		printBuildPipelineState( null );
 	}
 
 	public void buildProject( Project project )
 	{
 		projectsToBuildForced.add( project );
+		
+		printBuildPipelineState( null );
 	}
 
 	public void buildAll()
 	{
 		projectsToBuild.addAll( session.projectsWatcher().watchedProjects() );
+		
+		printBuildPipelineState( null );
 	}
-
-	boolean justBuiltSomething = false;
 
 	protected void onEmptyMessageQueue()
 	{
@@ -75,19 +79,18 @@ public class Builder
 		Project changed = session.projectsWatcher().hasChanged();
 		if( changed != null )
 		{
+			erroredProjects.remove( changed );
+			lastChangedProject = changed;
 			processProjectChange( session, changed );
+			
+			printBuildPipelineState( null );
+			
 			return;
 		}
 
-		Project toBuild = null;
-		if( lastErroredProject == null )
-			toBuild = findProjectToBuild();
-		
+		Project toBuild = findProjectToBuild();
 		if( toBuild != null )
 		{
-			lastErroredProject = null;
-			lastChangedProject = toBuild;
-
 			printBuildPipelineState( toBuild );
 
 			boolean success = build( toBuild );
@@ -95,34 +98,20 @@ public class Builder
 			if( success )
 			{
 				success( "build succesful for project " + toBuild.getGav() + " : " + toBuild );
+				erroredProjects.remove( toBuild );
 			}
 			else
 			{
-				if( !success )
-					lastErroredProject = toBuild;
+				erroredProjects.add( toBuild );
 				
 				error( "error building "+toBuild+" !<br/>this project and dependent ones are going to be removed from the build list.<br/>fix the problem which prevent the build to success and the build will restart automatically..." );
 				dependentsAndSelf( toBuild.getGav() ).stream().map( g -> session.projects().forGav( g ) ).filter( p -> p != null ).forEach( p -> projectsToBuild.remove( p ) );
 			}
 
-			justBuiltSomething = true;
-		}
-		else
-		{
-			if( justBuiltSomething )
-			{
-				printBuildPipelineState( null );
-
-				if( lastErroredProject == null )
-					success( "build pipeline all up to date ! All artifacts have been built." );
-				else
-					error( "build pipeline in error because of " + lastErroredProject + "." );
-			}
-
-			justBuiltSomething = false;
+			printBuildPipelineState( null );
 		}
 	}
-
+	
 	private void printBuildPipelineState( Project projectBuilding )
 	{
 		try
@@ -143,9 +132,9 @@ public class Builder
 				if( project != null && (inDependenciesOfMaintainedProjects( project ) || projectsToBuildForced.contains( project )) )
 				{
 					sb.append( "<span class='" + (project == lastChangedProject ? "refreshedProject " : "") + (projectsToBuildForced.contains( project ) ? "BUILD FORCED " : "") + (projectsToBuild.contains( project ) ? "toBuildProject " : "")
-							+ (projectBuilding == project ? "buildingProject " : "") + (lastErroredProject == project ? "errorProject " : "") + (session.maintainedProjects().contains( project ) ? "maintainedProject " : "") + "'>" + project.getGav()
+							+ (projectBuilding == project ? "buildingProject " : "") + (erroredProjects.contains( project ) ? "errorProject " : "") + (session.maintainedProjects().contains( project ) ? "maintainedProject " : "") + "'>" + project.getGav()
 							+ (session.maintainedProjects().contains( project ) ? " [maintained]" : "") + (projectBuilding == project ? " [building]" : "") + (projectsToBuild.contains( project ) ? " [build waiting...]" : "")
-							+ (lastErroredProject == project ? " [project in error]" : "") + "</span><br/>" );
+							+ (erroredProjects.contains( project ) ? " [project in error]" : "") + "</span><br/>" );
 				}
 			}
 			sb.append( "<br/>" );
@@ -176,7 +165,7 @@ public class Builder
 			for( GAV gav : gavs )
 			{
 				Project project = session.projects().forGav( gav );
-				if( project != null && (projectsToBuildForced.contains( project ) || (projectsToBuild.contains( project ) && inDependenciesOfMaintainedProjects( project ))) )
+				if( project != null && (!erroredProjects.contains( project )) && (projectsToBuildForced.contains( project ) || (projectsToBuild.contains( project ) && inDependenciesOfMaintainedProjects( project ))) )
 				{
 					projectsToBuild.remove( project );
 					projectsToBuildForced.remove( project );

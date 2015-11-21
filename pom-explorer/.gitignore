@@ -26,3 +26,5 @@ pom-explorer.iml
 served-data/
 
 *.graphml
+/.apt_generated/
+/.apt_generated/

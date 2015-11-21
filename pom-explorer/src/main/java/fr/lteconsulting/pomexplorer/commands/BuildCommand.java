@@ -33,6 +33,8 @@ public class BuildCommand
 			}
 
 			session.builder().buildProject(project);
+			
+			log.html( "project " + project + " marked for building<br/>" );
 		});
 	}
 
