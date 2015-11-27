@@ -27,3 +27,4 @@ served-data/
 
 *.graphml
 /target/
+pom-explorer/export.csv
