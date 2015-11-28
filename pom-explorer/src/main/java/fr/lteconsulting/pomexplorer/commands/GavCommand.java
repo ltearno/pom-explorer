@@ -38,7 +38,7 @@ public class GavCommand
 	{
 		PomAnalyzer analyzer = new PomAnalyzer();
 
-		analyzer.registerExternalDependency(session, client, log, gav);
+		analyzer.fetchGavWithMaven(session, log, gav);
 
 		log.html("finished !<br/>");
 	}
@@ -51,7 +51,7 @@ public class GavCommand
 		session.graph().gavs().stream().filter(gav -> session.projects().forGav(gav) == null)
 				.parallel().forEach(gav -> {
 					log.html("analyzing " + gav + "...<br/>");
-					analyzer.registerExternalDependency(session, client, log, gav);
+					analyzer.fetchGavWithMaven(session, log, gav);
 				});
 
 		log.html("finished !<br/>");
@@ -71,7 +71,7 @@ public class GavCommand
 		}
 
 		log.html("analyzing " + gav + "...<br/>");
-		analyzer.registerExternalDependency(session, client, log, gav);
+		analyzer.fetchGavWithMaven(session, log, gav);
 
 		log.html("finished !<br/>");
 	}

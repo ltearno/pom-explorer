@@ -1,7 +1,6 @@
 package fr.lteconsulting.pomexplorer.depanalyze;
 
 import org.apache.maven.model.Dependency;
-import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
 
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.PomSection;
@@ -15,16 +14,16 @@ public class GavLocation extends Location
 
 	private GAV unresolvedGav;
 
-	public GavLocation( Project project, PomSection section, MavenDependency resolved )
-	{
-		this( project, section, new GAV( resolved.getGroupId(), resolved.getArtifactId(), resolved.getVersion() ), null );
-	}
+	private String scope;
 
-	public GavLocation( Project project, PomSection section, Dependency readden )
-	{
-		this( project, section, null, null );
+	private String classifier;
 
-		setReadDependency( readden );
+	public GavLocation( Project project, PomSection section, GAV resolvedGav, Dependency unresolved )
+	{
+		this( project, section, resolvedGav, new GAV( unresolved.getGroupId(), unresolved.getArtifactId(), unresolved.getVersion() ) );
+
+		scope = unresolved.getScope();
+		classifier = unresolved.getClassifier();
 	}
 
 	public GavLocation( Project project, PomSection section, GAV gav )
@@ -41,9 +40,14 @@ public class GavLocation extends Location
 		this.unresolvedGav = unresolvedGav;
 	}
 
-	public void setReadDependency( Dependency readden )
+	public String getScope()
 	{
-		unresolvedGav = new GAV( readden.getGroupId(), readden.getArtifactId(), readden.getVersion() );
+		return scope;
+	}
+
+	public String getClassifier()
+	{
+		return classifier;
 	}
 
 	public PomSection getSection()

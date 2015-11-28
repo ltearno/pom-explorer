@@ -61,7 +61,7 @@ public class WorkingSession
 	{
 		return projects;
 	}
-
+	
 	public GitRepositories repositories()
 	{
 		return gitRepositories;

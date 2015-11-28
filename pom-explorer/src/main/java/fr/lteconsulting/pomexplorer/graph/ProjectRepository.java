@@ -11,7 +11,7 @@ import fr.lteconsulting.pomexplorer.Project;
 public class ProjectRepository
 {
 	private final Map<GAV, Project> projects = new HashMap<>();
-
+	
 	public boolean contains( GAV gav )
 	{
 		return projects.containsKey( gav );
@@ -20,6 +20,11 @@ public class ProjectRepository
 	public void add( Project project )
 	{
 		projects.put( project.getGav(), project );
+	}
+
+	public void remove( Project project )
+	{
+		projects.remove( project );
 	}
 
 	public Project forGav( GAV gav )

@@ -5,13 +5,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
-import org.apache.maven.model.Plugin;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -19,6 +18,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolvedArtifact;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
 
+import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
@@ -38,44 +38,22 @@ public class PomAnalyzer
 
 	public void analyze( String directory, WorkingSession session, ILogger log )
 	{
-		processFile( new File( directory ), session, log );
-	}
+		log.html( "Loading projects from '" + directory + "'<br/>" );
+		Set<Project> loadedProjects = new HashSet<>();
+		loadDirectoryOrFile( new File( directory ), session, log, loadedProjects );
 
-	private boolean acceptedDir( String name )
-	{
-		for( String ignored : IGNORED_DIRS )
-			if( ignored.equalsIgnoreCase( name ) )
-				return false;
-		return true;
-	}
-
-	private void processFile( File file, WorkingSession session, ILogger log )
-	{
-		if( file == null )
-			return;
-
-		if( file.isDirectory() )
+		log.html( "Fetching related projects if needed<br/>" );
+		boolean somethingToDo = true;
+		while( somethingToDo )
 		{
-			String name = file.getName();
-			if( !acceptedDir( name ) )
-				return;
+			somethingToDo = false;
+			for( Project project : loadedProjects )
+				somethingToDo |= fixProjectResolution( project, session, log );
+		}
 
-			try
-			{
-				Files.newDirectoryStream( file.toPath(), ( filtered ) -> {
-					String filteredName = filtered.getFileName().toString();
-					return "pom.xml".equalsIgnoreCase( filteredName ) || Files.isDirectory( filtered ) && acceptedDir( filteredName );
-				} ).forEach( ( path ) -> processFile( new File( path.toString() ), session, log ) );
-			}
-			catch( IOException e )
-			{
-				e.printStackTrace();
-			}
-		}
-		else if( file.getName().equalsIgnoreCase( "pom.xml" ) )
-		{
-			processPom( file, session, log );
-		}
+		log.html( "Updating graph<br/>" );
+		for( Project project : loadedProjects )
+			addProjectToGraph( project, session, log );
 	}
 
 	/**
@@ -87,7 +65,7 @@ public class PomAnalyzer
 	 * @param session
 	 *            working session
 	 */
-	public void registerExternalDependency( WorkingSession session, Client client, ILogger log, GAV gav )
+	public Project fetchGavWithMaven( WorkingSession session, ILogger log, GAV gav )
 	{
 		String mavenSettingsFilePath = session.getMavenSettingsFilePath();
 
@@ -110,90 +88,153 @@ public class PomAnalyzer
 		if( resolvedArtifact == null )
 		{
 			log.html( Tools.warningMessage( "cannot resolve the artifact " + gav ) );
-			return;
+			return null;
 		}
 
 		log.html( "resolved artifact : " + resolvedArtifact.getCoordinate().toString() + "<br/>" );
 
-		// Big hack here !
+		// Big hack here ! I don't manage to get the resolve the pom file with shrinkwrap,
+		// so i resolve the jar and find the path to the pom.xml file. That does only
+		// work for jar packaged projects, and especially not for pom packaged bom imports... TODO
 		String pomPath = resolvedArtifact.asFile().getAbsolutePath();
 		int idx = pomPath.lastIndexOf( '.' );
 		if( idx < 0 )
-			return;
+			return null;
 
 		pomPath = pomPath.substring( 0, idx + 1 ) + "pom";
 
-		processPom( new File( pomPath ), session, log );
+		Project project = loadProjectFromPomFile( new File( pomPath ), session, log );
+
+		return project;
 	}
 
-	private void processPom( File pomFile, WorkingSession session, ILogger log )
+	public void addProjectToGraph( Project project, WorkingSession session, ILogger log )
+	{
+		session.graph().removeRelations( session.graph().relations( project.getGav() ) );
+
+		try
+		{
+			GAV gav = project.getGav();
+			GAV parentGav = project.getParent();
+			Collection<GavLocation> dependencies = project.getDependencies( session, log ).values();
+			Collection<GavLocation> pluginDependencies = project.getPluginDependencies( session, log ).values();
+
+			session.graph().addGav( gav );
+			if( parentGav != null )
+				session.graph().addRelation( new ParentRelation( gav, parentGav ) );
+
+			for( GavLocation location : dependencies )
+			{
+				session.graph().addGav( location.getResolvedGav() );
+				session.graph().addRelation( new DependencyRelation( gav, location.getResolvedGav(), location.getScope(), location.getClassifier() ) );
+			}
+
+			for( GavLocation location : pluginDependencies )
+			{
+				session.graph().addGav( location.getResolvedGav() );
+				session.graph().addRelation( new BuildDependencyRelation( gav, location.getResolvedGav() ) );
+			}
+
+			// log.html( "updated graph with project " + project.getGav() + "<br/>" );
+		}
+		catch( Exception e )
+		{
+			log.html( Tools.errorMessage( "Cannot add project " + project + " to graph." ) );
+		}
+	}
+
+	private boolean acceptedDir( String name )
+	{
+		for( String ignored : IGNORED_DIRS )
+			if( ignored.equalsIgnoreCase( name ) )
+				return false;
+		return true;
+	}
+
+	private void loadDirectoryOrFile( File file, WorkingSession session, ILogger log, Set<Project> loadedProjects )
+	{
+		if( file == null )
+			return;
+
+		if( file.isDirectory() )
+		{
+			String name = file.getName();
+			if( !acceptedDir( name ) )
+				return;
+
+			try
+			{
+				Files.newDirectoryStream( file.toPath(), ( filtered ) -> {
+					String filteredName = filtered.getFileName().toString();
+					return filteredName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( filteredName ) || Files.isDirectory( filtered ) && acceptedDir( filteredName );
+				} ).forEach( ( path ) -> loadDirectoryOrFile( new File( path.toString() ), session, log, loadedProjects ) );
+			}
+			catch( IOException e )
+			{
+				e.printStackTrace();
+			}
+		}
+		else if( file.getName().equalsIgnoreCase( "pom.xml" ) || file.getName().endsWith( ".pom" ) )
+		{
+			Project project = loadProjectFromPomFile( file, session, log );
+			if( project != null )
+				loadedProjects.add( project );
+		}
+	}
+
+	private Project loadProjectFromPomFile( File pomFile, WorkingSession session, ILogger log )
 	{
 		MavenProject unresolved = readPomFile( pomFile, log );
 		if( unresolved == null )
 		{
 			log.html( Tools.warningMessage( "cannot read pom " + pomFile.getAbsolutePath() ) );
-			return;
+			return null;
 		}
-
-		// TODO : here we have a resolution problem
-		GAV gav = new GAV( unresolved.getGroupId(), unresolved.getArtifactId(), unresolved.getVersion() );
-
-		if( session.projects().contains( gav ) )
-		{
-			log.html( Tools.warningMessage( "pom already processed '" + pomFile.getAbsolutePath() + "' ! Ignoring." ) );
-			return;
-		}
-
-		session.graph().addGav( gav );
 
 		// hierarchy
-		// TODO : here we have a resolution problem
+		// TODO : here we have a resolution problem (relative path parent not managed here)
 		Parent parent = unresolved.getModel().getParent();
+		GAV parentGav = null;
 		if( parent != null )
 		{
-			GAV parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
+			parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
 			session.graph().addGav( parentGav );
-
-			session.graph().addRelation( new ParentRelation( gav, parentGav ) );
 		}
 
-		// TODO : here we have a resolution problem
-		// dependencies
-		for( Dependency dependency : unresolved.getDependencies() )
-		{
-			GAV depGav = new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
-			session.graph().addGav( depGav );
-
-			session.graph().addRelation( new DependencyRelation( gav, depGav, dependency.getScope(), dependency.getClassifier() ) );
-		}
-
-		// build dependencies
-		try
-		{
-			// TODO : here we have a resolution problem
-			Model model = unresolved.getModel();
-			if( model.getBuild() != null && model.getBuild().getPlugins() != null )
-			{
-				for( Plugin plugin : model.getBuild().getPlugins() )
-				{
-					GAV depGav = new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
-					session.graph().addGav( depGav );
-
-					session.graph().addRelation( new BuildDependencyRelation( gav, depGav ) );
-				}
-			}
-		}
-		catch( IllegalArgumentException | SecurityException e )
-		{
-			e.printStackTrace();
-		}
-
-		Project projectInfo = new Project( pomFile, unresolved );
+		Project projectInfo = new Project( pomFile, unresolved, parentGav );
 		session.projects().add( projectInfo );
-
 		session.repositories().add( projectInfo );
 
-		log.html( "processed project " + projectInfo.getGav() + "<br/>" );
+		// log.html( "loaded project " + projectInfo.getGav() + "<br/>" );
+
+		return projectInfo;
+	}
+
+	/**
+	 * sometimes a project cannot be resolved because it's parent or a bom import is not in the analyzed directory.
+	 * 
+	 * At that time, the parent or bom import is fetched through maven.
+	 * 
+	 * returns true if something has moved and resolution should be attempted again on other projects
+	 */
+	private boolean fixProjectResolution( Project project, WorkingSession session, ILogger log )
+	{
+		Set<GAV> missingProjects = project.getMissingGavsForResolution( session, log );
+
+		if( missingProjects.isEmpty() )
+			return false;
+
+		log.html( Tools.warningMessage( "For the project " + project + " to be resolvable, some projects wich are not in the analyzed directory need to be fetched with maven :" ) );
+
+		boolean somethingChanged = false;
+
+		for( GAV missingProject : missingProjects )
+		{
+			log.html( "Fetching missing project " + missingProject + " with maven<br/>" );
+			somethingChanged |= fetchGavWithMaven( session, log, missingProject ) != null;
+		}
+
+		return somethingChanged;
 	}
 
 	private MavenProject readPomFile( File pom, ILogger log )
