@@ -7,8 +7,6 @@ import java.util.Map;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
-import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
-import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 
@@ -20,7 +18,7 @@ import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 public class Project
 {
 	private final File pomFile;
-	private ParsedPomFile resolvedPom;
+	//private ParsedPomFile resolvedPom;
 	private MavenProject project;
 
 	private GAV gav;
@@ -28,20 +26,20 @@ public class Project
 
 	private Map<GAV, GavLocation> pluginDependencies;
 
-	public Project( File pomFile, ParsedPomFile resolvedPom, MavenProject project )
+	public Project( File pomFile, MavenProject project )
 	{
 		this.pomFile = pomFile;
-		this.resolvedPom = resolvedPom;
 		this.project = project;
 
 		dependencies = new HashMap<>();
-		for( MavenDependency dependency : resolvedPom.getDependencies() )
+		// TODO : here we have a resolution problem
+		for( Dependency dependency : project.getDependencies() )
 		{
 			GavLocation info = new GavLocation( this, PomSection.DEPENDENCY, dependency );
 
 			dependencies.put( new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() ), info );
 		}
-
+		
 		for( Dependency dependency : project.getDependencies() )
 		{
 			GavLocation info = getApproximateDependency( dependency.getGroupId(), dependency.getArtifactId() );
@@ -71,11 +69,6 @@ public class Project
 		return pomFile;
 	}
 
-	public ParsedPomFile getResolvedPom()
-	{
-		return resolvedPom;
-	}
-
 	public MavenProject getUnresolvedPom()
 	{
 		return project;
@@ -94,8 +87,11 @@ public class Project
 
 	public GAV getGav()
 	{
-		if( gav == null )
-			gav = new GAV( resolvedPom.getGroupId(), resolvedPom.getArtifactId(), resolvedPom.getVersion() );
+		// TODO : here we have a resolution problem...
+		if( gav == null ) {
+			gav = new GAV( project.getGroupId(), project.getArtifactId(), project.getVersion() );
+			//gav = new GAV( resolvedPom.getGroupId(), resolvedPom.getArtifactId(), resolvedPom.getVersion() );
+		}
 		return gav;
 	}
 

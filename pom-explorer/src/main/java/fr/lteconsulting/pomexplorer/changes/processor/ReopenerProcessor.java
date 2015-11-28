@@ -38,7 +38,6 @@ public class ReopenerProcessor extends AbstractGavChangeProcessor
 		GAV newGav = Tools.openGavVersion( gav );
 
 		// add the change to the changeset
-		// TODO add the comment : "reopening"
 		changeSet.addChange( new GavChange( new GavLocation( change.getLocation().getProject(), PomSection.PROJECT, gav ), newGav ), change );
 	}
 }

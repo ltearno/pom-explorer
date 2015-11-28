@@ -1,0 +1,7 @@
+Au lieu d'avoir **chargement et résolution** d'une traite, on a :
+
+- chargement => loaded pom projects => dépendant seulement du fichier pom
+- résolution :
+-- GAV => version et groupe peuvent venir du parent
+-- parent => peut être défini dans un fichier au chemin relatif
+-- dependencies, build plugins => les versions peuvent être définies dans : depmngt des parent (depmng section ou bom import)

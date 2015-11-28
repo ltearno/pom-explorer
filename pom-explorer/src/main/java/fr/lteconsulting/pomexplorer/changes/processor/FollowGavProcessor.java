@@ -13,7 +13,7 @@ import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 /**
  * When a project's gav is changed, the change is repercuted on projects which
- * depends on this project TODO Javadoc de la classe FollowGavProcessor.
+ * depends on this project
  */
 public class FollowGavProcessor extends AbstractGavChangeProcessor
 {

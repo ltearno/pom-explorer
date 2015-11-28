@@ -3,24 +3,21 @@ package fr.lteconsulting.pomexplorer;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.jboss.shrinkwrap.resolver.api.InvalidConfigurationFileException;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolvedArtifact;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenWorkingSession;
-import org.jboss.shrinkwrap.resolver.api.maven.ScopeType;
-import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenDependency;
-import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
-import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
-import org.jboss.shrinkwrap.resolver.impl.maven.task.AddScopedDependenciesTask;
-import org.jboss.shrinkwrap.resolver.impl.maven.task.ConfigureSettingsFromFileTask;
 
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
@@ -28,9 +25,28 @@ import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 
 public class PomAnalyzer
 {
+	private final static Set<String> IGNORED_DIRS = new HashSet<>( Arrays.asList(
+			"target",
+			"bin",
+			"src",
+			"node_modules",
+			".git",
+			"war",
+			"gwt-unitCache",
+			".idea",
+			".settings" ) );
+
 	public void analyze( String directory, WorkingSession session, ILogger log )
 	{
 		processFile( new File( directory ), session, log );
+	}
+
+	private boolean acceptedDir( String name )
+	{
+		for( String ignored : IGNORED_DIRS )
+			if( ignored.equalsIgnoreCase( name ) )
+				return false;
+		return true;
 	}
 
 	private void processFile( File file, WorkingSession session, ILogger log )
@@ -41,11 +57,20 @@ public class PomAnalyzer
 		if( file.isDirectory() )
 		{
 			String name = file.getName();
-			if( "target".equalsIgnoreCase( name ) || "bin".equalsIgnoreCase( name ) || "src".equalsIgnoreCase( name ) )
+			if( !acceptedDir( name ) )
 				return;
 
-			for( File f : file.listFiles() )
-				processFile( f, session, log );
+			try
+			{
+				Files.newDirectoryStream( file.toPath(), ( filtered ) -> {
+					String filteredName = filtered.getFileName().toString();
+					return "pom.xml".equalsIgnoreCase( filteredName ) || Files.isDirectory( filtered ) && acceptedDir( filteredName );
+				} ).forEach( ( path ) -> processFile( new File( path.toString() ), session, log ) );
+			}
+			catch( IOException e )
+			{
+				e.printStackTrace();
+			}
 		}
 		else if( file.getName().equalsIgnoreCase( "pom.xml" ) )
 		{
@@ -110,14 +135,8 @@ public class PomAnalyzer
 			return;
 		}
 
-		ParsedPomFile resolved = loadPomFile( session, pomFile, log );
-		if( resolved == null )
-		{
-			log.html( Tools.warningMessage( "cannot load pom " + unresolved.getGroupId() + ":" + unresolved.getArtifactId() + ":" + unresolved.getVersion() + " (<i>" + pomFile.getAbsolutePath() + "</i>)" ) );
-			return;
-		}
-
-		GAV gav = new GAV( resolved.getGroupId(), resolved.getArtifactId(), resolved.getVersion() );
+		// TODO : here we have a resolution problem
+		GAV gav = new GAV( unresolved.getGroupId(), unresolved.getArtifactId(), unresolved.getVersion() );
 
 		if( session.projects().contains( gav ) )
 		{
@@ -128,6 +147,7 @@ public class PomAnalyzer
 		session.graph().addGav( gav );
 
 		// hierarchy
+		// TODO : here we have a resolution problem
 		Parent parent = unresolved.getModel().getParent();
 		if( parent != null )
 		{
@@ -137,25 +157,30 @@ public class PomAnalyzer
 			session.graph().addRelation( new ParentRelation( gav, parentGav ) );
 		}
 
+		// TODO : here we have a resolution problem
 		// dependencies
-		for( MavenDependency dependency : resolved.getDependencies() )
+		for( Dependency dependency : unresolved.getDependencies() )
 		{
 			GAV depGav = new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
 			session.graph().addGav( depGav );
 
-			session.graph().addRelation( new DependencyRelation( gav, depGav, dependency.getScope().name(), dependency.getClassifier() ) );
+			session.graph().addRelation( new DependencyRelation( gav, depGav, dependency.getScope(), dependency.getClassifier() ) );
 		}
 
 		// build dependencies
 		try
 		{
-			Model model = Tools.getParsedPomFileModel( resolved );
-			for( Plugin plugin : model.getBuild().getPlugins() )
+			// TODO : here we have a resolution problem
+			Model model = unresolved.getModel();
+			if( model.getBuild() != null && model.getBuild().getPlugins() != null )
 			{
-				GAV depGav = new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
-				session.graph().addGav( depGav );
+				for( Plugin plugin : model.getBuild().getPlugins() )
+				{
+					GAV depGav = new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
+					session.graph().addGav( depGav );
 
-				session.graph().addRelation( new BuildDependencyRelation( gav, depGav ) );
+					session.graph().addRelation( new BuildDependencyRelation( gav, depGav ) );
+				}
 			}
 		}
 		catch( IllegalArgumentException | SecurityException e )
@@ -163,50 +188,12 @@ public class PomAnalyzer
 			e.printStackTrace();
 		}
 
-		Project projectInfo = new Project( pomFile, resolved, unresolved );
+		Project projectInfo = new Project( pomFile, unresolved );
 		session.projects().add( projectInfo );
 
 		session.repositories().add( projectInfo );
 
 		log.html( "processed project " + projectInfo.getGav() + "<br/>" );
-	}
-
-	private static MavenWorkingSession createMavenWorkingSession( WorkingSession workingSession )
-	{
-		try
-		{
-			String mavenSettingsFilePath = workingSession.getMavenSettingsFilePath();
-
-			MavenWorkingSession session = new MavenWorkingSessionImpl();
-			if( mavenSettingsFilePath != null )
-				session = new ConfigureSettingsFromFileTask( mavenSettingsFilePath ).execute( session );
-
-			session = new AddScopedDependenciesTask( ScopeType.COMPILE, ScopeType.IMPORT, ScopeType.SYSTEM, ScopeType.RUNTIME ).execute( session );
-
-			return session;
-		}
-		catch( InvalidConfigurationFileException e )
-		{
-			return null;
-		}
-	}
-
-	private ParsedPomFile loadPomFile( WorkingSession workingSession, File pomFile, ILogger log )
-	{
-		MavenWorkingSession session = createMavenWorkingSession( workingSession );
-		if( session == null )
-			return null;
-
-		try
-		{
-			session.loadPomFromFile( pomFile );
-			return session.getParsedPomFile();
-		}
-		catch( Exception e )
-		{
-			log.html( Tools.errorMessage( "error while loading pom " + pomFile.getAbsolutePath() + " : " + e.getMessage() ) );
-			return null;
-		}
 	}
 
 	private MavenProject readPomFile( File pom, ILogger log )

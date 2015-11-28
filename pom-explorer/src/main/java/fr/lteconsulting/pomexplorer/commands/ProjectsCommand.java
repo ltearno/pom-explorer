@@ -12,7 +12,6 @@ import java.util.Set;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Parent;
 import org.apache.maven.project.MavenProject;
-import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
 
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.ILogger;
@@ -54,13 +53,12 @@ public class ProjectsCommand
 
 		for( Project project : session.projects().values() )
 		{
-			ParsedPomFile resolvedPom = project.getResolvedPom();
 			MavenProject unresolvedProject = project.getUnresolvedPom();
 
 			if( gavFilter!=null && !gavFilter.accept( project.getGav() ) )
 				continue;
-
-			log.html( "gav : " + project.getGav() + " " + resolvedPom.getPackagingType().getId() + ":" + resolvedPom.getPackagingType().getExtension() + ":" + resolvedPom.getPackagingType().getClassifier() + "<br/>" );
+			
+			log.html( "gav : " + project.getGav() + ", packaging: " + unresolvedProject.getModel().getPackaging() + "<br/>" );
 			log.html( "file : " + project.getPomFile().getAbsolutePath() + "<br/>" );
 
 			Parent parent = unresolvedProject.getModel().getParent();
