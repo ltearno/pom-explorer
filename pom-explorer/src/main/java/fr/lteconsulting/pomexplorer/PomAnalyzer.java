@@ -42,7 +42,7 @@ public class PomAnalyzer
 		Set<Project> loadedProjects = new HashSet<>();
 		loadDirectoryOrFile( new File( directory ), session, log, loadedProjects );
 
-		log.html( "Fetching related projects if needed<br/>" );
+		log.html( "Fetching related projects...<br/>" );
 		boolean somethingToDo = true;
 		while( somethingToDo )
 		{
@@ -249,10 +249,10 @@ public class PomAnalyzer
 			MavenProject project = new MavenProject( model );
 			return project;
 		}
-		catch( IOException | XmlPullParserException e1 )
+		catch( IOException | XmlPullParserException e )
 		{
-			log.html( Tools.errorMessage( "error reading project file : " + pom.getAbsolutePath() ) );
-			Tools.dumpStacktrace( e1, log );
+			log.html( Tools.warningMessage( "error reading project file : " + pom.getAbsolutePath() + ", message: " + e.getMessage() ) );
+			// Tools.dumpStacktrace( e1, log );
 			return null;
 		}
 	}
