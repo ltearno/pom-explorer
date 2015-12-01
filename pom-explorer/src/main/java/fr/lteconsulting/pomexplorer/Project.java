@@ -149,14 +149,38 @@ public class Project
 
 		if( version == null )
 		{
-			if( "maven-war-plugin".equals( artifactId ) && "org.apache.maven.plugins".equals( groupId ) )
-				version = "2.2";
-			else if( "maven-assembly-plugin".equals( artifactId ) && "org.apache.maven.plugins".equals( groupId ) )
-				version = "2.2-beta-5";
-			else if( "maven-compiler-plugin".equals( artifactId ) && "org.apache.maven.plugins".equals( groupId ) )
-				version = "2.5.1";
-			else if( "org.apache.maven.plugins".equals( groupId ) )
-				version = "default-maven-version";
+			String ga = groupId + ":" + artifactId;
+			switch( ga )
+			{
+				case "org.apache.maven.plugins:maven-war-plugin":
+					version = "2.2";
+					break;
+
+				case "org.apache.maven.plugins:maven-assembly-plugin":
+					version = "2.2-beta-5";
+					break;
+
+				case "org.apache.maven.plugins:maven-compiler-plugin":
+					version = "2.5.1";
+					break;
+					
+				case "org.apache.maven.plugins:maven-source-plugin":
+					version = "2.2.1";
+					break;
+					
+				case "org.codehaus.mojo:buildnumber-maven-plugin":
+					version = "1.4";
+					break;
+
+				case "org.apache.felix:maven-bundle-plugin":
+					version = "3.0.1";
+					break;
+
+				default:
+					// TODO throw a warning and resolve to the highest possible version
+					if( "org.apache.maven.plugins".equals( groupId ) )
+						version = "default-maven-version";
+			}
 		}
 
 		if( !(isResolved( version ) && isResolved( groupId ) && isResolved( artifactId )) )
@@ -212,6 +236,9 @@ public class Project
 
 		if( "java.version".equals( propertyName ) )
 			return propertyName;
+
+		if( "mavenVersion".equals( propertyName ) )
+			return "maven-installation-version";
 
 		Project parentProject = session.projects().forGav( parentGav );
 		if( parentProject == null )
