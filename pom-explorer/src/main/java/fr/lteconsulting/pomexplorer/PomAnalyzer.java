@@ -5,12 +5,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolvedArtifact;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
 
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
@@ -30,13 +31,15 @@ public class PomAnalyzer
 			".idea",
 			".settings" ) );
 
+	Map<String, MavenResolver> resolvers = new HashMap<>();
+
 	public void analyze( String directory, WorkingSession session, ILogger log )
 	{
-		log.html( "Loading projects from '" + directory + "'<br/>" );
+		log.html( "analyzing '" + directory + "'<br/>" );
 		Set<Project> loadedProjects = new HashSet<>();
 		loadDirectoryOrFile( new File( directory ), session, log, loadedProjects );
 
-		log.html( "Fetching related projects...<br/>" );
+		log.html( "integrity checks...<br/>" );
 		boolean somethingToDo = true;
 		while( somethingToDo )
 		{
@@ -45,7 +48,7 @@ public class PomAnalyzer
 				somethingToDo |= fixProjectResolution( project, session, log );
 		}
 
-		log.html( "Updating graph<br/>" );
+		log.html( "graph update<br/>" );
 		for( Project project : loadedProjects )
 			addProjectToGraph( project, session, log );
 	}
@@ -62,42 +65,19 @@ public class PomAnalyzer
 	public Project fetchGavWithMaven( WorkingSession session, ILogger log, GAV gav )
 	{
 		String mavenSettingsFilePath = session.getMavenSettingsFilePath();
-
-		MavenResolverSystem resolver;
-		if( mavenSettingsFilePath != null && !mavenSettingsFilePath.isEmpty() )
-			resolver = Maven.configureResolver().fromFile( mavenSettingsFilePath );
-		else
-			resolver = Maven.resolver();
-
-		MavenResolvedArtifact resolvedArtifact = null;
-		try
+		MavenResolver resolver = resolvers.get( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath );
+		if( resolver == null )
 		{
-			resolvedArtifact = resolver.resolve( gav.toString() ).withoutTransitivity().asSingle( MavenResolvedArtifact.class );
-		}
-		catch( Exception e )
-		{
-			log.html( Tools.errorMessage( "shrinkwrap error : " + e.getMessage() ) );
+			resolver = new MavenResolver();
+			resolver.init( session );
+			resolvers.put( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath, resolver );
 		}
 
-		if( resolvedArtifact == null )
-		{
-			log.html( Tools.warningMessage( "cannot resolve the artifact " + gav ) );
-			return null;
-		}
+		File pomFile = resolver.resolvePom( gav );
 
-		log.html( "resolved artifact : " + resolvedArtifact.getCoordinate().toString() + "<br/>" );
-
-		// Big hack here ! I don't manage to get the resolve the pom file with shrinkwrap,
-		// so i resolve the jar and find the path to the pom.xml file. That does only
-		// work for jar packaged projects, and especially not for pom packaged bom imports... TODO
-		String pomPath = resolvedArtifact.asFile().getAbsolutePath();
-		int idx = pomPath.lastIndexOf( '.' );
-		if( idx < 0 )
-			return null;
-
-		pomPath = pomPath.substring( 0, idx + 1 ) + "pom";
-
-		Project project = loadProjectFromPomFile( new File( pomPath ), session, log );
+		Project project = null;
+		if( pomFile != null )
+			loadProjectFromPomFile( pomFile, session, log );
 
 		return project;
 	}
@@ -131,8 +111,6 @@ public class PomAnalyzer
 				session.graph().addGav( location.getResolvedGav() );
 				session.graph().addRelation( new BuildDependencyRelation( gav, location.getResolvedGav() ) );
 			}
-
-			// log.html( "updated graph with project " + project.getGav() + "<br/>" );
 		}
 		catch( Exception e )
 		{
@@ -210,13 +188,11 @@ public class PomAnalyzer
 		if( missingProjects.isEmpty() )
 			return false;
 
-		log.html( Tools.warningMessage( "For the project " + project + " to be resolvable, some projects wich are not in the analyzed directory need to be fetched with maven :" ) );
-
 		boolean somethingChanged = false;
 
 		for( GAV missingProject : missingProjects )
 		{
-			log.html( "Fetching missing project " + missingProject + " with maven<br/>" );
+			log.html( "fetching " + missingProject + " (needed by resolution of " + project + ")<br/>" );
 			somethingChanged |= fetchGavWithMaven( session, log, missingProject ) != null;
 		}
 
