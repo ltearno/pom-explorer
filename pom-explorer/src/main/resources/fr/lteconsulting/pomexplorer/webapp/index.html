@@ -69,12 +69,16 @@ input[type=text]:focus.terminal {
 100%
 {
 transform
-:
- 
-translateX
-(0);
 
-            
+
+:
+
+ 
+
+translateX
+
+
+(0);
 }
 }
 .talk {
@@ -119,8 +123,9 @@ translateX
 <body style=''>
 	<div id="terminal"
 		style="position: absolute; width: 100%; height: 100%;"></div>
-		
-	<div id="buildPipelineStatus" style="background-color:black; position:absolute; right:35px; top:0; bottom:100px; overflow:auto;"></div>
+
+	<div id="buildPipelineStatus"
+		style="background-color: black; position: absolute; right: 35px; top: 0; bottom: 100px; overflow: auto;"></div>
 
 	<script type="text/javascript">
 		function killTalk( talkDiv )
@@ -229,13 +234,9 @@ translateX
             		talk.innerHTML = "<div style='float:right;' onclick='killTalk(this)'>X</div>" + text;
             	else
                 {
-           			talk.innerHTML += text;
-
-           			var max = 100000;
-                    if( talk.innerHTML.length > max ) {
-                    	talk.innerHTML = talk.innerHTML.substr(-max);
-                    	talk.innerHTML = talk.innerHTML.substr(talk.innerHTML.indexOf('/>')+2);
-                    }
+           			if( 0!=text.indexOf("<"))
+           				text = "<span>" + text + "</span>";
+                	talk.insertAdjacentHTML('beforeend', text);
                 }
                 
                 if( talk == this.html.children[0].lastElementChild )
