@@ -175,7 +175,8 @@ public class Builder
 		}
 		catch( Exception e )
 		{
-			log( "error: " + e );
+			System.err.println("error in Builder thread :");
+			e.printStackTrace();
 		}
 
 		return null;

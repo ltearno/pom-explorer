@@ -1,7 +1,6 @@
 package fr.lteconsulting.pomexplorer;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -9,11 +8,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Parent;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolvedArtifact;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
@@ -121,7 +115,10 @@ public class PomAnalyzer
 
 			session.graph().addGav( gav );
 			if( parentGav != null )
+			{
+				session.graph().addGav( parentGav );
 				session.graph().addRelation( new ParentRelation( gav, parentGav ) );
+			}
 
 			for( GavLocation location : dependencies )
 			{
@@ -139,7 +136,7 @@ public class PomAnalyzer
 		}
 		catch( Exception e )
 		{
-			log.html( Tools.errorMessage( "Cannot add project " + project + " to graph." ) );
+			log.html( Tools.errorMessage( "Cannot add project " + project + " to graph. Cause: " + e.getMessage() ) );
 		}
 	}
 
@@ -184,30 +181,19 @@ public class PomAnalyzer
 
 	private Project loadProjectFromPomFile( File pomFile, WorkingSession session, ILogger log )
 	{
-		MavenProject unresolved = readPomFile( pomFile, log );
-		if( unresolved == null )
+		try
 		{
-			log.html( Tools.warningMessage( "cannot read pom " + pomFile.getAbsolutePath() ) );
-			return null;
+			Project project = new Project( pomFile );
+			session.projects().add( project );
+			session.repositories().add( project );
+			return project;
+		}
+		catch( Exception e )
+		{
+			log.html( Tools.errorMessage( "error loading pom file " + pomFile.getAbsolutePath() + ", message: " + e.getMessage() ) );
 		}
 
-		// hierarchy
-		// TODO : here we have a resolution problem (relative path parent not managed here)
-		Parent parent = unresolved.getModel().getParent();
-		GAV parentGav = null;
-		if( parent != null )
-		{
-			parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
-			session.graph().addGav( parentGav );
-		}
-
-		Project projectInfo = new Project( pomFile, unresolved, parentGav );
-		session.projects().add( projectInfo );
-		session.repositories().add( projectInfo );
-
-		// log.html( "loaded project " + projectInfo.getGav() + "<br/>" );
-
-		return projectInfo;
+		return null;
 	}
 
 	/**
@@ -235,25 +221,5 @@ public class PomAnalyzer
 		}
 
 		return somethingChanged;
-	}
-
-	private MavenProject readPomFile( File pom, ILogger log )
-	{
-		Model model = null;
-		MavenXpp3Reader mavenreader = new MavenXpp3Reader();
-		try( FileReader reader = new FileReader( pom ) )
-		{
-			model = mavenreader.read( reader );
-			model.setPomFile( pom );
-
-			MavenProject project = new MavenProject( model );
-			return project;
-		}
-		catch( IOException | XmlPullParserException e )
-		{
-			log.html( Tools.warningMessage( "error reading project file : " + pom.getAbsolutePath() + ", message: " + e.getMessage() ) );
-			// Tools.dumpStacktrace( e1, log );
-			return null;
-		}
 	}
 }

@@ -46,32 +46,32 @@ public class Client
 	{
 		return channel;
 	}
-	
+
 	public void sendHtml( String talkGuid, String html )
 	{
 		if( html == null )
 			return;
-		
+
 		send( MessageFactory.htmlMessage( talkGuid, html ) );
 	}
-	
+
 	public void sendClose( String talkGuid )
 	{
 		send( MessageFactory.closeTalkMessage( talkGuid ) );
 	}
-	
+
 	public Message sendHangOutText( String talkGuid, String question )
 	{
 		Message message = MessageFactory.hangOutTextMessage( talkGuid, question );
 		send( message );
 		return message;
 	}
-	
+
 	public void send( Message message )
 	{
 		if( message == null )
 			return;
-		
+
 		Gson gson = new Gson();
 		String text = gson.toJson( message );
 
