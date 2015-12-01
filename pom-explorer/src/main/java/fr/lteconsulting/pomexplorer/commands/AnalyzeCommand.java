@@ -11,13 +11,10 @@ public class AnalyzeCommand
 	public void directory( Client client, WorkingSession session, ILogger log, String directory )
 	{
 		log.html( "Analyzing directoy '" + directory + "'...<br/>" );
-		long duration = System.currentTimeMillis();
 
 		PomAnalyzer analyzer = new PomAnalyzer();
 		analyzer.analyze( directory, session, log );
 
-		duration = System.currentTimeMillis() - duration;
-
-		log.html( "Analyzis completed for '" + directory + "' in " + duration + " ms.<br/>" );
+		log.html( "Analyzis completed.<br/>" );
 	}
 }

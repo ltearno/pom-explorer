@@ -10,9 +10,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.maven.model.resolution.UnresolvableModelException;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenResolvedArtifact;
-
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
@@ -36,6 +33,9 @@ public class PomAnalyzer
 	public void analyze( String directory, WorkingSession session, ILogger log )
 	{
 		log.html( "analyzing '" + directory + "'<br/>" );
+
+		long duration = System.currentTimeMillis();
+
 		Set<Project> loadedProjects = new HashSet<>();
 		loadDirectoryOrFile( new File( directory ), session, log, loadedProjects );
 
@@ -49,8 +49,21 @@ public class PomAnalyzer
 		}
 
 		log.html( "graph update<br/>" );
+		int nbUnresolved = 0;
 		for( Project project : loadedProjects )
+		{
+			if( !project.isResolvable( session, log ) )
+			{
+				nbUnresolved++;
+				log.html( Tools.warningMessage( "non resolvable project " + project ) );
+			}
+
 			addProjectToGraph( project, session, log );
+		}
+
+		duration = System.currentTimeMillis() - duration;
+
+		log.html( "analysis report: " + loadedProjects.size() + " loaded projects in " + duration + " ms, " + nbUnresolved + " unresolved.<br/>" );
 	}
 
 	/**
