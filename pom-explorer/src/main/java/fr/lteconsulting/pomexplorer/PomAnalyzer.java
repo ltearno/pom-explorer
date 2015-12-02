@@ -44,8 +44,13 @@ public class PomAnalyzer
 		while( somethingToDo )
 		{
 			somethingToDo = false;
+
+			Set<Project> reloadedProjects = new HashSet<>();
+
 			for( Project project : loadedProjects )
-				somethingToDo |= fixProjectResolution( project, session, log );
+				somethingToDo |= fixProjectResolution( project, reloadedProjects, session, log );
+
+			loadedProjects.addAll( reloadedProjects );
 		}
 
 		log.html( "graph update<br/>" );
@@ -56,8 +61,12 @@ public class PomAnalyzer
 			{
 				nbUnresolved++;
 				log.html( Tools.warningMessage( "non resolvable project " + project ) );
-			}
 
+				log.html( "missing the following projects : " + project.getMissingGavsForResolution( session, log ) + "<br/>" );
+
+				continue;
+			}
+			
 			addProjectToGraph( project, session, log );
 		}
 
@@ -90,7 +99,10 @@ public class PomAnalyzer
 
 		Project project = null;
 		if( pomFile != null )
-			loadProjectFromPomFile( pomFile, session, log );
+			project = loadProjectFromPomFile( pomFile, session, log );
+		
+		if(project==null)
+			log.html( Tools.warningMessage( "cannot fetch " + gav + " through maven" ) );
 
 		return project;
 	}
@@ -194,7 +206,7 @@ public class PomAnalyzer
 	 * 
 	 * returns true if something has moved and resolution should be attempted again on other projects
 	 */
-	private boolean fixProjectResolution( Project project, WorkingSession session, ILogger log )
+	private boolean fixProjectResolution( Project project, Set<Project> loadedProjects, WorkingSession session, ILogger log )
 	{
 		Set<GAV> missingProjects = project.getMissingGavsForResolution( session, log );
 
@@ -206,7 +218,10 @@ public class PomAnalyzer
 		for( GAV missingProject : missingProjects )
 		{
 			log.html( "fetching " + missingProject + " (needed by resolution of " + project + ")<br/>" );
-			somethingChanged |= fetchGavWithMaven( session, log, missingProject ) != null;
+			Project loadedProject = fetchGavWithMaven( session, log, missingProject );
+			somethingChanged |= loadedProject != null;
+			if( loadedProject != null )
+				loadedProjects.add( loadedProject );
 		}
 
 		return somethingChanged;
