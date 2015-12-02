@@ -47,10 +47,10 @@ public class WorkingSession
 
 	public WorkingSession()
 	{
-		builder.setSession( this );
+		builder.setSession(this);
 	}
 
-	public void configure( ApplicationSettings settings )
+	public void configure(ApplicationSettings settings)
 	{
 		this.mavenSettingsFilePath = settings.getDefaultMavenSettingsFile();
 	}
@@ -58,12 +58,12 @@ public class WorkingSession
 	public MavenResolver mavenResolver()
 	{
 		String mavenSettingsFilePath = getMavenSettingsFilePath();
-		MavenResolver resolver = resolvers.get( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath );
-		if( resolver == null )
+		MavenResolver resolver = resolvers.get(mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath);
+		if (resolver == null)
 		{
 			resolver = new MavenResolver();
-			resolver.init( this );
-			resolvers.put( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath, resolver );
+			resolver.init(mavenSettingsFilePath);
+			resolvers.put(mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath, resolver);
 		}
 
 		return resolver;
@@ -104,7 +104,7 @@ public class WorkingSession
 		return mavenSettingsFilePath;
 	}
 
-	public void setMavenSettingsFilePath( String mavenSettingsFilePath )
+	public void setMavenSettingsFilePath(String mavenSettingsFilePath)
 	{
 		this.mavenSettingsFilePath = mavenSettingsFilePath;
 	}
@@ -114,25 +114,28 @@ public class WorkingSession
 		return mavenShellCommand;
 	}
 
-	public void setMavenShellCommand( String mavenShellCommand )
+	public void setMavenShellCommand(String mavenShellCommand)
 	{
 		this.mavenShellCommand = mavenShellCommand;
 	}
 
 	public String getDescription()
 	{
-		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : " + (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>" + "Maven shell command : "
-				+ (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>" + projects.size() + " projects<br/>" + graph.gavs().size() + " GAVs<br/>" + graph.relations().size() + " relations<br/></div>";
+		return "<div><b>WorkingSession " + System.identityHashCode(this) + "</b><br/>" + "Maven configuration file : "
+				+ (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>"
+				+ "Maven shell command : "
+				+ (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>" + projects.size() + " projects<br/>"
+				+ graph.gavs().size() + " GAVs<br/>" + graph.relations().size() + " relations<br/></div>";
 	}
 
-	public void addClient( Client client )
+	public void addClient(Client client)
 	{
-		clients.add( client );
+		clients.add(client);
 	}
 
-	public void removeClient( Client client )
+	public void removeClient(Client client)
 	{
-		clients.remove( client );
+		clients.remove(client);
 	}
 
 	public Set<Client> getClients()
