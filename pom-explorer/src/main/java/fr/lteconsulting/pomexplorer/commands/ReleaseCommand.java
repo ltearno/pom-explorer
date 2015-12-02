@@ -72,8 +72,8 @@ public class ReleaseCommand
 			changes.addChange( new GavChange( loc, Tools.releasedGav( loc.getGav() ) ), causeMessage );
 		}
 
-		Set<Relation> relations = session.graph().relationsRec(gav);
-		for (Relation r : relations)
+		Set<Relation> relations = session.graph().relationsRec( gav );
+		for( Relation r : relations )
 		{
 			if( r.getTarget().getVersion() == null )
 			{

@@ -15,19 +15,19 @@ public class ProjectsWatcher
 {
 	private final Map<Project, ProjectWatcher> watchers = new HashMap<>();
 
-	public void watchProject(Project project)
+	public void watchProject( Project project )
 	{
-		if (watchers.containsKey(project))
+		if( watchers.containsKey( project ) )
 			return;
 
-		ProjectWatcher watcher = new ProjectWatcher(Paths.get(project.getPath()));
-		watchers.put(project, watcher);
+		ProjectWatcher watcher = new ProjectWatcher( Paths.get( project.getPath() ) );
+		watchers.put( project, watcher );
 
 		try
 		{
 			watcher.register();
 		}
-		catch (IOException e)
+		catch( IOException e )
 		{
 			e.printStackTrace();
 		}
@@ -35,9 +35,9 @@ public class ProjectsWatcher
 
 	public Project hasChanged()
 	{
-		for (Entry<Project, ProjectWatcher> e : watchers.entrySet())
+		for( Entry<Project, ProjectWatcher> e : watchers.entrySet() )
 		{
-			if (e.getValue().hasChanges())
+			if( e.getValue().hasChanges() )
 				return e.getKey();
 		}
 
@@ -47,7 +47,7 @@ public class ProjectsWatcher
 	public Set<Project> watchedProjects()
 	{
 		Set<Project> res = new HashSet<>();
-		watchers.entrySet().stream().forEach(e -> res.add(e.getKey()));
+		watchers.entrySet().stream().forEach( e -> res.add( e.getKey() ) );
 		return res;
 	}
 }

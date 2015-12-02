@@ -163,11 +163,11 @@ public class Project
 				case "org.apache.maven.plugins:maven-compiler-plugin":
 					version = "2.5.1";
 					break;
-					
+
 				case "org.apache.maven.plugins:maven-source-plugin":
 					version = "2.2.1";
 					break;
-					
+
 				case "org.codehaus.mojo:buildnumber-maven-plugin":
 					version = "1.4";
 					break;

@@ -6,12 +6,10 @@ package fr.lteconsulting.pomexplorer.activity;
  * corresponding message queue. All calls are processed asynchronously.
  * 
  * <p>
- * So all private data are free from lock, as long as they are not leaked
- * outside of course !
+ * So all private data are free from lock, as long as they are not leaked outside of course !
  * 
  * <p>
- * Methods marked with the {@link @Direct} annotation are called directly from
- * the calling thread
+ * Methods marked with the {@link @Direct} annotation are called directly from the calling thread
  */
 public class Activity
 {

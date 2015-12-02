@@ -44,7 +44,7 @@ public abstract class Relation
 
 	private final RelationType type;
 
-	public Relation(GAV source, GAV target, RelationType type)
+	public Relation( GAV source, GAV target, RelationType type )
 	{
 		this.source = source;
 		this.target = target;
@@ -118,30 +118,30 @@ public abstract class Relation
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (this == obj)
+		if( this == obj )
 			return true;
-		if (obj == null)
+		if( obj == null )
 			return false;
-		if (getClass() != obj.getClass())
+		if( getClass() != obj.getClass() )
 			return false;
-		Relation other = (Relation)obj;
-		if (source == null)
+		Relation other = (Relation) obj;
+		if( source == null )
 		{
-			if (other.source != null)
+			if( other.source != null )
 				return false;
 		}
-		else if (!source.equals(other.source))
+		else if( !source.equals( other.source ) )
 			return false;
-		if (target == null)
+		if( target == null )
 		{
-			if (other.target != null)
+			if( other.target != null )
 				return false;
 		}
-		else if (!target.equals(other.target))
+		else if( !target.equals( other.target ) )
 			return false;
-		if (type != other.type)
+		if( type != other.type )
 			return false;
 		return true;
 	}

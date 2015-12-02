@@ -49,15 +49,15 @@ public class ProjectsCommand
 	@Help( "list the session's projects - with details. Parameter is a filter for the GAVs" )
 	public void details( WorkingSession session, FilteredGAVs gavFilter, ILogger log )
 	{
-		log.html( "projects details "+(gavFilter!=null?", filtered with '" + gavFilter.getFilter() + "'":"")+" :<br/><br/>" );
+		log.html( "projects details " + (gavFilter != null ? ", filtered with '" + gavFilter.getFilter() + "'" : "") + " :<br/><br/>" );
 
 		for( Project project : session.projects().values() )
 		{
 			MavenProject unresolvedProject = project.getUnresolvedPom();
 
-			if( gavFilter!=null && !gavFilter.accept( project.getGav() ) )
+			if( gavFilter != null && !gavFilter.accept( project.getGav() ) )
 				continue;
-			
+
 			log.html( "gav : " + project.getGav() + ", packaging: " + unresolvedProject.getModel().getPackaging() + "<br/>" );
 			log.html( "file : " + project.getPomFile().getAbsolutePath() + "<br/>" );
 
@@ -81,20 +81,20 @@ public class ProjectsCommand
 			for( Dependency dependency : unresolvedProject.getDependencies() )
 				log.html( "dependency : " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
 
-			Set<? extends Relation> directDependencies = effectiveDependencies(session, project.getGav());
-			if( ! directDependencies.isEmpty() )
+			Set<? extends Relation> directDependencies = effectiveDependencies( session, project.getGav() );
+			if( !directDependencies.isEmpty() )
 				log.html( "effective dependencies :<br/>" );
 			else
 				log.html( "no dependency<br/>" );
-			directDependencies.stream().sorted((a, b) -> a.getTarget().toString().compareTo(b.getTarget().toString()))
-					.forEach(d -> log.html("[" + d.getRelationType().shortName() + "] " + d.getTarget() + " "
-					+ d.toString() + "<br/>"));
+			directDependencies.stream().sorted( ( a, b ) -> a.getTarget().toString().compareTo( b.getTarget().toString() ) )
+					.forEach( d -> log.html( "[" + d.getRelationType().shortName() + "] " + d.getTarget() + " "
+							+ d.toString() + "<br/>" ) );
 
 			log.html( "<br/>" );
 		}
 	}
 
-	private Set<Relation> effectiveDependencies(WorkingSession session, GAV gav)
+	private Set<Relation> effectiveDependencies( WorkingSession session, GAV gav )
 	{
 		HashSet<Relation> res = new HashSet<>();
 

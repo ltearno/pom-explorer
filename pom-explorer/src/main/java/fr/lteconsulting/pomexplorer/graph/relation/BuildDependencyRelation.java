@@ -4,9 +4,9 @@ import fr.lteconsulting.pomexplorer.GAV;
 
 public class BuildDependencyRelation extends Relation
 {
-	public BuildDependencyRelation(GAV source, GAV target)
+	public BuildDependencyRelation( GAV source, GAV target )
 	{
-		super(source, target, RelationType.BUILD_DEPENDENCY);
+		super( source, target, RelationType.BUILD_DEPENDENCY );
 	}
 
 	@Override

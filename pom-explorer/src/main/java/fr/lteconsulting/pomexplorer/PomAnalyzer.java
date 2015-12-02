@@ -62,7 +62,7 @@ public class PomAnalyzer
 
 				continue;
 			}
-			
+
 			addProjectToGraph( project, session, log );
 		}
 
@@ -85,12 +85,12 @@ public class PomAnalyzer
 		MavenResolver resolver = session.mavenResolver();
 
 		File pomFile = resolver.resolvePom( gav, "pom" );
-		
+
 		Project project = null;
 		if( pomFile != null )
 			project = loadProjectFromPomFile( pomFile, session, log );
-		
-		if(project==null)
+
+		if( project == null )
 			log.html( Tools.warningMessage( "cannot fetch " + gav + " through maven" ) );
 
 		return project;

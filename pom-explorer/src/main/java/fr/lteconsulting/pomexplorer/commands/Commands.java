@@ -64,11 +64,11 @@ public class Commands
 					sb.append( shortcut + " " + mName );
 
 				sb.append( "</b>" );
-				
-				for( int i=0; i<m.getParameterTypes().length; i++)
+
+				for( int i = 0; i < m.getParameterTypes().length; i++ )
 				{
 					Class<?> pCls = m.getParameterTypes()[i];
-					
+
 					if( pCls == Client.class || pCls == WorkingSession.class || pCls == CommandOptions.class || pCls == ILogger.class )
 						continue;
 
@@ -85,7 +85,7 @@ public class Commands
 
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Returns the error or null if success
 	 */
@@ -96,19 +96,19 @@ public class Commands
 			log.html( Tools.warningMessage( "no text" ) );
 			return;
 		}
-	
+
 		if( "?".equals( text ) )
 			text = "help";
-	
+
 		final String parts[] = text.split( " " );
 		CommandCallInfo info = findMethodForCommand( parts, log );
-	
+
 		if( info == null )
 		{
 			log.html( Tools.warningMessage( "verb not found (or with wrong parameters)" ) );
 			return;
 		}
-	
+
 		CommandOptions options = new CommandOptions();
 		WorkingSession session = null;
 		Class<?>[] argTypes = info.method.getParameterTypes();
@@ -126,7 +126,7 @@ public class Commands
 					curPart += 2;
 					continue;
 				}
-	
+
 				if( val.startsWith( "-" ) )
 				{
 					options.setOption( val.substring( 1 ), true );
@@ -134,7 +134,7 @@ public class Commands
 					continue;
 				}
 			}
-	
+
 			if( curArg < argTypes.length )
 			{
 				if( argTypes[curArg] == Client.class )
@@ -143,14 +143,14 @@ public class Commands
 					curArg++;
 					continue;
 				}
-	
+
 				if( argTypes[curArg] == ILogger.class )
 				{
 					args[curArg] = log;
 					curArg++;
 					continue;
 				}
-	
+
 				if( argTypes[curArg] == WorkingSession.class )
 				{
 					if( session == null )
@@ -162,19 +162,19 @@ public class Commands
 							return;
 						}
 					}
-	
+
 					args[curArg] = session;
 					curArg++;
 					continue;
 				}
-	
+
 				if( argTypes[curArg] == CommandOptions.class )
 				{
 					args[curArg] = options;
 					curArg++;
 					continue;
 				}
-	
+
 				if( argTypes[curArg] == FilteredGAVs.class )
 				{
 					args[curArg] = new FilteredGAVs( parts[curPart] );
@@ -182,7 +182,7 @@ public class Commands
 					curPart++;
 					continue;
 				}
-	
+
 				if( argTypes[curArg] == GAV.class )
 				{
 					args[curArg] = parts[curPart] == null ? null : Tools.string2Gav( parts[curPart] );
@@ -196,29 +196,29 @@ public class Commands
 					continue;
 				}
 			}
-	
+
 			if( argTypes[curArg] == Integer.class )
 				args[curArg] = Integer.parseInt( parts[curPart] );
 			else
 				args[curArg] = parts[curPart];
-	
+
 			curPart++;
 			curArg++;
 		}
-	
+
 		try
 		{
 			info.method.invoke( info.command, args );
 		}
 		catch( Exception e )
 		{
-			log.html(Tools.errorMessage("Error when interpreting command '<b>" + text + "</b>'"));
+			log.html( Tools.errorMessage( "Error when interpreting command '<b>" + text + "</b>'" ) );
 			log.html( "Command class : <b>" + info.command.getClass().getSimpleName() + "</b><br/>" );
 			log.html( "Command method : <b>" + info.method.getName() + "</b><br/>" );
 			for( Object a : args )
 				log.html( "Argument : " + (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString())) + "<br/>" );
 
-			Tools.dumpStacktrace(e, log);
+			Tools.dumpStacktrace( e, log );
 		}
 	}
 
@@ -226,7 +226,7 @@ public class Commands
 	{
 		public final Object command;
 		public final Method method;
-	
+
 		public CommandCallInfo( Object command, Method method )
 		{
 			this.command = command;
@@ -282,7 +282,7 @@ public class Commands
 		}
 
 		Method m = findMethodWith( command, verb, nbParamsGiven );
-		
+
 		return new CommandCallInfo( command, m );
 	}
 

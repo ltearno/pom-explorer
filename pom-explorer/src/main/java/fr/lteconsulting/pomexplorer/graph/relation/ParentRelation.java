@@ -4,9 +4,9 @@ import fr.lteconsulting.pomexplorer.GAV;
 
 public class ParentRelation extends Relation
 {
-	public ParentRelation(GAV source, GAV target)
+	public ParentRelation( GAV source, GAV target )
 	{
-		super(source, target, RelationType.PARENT);
+		super( source, target, RelationType.PARENT );
 	}
 
 	@Override

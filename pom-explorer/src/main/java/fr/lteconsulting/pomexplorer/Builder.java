@@ -39,21 +39,21 @@ public class Builder
 	{
 		projectsToBuild.clear();
 		projectsToBuildForced.clear();
-		
+
 		printBuildPipelineState( null );
 	}
 
 	public void buildProject( Project project )
 	{
 		projectsToBuildForced.add( project );
-		
+
 		printBuildPipelineState( null );
 	}
 
 	public void buildAll()
 	{
 		projectsToBuild.addAll( session.projectsWatcher().watchedProjects() );
-		
+
 		printBuildPipelineState( null );
 	}
 
@@ -82,9 +82,9 @@ public class Builder
 			erroredProjects.remove( changed );
 			lastChangedProject = changed;
 			processProjectChange( session, changed );
-			
+
 			printBuildPipelineState( null );
-			
+
 			return;
 		}
 
@@ -103,15 +103,15 @@ public class Builder
 			else
 			{
 				erroredProjects.add( toBuild );
-				
-				error( "error building "+toBuild+" !<br/>this project and dependent ones are going to be removed from the build list.<br/>fix the problem which prevent the build to success and the build will restart automatically..." );
+
+				error( "error building " + toBuild + " !<br/>this project and dependent ones are going to be removed from the build list.<br/>fix the problem which prevent the build to success and the build will restart automatically..." );
 				dependentsAndSelf( toBuild.getGav() ).stream().map( g -> session.projects().forGav( g ) ).filter( p -> p != null ).forEach( p -> projectsToBuild.remove( p ) );
 			}
 
 			printBuildPipelineState( null );
 		}
 	}
-	
+
 	private void printBuildPipelineState( Project projectBuilding )
 	{
 		try
@@ -139,11 +139,11 @@ public class Builder
 			}
 			sb.append( "<br/>" );
 
-			logBuildPipeline(sb.toString());
+			logBuildPipeline( sb.toString() );
 		}
 		catch( Exception e )
 		{
-			logBuildPipeline("error: " + e);
+			logBuildPipeline( "error: " + e );
 		}
 	}
 
@@ -175,7 +175,7 @@ public class Builder
 		}
 		catch( Exception e )
 		{
-			System.err.println("error in Builder thread :");
+			System.err.println( "error in Builder thread :" );
 			e.printStackTrace();
 		}
 
@@ -267,11 +267,11 @@ public class Builder
 			client.sendHtml( talkId, message );
 	}
 
-	private void logBuildPipeline(String message)
+	private void logBuildPipeline( String message )
 	{
-		message = Tools.buildMessage(message);
-		for (Client client : session.getClients())
-			client.sendHtml(pipelineStatusTalkId, message);
+		message = Tools.buildMessage( message );
+		for( Client client : session.getClients() )
+			client.sendHtml( pipelineStatusTalkId, message );
 	}
 
 	private void error( String message )

@@ -13,9 +13,9 @@ public class GavTools
 	public static List<String> analyseProvidedClasses( WorkingSession session, GAV gav, ILogger log )
 	{
 		log.html( "<br/><b>Java classes provided by gav " + gav + "</b> :<br/>" );
-		
+
 		MavenResolver resolver = session.mavenResolver();
-		
+
 		File resolvedFile = resolver.resolvePom( gav, "jar" );
 		if( resolvedFile == null )
 		{

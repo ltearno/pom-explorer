@@ -11,7 +11,7 @@ import fr.lteconsulting.pomexplorer.Project;
 public class ProjectRepository
 {
 	private final Map<GAV, Project> projects = new HashMap<>();
-	
+
 	public boolean contains( GAV gav )
 	{
 		return projects.containsKey( gav );

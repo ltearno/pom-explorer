@@ -25,31 +25,31 @@ public class ProjectWatcher
 	 * Create a ProjectWatcher
 	 * 
 	 * @param projectPath
-	 *        This is the path of the directory containing the pom.xml file
+	 *            This is the path of the directory containing the pom.xml file
 	 */
-	public ProjectWatcher(Path projectPath)
+	public ProjectWatcher( Path projectPath )
 	{
 		this.projectPath = projectPath;
 		try
 		{
 			this.service = FileSystems.getDefault().newWatchService();
 		}
-		catch (IOException e)
+		catch( IOException e )
 		{
-			throw new RuntimeException(e);
+			throw new RuntimeException( e );
 		}
 	}
 
 	public void register() throws IOException
 	{
-		watchPath(projectPath);
+		watchPath( projectPath );
 	}
 
 	public boolean hasChanges()
 	{
 		WatchKey key = service.poll();
 
-		return processWatchKey(key);
+		return processWatchKey( key );
 	}
 
 	public boolean waitChange()
@@ -59,18 +59,18 @@ public class ProjectWatcher
 		{
 			key = service.take();
 		}
-		catch (InterruptedException e)
+		catch( InterruptedException e )
 		{
-			System.out.println("Interrupted while waiting changes on files...");
+			System.out.println( "Interrupted while waiting changes on files..." );
 			e.printStackTrace();
 		}
 
-		return processWatchKey(key);
+		return processWatchKey( key );
 	}
 
-	private boolean processWatchKey(WatchKey key)
+	private boolean processWatchKey( WatchKey key )
 	{
-		if (key == null)
+		if( key == null )
 			return false;
 
 		boolean somethingMeaningful = false;
@@ -78,99 +78,99 @@ public class ProjectWatcher
 		key.reset();
 
 		boolean useful = false;
-		for (WatchEvent<?> event : key.pollEvents())
+		for( WatchEvent<?> event : key.pollEvents() )
 		{
 			useful = true;
-			Path eventTarget = Paths.get(key.watchable().toString(), event.context().toString()).toAbsolutePath();
+			Path eventTarget = Paths.get( key.watchable().toString(), event.context().toString() ).toAbsolutePath();
 
-			String relative = projectPath.relativize(eventTarget).toString();
-			somethingMeaningful |= relative != null && (relative.startsWith("src") || relative.equals("pom.xml"));
+			String relative = projectPath.relativize( eventTarget ).toString();
+			somethingMeaningful |= relative != null && (relative.startsWith( "src" ) || relative.equals( "pom.xml" ));
 
-			if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE)
+			if( event.kind() == StandardWatchEventKinds.ENTRY_CREATE )
 			{
-				System.out.println("=> created " + eventTarget.toString());
+				System.out.println( "=> created " + eventTarget.toString() );
 
-				watchPath(Paths.get(projectPath.toString(), event.context().toString()));
+				watchPath( Paths.get( projectPath.toString(), event.context().toString() ) );
 			}
-			else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE)
+			else if( event.kind() == StandardWatchEventKinds.ENTRY_DELETE )
 			{
-				System.out.println("=> deleted " + eventTarget.toString());
+				System.out.println( "=> deleted " + eventTarget.toString() );
 
-				unwatchPath(Paths.get(projectPath.toString(), event.context().toString()));
+				unwatchPath( Paths.get( projectPath.toString(), event.context().toString() ) );
 			}
-			else if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY)
+			else if( event.kind() == StandardWatchEventKinds.ENTRY_MODIFY )
 			{
-				System.out.println("=> modified " + eventTarget.toString());
+				System.out.println( "=> modified " + eventTarget.toString() );
 			}
 		}
 
-		if (useful)
-			System.out.println("useful ? " + somethingMeaningful);
+		if( useful )
+			System.out.println( "useful ? " + somethingMeaningful );
 
 		return somethingMeaningful;
 	}
 
-	private void watchPath(Path path)
+	private void watchPath( Path path )
 	{
-		if (path == null)
+		if( path == null )
 			return;
 
-		watchPath(path.toFile());
-		watchPathRec(Paths.get(path.toAbsolutePath().toString(), "src").toFile());
+		watchPath( path.toFile() );
+		watchPathRec( Paths.get( path.toAbsolutePath().toString(), "src" ).toFile() );
 	}
 
-	private void watchPath(File file)
+	private void watchPath( File file )
 	{
-		if (file == null || !file.exists() || !file.isDirectory())
+		if( file == null || !file.exists() || !file.isDirectory() )
 			return;
 
 		Path path = file.toPath();
 
-		if (keys.containsKey(path))
+		if( keys.containsKey( path ) )
 			return;
 
-		if (!shouldBeWatched(file))
+		if( !shouldBeWatched( file ) )
 			return;
 
 		try
 		{
-			WatchKey key = path.register(service, StandardWatchEventKinds.ENTRY_CREATE,
-					StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+			WatchKey key = path.register( service, StandardWatchEventKinds.ENTRY_CREATE,
+					StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY );
 
-			keys.put(path, key);
+			keys.put( path, key );
 		}
-		catch (IOException e)
+		catch( IOException e )
 		{
 			e.printStackTrace();
 		}
 	}
 
-	private void watchPathRec(File file)
+	private void watchPathRec( File file )
 	{
-		watchPath(file);
+		watchPath( file );
 
 		File[] files = file.listFiles();
-		if (files != null)
+		if( files != null )
 		{
-			for (File child : files)
-				watchPathRec(child);
+			for( File child : files )
+				watchPathRec( child );
 		}
 	}
 
-	private void unwatchPath(Path path)
+	private void unwatchPath( Path path )
 	{
-		if (path == null || !path.toFile().isDirectory())
+		if( path == null || !path.toFile().isDirectory() )
 			return;
 
-		WatchKey key = keys.get(path);
-		if (key == null)
+		WatchKey key = keys.get( path );
+		if( key == null )
 		{
-			System.out.println("warning : not watched path " + path + ", nothing to do...");
+			System.out.println( "warning : not watched path " + path + ", nothing to do..." );
 			return;
 		}
 
 		key.cancel();
-		keys.remove(path);
+		keys.remove( path );
 	}
 
 	/**
@@ -179,43 +179,43 @@ public class ProjectWatcher
 	 * @param file
 	 * @return
 	 */
-	private boolean shouldBeWatched(File file)
+	private boolean shouldBeWatched( File file )
 	{
-		if ("target".equals(file.getName()))
+		if( "target".equals( file.getName() ) )
 			return false;
 
 		File current = file.getParentFile();
-		Path remaining = Paths.get(file.getName());
-		while (current != null)
+		Path remaining = Paths.get( file.getName() );
+		while( current != null )
 		{
-			File gitignore = Paths.get(current.getAbsolutePath(), ".gitignore").toFile();
-			if (gitignore != null && gitignore.exists() && gitignore.isFile())
+			File gitignore = Paths.get( current.getAbsolutePath(), ".gitignore" ).toFile();
+			if( gitignore != null && gitignore.exists() && gitignore.isFile() )
 			{
 				try
 				{
-					for (String line : Files.readAllLines(gitignore.toPath()))
+					for( String line : Files.readAllLines( gitignore.toPath() ) )
 					{
-						if (line.contains("*") || line.contains("//") || line.contains("?"))
+						if( line.contains( "*" ) || line.contains( "//" ) || line.contains( "?" ) )
 							continue;
 
 						try
 						{
-							if (remaining.compareTo(Paths.get(line)) == 0)
+							if( remaining.compareTo( Paths.get( line ) ) == 0 )
 								return false;
 						}
-						catch(Exception e )
+						catch( Exception e )
 						{
 							e.printStackTrace();
 						}
 					}
 				}
-				catch (IOException e)
+				catch( IOException e )
 				{
 					e.printStackTrace();
 				}
 			}
 
-			remaining = Paths.get(current.getName(), remaining.toString());
+			remaining = Paths.get( current.getName(), remaining.toString() );
 			current = current.getParentFile();
 		}
 
