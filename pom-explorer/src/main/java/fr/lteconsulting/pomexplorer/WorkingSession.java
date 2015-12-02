@@ -1,6 +1,8 @@
 package fr.lteconsulting.pomexplorer;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph;
@@ -14,8 +16,7 @@ import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
  * <p>
  * for each one, build the project if a change is detected
  * <p>
- * process changes with a customizable delay, so builds are made in the best
- * possible order
+ * process changes with a customizable delay, so builds are made in the best possible order
  * <p>
  * builds should be cancellable (kill the build process simply)
  * 
@@ -42,6 +43,8 @@ public class WorkingSession
 
 	private final BuilderSuperman builder = new BuilderSuperman();
 
+	private final Map<String, MavenResolver> resolvers = new HashMap<>();
+
 	public WorkingSession()
 	{
 		builder.setSession( this );
@@ -50,6 +53,20 @@ public class WorkingSession
 	public void configure( ApplicationSettings settings )
 	{
 		this.mavenSettingsFilePath = settings.getDefaultMavenSettingsFile();
+	}
+
+	public MavenResolver mavenResolver()
+	{
+		String mavenSettingsFilePath = getMavenSettingsFilePath();
+		MavenResolver resolver = resolvers.get( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath );
+		if( resolver == null )
+		{
+			resolver = new MavenResolver();
+			resolver.init( this );
+			resolvers.put( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath, resolver );
+		}
+
+		return resolver;
 	}
 
 	public PomGraph graph()
@@ -61,7 +78,7 @@ public class WorkingSession
 	{
 		return projects;
 	}
-	
+
 	public GitRepositories repositories()
 	{
 		return gitRepositories;

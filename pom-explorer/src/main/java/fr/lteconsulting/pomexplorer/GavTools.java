@@ -8,33 +8,15 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
-
 public class GavTools
 {
 	public static List<String> analyseProvidedClasses( WorkingSession session, GAV gav, ILogger log )
 	{
 		log.html( "<br/><b>Java classes provided by gav " + gav + "</b> :<br/>" );
-
-		String mavenSettingsFilePath = session.getMavenSettingsFilePath();
-
-		MavenResolverSystem resolver;
-		if( mavenSettingsFilePath != null && !mavenSettingsFilePath.isEmpty() )
-			resolver = Maven.configureResolver().fromFile( mavenSettingsFilePath );
-		else
-			resolver = Maven.resolver();
-
-		File resolvedFile = null;
-		try
-		{
-			resolvedFile = resolver.resolve( gav.toString() ).withoutTransitivity().asSingleFile();
-		}
-		catch( Exception e )
-		{
-			log.html( Tools.errorMessage( "shrinkwrap error : " + e.getMessage() ) );
-		}
-
+		
+		MavenResolver resolver = session.mavenResolver();
+		
+		File resolvedFile = resolver.resolvePom( gav, "jar" );
 		if( resolvedFile == null )
 		{
 			log.html( Tools.warningMessage( "cannot resolve the gav " + gav ) );

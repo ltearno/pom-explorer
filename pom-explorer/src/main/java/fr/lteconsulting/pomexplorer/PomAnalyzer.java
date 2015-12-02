@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
@@ -27,8 +25,6 @@ public class PomAnalyzer
 			"gwt-unitCache",
 			".idea",
 			".settings" ) );
-
-	Map<String, MavenResolver> resolvers = new HashMap<>();
 
 	public void analyze( String directory, WorkingSession session, ILogger log )
 	{
@@ -86,17 +82,10 @@ public class PomAnalyzer
 	 */
 	public Project fetchGavWithMaven( WorkingSession session, ILogger log, GAV gav )
 	{
-		String mavenSettingsFilePath = session.getMavenSettingsFilePath();
-		MavenResolver resolver = resolvers.get( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath );
-		if( resolver == null )
-		{
-			resolver = new MavenResolver();
-			resolver.init( session );
-			resolvers.put( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath, resolver );
-		}
+		MavenResolver resolver = session.mavenResolver();
 
-		File pomFile = resolver.resolvePom( gav );
-
+		File pomFile = resolver.resolvePom( gav, "pom" );
+		
 		Project project = null;
 		if( pomFile != null )
 			project = loadProjectFromPomFile( pomFile, session, log );

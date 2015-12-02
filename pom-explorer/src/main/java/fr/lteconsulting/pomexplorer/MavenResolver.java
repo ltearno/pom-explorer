@@ -34,9 +34,9 @@ public class MavenResolver
 		system = getField( mavenSession, "system" );
 	}
 
-	File resolvePom( GAV gav )
+	File resolvePom( GAV gav, String extension )
 	{
-		Artifact pomArtifact = new DefaultArtifact( gav.getGroupId(), gav.getArtifactId(), "", "pom", gav.getVersion() );
+		Artifact pomArtifact = new DefaultArtifact( gav.getGroupId(), gav.getArtifactId(), "", extension, gav.getVersion() );
 		try
 		{
 			ArtifactRequest request = new ArtifactRequest( pomArtifact, getField( mavenSession, "remoteRepositories" ), null );

@@ -32,6 +32,7 @@ import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation.Scope;
 
 public class GraphCommand
 {
@@ -54,7 +55,7 @@ public class GraphCommand
 
 		if( relation instanceof DependencyRelation )
 		{
-			if( "test".equals( relation.asDependencyRelation().getScope().toLowerCase() ) )
+			if( relation.asDependencyRelation().getScope() == Scope.TEST )
 				return false;
 		}
 

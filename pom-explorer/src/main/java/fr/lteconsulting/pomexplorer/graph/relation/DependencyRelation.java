@@ -4,18 +4,44 @@ import fr.lteconsulting.pomexplorer.GAV;
 
 public class DependencyRelation extends Relation
 {
-	private final String scope;
+	public enum Scope
+	{
+		COMPILE,
+		PROVIDED,
+		RUNTIME,
+		TEST,
+		SYSTEM,
+		IMPORT;
+
+		public static Scope fromString( String scope )
+		{
+			if( scope == null || scope.isEmpty() )
+				return COMPILE;
+
+			return Scope.valueOf( scope.toUpperCase() );
+		}
+
+		@Override
+		public String toString()
+		{
+			return super.toString().toLowerCase();
+		}
+	}
+
+	private final Scope scope;
 
 	private final String classifier;
 
-	public DependencyRelation(GAV source, GAV target, String scope, String classifier)
+	public DependencyRelation( GAV source, GAV target, String scope, String classifier )
 	{
-		super(source, target, RelationType.DEPENDENCY);
-		this.scope = scope;
+		super( source, target, RelationType.DEPENDENCY );
+		this.scope = Scope.fromString( scope );
+		if( this.scope == null )
+			throw new RuntimeException( "Scope is null for dependency between " + source + " to " + target );
 		this.classifier = classifier;
 	}
 
-	public String getScope()
+	public Scope getScope()
 	{
 		return scope;
 	}
@@ -31,11 +57,8 @@ public class DependencyRelation extends Relation
 		String res = "";
 		String sep = "";
 
-		if( scope != null && !scope.isEmpty() )
-		{
-			res += "scope:" + scope;
-			sep = ", ";
-		}
+		res += "scope:" + scope;
+		sep = ", ";
 
 		if( classifier != null && !classifier.isEmpty() )
 		{
@@ -57,28 +80,28 @@ public class DependencyRelation extends Relation
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (this == obj)
+		if( this == obj )
 			return true;
-		if (!super.equals(obj))
+		if( !super.equals( obj ) )
 			return false;
-		if (getClass() != obj.getClass())
+		if( getClass() != obj.getClass() )
 			return false;
-		DependencyRelation other = (DependencyRelation)obj;
-		if (classifier == null)
+		DependencyRelation other = (DependencyRelation) obj;
+		if( classifier == null )
 		{
-			if (other.classifier != null)
+			if( other.classifier != null )
 				return false;
 		}
-		else if (!classifier.equals(other.classifier))
+		else if( !classifier.equals( other.classifier ) )
 			return false;
-		if (scope == null)
+		if( scope == null )
 		{
-			if (other.scope != null)
+			if( other.scope != null )
 				return false;
 		}
-		else if (!scope.equals(other.scope))
+		else if( !scope.equals( other.scope ) )
 			return false;
 		return true;
 	}
