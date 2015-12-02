@@ -215,6 +215,8 @@ translateX
             Terminal.prototype.print = function (text, talkId) {
             	var me = this;
             	
+            	var follow = (this.container.scrollHeight - this.container.scrollTop) == this.container.clientHeight;
+            	
             	var talk = this.talks[talkId];
             	if( ! talk )
             	{
@@ -239,7 +241,7 @@ translateX
                 	talk.insertAdjacentHTML('beforeend', text);
                 }
                 
-                if( talk == this.html.children[0].lastElementChild )
+                if( follow )
                 	this.container.scrollTop = this.container.scrollHeight;
             };
 
