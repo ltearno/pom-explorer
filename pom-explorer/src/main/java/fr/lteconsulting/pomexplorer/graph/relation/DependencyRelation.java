@@ -32,10 +32,10 @@ public class DependencyRelation extends Relation
 
 	private final String classifier;
 
-	public DependencyRelation( GAV source, GAV target, String scope, String classifier )
+	public DependencyRelation( GAV source, GAV target, Scope scope, String classifier )
 	{
 		super( source, target, RelationType.DEPENDENCY );
-		this.scope = Scope.fromString( scope );
+		this.scope = scope;
 		if( this.scope == null )
 			throw new RuntimeException( "Scope is null for dependency between " + source + " to " + target );
 		this.classifier = classifier;

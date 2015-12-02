@@ -5,6 +5,7 @@ import org.apache.maven.model.Dependency;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation.Scope;
 
 public class GavLocation extends Location
 {
@@ -14,7 +15,7 @@ public class GavLocation extends Location
 
 	private GAV unresolvedGav;
 
-	private String scope;
+	private Scope scope;
 
 	private String classifier;
 
@@ -22,7 +23,7 @@ public class GavLocation extends Location
 	{
 		this( project, section, resolvedGav, new GAV( unresolved.getGroupId(), unresolved.getArtifactId(), unresolved.getVersion() ) );
 
-		scope = unresolved.getScope();
+		scope = Scope.fromString( unresolved.getScope() );
 		classifier = unresolved.getClassifier();
 	}
 
@@ -40,7 +41,7 @@ public class GavLocation extends Location
 		this.unresolvedGav = unresolvedGav;
 	}
 
-	public String getScope()
+	public Scope getScope()
 	{
 		return scope;
 	}
