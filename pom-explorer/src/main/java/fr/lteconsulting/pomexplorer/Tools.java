@@ -167,7 +167,7 @@ public class Tools
 
 	private static String propertyValue( Project startingProject, String property )
 	{
-		Object res = startingProject.getUnresolvedPom().getProperties().get( property );
+		Object res = startingProject.getMavenProject().getProperties().get( property );
 		if( res instanceof String )
 			return (String) res;
 		return null;

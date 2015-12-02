@@ -41,116 +41,130 @@ public class Project
 
 	private Map<WorkingSession, Map<GAV, GavLocation>> pluginDependencies;
 
-	public Project(File pomFile) throws Exception
+	public Project( File pomFile ) throws Exception
 	{
 		this.pomFile = pomFile;
 
-		project = readPomFile(pomFile);
-		if (project == null)
-			throw new RuntimeException("cannot read pom " + pomFile.getAbsolutePath());
+		project = readPomFile( pomFile );
+		if( project == null )
+			throw new RuntimeException( "cannot read pom " + pomFile.getAbsolutePath() );
 
-		// TODO : here we have a resolution problem (relative path parent not managed here)
 		Parent parent = project.getModel().getParent();
-		if (parent != null)
-			parentGav = new GAV(parent.getGroupId(), parent.getArtifactId(), parent.getVersion());
+		if( parent != null )
+		{
+			parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
+			if( !parentGav.isResolved() )
+				throw new RuntimeException( "parent project not resolved" );
+		}
 		else
 			parentGav = null;
 
 		String groupId = project.getGroupId() != null ? project.getGroupId() : getParent().getGroupId();
 		String version = project.getVersion() != null ? project.getVersion() : getParent().getVersion();
-		if ("${parent.version}".equals(version))
+		if( "${parent.version}".equals( version ) )
 			version = getParent().getVersion();
 
-		gav = new GAV(groupId, project.getArtifactId(), version);
+		gav = new GAV( groupId, project.getArtifactId(), version );
 
-		if (!isResolved(gav))
-			throw new RuntimeException("Non resolved project's GAV: " + gav);
+		if( !gav.isResolved() )
+			throw new RuntimeException( "Non resolved project's GAV: " + gav );
 
 		properties = new HashMap<>();
-		project.getProperties().forEach((key, value) -> properties.put(key.toString(), value.toString()));
+		project.getProperties().forEach( ( key, value ) -> properties.put( key.toString(), value.toString() ) );
 	}
 
-	public Set<GAV> getMissingGavsForResolution(WorkingSession session, ILogger log)
+	public Set<GAV> getMissingGavsForResolution( WorkingSession session, ILogger log )
 	{
-		Set<GAV> gavs = new HashSet<>();
-		getMissingGavsForResolutionInternal(session, log, gavs);
-		return gavs;
+		return getMissingGavsForResolution( session, log, null );
 	}
 
-	private void getMissingGavsForResolutionInternal(WorkingSession session, ILogger log, Set<GAV> gavs)
+	public Set<GAV> getMissingGavsForResolution( WorkingSession session, ILogger log, Set<GAV> gavs )
 	{
-		if (parentGav != null)
+		if( parentGav != null )
 		{
-			Project parentProject = session.projects().forGav(parentGav);
-			if (parentProject == null)
-				gavs.add(parentGav);
+			if( gavs == null )
+				gavs = new HashSet<>();
+
+			Project parentProject = session.projects().forGav( parentGav );
+			if( parentProject == null )
+			{
+				gavs.add( parentGav );
+			}
 			else
-				gavs.addAll(parentProject.getMissingGavsForResolution(session, log));
+			{
+				Set<GAV> missingGavs = parentProject.getMissingGavsForResolution( session, log );
+				if( missingGavs != null )
+					gavs.addAll( missingGavs );
+			}
 		}
 
-		if (project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null)
+		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
 		{
-			for (Dependency d : project.getDependencyManagement().getDependencies())
+			for( Dependency d : project.getDependencyManagement().getDependencies() )
 			{
-				if ("import".equals(d.getScope()) && "pom".equals(d.getType()))
+				if( "import".equals( d.getScope() ) && "pom".equals( d.getType() ) )
 				{
 					String version;
-					if (isMavenVariable(d.getVersion()))
-						version = resolveProperty(session, log, d.getVersion());
+					if( isMavenVariable( d.getVersion() ) )
+						version = resolveProperty( session, log, d.getVersion() );
 					else
 						version = d.getVersion();
 
-					GAV bomGav = resolveGav(new GAV(d.getGroupId(), d.getArtifactId(), version), session, log, true, false);
+					GAV bomGav = resolveGav( new GAV( d.getGroupId(), d.getArtifactId(), version ), session, log, true, false );
 
-					Project bomProject = session.projects().forGav(bomGav);
-					if (bomProject == null || !bomProject.isResolvable(session, log))
-						gavs.add(bomGav);
+					Project bomProject = session.projects().forGav( bomGav );
+					if( bomProject == null )
+					{
+						if( gavs == null )
+							gavs = new HashSet<>();
+
+						gavs.add( bomGav );
+					}
+					else
+					{
+						bomProject.getMissingGavsForResolution( session, log, gavs );
+					}
 				}
 			}
 		}
+
+		return gavs;
 	}
 
-	private boolean isResolved(GAV gav)
-	{
-		return !(gav.getGroupId() == null || gav.getArtifactId() == null || gav.getVersion() == null
-				|| isMavenVariable(gav.getGroupId()) || isMavenVariable(gav.getArtifactId()) || isMavenVariable(gav
-					.getVersion()));
-	}
-
-	private GAV resolveGav(GAV gav, WorkingSession session, ILogger log, boolean resolveVersionWithDependencyMngt,
-			boolean resolveVersionWithBuildDependencyMngt)
+	private GAV resolveGav( GAV gav, WorkingSession session, ILogger log, boolean resolveVersionWithDependencyMngt,
+			boolean resolveVersionWithBuildDependencyMngt )
 	{
 		String groupId;
-		if (isMavenVariable(gav.getGroupId()))
-			groupId = resolveProperty(session, log, gav.getGroupId());
+		if( isMavenVariable( gav.getGroupId() ) )
+			groupId = resolveProperty( session, log, gav.getGroupId() );
 		else
 			groupId = gav.getGroupId();
 
 		String artifactId;
-		if (isMavenVariable(gav.getArtifactId()))
-			artifactId = resolveProperty(session, log, gav.getArtifactId());
+		if( isMavenVariable( gav.getArtifactId() ) )
+			artifactId = resolveProperty( session, log, gav.getArtifactId() );
 		else
 			artifactId = gav.getArtifactId();
 
 		String version = null;
-		if (isMavenVariable(gav.getVersion()))
+		if( isMavenVariable( gav.getVersion() ) )
 		{
-			version = resolveProperty(session, log, gav.getVersion());
+			version = resolveProperty( session, log, gav.getVersion() );
 		}
-		else if (gav.getVersion() == null)
+		else if( gav.getVersion() == null )
 		{
-			if (resolveVersionWithDependencyMngt)
+			if( resolveVersionWithDependencyMngt )
 			{
-				GavLocation gavLocation = findDependencyLocationInDependencyManagement(session, log, groupId, artifactId);
-				if (gavLocation != null)
+				GavLocation gavLocation = findDependencyLocationInDependencyManagement( session, log, groupId, artifactId );
+				if( gavLocation != null )
 					version = gavLocation.getResolvedGav().getVersion();
 			}
 
-			if (version == null && resolveVersionWithBuildDependencyMngt)
+			if( version == null && resolveVersionWithBuildDependencyMngt )
 			{
-				GavLocation gavLocation = findDependencyLocationInBuildDependencyManagement(session, log, groupId,
-						artifactId);
-				if (gavLocation != null)
+				GavLocation gavLocation = findDependencyLocationInBuildDependencyManagement( session, log, groupId,
+						artifactId );
+				if( gavLocation != null )
 					version = gavLocation.getResolvedGav().getVersion();
 			}
 		}
@@ -159,10 +173,10 @@ public class Project
 			version = gav.getVersion();
 		}
 
-		if (version == null)
+		if( version == null )
 		{
 			String ga = groupId + ":" + artifactId;
-			switch (ga)
+			switch( ga )
 			{
 				case "org.apache.maven.plugins:maven-war-plugin":
 					version = "2.2";
@@ -190,202 +204,201 @@ public class Project
 
 				default:
 					// TODO throw a warning and resolve to the highest possible version
-					if ("org.apache.maven.plugins".equals(groupId))
+					if( "org.apache.maven.plugins".equals( groupId ) )
 					{
 						version = "default-maven-version";
 					}
 					else
 					{
 						version = "UNKNOWN";
-						log.html(Tools.warningMessage("unresolvable version for dependency to " + ga + " in project '"
+						log.html( Tools.warningMessage( "unresolvable version for dependency to " + ga + " in project '"
 								+ toString()
-								+ "', please check the associated pom file !"));
+								+ "', please check the associated pom file !" ) );
 					}
 			}
 		}
 
-		if (!(isResolved(version) && isResolved(groupId) && isResolved(artifactId)))
-			throw new IllegalStateException(toString() + " : cannot resolve incomplete gav : " + gav);
+		if( !(isResolved( version ) && isResolved( groupId ) && isResolved( artifactId )) )
+			throw new IllegalStateException( toString() + " : cannot resolve incomplete gav : " + gav );
 
-		return new GAV(groupId, artifactId, version);
+		return new GAV( groupId, artifactId, version );
 	}
 
-	private boolean isResolved(String value)
+	private boolean isResolved( String value )
 	{
-		return value != null && !isMavenVariable(value);
+		return value != null && !isMavenVariable( value );
 	}
 
-	public boolean isResolvable(WorkingSession session, ILogger log)
+	public String resolveValue( WorkingSession session, ILogger log, String value )
 	{
-		return getMissingGavsForResolution(session, log).isEmpty();
+		if( value == null )
+			return null;
+		if( isMavenVariable( value ) )
+			return resolveProperty( session, log, value );
+		return value;
 	}
 
-	public String resolveProperty(WorkingSession session, ILogger log, String propertyName)
+	public String resolveProperty( WorkingSession session, ILogger log, String propertyName )
 	{
-		String value;
+		String originalRequestedPropertyName = propertyName;
 
-		do
+		if( isMavenVariable( propertyName ) )
+			propertyName = Tools.getPropertyNameFromPropertyReference( propertyName );
+
+		String value = properties.get( propertyName );
+
+		if( value == null )
 		{
-			value = resolvePropertyInternal(session, log, propertyName);
-			propertyName = value;
+			switch( propertyName )
+			{
+				case "version":
+					log.html( Tools.warningMessage( "illegal property 'version' used in the project " + toString() + ", value resolved to project's version." ) );
+				case "project.version":
+				case "pom.version":
+					value = gav.getVersion();
+					break;
+
+				case "groupId":
+					log.html( Tools.warningMessage( "illegal property 'groupId' used in the project " + toString() + ", value resolved to project's groupId." ) );
+				case "project.groupId":
+				case "pom.groupId":
+					value = gav.getGroupId();
+					break;
+
+				case "project.artifactId":
+				case "pom.artifactId":
+					value = gav.getArtifactId();
+					break;
+
+				case "project.prerequisites.maven":
+					value = project.getPrerequisites().getMaven();
+					break;
+
+				case "mavenVersion":
+				case "java.version":
+					value = propertyName;
+					break;
+			}
 		}
-		while (value != null && isMavenVariable(value));
+
+		if( value == null )
+		{
+			Project parentProject = session.projects().forGav( parentGav );
+			if( parentProject != null )
+			{
+				if( propertyName.startsWith( "project.parent." ) )
+					value = parentProject.resolveProperty( session, log, propertyName.replace( "project.parent.", "project." ) );
+				else
+					value = parentProject.resolveProperty( session, log, propertyName );
+			}
+		}
+
+		if( value != null && isMavenVariable( value ) )
+			value = resolveProperty( session, log, value );
+
+		if( value == null )
+		{
+			log.html( Tools.warningMessage( "cannot resolve property '" + originalRequestedPropertyName + "' because parent project " + parentGav + " can't be found." ) );
+			value = "unknown";
+		}
 
 		return value;
 	}
 
-	public String resolvePropertyInternal(WorkingSession session, ILogger log, String propertyName)
+	public GavLocation findDependencyLocationInDependencyManagement( WorkingSession session, ILogger log, String groupId,
+			String artifactId )
 	{
-		String originalRequestedPropertyName = propertyName;
-
-		if (isMavenVariable(propertyName))
-			propertyName = Tools.getPropertyNameFromPropertyReference(propertyName);
-
-		String property = properties.get(propertyName);
-		if (property != null)
-			return property;
-
-		if ("version".equals(propertyName))
+		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
 		{
-			log.html(Tools.warningMessage("illegal property 'version' used in the project " + toString()
-					+ ", value resolved to project's version " + getGav().getVersion()));
-			return gav.getVersion();
-		}
-
-		if ("groupId".equals(propertyName))
-		{
-			log.html(Tools.warningMessage("illegal property 'groupId' used in the project " + toString()
-					+ ", value resolved to project's version " + getGav().getGroupId()));
-			return gav.getGroupId();
-		}
-
-		if ("project.version".equals(propertyName) || "pom.version".equals(propertyName))
-			return gav.getVersion();
-
-		if ("project.groupId".equals(propertyName) || "pom.groupId".equals(propertyName))
-			return gav.getGroupId();
-
-		if ("project.artifactId".equals(propertyName) || "pom.artifactId".equals(propertyName))
-			return gav.getArtifactId();
-
-		if ("project.prerequisites.maven".equals(propertyName))
-			return project.getPrerequisites().getMaven();
-
-		if ("java.version".equals(propertyName))
-			return propertyName;
-
-		if ("mavenVersion".equals(propertyName))
-			return "maven-installation-version";
-
-		Project parentProject = session.projects().forGav(parentGav);
-		if (parentProject == null)
-		{
-			log.html(Tools.errorMessage("cannot resolve " + getGav() + " project's property '" + propertyName + "/"
-					+ originalRequestedPropertyName
-					+ "' because parent project " + parentGav + " can't be found."));
-			return null;
-		}
-
-		if (propertyName.startsWith("project.parent."))
-			return parentProject.resolveProperty(session, log, propertyName.replace("project.parent.", "project."));
-
-		return parentProject.resolveProperty(session, log, propertyName);
-	}
-
-	public GavLocation findDependencyLocationInDependencyManagement(WorkingSession session, ILogger log, String groupId,
-			String artifactId)
-	{
-		if (project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null)
-		{
-			for (Dependency d : project.getDependencyManagement().getDependencies())
+			for( Dependency d : project.getDependencyManagement().getDependencies() )
 			{
 				String dependencyGroupId = d.getGroupId();
-				if (isMavenVariable(dependencyGroupId))
-					dependencyGroupId = resolveProperty(session, log, dependencyGroupId);
+				if( isMavenVariable( dependencyGroupId ) )
+					dependencyGroupId = resolveProperty( session, log, dependencyGroupId );
 
 				String dependencyArtifactId = d.getArtifactId();
-				if (isMavenVariable(dependencyArtifactId))
-					dependencyArtifactId = resolveProperty(session, log, dependencyArtifactId);
+				if( isMavenVariable( dependencyArtifactId ) )
+					dependencyArtifactId = resolveProperty( session, log, dependencyArtifactId );
 
-				if ("import".equals(d.getScope()) && "pom".equals(d.getType()))
+				if( "import".equals( d.getScope() ) && "pom".equals( d.getType() ) )
 				{
-					GAV bomGav = resolveGav(new GAV(dependencyGroupId, dependencyArtifactId, d.getVersion()), session, log,
-							false, false);
+					GAV bomGav = resolveGav( new GAV( dependencyGroupId, dependencyArtifactId, d.getVersion() ), session, log,
+							false, false );
 
-					Project bomProject = session.projects().forGav(bomGav);
-					if (bomProject != null)
+					Project bomProject = session.projects().forGav( bomGav );
+					if( bomProject != null )
 					{
-						GavLocation inBom = bomProject.findDependencyLocationInDependencyManagement(session, log, groupId,
-								artifactId);
-						if (inBom != null)
+						GavLocation inBom = bomProject.findDependencyLocationInDependencyManagement( session, log, groupId,
+								artifactId );
+						if( inBom != null )
 							return inBom;
 					}
 					else
 					{
-						log.html(Tools
-								.warningMessage("cannot find the project " + bomGav
+						log.html( Tools
+								.warningMessage( "cannot find the project " + bomGav
 										+ " which is imported as a bom in the project " + project
 										+ ". This prevents BOM dependency analysis to find dependency to " + groupId + ":"
-										+ artifactId));
+										+ artifactId ) );
 					}
 				}
 
-				if (groupId.equals(dependencyGroupId) && artifactId.equals(dependencyArtifactId))
+				if( groupId.equals( dependencyGroupId ) && artifactId.equals( dependencyArtifactId ) )
 				{
-					if (d.getVersion() != null)
+					if( d.getVersion() != null )
 					{
-						GAV g = resolveGav(new GAV(dependencyGroupId, dependencyArtifactId, d.getVersion()), session, log,
-								true, false);
-						if (isResolved(g))
-							return new GavLocation(this, PomSection.DEPENDENCY_MNGT, g, d);
+						GAV g = resolveGav( new GAV( dependencyGroupId, dependencyArtifactId, d.getVersion() ), session, log,
+								true, false );
+						if( g.isResolved() )
+							return new GavLocation( this, PomSection.DEPENDENCY_MNGT, g, d, resolveValue( session, log, d.getScope() ) );
 					}
 				}
 			}
 		}
 
-		if (parentGav != null)
+		if( parentGav != null )
 		{
-			Project parentProject = session.projects().forGav(parentGav);
-			if (parentProject != null)
-				return parentProject.findDependencyLocationInDependencyManagement(session, log, groupId, artifactId);
+			Project parentProject = session.projects().forGav( parentGav );
+			if( parentProject != null )
+				return parentProject.findDependencyLocationInDependencyManagement( session, log, groupId, artifactId );
 		}
 
 		return null;
 	}
 
-	private GavLocation findDependencyLocationInBuildDependencyManagement(WorkingSession session, ILogger log,
-			String groupId, String artifactId)
+	private GavLocation findDependencyLocationInBuildDependencyManagement( WorkingSession session, ILogger log,
+			String groupId, String artifactId )
 	{
-		if (project.getBuild() != null && project.getBuild().getPluginManagement() != null)
+		if( project.getBuild() != null && project.getBuild().getPluginManagement() != null )
 		{
-			for (Plugin d : project.getBuild().getPluginManagement().getPlugins())
+			for( Plugin d : project.getBuild().getPluginManagement().getPlugins() )
 			{
 				String dependencyGroupId = d.getGroupId();
-				if (isMavenVariable(dependencyGroupId))
-					dependencyGroupId = resolveProperty(session, log, dependencyGroupId);
+				if( isMavenVariable( dependencyGroupId ) )
+					dependencyGroupId = resolveProperty( session, log, dependencyGroupId );
 
 				String dependencyArtifactId = d.getArtifactId();
-				if (isMavenVariable(dependencyArtifactId))
-					dependencyArtifactId = resolveProperty(session, log, dependencyArtifactId);
+				if( isMavenVariable( dependencyArtifactId ) )
+					dependencyArtifactId = resolveProperty( session, log, dependencyArtifactId );
 
-				if (groupId.equals(dependencyGroupId) && artifactId.equals(dependencyArtifactId))
+				if( groupId.equals( dependencyGroupId ) && artifactId.equals( dependencyArtifactId ) )
 				{
-					if (d.getVersion() != null)
+					if( d.getVersion() != null )
 					{
-						GAV g = resolveGav(new GAV(dependencyGroupId, dependencyArtifactId, d.getVersion()), session, log,
-								false, true);
-						if (isResolved(g))
-							return new GavLocation(this, PomSection.DEPENDENCY_MNGT, g);
+						GAV g = resolveGav( new GAV( dependencyGroupId, dependencyArtifactId, d.getVersion() ), session, log,
+								false, true );
+						if( g.isResolved() )
+							return new GavLocation( this, PomSection.DEPENDENCY_MNGT, g );
 					}
 				}
 			}
 		}
 
-		if (parentGav != null)
+		if( parentGav != null )
 		{
-			Project parentProject = session.projects().forGav(parentGav);
-			if (parentProject != null)
-				return parentProject.findDependencyLocationInBuildDependencyManagement(session, log, groupId, artifactId);
+			Project parentProject = session.projects().forGav( parentGav );
+			if( parentProject != null )
+				return parentProject.findDependencyLocationInBuildDependencyManagement( session, log, groupId, artifactId );
 		}
 
 		return null;
@@ -401,7 +414,7 @@ public class Project
 		return pomFile;
 	}
 
-	public MavenProject getUnresolvedPom()
+	public MavenProject getMavenProject()
 	{
 		return project;
 	}
@@ -411,53 +424,53 @@ public class Project
 		return gav;
 	}
 
-	public Map<GAV, GavLocation> getDependencies(WorkingSession session, ILogger log)
+	public Map<GAV, GavLocation> getDependencies( WorkingSession session, ILogger log )
 	{
-		if (dependencies == null)
+		if( dependencies == null )
 			dependencies = new HashMap<>();
 
-		if (!dependencies.containsKey(session))
+		if( !dependencies.containsKey( session ) )
 		{
 			Map<GAV, GavLocation> dependencies = new HashMap<>();
 
-			for (Dependency dependency : project.getDependencies())
+			for( Dependency dependency : project.getDependencies() )
 			{
 				GAV dependencyGav = resolveGav(
-						new GAV(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()), session, log,
-						true, false);
+						new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() ), session, log,
+						true, false );
 
-				GavLocation info = new GavLocation(this, PomSection.DEPENDENCY, dependencyGav, dependency);
-				dependencies.put(dependencyGav, info);
+				GavLocation info = new GavLocation( this, PomSection.DEPENDENCY, dependencyGav, dependency, resolveValue( session, log, dependency.getScope() ) );
+				dependencies.put( dependencyGav, info );
 			}
 
-			this.dependencies.put(session, dependencies);
+			this.dependencies.put( session, dependencies );
 		}
 
-		return dependencies.get(session);
+		return dependencies.get( session );
 	}
 
-	public Map<GAV, GavLocation> getPluginDependencies(WorkingSession session, ILogger log)
+	public Map<GAV, GavLocation> getPluginDependencies( WorkingSession session, ILogger log )
 	{
-		if (pluginDependencies == null)
+		if( pluginDependencies == null )
 			pluginDependencies = new HashMap<>();
 
-		if (!pluginDependencies.containsKey(session))
+		if( !pluginDependencies.containsKey( session ) )
 		{
 			Map<GAV, GavLocation> pluginDependencies = new HashMap<>();
 
-			for (Plugin plugin : project.getBuildPlugins())
+			for( Plugin plugin : project.getBuildPlugins() )
 			{
-				GAV dependencyGav = resolveGav(new GAV(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion()),
-						session, log, false, true);
+				GAV dependencyGav = resolveGav( new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() ),
+						session, log, false, true );
 
-				GavLocation info = new GavLocation(this, PomSection.PLUGIN, dependencyGav, dependencyGav);
-				pluginDependencies.put(dependencyGav, info);
+				GavLocation info = new GavLocation( this, PomSection.PLUGIN, dependencyGav, dependencyGav );
+				pluginDependencies.put( dependencyGav, info );
 			}
 
-			this.pluginDependencies.put(session, pluginDependencies);
+			this.pluginDependencies.put( session, pluginDependencies );
 		}
 
-		return pluginDependencies.get(session);
+		return pluginDependencies.get( session );
 	}
 
 	public String getPath()
@@ -465,17 +478,17 @@ public class Project
 		return pomFile.getParentFile().getAbsolutePath();
 	}
 
-	private MavenProject readPomFile(File pom)
+	private MavenProject readPomFile( File pom )
 	{
-		try (FileReader reader = new FileReader(pom))
+		try( FileReader reader = new FileReader( pom ) )
 		{
 			MavenXpp3Reader mavenreader = new MavenXpp3Reader();
-			Model model = mavenreader.read(reader);
-			model.setPomFile(pom);
+			Model model = mavenreader.read( reader );
+			model.setPomFile( pom );
 
-			return new MavenProject(model);
+			return new MavenProject( model );
 		}
-		catch (IOException | XmlPullParserException e)
+		catch( IOException | XmlPullParserException e )
 		{
 			return null;
 		}
@@ -497,21 +510,21 @@ public class Project
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (this == obj)
+		if( this == obj )
 			return true;
-		if (obj == null)
+		if( obj == null )
 			return false;
-		if (getClass() != obj.getClass())
+		if( getClass() != obj.getClass() )
 			return false;
-		Project other = (Project)obj;
-		if (pomFile == null)
+		Project other = (Project) obj;
+		if( pomFile == null )
 		{
-			if (other.pomFile != null)
+			if( other.pomFile != null )
 				return false;
 		}
-		else if (!pomFile.getAbsolutePath().equals(other.pomFile.getAbsolutePath()))
+		else if( !pomFile.getAbsolutePath().equals( other.pomFile.getAbsolutePath() ) )
 			return false;
 		return true;
 	}

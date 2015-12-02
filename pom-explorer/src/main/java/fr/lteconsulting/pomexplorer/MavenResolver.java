@@ -28,59 +28,59 @@ public class MavenResolver
 
 	private final Map<String, File> resolvedFiles = new HashMap<>();
 
-	public void init(String mavenSettingsFilePath)
+	public void init( String mavenSettingsFilePath )
 	{
-		if (mavenSettingsFilePath != null && !mavenSettingsFilePath.isEmpty())
-			resolver = Maven.configureResolver().fromFile(mavenSettingsFilePath);
+		if( mavenSettingsFilePath != null && !mavenSettingsFilePath.isEmpty() )
+			resolver = Maven.configureResolver().fromFile( mavenSettingsFilePath );
 		else
 			resolver = Maven.resolver();
 
 		// have the session initialize remote repositories
-		mavenSession = getField(getField(resolver, "delegate"), "session");
+		mavenSession = getField( getField( resolver, "delegate" ), "session" );
 		try
 		{
-			Method m = mavenSession.getClass().getDeclaredMethod("getRemoteRepositories");
-			m.setAccessible(true);
-			m.invoke(mavenSession);
+			Method m = mavenSession.getClass().getDeclaredMethod( "getRemoteRepositories" );
+			m.setAccessible( true );
+			m.invoke( mavenSession );
 		}
-		catch (Exception e)
+		catch( Exception e )
 		{
 			e.printStackTrace();
 		}
 
-		s = getField(mavenSession, "session");
-		system = getField(mavenSession, "system");
+		s = getField( mavenSession, "session" );
+		system = getField( mavenSession, "system" );
 	}
 
-	public File resolvePom(GAV gav, String extension)
+	public File resolvePom( GAV gav, String extension )
 	{
 		String key = gav.toString() + ":" + extension;
 
-		File pomFile = resolvedFiles.get(key);
-		if (pomFile == null)
+		File pomFile = resolvedFiles.get( key );
+		if( pomFile == null )
 		{
-			Artifact pomArtifact = new DefaultArtifact(gav.getGroupId(), gav.getArtifactId(), null, extension,
-					gav.getVersion());
+			Artifact pomArtifact = new DefaultArtifact( gav.getGroupId(), gav.getArtifactId(), null, extension,
+					gav.getVersion() );
 			try
 			{
-				ArtifactRequest request = new ArtifactRequest(pomArtifact, getField(mavenSession, "remoteRepositories"),
-						null);
-				pomArtifact = system.resolveArtifact(s, request).getArtifact();
+				ArtifactRequest request = new ArtifactRequest( pomArtifact, getField( mavenSession, "remoteRepositories" ),
+						null );
+				pomArtifact = system.resolveArtifact( s, request ).getArtifact();
 			}
-			catch (ArtifactResolutionException e)
+			catch( ArtifactResolutionException e )
 			{
 				return null;
 			}
 
 			pomFile = pomArtifact.getFile();
-			resolvedFiles.put(key, pomFile);
+			resolvedFiles.put( key, pomFile );
 		}
 
 		return pomFile;
 	}
 
-	@SuppressWarnings({ "unchecked", "null" })
-	private <T> T getField(Object o, String field)
+	@SuppressWarnings( { "unchecked" } )
+	private <T> T getField( Object o, String field )
 	{
 		Class<?> currentClass = o.getClass();
 		Field f = null;
@@ -88,30 +88,30 @@ public class MavenResolver
 		{
 			try
 			{
-				f = currentClass.getDeclaredField(field);
+				f = currentClass.getDeclaredField( field );
 			}
-			catch (Exception e1)
+			catch( Exception e1 )
 			{
 			}
 
 			try
 			{
-				if (f != null)
+				if( f != null )
 				{
-					f.setAccessible(true);
-					return (T)f.get(o);
+					f.setAccessible( true );
+					return (T) f.get( o );
 				}
 			}
-			catch (IllegalAccessException e)
+			catch( IllegalAccessException e )
 			{
 				e.printStackTrace();
-				return (T)null;
+				return (T) null;
 			}
 
 			currentClass = currentClass.getSuperclass();
 		}
-		while (f == null && currentClass != null);
+		while( f == null && currentClass != null );
 
-		return (T)null;
+		return (T) null;
 	}
 }

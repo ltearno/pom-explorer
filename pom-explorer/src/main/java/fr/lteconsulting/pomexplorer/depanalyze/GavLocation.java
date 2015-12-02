@@ -19,11 +19,11 @@ public class GavLocation extends Location
 
 	private String classifier;
 
-	public GavLocation( Project project, PomSection section, GAV resolvedGav, Dependency unresolved )
+	public GavLocation( Project project, PomSection section, GAV resolvedGav, Dependency unresolved, String scope )
 	{
 		this( project, section, resolvedGav, new GAV( unresolved.getGroupId(), unresolved.getArtifactId(), unresolved.getVersion() ) );
 
-		scope = Scope.fromString( unresolved.getScope() );
+		this.scope = Scope.fromString( scope );
 		classifier = unresolved.getClassifier();
 	}
 

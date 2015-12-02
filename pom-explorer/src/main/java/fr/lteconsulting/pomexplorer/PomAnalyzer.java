@@ -3,11 +3,9 @@ package fr.lteconsulting.pomexplorer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
@@ -17,7 +15,7 @@ import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 
 public class PomAnalyzer
 {
-	private final static Set<String> IGNORED_DIRS = new HashSet<>(Arrays.asList(
+	private final static Set<String> IGNORED_DIRS = new HashSet<>( Arrays.asList(
 			"target",
 			"bin",
 			"src",
@@ -26,212 +24,217 @@ public class PomAnalyzer
 			"war",
 			"gwt-unitCache",
 			".idea",
-			".settings"));
+			".settings" ) );
 
-	public void analyze(String directory, WorkingSession session, ILogger log)
+	public void analyze( String directory, WorkingSession session, ILogger log )
 	{
-		log.html("analyzing '" + directory + "'<br/>");
-
+		log.html( "analyzing '" + directory + "'<br/>" );
 		long duration = System.currentTimeMillis();
 
+		Set<File> pomFiles = new HashSet<>();
+		scanPomFiles( new File( directory ), session, log, pomFiles );
+
 		Set<Project> loadedProjects = new HashSet<>();
-		loadDirectoryOrFile(new File(directory), session, log, loadedProjects);
-
-		log.html("integrity checks...<br/>");
-		boolean somethingToDo = true;
-		while (somethingToDo)
+		for( File pomFile : pomFiles )
 		{
-			somethingToDo = false;
-
-			List<Project> toProcess = new ArrayList<>(loadedProjects);
-			for (int i = 0; i < toProcess.size(); i++)
-			{
-				Project project = toProcess.get(i);
-
-				Set<Project> reloadedProjects = new HashSet<>();
-				somethingToDo |= fixProjectResolution(project, reloadedProjects, session, log);
-
-				for (Project reloaded : reloadedProjects)
-				{
-					if (loadedProjects.add(reloaded))
-						toProcess.add(reloaded);
-				}
-				loadedProjects.addAll(reloadedProjects);
-			}
+			Project project = createAndRegisterProject( pomFile, session, log );
+			if( project != null )
+				loadedProjects.add( project );
 		}
 
-		log.html("graph update<br/>");
+		log.html( "integrity checks...<br/>" );
+
+		Set<Project> toProcess = loadedProjects;
+		Set<Project> toGraphProjects = new HashSet<>();
 		int nbUnresolved = 0;
-		for (Project project : loadedProjects)
+		boolean firstRound = true;
+
+		while( toProcess != null && !toProcess.isEmpty() )
 		{
-			if (!project.isResolvable(session, log))
+			Set<Project> next = null;
+
+			for( Project project : toProcess )
 			{
-				nbUnresolved++;
-				log.html(Tools.warningMessage("non resolvable project " + project));
+				boolean isOk = true;
+				while( isOk )
+				{
+					Set<GAV> missingProjects = project.getMissingGavsForResolution( session, log );
+					if( missingProjects == null || missingProjects.isEmpty() )
+						break;
 
-				log.html("missing the following projects : " + project.getMissingGavsForResolution(session, log) + "<br/>");
+					for( GAV missingProjectGav : missingProjects )
+					{
+						log.html( "fetching " + missingProjectGav + " to resolve " + project + "<br/>" );
+						File pomFile = session.mavenResolver().resolvePom( missingProjectGav, "pom" );
+						if( pomFile == null )
+						{
+							log.html( Tools.errorMessage( "cannot fetch project " + missingProjectGav ) );
+							isOk = false;
+							break;
+						}
 
-				continue;
+						Project missingProject = createAndRegisterProject( pomFile, session, log );
+						if( missingProject == null )
+						{
+							log.html( Tools.errorMessage( "cannot load project " + pomFile.getAbsolutePath() ) );
+							isOk = false;
+							break;
+						}
+
+						if( next == null )
+							next = new HashSet<>();
+						next.add( missingProject );
+					}
+				}
+
+				if( isOk )
+				{
+					assert project.getMissingGavsForResolution( session, log, new HashSet<>() ).isEmpty() : "project should be resolvable here " + toString();
+					toGraphProjects.add( project );
+				}
+				else if( firstRound )
+				{
+					nbUnresolved++;
+				}
 			}
 
-			addProjectToGraph(project, session, log);
+			toProcess = next;
+			firstRound = false;
+		}
+
+		log.html( "graph update<br/>" );
+
+		for( Project project : toGraphProjects )
+		{
+			assert project.getMissingGavsForResolution( session, log, new HashSet<>() ).isEmpty() : "error : not resolvable project should not be in this set !";
+
+			addProjectToGraph( project, session, log );
 		}
 
 		duration = System.currentTimeMillis() - duration;
 
-		log.html("analysis report: " + loadedProjects.size() + " loaded projects in " + duration + " ms, " + nbUnresolved
-				+ " unresolved.<br/>");
+		log.html( "analysis report: " + loadedProjects.size() + " loaded projects, " + nbUnresolved
+				+ " unresolved, " + toGraphProjects.size() + " projects added to the pom graph in " + duration + " ms.<br/>" );
 	}
 
 	/**
 	 * Takes a GAV, download it if needed, analyse its dependencies and add them to the graph
 	 *
 	 * @param gav
-	 *        gav to be analyzed
+	 *            gav to be analyzed
 	 * @param session
-	 *        working session
+	 *            working session
 	 */
-	public Project fetchGavWithMaven(WorkingSession session, ILogger log, GAV gav)
+	public Project fetchGavWithMaven( WorkingSession session, ILogger log, GAV gav )
 	{
 		MavenResolver resolver = session.mavenResolver();
 
-		File pomFile = resolver.resolvePom(gav, "pom");
+		File pomFile = resolver.resolvePom( gav, "pom" );
 
 		Project project = null;
-		if (pomFile != null)
-			project = loadProjectFromPomFile(pomFile, session, log);
+		if( pomFile != null )
+			project = createAndRegisterProject( pomFile, session, log );
 
-		if (project == null)
-			log.html(Tools.warningMessage("cannot fetch " + gav + " through maven"));
+		if( project == null )
+			log.html( Tools.warningMessage( "cannot fetch " + gav + " through maven" ) );
 
 		return project;
 	}
 
-	public void addProjectToGraph(Project project, WorkingSession session, ILogger log)
+	public void addProjectToGraph( Project project, WorkingSession session, ILogger log )
 	{
-		session.graph().removeRelations(session.graph().relations(project.getGav()));
+		session.graph().removeRelations( session.graph().relations( project.getGav() ) );
 
 		try
 		{
 			GAV gav = project.getGav();
 			GAV parentGav = project.getParent();
-			Collection<GavLocation> dependencies = project.getDependencies(session, log).values();
-			Collection<GavLocation> pluginDependencies = project.getPluginDependencies(session, log).values();
+			Collection<GavLocation> dependencies = project.getDependencies( session, log ).values();
+			Collection<GavLocation> pluginDependencies = project.getPluginDependencies( session, log ).values();
 
-			session.graph().addGav(gav);
-			if (parentGav != null)
+			session.graph().addGav( gav );
+			if( parentGav != null )
 			{
-				session.graph().addGav(parentGav);
-				session.graph().addRelation(new ParentRelation(gav, parentGav));
+				session.graph().addGav( parentGav );
+				session.graph().addRelation( new ParentRelation( gav, parentGav ) );
 			}
 
-			for (GavLocation location : dependencies)
+			for( GavLocation location : dependencies )
 			{
-				session.graph().addGav(location.getResolvedGav());
+				session.graph().addGav( location.getResolvedGav() );
 				session.graph()
 						.addRelation(
-								new DependencyRelation(gav, location.getResolvedGav(), location.getScope(), location
-										.getClassifier()));
+								new DependencyRelation( gav, location.getResolvedGav(), location.getScope(), location
+										.getClassifier() ) );
 			}
 
-			for (GavLocation location : pluginDependencies)
+			for( GavLocation location : pluginDependencies )
 			{
-				session.graph().addGav(location.getResolvedGav());
-				session.graph().addRelation(new BuildDependencyRelation(gav, location.getResolvedGav()));
+				session.graph().addGav( location.getResolvedGav() );
+				session.graph().addRelation( new BuildDependencyRelation( gav, location.getResolvedGav() ) );
 			}
 		}
-		catch (Exception e)
+		catch( Exception e )
 		{
-			log.html(Tools.errorMessage("Cannot add project " + project + " to graph. Cause: " + e.getMessage()));
+			log.html( Tools.errorMessage( "Cannot add project " + project + " to graph. Cause: " + e.getMessage() ) );
 		}
 	}
 
-	private boolean acceptedDir(String name)
+	private boolean acceptedDir( String name )
 	{
-		for (String ignored : IGNORED_DIRS)
-			if (ignored.equalsIgnoreCase(name))
+		for( String ignored : IGNORED_DIRS )
+			if( ignored.equalsIgnoreCase( name ) )
 				return false;
 		return true;
 	}
 
-	private void loadDirectoryOrFile(File file, WorkingSession session, ILogger log, Set<Project> loadedProjects)
+	private void scanPomFiles( File file, WorkingSession session, ILogger log, Set<File> pomFiles )
 	{
-		if (file == null)
+		if( file == null )
 			return;
 
-		if (file.isDirectory())
+		if( file.isDirectory() )
 		{
 			String name = file.getName();
-			if (!acceptedDir(name))
+			if( !acceptedDir( name ) )
 				return;
 
 			try
 			{
 				Files.newDirectoryStream(
 						file.toPath(),
-						(filtered) -> {
+						( filtered ) -> {
 							String filteredName = filtered.getFileName().toString();
-							return filteredName.endsWith(".pom") || "pom.xml".equalsIgnoreCase(filteredName)
-									|| Files.isDirectory(filtered) && acceptedDir(filteredName);
-						}).forEach((path) -> loadDirectoryOrFile(new File(path.toString()), session, log, loadedProjects));
+							return filteredName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( filteredName )
+									|| Files.isDirectory( filtered ) && acceptedDir( filteredName );
+						} ).forEach( ( path ) -> scanPomFiles( new File( path.toString() ), session, log, pomFiles ) );
 			}
-			catch (IOException e)
+			catch( IOException e )
 			{
 				e.printStackTrace();
 			}
 		}
-		else if (file.getName().equalsIgnoreCase("pom.xml") || file.getName().endsWith(".pom"))
+		else if( file.getName().equalsIgnoreCase( "pom.xml" ) || file.getName().endsWith( ".pom" ) )
 		{
-			Project project = loadProjectFromPomFile(file, session, log);
-			if (project != null)
-				loadedProjects.add(project);
+			pomFiles.add( file );
 		}
 	}
 
-	private Project loadProjectFromPomFile(File pomFile, WorkingSession session, ILogger log)
+	private Project createAndRegisterProject( File pomFile, WorkingSession session, ILogger log )
 	{
 		try
 		{
-			Project project = new Project(pomFile);
-			session.projects().add(project);
-			session.repositories().add(project);
+			Project project = new Project( pomFile );
+			session.projects().add( project );
+			session.repositories().add( project );
 			return project;
 		}
-		catch (Exception e)
+		catch( Exception e )
 		{
-			log.html(Tools.errorMessage("error loading pom file " + pomFile.getAbsolutePath() + ", message: "
-					+ e.getMessage()));
+			log.html( Tools.errorMessage( "error loading pom file " + pomFile.getAbsolutePath() + ", message: "
+					+ e.getMessage() ) );
 		}
 
 		return null;
-	}
-
-	/**
-	 * sometimes a project cannot be resolved because it's parent or a bom import is not in the analyzed directory.
-	 * 
-	 * At that time, the parent or bom import is fetched through maven.
-	 * 
-	 * returns true if something has moved and resolution should be attempted again on other projects
-	 */
-	private boolean fixProjectResolution(Project project, Set<Project> loadedProjects, WorkingSession session,
-			ILogger log)
-	{
-		Set<GAV> missingProjects = project.getMissingGavsForResolution(session, log);
-
-		if (missingProjects.isEmpty())
-			return false;
-
-		boolean somethingChanged = false;
-
-		for (GAV missingProject : missingProjects)
-		{
-			log.html("fetching " + missingProject + " (needed by resolution of " + project + ")<br/>");
-			Project loadedProject = fetchGavWithMaven(session, log, missingProject);
-			somethingChanged |= loadedProject != null;
-			if (loadedProject != null)
-				loadedProjects.add(loadedProject);
-		}
-
-		return somethingChanged;
 	}
 }

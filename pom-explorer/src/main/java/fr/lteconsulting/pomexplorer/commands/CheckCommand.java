@@ -38,7 +38,7 @@ public class CheckCommand
 		for( Project project : session.projects().values() )
 		{
 			// project version should be null
-			if( project.getUnresolvedPom().getModel().getVersion() != null )
+			if( project.getMavenProject().getModel().getVersion() != null )
 				continue;
 
 			// and project should have a parent

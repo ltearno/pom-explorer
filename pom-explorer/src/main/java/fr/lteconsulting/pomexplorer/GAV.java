@@ -1,5 +1,7 @@
 package fr.lteconsulting.pomexplorer;
 
+import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
+
 public class GAV
 {
 	private final String groupId;
@@ -33,6 +35,11 @@ public class GAV
 	public String getVersion()
 	{
 		return version;
+	}
+
+	public boolean isResolved()
+	{
+		return groupId != null && artifactId != null && version != null && !isMavenVariable( groupId ) && !isMavenVariable( artifactId ) && !isMavenVariable( version );
 	}
 
 	@Override

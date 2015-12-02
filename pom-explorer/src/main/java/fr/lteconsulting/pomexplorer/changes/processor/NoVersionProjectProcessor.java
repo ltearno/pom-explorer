@@ -36,7 +36,7 @@ public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 		}
 
 		// project version should be null
-		if( project.getUnresolvedPom().getModel().getVersion() != null )
+		if( project.getMavenProject().getModel().getVersion() != null )
 			return;
 
 		// and project should have a parent

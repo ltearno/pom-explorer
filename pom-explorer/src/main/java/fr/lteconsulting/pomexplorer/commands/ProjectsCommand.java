@@ -53,7 +53,7 @@ public class ProjectsCommand
 
 		for( Project project : session.projects().values() )
 		{
-			MavenProject unresolvedProject = project.getUnresolvedPom();
+			MavenProject unresolvedProject = project.getMavenProject();
 
 			if( gavFilter != null && !gavFilter.accept( project.getGav() ) )
 				continue;

@@ -57,7 +57,7 @@ public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 			Project definitionProject = Tools.getPropertyDefinitionProject( session, depLoc.getProject(), property );
 			if( definitionProject != null )
 			{
-				changeSet.addChange( new PropertyChange( new PropertyLocation( definitionProject, depLoc, property, definitionProject.getUnresolvedPom().getProperties().getProperty( property ) ), change.getNewGav().getVersion() ), change );
+				changeSet.addChange( new PropertyChange( new PropertyLocation( definitionProject, depLoc, property, definitionProject.getMavenProject().getProperties().getProperty( property ) ), change.getNewGav().getVersion() ), change );
 			}
 		}
 
