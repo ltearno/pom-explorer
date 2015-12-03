@@ -204,7 +204,7 @@ public class Project
 
 				default:
 					version = "UNKNOWN";
-					log.html( Tools.warningMessage( "unspecified dependency version to " + ga + " in project '" + toString() + "', please check the associated pom file !" ) );
+					log.html( Tools.warningMessage( "unspecified dependency version to " + ga + " in project '" + toString() + "', check the pom file please !" ) );
 			}
 		}
 
