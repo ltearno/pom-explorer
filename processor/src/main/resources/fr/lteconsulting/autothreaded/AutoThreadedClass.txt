@@ -1,15 +1,15 @@
 package PACKAGE;
 
-import fr.lteconsulting.superman.BaseSuperman;
-import fr.lteconsulting.superman.Supermessage;
+import fr.lteconsulting.autothreaded.BaseAutoThreaded;
+import fr.lteconsulting.autothreaded.AutoThreadMessage;
 import java.util.concurrent.Future;
 
 public class CLASS_NAME extends BASE_CLASS_NAME
 {
-	private final BaseSuperman superman = new BaseSuperman(CONSTRUCTOR)
+	private final BaseAutoThreaded autothreaded = new BaseAutoThreaded(CONSTRUCTOR)
 	{
 		@Override
-		protected Object processMessage( Supermessage message )
+		protected Object processMessage( AutoThreadMessage message )
 		{
 			switch(message.getMethodId())
 			{
@@ -28,12 +28,12 @@ EMPTY_QUEUE
 	
 	public CLASS_NAME()
 	{
-		superman.start();
+		autothreaded.start();
 	}
 	
 	public void stop()
 	{
-		superman.stop();
+		autothreaded.stop();
 	}
 
 METHODS

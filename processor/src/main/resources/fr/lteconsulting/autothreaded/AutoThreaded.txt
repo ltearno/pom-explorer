@@ -1,10 +1,10 @@
 package PACKAGE;
 
-import fr.lteconsulting.superman.BaseSuperman;
-import fr.lteconsulting.superman.Supermessage;
+import fr.lteconsulting.autothreaded.BaseAutoThreaded;
+import fr.lteconsulting.autothreaded.AutoThreadMessage;
 import java.util.concurrent.Future;
 
-public class CLASS_NAME extends BaseSuperman implements INTERFACE
+public class CLASS_NAME extends BaseAutoThreaded implements INTERFACE
 {
 	private final INTERFACE implementation;
 
@@ -14,7 +14,7 @@ public class CLASS_NAME extends BaseSuperman implements INTERFACE
 	}
 
 	@Override
-	protected Object processMessage( Supermessage message )
+	protected Object processMessage( AutoThreadMessage message )
 	{
 		switch( message.getMethodId() )
 		{

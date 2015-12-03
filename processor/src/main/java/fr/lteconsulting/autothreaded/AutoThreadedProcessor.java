@@ -1,4 +1,4 @@
-package fr.lteconsulting.superman;
+package fr.lteconsulting.autothreaded;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,11 +22,11 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
-@SupportedAnnotationTypes( SupermanProcessor.AnnotationFqn )
+@SupportedAnnotationTypes( AutoThreadedProcessor.AnnotationFqn )
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class SupermanProcessor extends AbstractProcessor
+public class AutoThreadedProcessor extends AbstractProcessor
 {
-	public final static String AnnotationFqn = "fr.lteconsulting.superman.Superman";
+	public final static String AnnotationFqn = "fr.lteconsulting.autothreaded.AutoThreaded";
 
 	@Override
 	public boolean process( Set<? extends TypeElement> annotations, RoundEnvironment roundEnv )
@@ -44,12 +44,12 @@ public class SupermanProcessor extends AbstractProcessor
 
 	private void processType( TypeElement element )
 	{
-		String template = readResource( "fr/lteconsulting/superman/Superman.txt" );
+		String template = readResource( "fr/lteconsulting/autothreaded/AutoThreaded.txt" );
 
 		// le type est une interface.
 
 		String packageName = ((PackageElement) element.getEnclosingElement()).getQualifiedName().toString();
-		String supermanName = element.getSimpleName() + "Superman";
+		String autothreadedName = element.getSimpleName() + "AutoThreaded";
 
 		// ecrire la clase qui l'implémente
 		StringBuilder delegate = new StringBuilder();
@@ -99,7 +99,7 @@ public class SupermanProcessor extends AbstractProcessor
 				methods.append( " " );
 			methods.append( ")\n" );
 			methods.append( "        {\n" );
-			methods.append( "            return (" + returnTypeFqn + ") sendMessage( new Supermessage( " + id + ", new Object[] {" );
+			methods.append( "            return (" + returnTypeFqn + ") sendMessage( new AutoThreadMessage( " + id + ", new Object[] {" );
 			pi = 0;
 			for( VariableElement p : method.getParameters() )
 			{
@@ -117,14 +117,14 @@ public class SupermanProcessor extends AbstractProcessor
 		}
 
 		template = template.replaceAll( "PACKAGE", packageName );
-		template = template.replaceAll( "CLASS_NAME", supermanName );
+		template = template.replaceAll( "CLASS_NAME", autothreadedName );
 		template = template.replaceAll( "INTERFACE", element.getSimpleName().toString() );
 		template = template.replaceAll( "DELEGATE", delegate.toString() );
 		template = template.replaceAll( "METHODS", methods.toString() );
 
 		try
 		{
-			JavaFileObject jfo = processingEnv.getFiler().createSourceFile( packageName + "." + supermanName, element );
+			JavaFileObject jfo = processingEnv.getFiler().createSourceFile( packageName + "." + autothreadedName, element );
 
 			OutputStream os = jfo.openOutputStream();
 			PrintWriter pw = new PrintWriter( os );
@@ -132,24 +132,24 @@ public class SupermanProcessor extends AbstractProcessor
 			pw.close();
 			os.close();
 
-			processingEnv.getMessager().printMessage( Kind.MANDATORY_WARNING, "Superman généré !", element );
+			processingEnv.getMessager().printMessage( Kind.MANDATORY_WARNING, "AutoThreaded généré !", element );
 		}
 		catch( IOException e )
 		{
 			e.printStackTrace();
-			processingEnv.getMessager().printMessage( Kind.ERROR, "Superman non généré !" + e, element );
+			processingEnv.getMessager().printMessage( Kind.ERROR, "AutoThreaded non généré !" + e, element );
 		}
 
 	}
 
 	private void processClass( TypeElement element )
 	{
-		String template = readResource( "fr/lteconsulting/superman/SupermanClass.txt" );
+		String template = readResource( "fr/lteconsulting/autothreaded/AutoThreadedClass.txt" );
 
 		// le type est une classe.
 
 		String packageName = ((PackageElement) element.getEnclosingElement()).getQualifiedName().toString();
-		String supermanName = element.getSimpleName() + "Superman";
+		String autothreadedName = element.getSimpleName() + "AutoThreaded";
 
 		// ecrire la clase qui en hérite
 		StringBuilder constructor = new StringBuilder();
@@ -168,7 +168,7 @@ public class SupermanProcessor extends AbstractProcessor
 			if( "onEmptyMessageQueue".equals( method.getSimpleName().toString() ) && method.getModifiers().contains( Modifier.PROTECTED ) )
 			{
 				processingEnv.getMessager().printMessage( Kind.MANDATORY_WARNING, "This method will be called on loop entry", child );
-				loopEntry.append( "                    " + supermanName + ".this.onEmptyMessageQueue();" );
+				loopEntry.append( "                    " + autothreadedName + ".this.onEmptyMessageQueue();" );
 				
 				constructor.append( " true " );
 				
@@ -237,9 +237,9 @@ public class SupermanProcessor extends AbstractProcessor
 			methods.append( ")\n" );
 			methods.append( "    {\n" );
 			if( "void".equals( returnTypeFqn ) )
-				methods.append( "        superman.sendMessage( new Supermessage( " + id + ", new Object[] {" );
+				methods.append( "        autothreaded.sendMessage( new AutoThreadMessage( " + id + ", new Object[] {" );
 			else
-				methods.append( "        return (" + returnTypeFqn + ") superman.sendMessage( new Supermessage( " + id + ", new Object[] {" );
+				methods.append( "        return (" + returnTypeFqn + ") autothreaded.sendMessage( new AutoThreadMessage( " + id + ", new Object[] {" );
 			pi = 0;
 			for( VariableElement p : method.getParameters() )
 			{
@@ -278,9 +278,9 @@ public class SupermanProcessor extends AbstractProcessor
 			methods.append( ")\n" );
 			methods.append( "    {\n" );
 			if( "void".equals( returnTypeFqn ) )
-				methods.append( "        return (Future<Void>)(Future<?>) superman.postMessage( new Supermessage( " + id + ", new Object[] {" );
+				methods.append( "        return (Future<Void>)(Future<?>) autothreaded.postMessage( new AutoThreadMessage( " + id + ", new Object[] {" );
 			else
-				methods.append( "        return (Future<" + returnTypeFqn + ">)(Future<?>) superman.postMessage( new Supermessage( " + id + ", new Object[] {" );
+				methods.append( "        return (Future<" + returnTypeFqn + ">)(Future<?>) autothreaded.postMessage( new AutoThreadMessage( " + id + ", new Object[] {" );
 			pi = 0;
 			for( VariableElement p : method.getParameters() )
 			{
@@ -337,14 +337,14 @@ public class SupermanProcessor extends AbstractProcessor
 		template = template.replaceAll( "CONSTRUCTOR", constructor.toString() );
 		template = template.replaceAll( "PACKAGE", packageName );
 		template = template.replaceAll( "BASE_CLASS_NAME", element.getSimpleName().toString() );
-		template = template.replaceAll( "CLASS_NAME", supermanName );
+		template = template.replaceAll( "CLASS_NAME", autothreadedName );
 		template = template.replaceAll( "DELEGATE", delegate.toString() );
 		template = template.replaceAll( "METHODS", methods.toString() );
 		template = template.replaceAll( "EMPTY_QUEUE", loopEntry.toString() );
 
 		try
 		{
-			JavaFileObject jfo = processingEnv.getFiler().createSourceFile( packageName + "." + supermanName, element );
+			JavaFileObject jfo = processingEnv.getFiler().createSourceFile( packageName + "." + autothreadedName, element );
 
 			OutputStream os = jfo.openOutputStream();
 			PrintWriter pw = new PrintWriter( os );
@@ -352,12 +352,12 @@ public class SupermanProcessor extends AbstractProcessor
 			pw.close();
 			os.close();
 
-			processingEnv.getMessager().printMessage( Kind.MANDATORY_WARNING, "Superman généré : " + supermanName, element );
+			processingEnv.getMessager().printMessage( Kind.MANDATORY_WARNING, "AutoThreaded généré : " + autothreadedName, element );
 		}
 		catch( IOException e )
 		{
 			e.printStackTrace();
-			processingEnv.getMessager().printMessage( Kind.ERROR, "Superman non généré !" + e, element );
+			processingEnv.getMessager().printMessage( Kind.ERROR, "AutoThreaded non généré !" + e, element );
 		}
 
 	}
@@ -366,7 +366,7 @@ public class SupermanProcessor extends AbstractProcessor
 	{
 		try
 		{
-			return new Scanner( SupermanProcessor.class.getClassLoader().getResourceAsStream( fqn ) ).useDelimiter( "\\A" ).next();
+			return new Scanner( AutoThreadedProcessor.class.getClassLoader().getResourceAsStream( fqn ) ).useDelimiter( "\\A" ).next();
 		}
 		catch( Exception e )
 		{

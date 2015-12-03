@@ -1,4 +1,4 @@
-package fr.lteconsulting.superman;
+package fr.lteconsulting.autothreaded;
 
 public class Person
 {

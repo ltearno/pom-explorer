@@ -82,7 +82,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.lteconsulting</groupId>
-			<artifactId>superman</artifactId>
+			<artifactId>autothreaded</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>

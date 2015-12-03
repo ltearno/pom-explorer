@@ -1,8 +1,8 @@
-package fr.lteconsulting.superman;
+package fr.lteconsulting.autothreaded;
 
 import java.util.Arrays;
 
-public class Supermessage
+public class AutoThreadMessage
 {
 	private final int methodId;
 
@@ -14,7 +14,7 @@ public class Supermessage
 
 	private Object result;
 
-	public Supermessage(int methodId, Object[] parameters)
+	public AutoThreadMessage(int methodId, Object[] parameters)
 	{
 		this.methodId = methodId;
 		this.parameters = parameters;
@@ -58,7 +58,7 @@ public class Supermessage
 	@Override
 	public String toString()
 	{
-		return "Supermessage [methodId=" + methodId + ", parameters=" + Arrays.toString(parameters) + "]";
+		return "AutoThreadMessage [methodId=" + methodId + ", parameters=" + Arrays.toString(parameters) + "]";
 	}
 
 	public boolean isAborted()

@@ -39,9 +39,9 @@ public class WorkingSession
 
 	private final Set<Client> clients = new HashSet<>();
 
-	private final ProjectsWatcher projectsWatcher = new ProjectsWatcherSuperman();
+	private final ProjectsWatcher projectsWatcher = new ProjectsWatcherAutoThreaded();
 
-	private final BuilderSuperman builder = new BuilderSuperman();
+	private final BuilderAutoThreaded builder = new BuilderAutoThreaded();
 
 	private final Map<String, MavenResolver> resolvers = new HashMap<>();
 

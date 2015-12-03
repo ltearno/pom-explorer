@@ -1,4 +1,4 @@
-package fr.lteconsulting.superman;
+package fr.lteconsulting.autothreaded;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -8,51 +8,51 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A Superman has :
+ * A AutoThreaded has :
  * 
  * <ul>
  * <li>a thread,
  * <li>a message processing queue
  */
-public abstract class BaseSuperman
+public abstract class BaseAutoThreaded
 {
-	abstract protected Object processMessage(Supermessage message);
+	abstract protected Object processMessage(AutoThreadMessage message);
 
 	protected void onEmptyMessageQueue()
 	{
 	}
 
-	private static volatile int nextBaseSupermanId = 0;
+	private static volatile int nextBaseAutoThreadedId = 0;
 
-	private final int baseSupermanId;
+	private final int baseAutoThreadedId;
 
 	private final Thread thread;
 
-	private final BlockingQueue<Supermessage> queue;
+	private final BlockingQueue<AutoThreadMessage> queue;
 	
 	private final boolean processEmptyQueue;
 
 	private boolean stopping;
 
-	public BaseSuperman()
+	public BaseAutoThreaded()
 	{
 		this( false );
 	}
 	
-	public BaseSuperman( boolean processEmptyQueue )
+	public BaseAutoThreaded( boolean processEmptyQueue )
 	{
 		this.processEmptyQueue = processEmptyQueue;
-		baseSupermanId = nextBaseSupermanId++;
+		baseAutoThreadedId = nextBaseAutoThreadedId++;
 		queue = new ArrayBlockingQueue<>(100);
 		thread = new Thread(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				BaseSuperman.this.run();
+				BaseAutoThreaded.this.run();
 			}
 		});
-		thread.setName(this.getClass().getSimpleName() + " Superman:" + baseSupermanId);
+		thread.setName(this.getClass().getSimpleName() + " AutoThreaded:" + baseAutoThreadedId);
 	}
 
 	public void start()
@@ -75,7 +75,7 @@ public abstract class BaseSuperman
 		}
 	}
 
-	public Object sendMessage(Supermessage message)
+	public Object sendMessage(AutoThreadMessage message)
 	{
 		// TODO : optionally capture call stack...
 		synchronized (message)
@@ -112,7 +112,7 @@ public abstract class BaseSuperman
 			return message.getResult();
 	}
 
-	public Future<Object> postMessage(final Supermessage message)
+	public Future<Object> postMessage(final AutoThreadMessage message)
 	{
 		// TODO : optionally capture call stack...
 		synchronized (message)
@@ -197,7 +197,7 @@ public abstract class BaseSuperman
 						onEmptyMessageQueue();
 				}
 				
-				Supermessage message = queue.take();
+				AutoThreadMessage message = queue.take();
 				if (message != null)
 				{
 					Object result = processMessage(message);
@@ -233,6 +233,6 @@ public abstract class BaseSuperman
 	@Override
 	public String toString()
 	{
-		return "BaseSuperman " + System.identityHashCode(this) + " on thread " + thread.getId();
+		return "BaseAutoThreaded " + System.identityHashCode(this) + " on thread " + thread.getId();
 	}
 }

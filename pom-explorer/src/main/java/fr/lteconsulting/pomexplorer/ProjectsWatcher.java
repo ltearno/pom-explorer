@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import fr.lteconsulting.superman.Superman;
+import fr.lteconsulting.autothreaded.AutoThreaded;
 
-@Superman
+@AutoThreaded
 public class ProjectsWatcher
 {
 	private final Map<Project, ProjectWatcher> watchers = new HashMap<>();

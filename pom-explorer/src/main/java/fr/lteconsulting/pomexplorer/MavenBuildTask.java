@@ -4,9 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import fr.lteconsulting.superman.Superman;
+import fr.lteconsulting.autothreaded.AutoThreaded;
 
-@Superman
+@AutoThreaded
 public class MavenBuildTask
 {
 	public Boolean build( WorkingSession session, Project project, String talkId )

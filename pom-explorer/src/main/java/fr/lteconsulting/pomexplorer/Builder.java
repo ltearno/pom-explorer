@@ -11,9 +11,9 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
-import fr.lteconsulting.superman.Superman;
+import fr.lteconsulting.autothreaded.AutoThreaded;
 
-@Superman
+@AutoThreaded
 public class Builder
 {
 	private final String talkId = MessageFactory.newGuid();
@@ -253,7 +253,7 @@ public class Builder
 		}
 		else
 		{
-			MavenBuildTaskSuperman builder = new MavenBuildTaskSuperman();
+			MavenBuildTaskAutoThreaded builder = new MavenBuildTaskAutoThreaded();
 			boolean res = builder.build( session, project, talkId );
 			builder.stop();
 			return res;
