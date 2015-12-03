@@ -33,7 +33,7 @@ public class BuildCommand
 				return;
 			}
 
-			session.builder().buildProject( project );
+			session.builder().buildProject(project, log);
 
 			log.html( "project " + project + " marked for building<br/>" );
 		} );
@@ -82,11 +82,11 @@ public class BuildCommand
 			for( GAV g : toWatch )
 			{
 				Project p = session.projects().forGav( g );
-				if( p == null )
+				if (p == null || !p.isBuildable())
 					continue;
 
-				session.projectsWatcher().watchProject( p );
-				log.html( Tools.logMessage( "watching " + p ) );
+				log.html(Tools.logMessage("watching " + p));
+				session.projectsWatcher().watchProject(p, log);
 			}
 		}
 	}

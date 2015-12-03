@@ -38,7 +38,7 @@ public class PomAnalyzer
 		Set<Project> loadedProjects = new HashSet<>();
 		for( File pomFile : pomFiles )
 		{
-			Project project = createAndRegisterProject( pomFile, session, log );
+			Project project = createAndRegisterProject(pomFile, false, session, log);
 			if( project != null )
 				loadedProjects.add( project );
 		}
@@ -74,7 +74,7 @@ public class PomAnalyzer
 							break;
 						}
 
-						Project missingProject = createAndRegisterProject( pomFile, session, log );
+						Project missingProject = createAndRegisterProject(pomFile, true, session, log);
 						if( missingProject == null )
 						{
 							log.html( Tools.errorMessage( "cannot load project " + pomFile.getAbsolutePath() ) );
@@ -138,7 +138,7 @@ public class PomAnalyzer
 
 		Project project = null;
 		if( pomFile != null )
-			project = createAndRegisterProject( pomFile, session, log );
+			project = createAndRegisterProject(pomFile, true, session, log);
 
 		if( project == null )
 			log.html( Tools.warningMessage( "cannot fetch " + gav + " through maven" ) );
@@ -222,11 +222,11 @@ public class PomAnalyzer
 		}
 	}
 
-	private Project createAndRegisterProject( File pomFile, WorkingSession session, ILogger log )
+	private Project createAndRegisterProject(File pomFile, boolean isExternal, WorkingSession session, ILogger log)
 	{
 		try
 		{
-			Project project = new Project( pomFile );
+			Project project = new Project(pomFile, isExternal);
 			session.projects().add( project );
 			session.repositories().add( project );
 			return project;

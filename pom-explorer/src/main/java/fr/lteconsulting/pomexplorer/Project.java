@@ -29,6 +29,8 @@ public class Project
 {
 	private final File pomFile;
 
+	private final boolean isExternal;
+
 	private final MavenProject project;
 
 	private final GAV parentGav;
@@ -41,9 +43,10 @@ public class Project
 
 	private Map<WorkingSession, Map<GAV, GavLocation>> pluginDependencies;
 
-	public Project( File pomFile ) throws Exception
+	public Project(File pomFile, boolean isExternal) throws Exception
 	{
 		this.pomFile = pomFile;
+		this.isExternal = isExternal;
 
 		project = readPomFile( pomFile );
 		if( project == null )
@@ -71,6 +74,11 @@ public class Project
 
 		properties = new HashMap<>();
 		project.getProperties().forEach( ( key, value ) -> properties.put( key.toString(), value.toString() ) );
+	}
+
+	public boolean isBuildable()
+	{
+		return !isExternal;
 	}
 
 	public Set<GAV> getMissingGavsForResolution( WorkingSession session, ILogger log )

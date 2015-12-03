@@ -44,8 +44,14 @@ public class Builder
 		printBuildPipelineState( null );
 	}
 
-	public void buildProject( Project project )
+	public void buildProject(Project project, ILogger log)
 	{
+		if (!project.isBuildable())
+		{
+			log.html(Tools.errorMessage("cannot build non buildable project " + project));
+			return;
+		}
+
 		projectsToBuildForced.add( project );
 
 		printBuildPipelineState( null );
@@ -197,7 +203,7 @@ public class Builder
 		for( GAV gav : dependentsAndSelf( project.getGav() ) )
 		{
 			Project p = session.projects().forGav( gav );
-			if( p != null )
+			if (p != null && p.isBuildable())
 			{
 				if( !inDependenciesOfMaintainedProjects( p ) )
 					continue;
