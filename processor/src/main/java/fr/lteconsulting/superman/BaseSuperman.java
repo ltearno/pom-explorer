@@ -11,9 +11,8 @@ import java.util.concurrent.TimeoutException;
  * A Superman has :
  * 
  * <ul>
- * <li>Un thread,
- * <li>Une file d'attente de traitement des messages,
- * <li>Une interface implémentée par : un proxy pour appeler, un proxy pour implémenter
+ * <li>a thread,
+ * <li>a message processing queue
  */
 public abstract class BaseSuperman
 {

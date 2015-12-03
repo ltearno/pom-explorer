@@ -82,6 +82,7 @@ public class SupermanProcessor extends AbstractProcessor
 			}
 			delegate.append( " );\n" );
 
+			methods.append( "        @SuppressWarnings( \"unchecked\" )" );
 			methods.append( "        @Override\n" );
 			methods.append( "        public " + returnTypeFqn + " " + method.getSimpleName() + "(" );
 			pi = 0;
