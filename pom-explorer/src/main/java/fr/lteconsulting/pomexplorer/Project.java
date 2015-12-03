@@ -203,18 +203,8 @@ public class Project
 					break;
 
 				default:
-					// TODO throw a warning and resolve to the highest possible version
-					if( "org.apache.maven.plugins".equals( groupId ) )
-					{
-						version = "default-maven-version";
-					}
-					else
-					{
-						version = "UNKNOWN";
-						log.html( Tools.warningMessage( "unresolvable version for dependency to " + ga + " in project '"
-								+ toString()
-								+ "', please check the associated pom file !" ) );
-					}
+					version = "UNKNOWN";
+					log.html( Tools.warningMessage( "unspecified dependency version to " + ga + " in project '" + toString() + "', please check the associated pom file !" ) );
 			}
 		}
 
