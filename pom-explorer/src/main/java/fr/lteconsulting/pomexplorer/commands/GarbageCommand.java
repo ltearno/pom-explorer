@@ -56,7 +56,7 @@ public class GarbageCommand
 					providedClasses.addAll( cc );
 
 				log.html( providedClasses.size() + " provided classes, use -v option to display them<br/>" );
-				if( options.getFlag( "v" ) )
+				if( options.hasFlag( "v" ) )
 					providedClasses.stream().forEach( c -> log.html( c + "<br/>" ) );
 				providers.put( provider, providedClasses );
 				for( String cls : providedClasses )
@@ -81,7 +81,7 @@ public class GarbageCommand
 			log.html( "<br/><b>Analyzing referenced fqns of the project '" + project.getPomFile().getAbsolutePath() + "'</b><br/>" );
 			log.html( "Use the -v option to display the list of referenced fqns.<br/>" );
 			JavaSourceAnalyzer analyzer = new JavaSourceAnalyzer();
-			analyzer.analyzeProject( project, options.getFlag( "v" ), log );
+			analyzer.analyzeProject( project, options.hasFlag( "v" ), log );
 			Set<String> fqnReferences = analyzer.getUsageExtractor().getQualifiedNames();
 
 			Set<GAV> referencedTransitiveDependencies = new HashSet<>();

@@ -27,7 +27,7 @@ public class PomAnalyzer
 			".idea",
 			".settings" ) );
 
-	public void analyze( String directory, WorkingSession session, ILogger log )
+	public void analyze( String directory, boolean verbose, WorkingSession session, ILogger log )
 	{
 		log.html( "analyzing '" + directory + "'<br/>" );
 		long duration = System.currentTimeMillis();
@@ -38,7 +38,7 @@ public class PomAnalyzer
 		Set<Project> loadedProjects = new HashSet<>();
 		for( File pomFile : pomFiles )
 		{
-			Project project = createAndRegisterProject(pomFile, false, session, log);
+			Project project = createAndRegisterProject( pomFile, false, session, log );
 			if( project != null )
 				loadedProjects.add( project );
 		}
@@ -47,7 +47,7 @@ public class PomAnalyzer
 
 		Set<Project> toProcess = loadedProjects;
 		Set<Project> toGraphProjects = new HashSet<>();
-		int nbUnresolved = 0;
+		Set<Project> unresolvedProjects = new HashSet<>();
 		boolean firstRound = true;
 
 		while( toProcess != null && !toProcess.isEmpty() )
@@ -74,7 +74,7 @@ public class PomAnalyzer
 							break;
 						}
 
-						Project missingProject = createAndRegisterProject(pomFile, true, session, log);
+						Project missingProject = createAndRegisterProject( pomFile, true, session, log );
 						if( missingProject == null )
 						{
 							log.html( Tools.errorMessage( "cannot load project " + pomFile.getAbsolutePath() ) );
@@ -95,7 +95,7 @@ public class PomAnalyzer
 				}
 				else if( firstRound )
 				{
-					nbUnresolved++;
+					unresolvedProjects.add( project );
 				}
 			}
 
@@ -104,7 +104,7 @@ public class PomAnalyzer
 		}
 
 		log.html( "graph update<br/>" );
-		
+
 		PomGraphWriteTransaction tx = session.graph().startTransaction();
 
 		for( Project project : toGraphProjects )
@@ -113,12 +113,31 @@ public class PomAnalyzer
 
 			addProjectToGraph( project, tx, session, log );
 		}
-		
+
 		tx.commit();
 
 		duration = System.currentTimeMillis() - duration;
 
-		log.html( "analysis report: " + loadedProjects.size() + " loaded projects, " + nbUnresolved
+		if( verbose )
+		{
+			log.html( "<br/>Loaded projects:<br/>" );
+			loadedProjects.stream().sorted( Tools.projectAlphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
+
+			int fetchedProjects = toGraphProjects.size() - loadedProjects.size();
+			if( fetchedProjects > 0 )
+			{
+				log.html( "<br/>and " + fetchedProjects + " projects fetched to resolve loaded projects:<br/>" );
+				toGraphProjects.stream().filter( ( p ) -> !loadedProjects.contains( p ) ).sorted( Tools.projectAlphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
+			}
+
+			if( !unresolvedProjects.isEmpty() )
+			{
+				log.html( "<br/>sadly, there was " + unresolvedProjects.size() + " unresolvable projects:<br/>" );
+				unresolvedProjects.stream().sorted( Tools.projectAlphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
+			}
+		}
+
+		log.html( "<br/>analysis report: " + loadedProjects.size() + " loaded projects, " + unresolvedProjects.size()
 				+ " unresolved, " + toGraphProjects.size() + " projects added to the pom graph in " + duration + " ms.<br/>" );
 	}
 
@@ -138,7 +157,7 @@ public class PomAnalyzer
 
 		Project project = null;
 		if( pomFile != null )
-			project = createAndRegisterProject(pomFile, true, session, log);
+			project = createAndRegisterProject( pomFile, true, session, log );
 
 		if( project == null )
 			log.html( Tools.warningMessage( "cannot fetch " + gav + " through maven" ) );
@@ -222,11 +241,11 @@ public class PomAnalyzer
 		}
 	}
 
-	private Project createAndRegisterProject(File pomFile, boolean isExternal, WorkingSession session, ILogger log)
+	private Project createAndRegisterProject( File pomFile, boolean isExternal, WorkingSession session, ILogger log )
 	{
 		try
 		{
-			Project project = new Project(pomFile, isExternal);
+			Project project = new Project( pomFile, isExternal );
 			session.projects().add( project );
 			session.repositories().add( project );
 			return project;

@@ -61,6 +61,7 @@ public class ProjectsCommand
 
 			log.html( "gav : " + project.getGav() + ", packaging: " + unresolvedProject.getModel().getPackaging() + "<br/>" );
 			log.html( "file : " + project.getPomFile().getAbsolutePath() + "<br/>" );
+			log.html( "buildable : " + project.isBuildable() + "<br/>" );
 
 			Parent parent = unresolvedProject.getModel().getParent();
 			if( parent != null )
@@ -98,7 +99,7 @@ public class ProjectsCommand
 	private Set<Relation> effectiveDependencies( WorkingSession session, GAV gav )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		HashSet<Relation> res = new HashSet<>();
 
 		GAV parent = tx.parent( gav );

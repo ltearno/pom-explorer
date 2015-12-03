@@ -17,7 +17,7 @@ public class CommandOptions
 		return options.get( key );
 	}
 
-	public boolean getFlag( String key )
+	public boolean hasFlag( String key )
 	{
 		return "true".equals( getOption( key ) + "" );
 	}

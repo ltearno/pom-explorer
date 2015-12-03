@@ -150,7 +150,7 @@ public class Tools
 		String value = propertyValue( startingProject, property );
 		if( value != null )
 			return startingProject;
-		
+
 		PomGraphReadTransaction tx = session.graph().read();
 
 		// go deeper in hierarchy
@@ -225,7 +225,7 @@ public class Tools
 		GavLocation locationInDepMngt = project.findDependencyLocationInDependencyManagement( session, log, searchedDependency.getGroupId(), searchedDependency.getArtifactId() );
 		if( locationInDepMngt != null )
 			return locationInDepMngt;
-		
+
 		PomGraphReadTransaction tx = session.graph().read();
 
 		// parent
@@ -350,6 +350,8 @@ public class Tools
 			return 0;
 		}
 	};
+
+	public static final Comparator<Project> projectAlphabeticalComparator = ( a, b ) -> a.toString().compareTo( b.toString() );
 
 	public static String logMessage( String message )
 	{

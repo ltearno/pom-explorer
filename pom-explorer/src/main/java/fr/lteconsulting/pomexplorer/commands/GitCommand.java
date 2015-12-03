@@ -32,7 +32,7 @@ public class GitCommand
 		session.repositories().values().stream()
 				.filter( r -> filter == null || r.getPath().toFile().getAbsolutePath().toLowerCase().contains( filter.toLowerCase() ) || r.getProjects().stream().anyMatch( p -> p.getGav().toString().toLowerCase().contains( filter.toLowerCase() ) ) )
 				.sorted( ( a, b ) -> a.getPath().compareTo( b.getPath() ) ).forEachOrdered( repo -> {
-					repo.getStatus( log, options.getFlag( "v" ) );
+					repo.getStatus( log, options.hasFlag( "v" ) );
 				} );
 	}
 
