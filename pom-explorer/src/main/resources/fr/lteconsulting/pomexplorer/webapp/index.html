@@ -57,30 +57,22 @@ input[type=text]:focus.terminal {
 	bottom: 1em;
 }
 
-.terminal>.container>div {
-	-webkit-animation: appear 0.2s ease 0s 1;
+.terminal>.container>.talk>* {
+	animation: appear 0.2s ease 0s 1;
 }
 
-@
--webkit-keyframes appear { 0% {
-	transform: translateX(50em);
+@keyframes appear {
+	0% {
+		transform: translateX(50em);
+		opacity: 0;
+	}
+	
+	100% {
+		transform: translateX(0);
+		opacity: 1;
+	}
 }
 
-100%
-{
-transform
-
-
-:
-
- 
-
-translateX
-
-
-(0);
-}
-}
 .talk {
 	margin-top: 5px;
 	margin-bottom: 5px;
@@ -236,8 +228,8 @@ translateX
             		talk.innerHTML = "<div style='float:right;' onclick='killTalk(this)'>X</div>" + text;
             	else
                 {
-           			if( 0!=text.indexOf("<"))
-           				text = "<span>" + text + "</span>";
+           			if( 0!=text.indexOf("<span") && 0!=text.indexOf("<div"))
+           				text = "<div>" + text + "</div>";
                 	talk.insertAdjacentHTML('beforeend', text);
                 }
                 
