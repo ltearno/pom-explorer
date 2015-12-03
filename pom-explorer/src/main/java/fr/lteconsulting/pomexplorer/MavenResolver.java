@@ -71,6 +71,7 @@ public class MavenResolver
 		return pomFile;
 	}
 
+	@SuppressWarnings( "unchecked" )
 	private <T> T callMethod( Object object, String methodName )
 	{
 		try

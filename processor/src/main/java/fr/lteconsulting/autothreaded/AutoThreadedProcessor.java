@@ -132,7 +132,7 @@ public class AutoThreadedProcessor extends AbstractProcessor
 			pw.close();
 			os.close();
 
-			processingEnv.getMessager().printMessage( Kind.MANDATORY_WARNING, "AutoThreaded généré !", element );
+			processingEnv.getMessager().printMessage( Kind.NOTE, "AutoThreaded généré !", element );
 		}
 		catch( IOException e )
 		{
@@ -167,7 +167,7 @@ public class AutoThreadedProcessor extends AbstractProcessor
 
 			if( "onEmptyMessageQueue".equals( method.getSimpleName().toString() ) && method.getModifiers().contains( Modifier.PROTECTED ) )
 			{
-				processingEnv.getMessager().printMessage( Kind.MANDATORY_WARNING, "This method will be called on loop entry", child );
+				processingEnv.getMessager().printMessage( Kind.NOTE, "This method will be called on loop entry", child );
 				loopEntry.append( "                    " + autothreadedName + ".this.onEmptyMessageQueue();" );
 				
 				constructor.append( " true " );
