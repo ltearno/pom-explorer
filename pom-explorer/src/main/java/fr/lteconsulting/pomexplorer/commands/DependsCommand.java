@@ -107,13 +107,15 @@ public class DependsCommand
 			log.html( Tools.warningMessage( "(no project for this GAV, dependency locations not analyzed)" ) );
 			return;
 		}
+		
+		StringBuilder sb = new StringBuilder();
 
-		log.html( "declared at : " );
+		sb.append( "declared at : " );
 		Location location = Tools.findDependencyLocation( session, log, sourceProject, relation );
 		if( location != null )
-			log.html( location.toString() );
+			sb.append( location.toString() );
 		else
-			log.html( Tools.warningMessage( "cannot find dependency location from " + sourceProject + " to "
+			sb.append( Tools.warningMessage( "cannot find dependency location from " + sourceProject + " to "
 					+ relation.getTarget() + " (relation of type " + relation.toString() + ")" ) );
 
 		if( location instanceof GavLocation )
@@ -123,8 +125,10 @@ public class DependsCommand
 			{
 				String property = Tools.getPropertyNameFromPropertyReference( gavLocation.getUnresolvedGav().getVersion() );
 				Project definitionProject = Tools.getPropertyDefinitionProject( session, gavLocation.getProject(), property );
-				log.html( ", property ${" + property + "} defined in project " + definitionProject.getGav() );
+				sb.append( ", property ${" + property + "} defined in project " + definitionProject.getGav() );
 			}
 		}
+		
+		log.html( sb.toString() );
 	}
 }

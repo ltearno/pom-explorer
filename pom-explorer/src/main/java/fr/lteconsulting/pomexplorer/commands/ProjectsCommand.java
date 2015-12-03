@@ -48,52 +48,94 @@ public class ProjectsCommand
 	}
 
 	@Help( "list the session's projects - with details. Parameter is a filter for the GAVs" )
-	public void details( WorkingSession session, FilteredGAVs gavFilter, ILogger log )
+	public void details( WorkingSession session, FilteredGAVs gavFilter, ILogger logi )
 	{
-		log.html( "projects details " + (gavFilter != null ? ", filtered with '" + gavFilter.getFilter() + "'" : "") + " :<br/><br/>" );
+		logi.html( "projects details " + (gavFilter != null ? ", filtered with '" + gavFilter.getFilter() + "'" : "") + " :<br/><br/>" );
 
-		for( Project project : session.projects().values() )
+		StringBuilder log = new StringBuilder();
+
+		log.append( "<div class='projects'>" );
+
+		session.projects().values().stream().sorted( Tools.projectAlphabeticalComparator ).forEach( ( project ) ->
 		{
+			if( gavFilter != null && !gavFilter.accept( project.getGav() ) )
+				return;
+
 			MavenProject unresolvedProject = project.getMavenProject();
 
-			if( gavFilter != null && !gavFilter.accept( project.getGav() ) )
-				continue;
+			log.append( "<div class='project'>" );
 
-			log.html( "gav : " + project.getGav() + ", packaging: " + unresolvedProject.getModel().getPackaging() + "<br/>" );
-			log.html( "file : " + project.getPomFile().getAbsolutePath() + "<br/>" );
-			log.html( "buildable : " + project.isBuildable() + "<br/>" );
+			log.append( "<div class='title'><span class='packaging'>" + unresolvedProject.getModel().getPackaging() + "</span>" );
+			if( project.isBuildable() )
+				log.append( "<span class='badge'>buildable</span>" );
+			log.append( "<span class='gav'>" + project.getGav().getGroupId() + ":<span class='artifactId'>" + project.getGav().getArtifactId() + "</span>:" + project.getGav().getVersion() + "</span>" );
+			log.append( "</div>" );
+
+			Set<GAV> missingProjects = project.getMissingGavsForResolution( session, logi, null );
+			if( missingProjects != null && !missingProjects.isEmpty() )
+				log.append( "<span class='badge error'>not resolvable</span>" );
+
+			log.append( "<div class='properties'>" );
+
+			log.append( "<div><div>file</div><div>" + project.getPomFile().getAbsolutePath() + "</div></div>" );
 
 			Parent parent = unresolvedProject.getModel().getParent();
 			if( parent != null )
-				log.html( "parent : " + parent.getId() + ":" + parent.getRelativePath() + "<br/>" );
+				log.append( "<div><div>parent</div><div>" + parent.getId() + "</div></div>" );
 
 			Properties ptties = unresolvedProject.getProperties();
-			if( ptties != null )
+			if( ptties != null && !ptties.isEmpty() )
 			{
+				log.append( "<div><div>properties</div><div>" );
 				for( Entry<Object, Object> e : ptties.entrySet() )
-					log.html( "property : " + e.getKey() + " = " + e.getValue() + "<br/>" );
+					log.append( e.getKey() + " = " + e.getValue() + "<br/>" );
+				log.append( "</div></div>" );
 			}
 
-			if( unresolvedProject.getDependencyManagement() != null )
+			if( unresolvedProject.getDependencyManagement() != null && !unresolvedProject.getDependencyManagement().getDependencies().isEmpty() )
 			{
+				log.append( "<div><div>dependency management</div><div>" );
 				for( Dependency dependency : unresolvedProject.getDependencyManagement().getDependencies() )
-					log.html( "dependency management : " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
+					log.append( dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
+				log.append( "</div></div>" );
 			}
 
-			for( Dependency dependency : unresolvedProject.getDependencies() )
-				log.html( "dependency : " + dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + dependency.getClassifier() + ":" + dependency.getScope() + "<br/>" );
+			if( !unresolvedProject.getDependencies().isEmpty() )
+			{
+				log.append( "<div><div>dependencies</div><div>" );
+				for( Dependency dependency : unresolvedProject.getDependencies() )
+				{
+					log.append( dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() );
+					if( dependency.getClassifier() != null )
+						log.append( ":" + dependency.getClassifier() );
+					if( dependency.getScope() != null )
+						log.append( ":" + dependency.getScope() );
+					log.append( "<br/>" );
+				}
+				log.append( "</div></div>" );
+			}
 
+			log.append( "<div><div>effective dependencies</div><div>" );
 			Set<? extends Relation> directDependencies = effectiveDependencies( session, project.getGav() );
 			if( !directDependencies.isEmpty() )
-				log.html( "effective dependencies :<br/>" );
-			else
-				log.html( "no dependency<br/>" );
-			directDependencies.stream().sorted( ( a, b ) -> a.getTarget().toString().compareTo( b.getTarget().toString() ) )
-					.forEach( d -> log.html( "[" + d.getRelationType().shortName() + "] " + d.getTarget() + " "
-							+ d.toString() + "<br/>" ) );
+			{
+				directDependencies.stream().sorted( ( a, b ) -> a.getTarget().toString().compareTo( b.getTarget().toString() ) )
+						.forEach( d -> log.append( "[" + d.getRelationType().shortName() + "] " + d.getTarget() + " "
+								+ d.toString() + "<br/>" ) );
+			}
+				else
+				{
+					log.append( "no dependency<br/>" );
+				}
+				log.append( "</div></div>" );
 
-			log.html( "<br/>" );
-		}
+				log.append( "</div>" );
+				log.append( "</div>" );
+			} );
+
+		log.append( "</div>" );
+
+		logi.html( log.toString() );
 	}
 
 	private Set<Relation> effectiveDependencies( WorkingSession session, GAV gav )

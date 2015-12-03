@@ -191,7 +191,7 @@ public class Tools
 				break;
 
 			case BUILD_DEPENDENCY:
-				dependencyLocation = project.findDependencyLocationInDependencyManagement( session, log, relation.getTarget().getGroupId(), relation.getTarget().getArtifactId() );
+				dependencyLocation = findDependencyLocationInBuildDependencies( session, log, project, relation.getTarget() );
 				break;
 
 			case PARENT:
@@ -241,6 +241,44 @@ public class Tools
 			}
 
 			GavLocation locationInParent = findDependencyLocationInDependencies( session, log, parentProject,
+					searchedDependency );
+			if( locationInParent != null )
+				return locationInParent;
+		}
+
+		return null;
+	}
+
+	public static GavLocation findDependencyLocationInBuildDependencies( WorkingSession session, ILogger log, Project project, GAV searchedDependency )
+	{
+		if( project == null )
+			return null;
+
+		// dependencies
+		GavLocation info = project.getPluginDependencies( session, log ).get( searchedDependency );
+		if( info != null && info.getUnresolvedGav() != null && info.getUnresolvedGav().getVersion() != null )
+			return info;
+
+		// dependency management
+		GavLocation locationInDepMngt = project.findDependencyLocationInBuildDependencyManagement( session, log, searchedDependency.getGroupId(), searchedDependency.getArtifactId() );
+		if( locationInDepMngt != null )
+			return locationInDepMngt;
+
+		PomGraphReadTransaction tx = session.graph().read();
+
+		// parent
+		GAV parentGav = tx.parent( project.getGav() );
+		if( parentGav != null )
+		{
+			Project parentProject = session.projects().forGav( parentGav );
+			if( parentProject == null )
+			{
+				log.html( Tools.warningMessage( "Cannot find the '" + project.getGav() + "' parent project '" + parentGav
+						+ "' to examine where the dependency '" + searchedDependency + "' is defined." ) );
+				return null;
+			}
+
+			GavLocation locationInParent = findDependencyLocationInBuildDependencies( session, log, parentProject,
 					searchedDependency );
 			if( locationInParent != null )
 				return locationInParent;

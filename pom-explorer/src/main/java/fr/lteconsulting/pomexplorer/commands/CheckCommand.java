@@ -22,22 +22,24 @@ public class CheckCommand
 	@Help( "checks some commons points of errors, at least of attention..." )
 	public void main( Client client, WorkingSession session, ILogger log )
 	{
+		StringBuilder sb = new StringBuilder();
+		
 		List<GAV> gavsWithoutProject = gavsWithoutProject( session );
-		log.html( "<b>GAVs without projects</b><br/>" );
+		sb.append( "<b>GAVs without projects</b><br/>" );
 		if( gavsWithoutProject.isEmpty() )
 		{
-			log.html( "No GAV without project.<br/>" );
+			sb.append( "No GAV without project.<br/>" );
 		}
 		else
 		{
-			log.html( gavsWithoutProject.size() + " GAV(s) without project :" );
+			sb.append( gavsWithoutProject.size() + " GAV(s) without project :" );
 			for( GAV gav : gavsWithoutProject )
-				log.html( "<br/>" + gav );
+				sb.append( "<br/>" + gav );
 		}
 
 		PomGraphReadTransaction tx = session.graph().read();
 		
-		log.html( "<br/><br/><b>Projects without version</b><br/>" );
+		sb.append( "<br/><br/><b>Projects without version</b><br/>" );
 		for( Project project : session.projects().values() )
 		{
 			// project version should be null
@@ -49,36 +51,38 @@ public class CheckCommand
 			if( parentProjectGav == null )
 				continue;
 
-			log.html( project.toString() + "<br/>" );
+			sb.append( project.toString() + "<br/>" );
 		}
 
 		Map<MiniGAV, Set<GAV>> multipleGavs = multipleGavs( session );
-		log.html( "<br/><br/><b>Multiple GAVs</b><br/>" );
+		sb.append( "<br/><br/><b>Multiple GAVs</b><br/>" );
 		if( multipleGavs.isEmpty() )
 		{
-			log.html( "No GAV with multiple versions.<br/>" );
+			sb.append( "No GAV with multiple versions.<br/>" );
 		}
 		else
 		{
-			log.html( multipleGavs.size() + " GAVs with multiple versions :<br/>" );
+			sb.append( multipleGavs.size() + " GAVs with multiple versions :<br/>" );
 			multipleGavs.entrySet().stream().sorted( ( a, b ) -> a.getKey().toString().compareTo( b.getKey().toString() ) )
 					.forEach( e ->
 					{
-						log.html( e.getKey() + " : " );
+						sb.append( e.getKey() + " : " );
 						boolean coma = false;
 						for( GAV gav : e.getValue() )
 						{
 							if( coma )
-								log.html( ", " );
+								sb.append( ", " );
 							else
 								coma = true;
-							log.html( "" + gav.getVersion() );
+							sb.append( "" + gav.getVersion() );
 						}
-						log.html( "<br/>" );
+						sb.append( "<br/>" );
 					} );
 		}
 
-		log.html( "done.<br/>" );
+		sb.append( "done.<br/>" );
+		
+		log.html( sb.toString() );
 	}
 
 	private Map<MiniGAV, Set<GAV>> multipleGavs( WorkingSession session )

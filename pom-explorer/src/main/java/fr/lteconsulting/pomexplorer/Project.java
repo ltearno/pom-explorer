@@ -43,7 +43,7 @@ public class Project
 
 	private Map<WorkingSession, Map<GAV, GavLocation>> pluginDependencies;
 
-	public Project(File pomFile, boolean isExternal) throws Exception
+	public Project( File pomFile, boolean isExternal ) throws Exception
 	{
 		this.pomFile = pomFile;
 		this.isExternal = isExternal;
@@ -184,36 +184,17 @@ public class Project
 		if( version == null )
 		{
 			String ga = groupId + ":" + artifactId;
-			switch( ga )
-			{
-				case "org.apache.maven.plugins:maven-war-plugin":
-					version = "2.2";
-					break;
 
-				case "org.apache.maven.plugins:maven-assembly-plugin":
-					version = "2.2-beta-5";
-					break;
+			version = "UNKNOWN";
+			log.html( Tools.warningMessage( "unspecified dependency version to " + ga + " in project '" + toString() + "' resolved to '" + version + "', check the pom file please !" ) );
 
-				case "org.apache.maven.plugins:maven-compiler-plugin":
-					version = "2.5.1";
-					break;
-
-				case "org.apache.maven.plugins:maven-source-plugin":
-					version = "2.2.1";
-					break;
-
-				case "org.codehaus.mojo:buildnumber-maven-plugin":
-					version = "1.4";
-					break;
-
-				case "org.apache.felix:maven-bundle-plugin":
-					version = "3.0.1";
-					break;
-
-				default:
-					version = "UNKNOWN";
-					log.html( Tools.warningMessage( "unspecified dependency version to " + ga + " in project '" + toString() + "', check the pom file please !" ) );
-			}
+			// find a way to handle those versions :
+			// "org.apache.maven.plugins:maven-war-plugin":
+			// "org.apache.maven.plugins:maven-assembly-plugin":
+			// "org.apache.maven.plugins:maven-compiler-plugin":
+			// "org.apache.maven.plugins:maven-source-plugin":
+			// "org.codehaus.mojo:buildnumber-maven-plugin":
+			// "org.apache.felix:maven-bundle-plugin":
 		}
 
 		if( !(isResolved( version ) && isResolved( groupId ) && isResolved( artifactId )) )
@@ -364,7 +345,7 @@ public class Project
 		return null;
 	}
 
-	private GavLocation findDependencyLocationInBuildDependencyManagement( WorkingSession session, ILogger log,
+	public GavLocation findDependencyLocationInBuildDependencyManagement( WorkingSession session, ILogger log,
 			String groupId, String artifactId )
 	{
 		if( project.getBuild() != null && project.getBuild().getPluginManagement() != null )
