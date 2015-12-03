@@ -26,6 +26,7 @@ import fr.lteconsulting.pomexplorer.commands.ProjectsCommand;
 import fr.lteconsulting.pomexplorer.commands.ReleaseCommand;
 import fr.lteconsulting.pomexplorer.commands.SessionCommand;
 import fr.lteconsulting.pomexplorer.commands.StatsCommand;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.webserver.Message;
 import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
@@ -205,8 +206,10 @@ public class AppFactory
 
 			if( session == null )
 				session = sessions.get( 0 );
+			
+			PomGraphReadTransaction tx = session.graph().read();
 
-			DirectedGraph<GAV, Relation> g = session.graph().internalGraph();
+			DirectedGraph<GAV, Relation> g = tx.internalGraph();
 
 			GraphDto dto = new GraphDto();
 			dto.gavs = new HashSet<>();

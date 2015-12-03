@@ -10,6 +10,7 @@ import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation.RelationType;
 
@@ -18,13 +19,15 @@ public class DependsCommand
 	@Help( "lists the GAVs directly depending on the one given in parameter" )
 	public void on( WorkingSession session, ILogger log, GAV gav )
 	{
-		if( !session.graph().gavs().contains( gav ) )
+		PomGraphReadTransaction tx = session.graph().read();
+		
+		if( !tx.gavs().contains( gav ) )
 		{
 			log.html( Tools.warningMessage( "no GAV " + gav + " registered in the GAV graph, maybe you made a typo ?" ) );
 			return;
 		}
 
-		Set<Relation> relations = session.graph().relationsReverse( gav );
+		Set<Relation> relations = tx.relationsReverse( gav );
 
 		log.html( "<br/><b>Directly depending on " + gav + "</b>, " + relations.size() + " GAVs :<br/>" );
 		log.html( "([" + RelationType.DEPENDENCY.shortName() + "]=direct dependency, [" + RelationType.PARENT.shortName()
@@ -45,7 +48,7 @@ public class DependsCommand
 
 					log.html( "<br/>" );
 
-					Set<Relation> indirectRelations = session.graph().relationsReverseRec( source );
+					Set<Relation> indirectRelations = tx.relationsReverseRec( source );
 					for( Relation ir : indirectRelations )
 						indirectDependents.add( ir.getSource() );
 				} );
@@ -58,13 +61,15 @@ public class DependsCommand
 	@Help( "lists the GAVs that the GAV passed in parameters depends on" )
 	public void by( WorkingSession session, ILogger log, GAV gav )
 	{
-		if( !session.graph().gavs().contains( gav ) )
+		PomGraphReadTransaction tx = session.graph().read();
+		
+		if( !tx.gavs().contains( gav ) )
 		{
 			log.html( Tools.warningMessage( "no GAV " + gav + " registered in the GAV graph, maybe you made a typo ?" ) );
 			return;
 		}
 
-		Set<Relation> relations = session.graph().relations( gav );
+		Set<Relation> relations = tx.relations( gav );
 
 		log.html( "<br/><b>" + gav + " directly depends on</b> " + relations.size() + " GAVs :<br/>" );
 		log.html( "([" + RelationType.DEPENDENCY.shortName() + "]=direct dependency, [" + RelationType.PARENT.shortName()
@@ -82,7 +87,7 @@ public class DependsCommand
 					fillTextForDependency( session, log, relation );
 					log.html( "<br/>" );
 
-					Set<Relation> indirectRelations = session.graph().relationsRec( target );
+					Set<Relation> indirectRelations = tx.relationsRec( target );
 					for( Relation ir : indirectRelations )
 						indirectDependents.add( ir.getTarget() );
 				} );

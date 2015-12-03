@@ -288,7 +288,7 @@ public class Project
 
 		if( value == null )
 		{
-			log.html( Tools.warningMessage( "cannot resolve property '" + originalRequestedPropertyName + "' because parent project " + parentGav + " can't be found." ) );
+			log.html( Tools.warningMessage( "cannot resolve property '" + originalRequestedPropertyName + "' in project " + toString() ) );
 			value = "unknown";
 		}
 

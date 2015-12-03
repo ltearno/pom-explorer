@@ -14,6 +14,7 @@ import fr.lteconsulting.pomexplorer.changes.ChangeSetManager;
 import fr.lteconsulting.pomexplorer.changes.GavChange;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ReleaseCommand
@@ -38,9 +39,11 @@ public class ReleaseCommand
 	@Help( "releases all gavs, all dependencies are also released. GAVs depending on released GAVs are updated." )
 	public void allGavs( final ILogger log, CommandOptions options, Client client, WorkingSession session )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		ChangeSetManager changes = new ChangeSetManager();
 
-		for( GAV gav : session.graph().gavs() )
+		for( GAV gav : tx.gavs() )
 		{
 			if( gav.getVersion() == null )
 			{
@@ -64,6 +67,8 @@ public class ReleaseCommand
 
 	private void releaseGav( Client client, WorkingSession session, GAV gav, ChangeSetManager changes, ILogger log )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		String causeMessage = "release of " + gav;
 
 		if( !Tools.isReleased( gav ) )
@@ -72,7 +77,7 @@ public class ReleaseCommand
 			changes.addChange( new GavChange( loc, Tools.releasedGav( loc.getGav() ) ), causeMessage );
 		}
 
-		Set<Relation> relations = session.graph().relationsRec( gav );
+		Set<Relation> relations = tx.relationsRec( gav );
 		for( Relation r : relations )
 		{
 			if( r.getTarget().getVersion() == null )

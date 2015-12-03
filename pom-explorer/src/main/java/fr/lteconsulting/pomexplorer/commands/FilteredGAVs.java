@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 
 /**
  * Commodity class to handle GAV filtering by name in commands
@@ -34,12 +35,13 @@ public class FilteredGAVs
 
 	List<GAV> getGavs( WorkingSession session )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
 		Stream<GAV> stream;
 
 		if( filter != null )
-			stream = session.graph().gavs().stream().filter( gav -> gav.toString().toLowerCase().contains( filter ) );
+			stream = tx.gavs().stream().filter( gav -> gav.toString().toLowerCase().contains( filter ) );
 		else
-			stream = session.graph().gavs().stream();
+			stream = tx.gavs().stream();
 
 		List<GAV> res = new ArrayList<>();
 

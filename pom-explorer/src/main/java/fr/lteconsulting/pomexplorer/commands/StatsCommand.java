@@ -9,6 +9,7 @@ import org.jgrapht.alg.StrongConnectivityInspector;
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class StatsCommand
@@ -16,22 +17,26 @@ public class StatsCommand
 	@Help( "general statistics on the session" )
 	public void main( WorkingSession session, ILogger log )
 	{
-		log.html( "There are " + session.graph().gavs().size() + " gavs<br/>" );
+		PomGraphReadTransaction tx = session.graph().read();
+		
+		log.html( "There are " + tx.gavs().size() + " gavs<br/>" );
 
-		StrongConnectivityInspector<GAV, Relation> conn = new StrongConnectivityInspector<>( session.graph().internalGraph() );
+		StrongConnectivityInspector<GAV, Relation> conn = new StrongConnectivityInspector<>( tx.internalGraph() );
 		log.html( "There are " + conn.stronglyConnectedSets().size() + " strongly connected components<br/>" );
 
-		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( session.graph().internalGraph() );
+		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( tx.internalGraph() );
 		log.html( "There are " + ccon.connectedSets().size() + " weakly connected components<br/>" );
 
-		CycleDetector<GAV, Relation> cycles = new CycleDetector<GAV, Relation>( session.graph().internalGraph() );
+		CycleDetector<GAV, Relation> cycles = new CycleDetector<GAV, Relation>( tx.internalGraph() );
 		log.html( "Is there cycles ? " + cycles.detectCycles() + "<br/>" );
 	}
 
 	@Help( "gives the details of the connected components of the pom graph" )
 	public void components( WorkingSession session, ILogger log )
 	{
-		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( session.graph().internalGraph() );
+		PomGraphReadTransaction tx = session.graph().read();
+		
+		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( tx.internalGraph() );
 		log.html( "There are " + ccon.connectedSets().size() + " weakly connected components<br/>" );
 
 		for( Set<GAV> gavs : ccon.connectedSets() )

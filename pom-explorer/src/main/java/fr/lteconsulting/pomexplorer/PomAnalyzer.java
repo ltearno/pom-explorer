@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
@@ -103,13 +104,17 @@ public class PomAnalyzer
 		}
 
 		log.html( "graph update<br/>" );
+		
+		PomGraphWriteTransaction tx = session.graph().startTransaction();
 
 		for( Project project : toGraphProjects )
 		{
 			assert project.getMissingGavsForResolution( session, log, new HashSet<>() ).isEmpty() : "error : not resolvable project should not be in this set !";
 
-			addProjectToGraph( project, session, log );
+			addProjectToGraph( project, tx, session, log );
 		}
+		
+		tx.commit();
 
 		duration = System.currentTimeMillis() - duration;
 
@@ -141,9 +146,9 @@ public class PomAnalyzer
 		return project;
 	}
 
-	public void addProjectToGraph( Project project, WorkingSession session, ILogger log )
+	private void addProjectToGraph( Project project, PomGraphWriteTransaction tx, WorkingSession session, ILogger log )
 	{
-		session.graph().removeRelations( session.graph().relations( project.getGav() ) );
+		tx.removeRelations( tx.relations( project.getGav() ) );
 
 		try
 		{
@@ -152,26 +157,23 @@ public class PomAnalyzer
 			Collection<GavLocation> dependencies = project.getDependencies( session, log ).values();
 			Collection<GavLocation> pluginDependencies = project.getPluginDependencies( session, log ).values();
 
-			session.graph().addGav( gav );
+			tx.addGav( gav );
 			if( parentGav != null )
 			{
-				session.graph().addGav( parentGav );
-				session.graph().addRelation( new ParentRelation( gav, parentGav ) );
+				tx.addGav( parentGav );
+				tx.addRelation( new ParentRelation( gav, parentGav ) );
 			}
 
 			for( GavLocation location : dependencies )
 			{
-				session.graph().addGav( location.getResolvedGav() );
-				session.graph()
-						.addRelation(
-								new DependencyRelation( gav, location.getResolvedGav(), location.getScope(), location
-										.getClassifier() ) );
+				tx.addGav( location.getResolvedGav() );
+				tx.addRelation( new DependencyRelation( gav, location.getResolvedGav(), location.getScope(), location.getClassifier() ) );
 			}
 
 			for( GavLocation location : pluginDependencies )
 			{
-				session.graph().addGav( location.getResolvedGav() );
-				session.graph().addRelation( new BuildDependencyRelation( gav, location.getResolvedGav() ) );
+				tx.addGav( location.getResolvedGav() );
+				tx.addRelation( new BuildDependencyRelation( gav, location.getResolvedGav() ) );
 			}
 		}
 		catch( Exception e )

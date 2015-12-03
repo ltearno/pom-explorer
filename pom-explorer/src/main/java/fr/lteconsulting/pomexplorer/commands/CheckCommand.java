@@ -15,6 +15,7 @@ import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 
 public class CheckCommand
 {
@@ -34,6 +35,8 @@ public class CheckCommand
 				log.html( "<br/>" + gav );
 		}
 
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		log.html( "<br/><br/><b>Projects without version</b><br/>" );
 		for( Project project : session.projects().values() )
 		{
@@ -42,7 +45,7 @@ public class CheckCommand
 				continue;
 
 			// and project should have a parent
-			GAV parentProjectGav = session.graph().parent( project.getGav() );
+			GAV parentProjectGav = tx.parent( project.getGav() );
 			if( parentProjectGav == null )
 				continue;
 
@@ -80,9 +83,10 @@ public class CheckCommand
 
 	private Map<MiniGAV, Set<GAV>> multipleGavs( WorkingSession session )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
 		Map<MiniGAV, Set<GAV>> prov = new HashMap<>();
 
-		for( GAV gav : session.graph().gavs() )
+		for( GAV gav : tx.gavs() )
 		{
 			MiniGAV miniGav = new MiniGAV( gav.getGroupId(), gav.getArtifactId() );
 			Set<GAV> list = prov.get( miniGav );
@@ -106,9 +110,10 @@ public class CheckCommand
 
 	private List<GAV> gavsWithoutProject( WorkingSession session )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
 		Set<GAV> res = new HashSet<GAV>();
 
-		for( GAV gav : session.graph().gavs() )
+		for( GAV gav : tx.gavs() )
 		{
 			if( !session.projects().contains( gav ) )
 				res.add( gav );

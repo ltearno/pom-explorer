@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
 
 /**
@@ -121,11 +122,12 @@ public class WorkingSession
 
 	public String getDescription()
 	{
+		PomGraphReadTransaction tx = graph.read();
 		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : "
 				+ (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>"
 				+ "Maven shell command : "
 				+ (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>" + projects.size() + " projects<br/>"
-				+ graph.gavs().size() + " GAVs<br/>" + graph.relations().size() + " relations<br/></div>";
+				+ tx.gavs().size() + " GAVs<br/>" + tx.relations().size() + " relations<br/></div>";
 	}
 
 	public void addClient( Client client )

@@ -24,6 +24,7 @@ import fr.lteconsulting.pomexplorer.changes.Change;
 import fr.lteconsulting.pomexplorer.changes.ChangeSetManager;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class Tools
@@ -78,9 +79,10 @@ public class Tools
 
 	public static Set<Location> getDirectDependenciesLocations( WorkingSession session, ILogger log, GAV gav )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
 		Set<Location> set = new HashSet<>();
 
-		Set<Relation> relations = session.graph().relationsReverse( gav );
+		Set<Relation> relations = tx.relationsReverse( gav );
 		for( Relation relation : relations )
 		{
 			GAV updatedGav = relation.getSource();
@@ -148,9 +150,11 @@ public class Tools
 		String value = propertyValue( startingProject, property );
 		if( value != null )
 			return startingProject;
+		
+		PomGraphReadTransaction tx = session.graph().read();
 
 		// go deeper in hierarchy
-		GAV parentGav = session.graph().parent( startingProject.getGav() );
+		GAV parentGav = tx.parent( startingProject.getGav() );
 		Project parentProject = null;
 		if( parentGav != null )
 			parentProject = session.projects().forGav( parentGav );
@@ -221,9 +225,11 @@ public class Tools
 		GavLocation locationInDepMngt = project.findDependencyLocationInDependencyManagement( session, log, searchedDependency.getGroupId(), searchedDependency.getArtifactId() );
 		if( locationInDepMngt != null )
 			return locationInDepMngt;
+		
+		PomGraphReadTransaction tx = session.graph().read();
 
 		// parent
-		GAV parentGav = session.graph().parent( project.getGav() );
+		GAV parentGav = tx.parent( project.getGav() );
 		if( parentGav != null )
 		{
 			Project parentProject = session.projects().forGav( parentGav );

@@ -9,6 +9,7 @@ import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ExportCommand
@@ -16,15 +17,17 @@ public class ExportCommand
 	@Help( "exports the node connections in csv format (outputs the file 'export.csv')." )
 	public void csv( Client client, WorkingSession session, ILogger log )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		try
 		{
 			ExportVisitor visitor = new ExportVisitor();
 
-			session.graph().relations().stream().forEach( visitor::visit );
+			tx.relations().stream().forEach( visitor::visit );
 
 			visitor.close();
 
-			log.html( session.graph().relations().size() + " relations exported to file 'export.csv'." );
+			log.html( tx.relations().size() + " relations exported to file 'export.csv'." );
 		}
 		catch( FileNotFoundException | UnsupportedEncodingException e )
 		{

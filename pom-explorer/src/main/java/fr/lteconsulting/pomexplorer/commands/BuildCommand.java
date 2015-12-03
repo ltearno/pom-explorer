@@ -9,6 +9,7 @@ import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 
 public class BuildCommand
 {
@@ -48,6 +49,7 @@ public class BuildCommand
 	@Help( "adds a GAV to the list of maintained projects. A project needs to be found for that GAV." )
 	public void maintain( Client client, WorkingSession session, ILogger log, FilteredGAVs gavs )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
 		Set<GAV> toWatch = new HashSet<>();
 
 		for( GAV gav : gavs.getGavs( session ) )
@@ -65,7 +67,7 @@ public class BuildCommand
 
 			toWatch.add( gav );
 
-			session.graph().relationsRec( gav ).stream().map( r -> r.getTarget() ).forEach( g -> toWatch.add( g ) );
+			tx.relationsRec( gav ).stream().map( r -> r.getTarget() ).forEach( g -> toWatch.add( g ) );
 		}
 
 		log.html( "<br/>" );

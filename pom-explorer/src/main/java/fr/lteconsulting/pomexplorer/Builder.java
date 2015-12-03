@@ -9,9 +9,10 @@ import java.util.Set;
 
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
+import fr.lteconsulting.autothreaded.AutoThreaded;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
-import fr.lteconsulting.autothreaded.AutoThreaded;
 
 @AutoThreaded
 public class Builder
@@ -114,9 +115,11 @@ public class Builder
 
 	private void printBuildPipelineState( Project projectBuilding )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		try
 		{
-			TopologicalOrderIterator<GAV, Relation> iterator = new TopologicalOrderIterator<>( session.graph().internalGraph() );
+			TopologicalOrderIterator<GAV, Relation> iterator = new TopologicalOrderIterator<>( tx.internalGraph() );
 			List<GAV> gavs = new ArrayList<>();
 			while( iterator.hasNext() )
 				gavs.add( iterator.next() );
@@ -154,9 +157,11 @@ public class Builder
 	 */
 	private Project findProjectToBuild()
 	{
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		try
 		{
-			TopologicalOrderIterator<GAV, Relation> iterator = new TopologicalOrderIterator<>( session.graph().internalGraph() );
+			TopologicalOrderIterator<GAV, Relation> iterator = new TopologicalOrderIterator<>( tx.internalGraph() );
 			List<GAV> gavs = new ArrayList<>();
 			while( iterator.hasNext() )
 				gavs.add( iterator.next() );
@@ -217,17 +222,20 @@ public class Builder
 
 	private Set<GAV> dependenciesAndSelf( GAV gav )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		HashSet<GAV> res = new HashSet<>();
 		res.add( gav );
-		session.graph().relationsRec( gav ).stream().forEach( r -> res.add( r.getTarget() ) );
+		tx.relationsRec( gav ).stream().forEach( r -> res.add( r.getTarget() ) );
 		return res;
 	}
 
 	private Set<GAV> dependentsAndSelf( GAV gav )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
 		HashSet<GAV> res = new HashSet<>();
 		res.add( gav );
-		session.graph().relationsReverseRec( gav ).stream().forEach( r -> res.add( r.getSource() ) );
+		tx.relationsReverseRec( gav ).stream().forEach( r -> res.add( r.getSource() ) );
 		return res;
 	}
 

@@ -18,6 +18,7 @@ import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ProjectsCommand
@@ -96,14 +97,16 @@ public class ProjectsCommand
 
 	private Set<Relation> effectiveDependencies( WorkingSession session, GAV gav )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		HashSet<Relation> res = new HashSet<>();
 
-		GAV parent = session.graph().parent( gav );
+		GAV parent = tx.parent( gav );
 		if( parent != null )
 			res.addAll( effectiveDependencies( session, parent ) );
 
-		res.addAll( session.graph().dependencies( gav ) );
-		res.addAll( session.graph().buildDependencies( gav ) );
+		res.addAll( tx.dependencies( gav ) );
+		res.addAll( tx.buildDependencies( gav ) );
 
 		return res;
 	}

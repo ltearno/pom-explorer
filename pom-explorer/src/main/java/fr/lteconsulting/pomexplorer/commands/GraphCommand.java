@@ -28,6 +28,7 @@ import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.Repository;
 import fr.lteconsulting.pomexplorer.graph.RepositoryRelation;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
@@ -65,6 +66,8 @@ public class GraphCommand
 	@Help( "exports a GraphML file" )
 	public void export( WorkingSession session, ILogger log )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		try
 		{
 			GraphMLExporter<GAV, Relation> exporter = new GraphMLExporter<GAV, Relation>( new IntegerNameProvider<GAV>(), new VertexNameProvider<GAV>()
@@ -99,7 +102,7 @@ public class GraphCommand
 				}
 			} );
 
-			DirectedGraph<GAV, Relation> g = session.graph().internalGraph();
+			DirectedGraph<GAV, Relation> g = tx.internalGraph();
 
 			DirectedGraph<GAV, Relation> ng = new DirectedMultigraph<GAV, Relation>( Relation.class );
 			for( GAV gav : g.vertexSet() )
@@ -204,10 +207,12 @@ public class GraphCommand
 	@Help( "displays a graph on the server machine. Parameter is the filter for GAVs" )
 	public void server( WorkingSession session, String filter, ILogger log )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
+		
 		if( filter != null )
 			filter = filter.toLowerCase();
 
-		DirectedGraph<GAV, Relation> fullGraph = session.graph().internalGraph();
+		DirectedGraph<GAV, Relation> fullGraph = tx.internalGraph();
 
 		Set<GAV> vertexSubset = new HashSet<>();
 		for( GAV gav : fullGraph.vertexSet() )

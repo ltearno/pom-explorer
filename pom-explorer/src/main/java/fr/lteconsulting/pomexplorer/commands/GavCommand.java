@@ -6,6 +6,7 @@ import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomAnalyzer;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 
 public class GavCommand
 {
@@ -28,11 +29,17 @@ public class GavCommand
 
 		sb.append( "<br/>GAV list filtered with '" + (gavFilter != null ? gavFilter.getFilter() : "no filter") + "' :<br/>" );
 		if( gavFilter != null )
+		{
 			gavFilter.getGavs( session ).stream().sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
 					.forEach( gav -> sb.append( gav + "<br/>" ) );
+		}
 		else
-			session.graph().gavs().stream().sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
+		{
+			PomGraphReadTransaction tx = session.graph().read();
+			
+			tx.gavs().stream().sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
 					.forEach( gav -> sb.append( gav + "<br/>" ) );
+		}
 
 		log.html( sb.toString() );
 	}
@@ -50,9 +57,10 @@ public class GavCommand
 	@Help( "analyze gavs which have no associated project" )
 	public void resolve( WorkingSession session, ILogger log, Client client )
 	{
+		PomGraphReadTransaction tx = session.graph().read();
 		PomAnalyzer analyzer = new PomAnalyzer();
 
-		session.graph().gavs().stream().filter( gav -> session.projects().forGav( gav ) == null )
+		tx.gavs().stream().filter( gav -> session.projects().forGav( gav ) == null )
 				.parallel().forEach( gav -> {
 					log.html( "analyzing " + gav + "...<br/>" );
 					analyzer.fetchGavWithMaven( session, log, gav );
