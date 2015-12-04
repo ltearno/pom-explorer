@@ -183,7 +183,7 @@ public class Commands
 
 				if (argTypes[curArg] == Gav.class)
 				{
-					args[curArg] = parts[curPart] == null ? null : Tools.string2Gav(parts[curPart]);
+					args[curArg] = parts[curPart] == null ? null : Gav.parse(parts[curPart]);
 					if (args[curArg] == null)
 					{
 						log.html(Tools.warningMessage("Argument " + (curArg + 1)

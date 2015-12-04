@@ -74,7 +74,7 @@ public class GavCommand
 	{
 		PomAnalyzer analyzer = new PomAnalyzer();
 
-		Gav gav = Tools.string2Gav( gavString );
+		Gav gav = Gav.parse( gavString );
 		if( gav == null )
 		{
 			log.html( Tools.warningMessage( "the string '" + gavString

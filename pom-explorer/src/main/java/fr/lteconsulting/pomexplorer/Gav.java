@@ -9,6 +9,17 @@ public class Gav
 	private final String artifactId;
 
 	private final String version;
+	
+	public static Gav parse( String gavString )
+	{
+		String[] parts = gavString.split( ":" );
+		if( parts.length != 3 )
+			return null;
+
+		Gav gav = new Gav( parts[0], parts[1], parts[2] );
+
+		return gav;
+	}
 
 	public Gav copyWithVersion( String version )
 	{

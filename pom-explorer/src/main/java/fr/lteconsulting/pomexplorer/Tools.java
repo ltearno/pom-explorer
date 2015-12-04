@@ -29,17 +29,6 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class Tools
 {
-	public static Gav string2Gav( String gavString )
-	{
-		String[] parts = gavString.split( ":" );
-		if( parts.length != 3 )
-			return null;
-
-		Gav gav = new Gav( parts[0], parts[1], parts[2] );
-
-		return gav;
-	}
-
 	public static void printChangeList( ILogger log, ChangeSetManager changes )
 	{
 		log.html( "<br/>Change list...<br/><br/>" );
