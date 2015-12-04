@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 
 import fr.lteconsulting.pomexplorer.Gav;
@@ -99,6 +100,17 @@ public class ProjectsCommand
 							Gav parentGav = project.getParent();
 							if (parentGav != null)
 								log.append("<div><div>parent</div><div>" + parentGav + "</div></div>");
+
+							Scm scm = mavenProject.getScm();
+							if (scm != null)
+							{
+								log.append("<div><div>scm</div><div>");
+								log.append("connection: " + scm.getConnection() + "<br/>");
+								log.append("developper connection: " + scm.getDeveloperConnection() + "<br/>");
+								log.append("tag: " + scm.getTag() + "<br/>");
+								log.append("url: " + scm.getUrl() + "<br/>");
+								log.append("</div></div>");
+							}
 
 							Properties ptties = mavenProject.getProperties();
 							if (ptties != null && !ptties.isEmpty())
