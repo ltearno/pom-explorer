@@ -326,10 +326,10 @@ public class Project
 				{
 					if( d.getVersion() != null )
 					{
-						GAV g = resolveGav( new GAV( dependencyGroupId, dependencyArtifactId, d.getVersion() ), session, log,
-								true, false );
+						GAV unresolvedGav = new GAV( dependencyGroupId, dependencyArtifactId, d.getVersion() );
+						GAV g = resolveGav( unresolvedGav, session, log, true, false );
 						if( g.isResolved() )
-							return new GavLocation( this, PomSection.DEPENDENCY_MNGT, g, d, resolveValue( session, log, d.getScope() ) );
+							return new GavLocation( this, PomSection.DEPENDENCY_MNGT, g, unresolvedGav, resolveValue( session, log, d.getScope() ), d.getClassifier() );
 					}
 				}
 			}
@@ -414,11 +414,10 @@ public class Project
 
 			for( Dependency dependency : project.getDependencies() )
 			{
-				GAV dependencyGav = resolveGav(
-						new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() ), session, log,
-						true, false );
+				GAV unresolvedGav = new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
+				GAV dependencyGav = resolveGav( unresolvedGav, session, log, true, false );
 
-				GavLocation info = new GavLocation( this, PomSection.DEPENDENCY, dependencyGav, dependency, resolveValue( session, log, dependency.getScope() ) );
+				GavLocation info = new GavLocation( this, PomSection.DEPENDENCY, dependencyGav, unresolvedGav, resolveValue( session, log, dependency.getScope() ), dependency.getClassifier() );
 				dependencies.put( dependencyGav, info );
 			}
 

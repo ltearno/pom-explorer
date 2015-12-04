@@ -1,7 +1,5 @@
 package fr.lteconsulting.pomexplorer.depanalyze;
 
-import org.apache.maven.model.Dependency;
-
 import fr.lteconsulting.pomexplorer.GAV;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
@@ -19,14 +17,6 @@ public class GavLocation extends Location
 
 	private String classifier;
 
-	public GavLocation( Project project, PomSection section, GAV resolvedGav, Dependency unresolved, String scope )
-	{
-		this( project, section, resolvedGav, new GAV( unresolved.getGroupId(), unresolved.getArtifactId(), unresolved.getVersion() ) );
-
-		this.scope = Scope.fromString( scope );
-		classifier = unresolved.getClassifier();
-	}
-
 	public GavLocation( Project project, PomSection section, GAV gav )
 	{
 		this( project, section, gav, gav );
@@ -34,11 +24,18 @@ public class GavLocation extends Location
 
 	public GavLocation( Project project, PomSection section, GAV resolvedGav, GAV unresolvedGav )
 	{
+		this( project, section, resolvedGav, unresolvedGav, null, null );
+	}
+
+	public GavLocation( Project project, PomSection section, GAV resolvedGav, GAV unresolvedGav, String scope, String classifier )
+	{
 		super( project, null );
 
 		this.section = section;
 		this.gav = resolvedGav;
 		this.unresolvedGav = unresolvedGav;
+		this.scope = Scope.fromString( scope );
+		this.classifier = classifier;
 	}
 
 	public Scope getScope()

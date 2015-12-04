@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -17,9 +18,9 @@ import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 
 public class ProjectsCommand
 {
@@ -100,46 +101,54 @@ public class ProjectsCommand
 				log.append( "</div></div>" );
 			}
 
-			if( !unresolvedProject.getDependencies().isEmpty() )
-			{
-				log.append( "<div><div>declared dependencies</div><div>" );
-				for( Dependency dependency : unresolvedProject.getDependencies() )
-				{
-					log.append( dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() );
-					if( dependency.getClassifier() != null )
-						log.append( ":" + dependency.getClassifier() );
-					if( dependency.getScope() != null )
-						log.append( ":" + dependency.getScope() );
-					log.append( "<br/>" );
-				}
-				log.append( "</div></div>" );
-			}
-
-			PomGraphReadTransaction tx = session.graph().read();
-
-			log.append( "<div><div>effective dependencies</div><div>" );
-			Set<DependencyRelation> directDependencies = tx.dependencies( project.getGav() );
-			if( directDependencies.isEmpty() )
+			log.append( "<div><div>dependencies</div><div>" );
+			Map<GAV, GavLocation> dependencies = project.getDependencies( session, logi );
+			if( dependencies.isEmpty() )
 			{
 				log.append( "no dependency<br/>" );
 			}
 				else
 				{
-					directDependencies.stream().sorted( ( a, b ) -> a.getTarget().toString().compareTo( b.getTarget().toString() ) )
-							.forEach( d -> log.append( d.getTarget() + " " + d.toString() + "<br/>" ) );
+					dependencies.values().stream().sorted( ( a, b ) -> a.getResolvedGav().toString().compareTo( b.getResolvedGav().toString() ) )
+							.forEach( d ->
+							{
+								log.append( d.getResolvedGav() );
+
+								if( !d.getResolvedGav().equals( d.getUnresolvedGav() ) )
+									log.append( " <i>declared: " + d.getUnresolvedGav() + "</i>" );
+
+								if( d.getClassifier() != null )
+									log.append( ":" + d.getClassifier() );
+								if( d.getScope() != null )
+									log.append( ":" + d.getScope() );
+								log.append( "<br/>" );
+							} );
 				}
 				log.append( "</div></div>" );
 
-				Set<BuildDependencyRelation> buildDependencies = tx.buildDependencies( project.getGav() );
-				if( !buildDependencies.isEmpty() )
+				log.append( "<div><div>build dependencies</div><div>" );
+				Map<GAV, GavLocation> buildDependencies = project.getPluginDependencies( session, logi );
+				if( buildDependencies.isEmpty() )
 				{
-					log.append( "<div><div>effective build dependencies</div><div>" );
-
-					buildDependencies.stream().sorted( ( a, b ) -> a.getTarget().toString().compareTo( b.getTarget().toString() ) )
-							.forEach( d -> log.append( d.getTarget() + " " + d.toString() + "<br/>" ) );
-
-					log.append( "</div></div>" );
+					log.append( "no plugin dependency<br/>" );
 				}
+				else
+				{
+					buildDependencies.values().stream().sorted( ( a, b ) -> a.getResolvedGav().toString().compareTo( b.getResolvedGav().toString() ) )
+							.forEach( d ->
+							{
+								log.append( d.getResolvedGav() );
+
+								if( !d.getResolvedGav().equals( d.getUnresolvedGav() ) )
+									log.append( " <i>declared: " + d.getUnresolvedGav() + "</i>" );
+
+								if( d.getClassifier() != null )
+									log.append( ":" + d.getClassifier() );
+								log.append( "<br/>" );
+							} );
+
+				}
+				log.append( "</div></div>" );
 
 				log.append( "</div></div>" );
 			} );
