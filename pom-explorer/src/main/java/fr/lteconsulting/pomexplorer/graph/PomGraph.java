@@ -5,35 +5,21 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DirectedMultigraph;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class PomGraph
 {
 	private PomGraphReadTransaction readTransaction = null;
-	private AtomicReference<DirectedGraph<Gav, Relation>> graphReference = new AtomicReference<>( new DirectedMultigraph<Gav, Relation>( Relation.class ) );
-	private final Object duplicateGraphLock = new Object();
 
-	private DirectedMultigraph<Gav, Relation> duplicateGraph( DirectedGraph<Gav, Relation> graph )
-	{
-		synchronized( duplicateGraphLock )
-		{
-			DirectedMultigraph<Gav, Relation> newGraph = new DirectedMultigraph<Gav, Relation>( Relation.class );
-			for( Gav gav : graph.vertexSet() )
-				newGraph.addVertex( gav );
-			for( Relation edge : graph.edgeSet() )
-				newGraph.addEdge( graph.getEdgeSource( edge ), graph.getEdgeTarget( edge ), edge );
-			return newGraph;
-		}
-	}
+	private final AtomicReference<DirectedMultigraph<Gav, Relation>> graphReference = new AtomicReference<>( createGraph() );
 
-	public PomGraphWriteTransaction startTransaction()
+	public PomGraphWriteTransaction write()
 	{
 		return new PomGraphWriteTransaction();
 	}
@@ -45,11 +31,32 @@ public class PomGraph
 		return readTransaction;
 	}
 
+	private DirectedMultigraph<Gav, Relation> copyGraph( DirectedMultigraph<Gav, Relation> graph )
+	{
+		synchronized( graph )
+		{
+			DirectedMultigraph<Gav, Relation> newGraph = createGraph();
+			for( Gav gav : graph.vertexSet() )
+				newGraph.addVertex( gav );
+			for( Relation edge : graph.edgeSet() )
+				newGraph.addEdge( graph.getEdgeSource( edge ), graph.getEdgeTarget( edge ), edge );
+			return newGraph;
+		}
+	}
+
+	private DirectedMultigraph<Gav, Relation> createGraph()
+	{
+		@SuppressWarnings( "unchecked" )
+		Class<? extends Relation> edgeClass = (Class<? extends Relation>) (Object) Relation.class;
+		DirectedMultigraph<Gav, Relation> graph = new DirectedMultigraph<Gav, Relation>( edgeClass );
+		return graph;
+	}
+
 	public static class PomGraphReadTransaction
 	{
-		protected final DirectedGraph<Gav, Relation> txGraph;
+		protected final DirectedMultigraph<Gav, Relation> txGraph;
 
-		public PomGraphReadTransaction( DirectedGraph<Gav, Relation> txGraph )
+		public PomGraphReadTransaction( DirectedMultigraph<Gav, Relation> txGraph )
 		{
 			this.txGraph = txGraph;
 		}
@@ -72,9 +79,19 @@ public class PomGraph
 		/**
 		 * For read only purpose only !
 		 */
-		public DirectedGraph<Gav, Relation> internalGraph()
+		public DirectedMultigraph<Gav, Relation> internalGraph()
 		{
 			return txGraph;
+		}
+
+		public Gav sourceOf( Relation relation )
+		{
+			return relation.getSource();
+		}
+
+		public Gav targetOf( Relation relation )
+		{
+			return relation.getTarget();
 		}
 
 		public Gav parent( Gav gav )
@@ -84,7 +101,7 @@ public class PomGraph
 			if( relations == null || relations.size() != 1 )
 				return null;
 
-			Gav parent = relations.iterator().next().getTarget();
+			Gav parent = txGraph.getEdgeTarget( relations.iterator().next() );
 
 			return parent;
 		}
@@ -95,7 +112,7 @@ public class PomGraph
 
 			Set<ParentRelation> relations = filterParentRelations( relationsReverse( gav ) );
 			for( ParentRelation relation : relations )
-				res.add( relation.getSource() );
+				res.add( txGraph.getEdgeSource( relation ) );
 
 			return res;
 		}
@@ -134,9 +151,7 @@ public class PomGraph
 		 */
 		public Set<Relation> relationsReverse( Gav gav )
 		{
-			Set<Relation> res = new HashSet<>();
-			relationsReverse( gav, res );
-			return res;
+			return txGraph.incomingEdgesOf( gav );
 		}
 
 		/**
@@ -250,14 +265,6 @@ public class PomGraph
 			}
 		}
 
-		private void relationsReverse( Gav gav, Set<Relation> set )
-		{
-			if( !txGraph.containsVertex( gav ) )
-				return;
-
-			set.addAll( txGraph.incomingEdgesOf( gav ) );
-		}
-
 		private void relationsReverseRec( Gav gav, Set<Relation> set, Set<Gav> visitedGavs )
 		{
 			if( visitedGavs.contains( gav ) )
@@ -278,7 +285,7 @@ public class PomGraph
 	{
 		private PomGraphWriteTransaction()
 		{
-			super( duplicateGraph( graphReference.get() ) );
+			super( copyGraph( graphReference.get() ) );
 		}
 
 		public void commit()

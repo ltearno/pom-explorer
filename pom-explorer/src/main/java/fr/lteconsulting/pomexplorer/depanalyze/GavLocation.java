@@ -1,9 +1,9 @@
 package fr.lteconsulting.pomexplorer.depanalyze;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation.Scope;
+import fr.lteconsulting.pomexplorer.graph.relation.Scope;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class GavLocation extends Location
 {
@@ -17,6 +17,8 @@ public class GavLocation extends Location
 
 	private String classifier;
 
+	private String type;
+
 	public GavLocation( Project project, PomSection section, Gav gav )
 	{
 		this( project, section, gav, gav );
@@ -24,10 +26,10 @@ public class GavLocation extends Location
 
 	public GavLocation( Project project, PomSection section, Gav resolvedGav, Gav unresolvedGav )
 	{
-		this( project, section, resolvedGav, unresolvedGav, null, null );
+		this( project, section, resolvedGav, unresolvedGav, null, null, "jar" );
 	}
 
-	public GavLocation( Project project, PomSection section, Gav resolvedGav, Gav unresolvedGav, String scope, String classifier )
+	public GavLocation( Project project, PomSection section, Gav resolvedGav, Gav unresolvedGav, String scope, String classifier, String type )
 	{
 		super( project, null );
 
@@ -36,6 +38,7 @@ public class GavLocation extends Location
 		this.unresolvedGav = unresolvedGav;
 		this.scope = Scope.fromString( scope );
 		this.classifier = classifier;
+		this.type = type;
 	}
 
 	public Scope getScope()
@@ -51,6 +54,11 @@ public class GavLocation extends Location
 	public PomSection getSection()
 	{
 		return section;
+	}
+
+	public String getType()
+	{
+		return type;
 	}
 
 	public Gav getGav()

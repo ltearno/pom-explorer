@@ -4,12 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class BuildCommand
 {
@@ -33,7 +33,7 @@ public class BuildCommand
 				return;
 			}
 
-			session.builder().buildProject(project, log);
+			session.builder().buildProject( project, log );
 
 			log.html( "project " + project + " marked for building<br/>" );
 		} );
@@ -67,7 +67,7 @@ public class BuildCommand
 
 			toWatch.add( gav );
 
-			tx.relationsRec( gav ).stream().map( r -> r.getTarget() ).forEach( g -> toWatch.add( g ) );
+			tx.relationsRec( gav ).stream().map( r -> tx.targetOf( r ) ).forEach( g -> toWatch.add( g ) );
 		}
 
 		log.html( "<br/>" );
@@ -82,11 +82,11 @@ public class BuildCommand
 			for( Gav g : toWatch )
 			{
 				Project p = session.projects().forGav( g );
-				if (p == null || !p.isBuildable())
+				if( p == null || !p.isBuildable() )
 					continue;
 
-				log.html(Tools.logMessage("watching " + p));
-				session.projectsWatcher().watchProject(p, log);
+				log.html( Tools.logMessage( "watching " + p ) );
+				session.projectsWatcher().watchProject( p, log );
 			}
 		}
 	}

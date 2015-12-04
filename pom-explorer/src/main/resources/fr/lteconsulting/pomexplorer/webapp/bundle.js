@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     var req = new XMLHttpRequest();
-    req.open('GET', '/graph?session=' + getParameterByName('session'), true);
+    req.open('GET', '/graph?session=' + getParameterByName('session')+"&graphQueryId="+getParameterByName('graphQueryId'), true);
     req.onreadystatechange = function (e) {
         if (req.readyState == 4) {
             if (req.status == 200) {

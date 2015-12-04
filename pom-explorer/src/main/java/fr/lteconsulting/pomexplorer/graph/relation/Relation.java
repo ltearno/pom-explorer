@@ -1,62 +1,36 @@
 package fr.lteconsulting.pomexplorer.graph.relation;
 
-import fr.lteconsulting.pomexplorer.Gav;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public abstract class Relation
 {
-	/**
-	 * Whether it's a normal dependency, a build one or a parent one.
-	 * 
-	 * @author Arnaud
-	 *
-	 */
-	public enum RelationType
-	{
-		DEPENDENCY( "D" ),
-		BUILD_DEPENDENCY( "B" ),
-		PARENT( "P" );
-
-		private final String shortName;
-
-		RelationType( String shortName )
-		{
-			this.shortName = shortName;
-		}
-
-		public String shortName()
-		{
-			return shortName;
-		}
-	}
-
-	public interface RelationVisitor
-	{
-		void onDependencyRelation( DependencyRelation relation );
-
-		void onBuildDependencyRelation( BuildDependencyRelation relation );
-
-		void onParentRelation( ParentRelation relation );
-	}
-
+	private final RelationType type;
 	private final Gav source;
-
 	private final Gav target;
 
-	private final RelationType type;
-
-	public Relation( Gav source, Gav target, RelationType type )
+	protected Relation( Gav source, Gav target, RelationType type )
 	{
+		this.type = type;
 		this.source = source;
 		this.target = target;
-		this.type = type;
 	}
 
-	public RelationType getRelationType()
+	public Gav getSource()
+	{
+		return source;
+	}
+
+	public Gav getTarget()
+	{
+		return target;
+	}
+
+	public final RelationType getRelationType()
 	{
 		return type;
 	}
 
-	public DependencyRelation asDependencyRelation()
+	public final DependencyRelation asDependencyRelation()
 	{
 		if( type != RelationType.DEPENDENCY )
 			return null;
@@ -64,7 +38,7 @@ public abstract class Relation
 		return (DependencyRelation) this;
 	}
 
-	public BuildDependencyRelation asBuildDependencyRelation()
+	public final BuildDependencyRelation asBuildDependencyRelation()
 	{
 		if( type != RelationType.BUILD_DEPENDENCY )
 			return null;
@@ -72,7 +46,7 @@ public abstract class Relation
 		return (BuildDependencyRelation) this;
 	}
 
-	public ParentRelation asParentRelation()
+	public final ParentRelation asParentRelation()
 	{
 		if( type != RelationType.PARENT )
 			return null;
@@ -80,7 +54,7 @@ public abstract class Relation
 		return (ParentRelation) this;
 	}
 
-	public void visit( RelationVisitor visitor )
+	public final void visit( RelationVisitor visitor )
 	{
 		switch( type )
 		{
@@ -94,16 +68,6 @@ public abstract class Relation
 				visitor.onParentRelation( asParentRelation() );
 				break;
 		}
-	}
-
-	public Gav getSource()
-	{
-		return source;
-	}
-
-	public Gav getTarget()
-	{
-		return target;
 	}
 
 	@Override

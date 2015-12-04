@@ -19,28 +19,42 @@ import org.jgrapht.graph.DirectedSubgraph;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 
 import fr.lteconsulting.pomexplorer.AppFactory;
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.GitTools;
 import fr.lteconsulting.pomexplorer.GraphFrame;
+import fr.lteconsulting.pomexplorer.GraphQuery;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.Repository;
 import fr.lteconsulting.pomexplorer.graph.RepositoryRelation;
-import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation.Scope;
+import fr.lteconsulting.pomexplorer.graph.relation.Scope;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class GraphCommand
 {
-	@Help( "displays an interactive 3d WebGL graph of the pom data" )
+	@Help( "displays an interactive 3d WebGL graph of the projects" )
 	public void main( WorkingSession session, ILogger log )
 	{
 		String url = "graph.html?session=" + System.identityHashCode( session );
+		url += "&graphQueryId=" + GraphQuery.register( null );
+		log.html( "To display the graph, go to : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
+	}
+
+	@Help( "displays an interactive 3d WebGL graph of the projects, limited to dependency tree of the given root gavs" )
+	public void roots( WorkingSession session, ILogger log, FilteredGAVs roots )
+	{
+		String url = "graph.html?session=" + System.identityHashCode( session );
+		url += "&graphQueryId=" + GraphQuery.register( new HashSet<>( roots.getGavs( session ) ) );
+		log.html( "Root gavs : " );
+		StringBuilder sb = new StringBuilder();
+		roots.getGavs( session ).forEach( root -> sb.append( root + "<br/>") );
+		log.html( sb.toString() );
 		log.html( "To display the graph, go to : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
 	}
 
@@ -56,7 +70,7 @@ public class GraphCommand
 
 		if( relation instanceof DependencyRelation )
 		{
-			if( relation.asDependencyRelation().getScope() == Scope.TEST )
+			if( relation.asDependencyRelation().getDependency().getScope() == Scope.TEST )
 				return false;
 		}
 
@@ -67,7 +81,7 @@ public class GraphCommand
 	public void export( WorkingSession session, ILogger log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		try
 		{
 			GraphMLExporter<Gav, Relation> exporter = new GraphMLExporter<Gav, Relation>( new IntegerNameProvider<Gav>(), new VertexNameProvider<Gav>()
@@ -104,7 +118,7 @@ public class GraphCommand
 
 			DirectedGraph<Gav, Relation> g = tx.internalGraph();
 
-			DirectedGraph<Gav, Relation> ng = new DirectedMultigraph<Gav, Relation>( Relation.class );
+			DirectedGraph<Gav, Relation> ng = new DirectedMultigraph<Gav, Relation>( (Class<? extends Relation>) Relation.class );
 			for( Gav gav : g.vertexSet() )
 			{
 				if( !isOkGav( gav ) )
@@ -208,7 +222,7 @@ public class GraphCommand
 	public void server( WorkingSession session, String filter, ILogger log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		if( filter != null )
 			filter = filter.toLowerCase();
 

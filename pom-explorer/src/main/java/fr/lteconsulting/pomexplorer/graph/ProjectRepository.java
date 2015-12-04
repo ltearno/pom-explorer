@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class ProjectRepository
 {

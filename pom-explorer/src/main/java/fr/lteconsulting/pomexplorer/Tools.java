@@ -17,13 +17,26 @@ import java.util.Set;
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.changes.Change;
 import fr.lteconsulting.pomexplorer.changes.ChangeSetManager;
-import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.model.Dependency;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class Tools
 {
+	public static int compareStrings( String a, String b )
+	{
+		if( a == b )
+			return 0;
+		if( a == null )
+			return -1;
+		if( b == null )
+			return 1;
+
+		return a.compareTo( b );
+	}
+
 	public static void printChangeList( ILogger log, ChangeSetManager changes )
 	{
 		log.html( "<br/>Change list...<br/><br/>" );
@@ -69,7 +82,7 @@ public class Tools
 		Set<Relation> relations = tx.relationsReverse( gav );
 		for( Relation relation : relations )
 		{
-			Gav updatedGav = relation.getSource();
+			Gav updatedGav = tx.sourceOf( relation );
 
 			Project updatedProject = session.projects().forGav( updatedGav );
 			if( updatedProject == null )
@@ -80,12 +93,11 @@ public class Tools
 				continue;
 			}
 
-			Location dependencyLocation = Tools.findDependencyLocation( session, log, updatedProject, relation );
+			Location dependencyLocation = updatedProject.findDependencyLocation( session, log, relation );
 			if( dependencyLocation == null )
 			{
 				if( log != null )
-					log.html( Tools.errorMessage( "Cannot find the location of dependency to " + relation.getTarget()
-							+ " in this project " + updatedProject ) );
+					log.html( Tools.errorMessage( "Cannot find the location of dependency to " + tx.targetOf( relation ) + " in this project " + updatedProject ) );
 				continue;
 			}
 
@@ -100,155 +112,12 @@ public class Tools
 		return text != null && text.startsWith( "${" ) && text.endsWith( "}" );
 	}
 
-	// TODO move to Project
-	public static Project getPropertyDefinitionProject( WorkingSession session, Project startingProject, String property )
-	{
-		if( property.startsWith( "project." ) )
-			return startingProject;
-
-		// search a property definition in the project. if found, return it
-		String value = propertyValue( startingProject, property );
-		if( value != null )
-			return startingProject;
-
-		PomGraphReadTransaction tx = session.graph().read();
-
-		// go deeper in hierarchy
-		Gav parentGav = tx.parent( startingProject.getGav() );
-		Project parentProject = null;
-		if( parentGav != null )
-			parentProject = session.projects().forGav( parentGav );
-
-		if( parentProject != null )
-		{
-			Project definition = getPropertyDefinitionProject( session, parentProject, property );
-			if( definition != null )
-				return definition;
-		}
-
-		return null;
-	}
-
-	// TODO move to Project
-	private static String propertyValue( Project startingProject, String property )
-	{
-		Object res = startingProject.getMavenProject().getProperties().get( property );
-		if( res instanceof String )
-			return (String) res;
-		return null;
-	}
-
-	// TODO move to Project
-	public static Location findDependencyLocation( WorkingSession session, ILogger log, Project project, Relation relation )
-	{
-		if( project.getGav().equals( relation.getTarget() ) )
-			return new GavLocation( project, PomSection.PROJECT, project.getGav() );
-
-		Location dependencyLocation = null;
-
-		switch( relation.getRelationType() )
-		{
-			case DEPENDENCY:
-				dependencyLocation = findDependencyLocationInDependencies( session, log, project, relation.getTarget() );
-				break;
-
-			case BUILD_DEPENDENCY:
-				dependencyLocation = findDependencyLocationInBuildDependencies( session, log, project, relation.getTarget() );
-				break;
-
-			case PARENT:
-				dependencyLocation = new GavLocation( project, PomSection.PARENT, relation.getTarget(), relation.getTarget() );
-				break;
-		}
-
-		return dependencyLocation;
-	}
-
 	public static String getPropertyNameFromPropertyReference( String name )
 	{
 		if( !(name.startsWith( "${" ) && name.endsWith( "}" )) )
 			return name;
 
 		return name.substring( 2, name.length() - 1 );
-	}
-
-	// TODO move to Project
-	public static GavLocation findDependencyLocationInDependencies( WorkingSession session, ILogger log, Project project,
-			Gav searchedDependency )
-	{
-		if( project == null )
-			return null;
-
-		// dependencies
-		GavLocation info = project.getDependencies( session, log ).get( searchedDependency );
-		if( info != null && info.getUnresolvedGav() != null && info.getUnresolvedGav().getVersion() != null )
-			return info;
-
-		// dependency management
-		GavLocation locationInDepMngt = project.findDependencyLocationInDependencyManagement( session, log, searchedDependency.getGroupId(), searchedDependency.getArtifactId() );
-		if( locationInDepMngt != null )
-			return locationInDepMngt;
-
-		PomGraphReadTransaction tx = session.graph().read();
-
-		// parent
-		Gav parentGav = tx.parent( project.getGav() );
-		if( parentGav != null )
-		{
-			Project parentProject = session.projects().forGav( parentGav );
-			if( parentProject == null )
-			{
-				log.html( Tools.warningMessage( "Cannot find the '" + project.getGav() + "' parent project '" + parentGav
-						+ "' to examine where the dependency '" + searchedDependency + "' is defined." ) );
-				return null;
-			}
-
-			GavLocation locationInParent = findDependencyLocationInDependencies( session, log, parentProject,
-					searchedDependency );
-			if( locationInParent != null )
-				return locationInParent;
-		}
-
-		return null;
-	}
-
-	// TODO move to Project
-	public static GavLocation findDependencyLocationInBuildDependencies( WorkingSession session, ILogger log, Project project, Gav searchedDependency )
-	{
-		if( project == null )
-			return null;
-
-		// dependencies
-		GavLocation info = project.getPluginDependencies( session, log ).get( searchedDependency );
-		if( info != null && info.getUnresolvedGav() != null && info.getUnresolvedGav().getVersion() != null )
-			return info;
-
-		// dependency management
-		GavLocation locationInDepMngt = project.findDependencyLocationInBuildDependencyManagement( session, log, searchedDependency.getGroupId(), searchedDependency.getArtifactId() );
-		if( locationInDepMngt != null )
-			return locationInDepMngt;
-
-		PomGraphReadTransaction tx = session.graph().read();
-
-		// parent
-		Gav parentGav = tx.parent( project.getGav() );
-		if( parentGav != null )
-		{
-			Project parentProject = session.projects().forGav( parentGav );
-			if( parentProject == null )
-			{
-				log.html( Tools.warningMessage( "Cannot find the '" + project.getGav() + "' parent project '" + parentGav
-						+ "' to examine where the dependency '" + searchedDependency + "' is defined." ) );
-				return null;
-			}
-
-			GavLocation locationInParent = findDependencyLocationInBuildDependencies( session, log, parentProject,
-					searchedDependency );
-			if( locationInParent != null )
-				return locationInParent;
-		}
-
-		return null;
 	}
 
 	/**
@@ -306,6 +175,8 @@ public class Tools
 	};
 
 	public static final Comparator<Project> projectAlphabeticalComparator = ( a, b ) -> a.toString().compareTo( b.toString() );
+	
+	public static final Comparator<Dependency> dependencyAlphabeticalComparator = ( a, b ) -> a.toString().compareTo( b.toString() );
 
 	public static String logMessage( String message )
 	{
@@ -341,10 +212,10 @@ public class Tools
 		StringBuilder sb = new StringBuilder();
 
 		sb.append( t.toString() + "<br/>" );
-		
+
 		for( StackTraceElement st : t.getStackTrace() )
 			sb.append( st.toString() + "<br/>" );
-		
+
 		log.html( sb.toString() );
 	}
 

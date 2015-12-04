@@ -20,6 +20,11 @@ public class PropertyLocation extends Location
 		return propertyName;
 	}
 
+	public String getPropertyValue()
+	{
+		return propertyValue;
+	}
+
 	@Override
 	public String toString()
 	{

@@ -3,13 +3,13 @@ package fr.lteconsulting.pomexplorer.commands;
 import java.util.List;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.GavTools;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.javac.JavaSourceAnalyzer;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class ClassesCommand
 {

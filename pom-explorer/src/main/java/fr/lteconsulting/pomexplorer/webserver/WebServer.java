@@ -153,7 +153,7 @@ public class WebServer
 			public void handleRequest( HttpServerExchange exchange ) throws Exception
 			{
 				// executor.submit( ( ) -> {
-				String result = xWebServer.onGraphQuery( getQueryParameter( exchange, "session" ) );
+				String result = xWebServer.onGraphQuery( getQueryParameter( exchange, "session" ), getQueryParameter( exchange, "graphQueryId" ) );
 				exchange.getResponseSender().send( result );
 				// } );
 			}

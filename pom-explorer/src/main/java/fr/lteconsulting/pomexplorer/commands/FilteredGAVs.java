@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 /**
  * Commodity class to handle GAV filtering by name in commands

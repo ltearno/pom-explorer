@@ -12,15 +12,13 @@ import fr.lteconsulting.pomexplorer.changes.IChangeSet;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 /**
- * When a project's gav is changed, the change is repercuted on projects which
- * depends on this project
+ * When a project's gav is changed, this impacts projects which depends on it
  */
 public class FollowGavProcessor extends AbstractGavChangeProcessor
 {
 	@Override
 	protected void processChange( WorkingSession session, ILogger log, GavChange change, IChangeSet changeSet )
 	{
-		// if only change is a project gav change,
 		if( change.getLocation().getSection() != PomSection.PROJECT )
 			return;
 

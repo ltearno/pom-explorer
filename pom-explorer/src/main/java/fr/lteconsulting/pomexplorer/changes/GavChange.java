@@ -1,9 +1,9 @@
 package fr.lteconsulting.pomexplorer.changes;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class GavChange extends Change<GavLocation>
 {

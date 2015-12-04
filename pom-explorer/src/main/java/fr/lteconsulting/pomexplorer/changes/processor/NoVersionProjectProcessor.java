@@ -1,6 +1,5 @@
 package fr.lteconsulting.pomexplorer.changes.processor;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
@@ -9,6 +8,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.changes.GavChange;
 import fr.lteconsulting.pomexplorer.changes.IChangeSet;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 /**
  * When one wants to change a project version, maybe the project's version is
@@ -39,7 +39,7 @@ public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 		// project version should be null
 		if( project.getMavenProject().getModel().getVersion() != null )
 			return;
-		
+
 		PomGraphReadTransaction tx = session.graph().read();
 
 		// and project should have a parent

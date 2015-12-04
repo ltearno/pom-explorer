@@ -18,6 +18,8 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
 import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
 import org.jboss.shrinkwrap.resolver.impl.maven.bootstrap.MavenRepositorySystem;
 
+import fr.lteconsulting.pomexplorer.model.Gav;
+
 public class MavenResolver
 {
 	private MavenResolverSystem resolver;

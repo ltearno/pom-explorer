@@ -1,15 +1,11 @@
-package fr.lteconsulting.pomexplorer;
+package fr.lteconsulting.pomexplorer.model;
 
 import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
 
-public class Gav
+public class Gav extends GroupArtifact
 {
-	private final String groupId;
+	protected final String version;
 
-	private final String artifactId;
-
-	private final String version;
-	
 	public static Gav parse( String gavString )
 	{
 		String[] parts = gavString.split( ":" );
@@ -28,19 +24,14 @@ public class Gav
 
 	public Gav( String groupId, String artifactId, String version )
 	{
-		this.groupId = groupId;
-		this.artifactId = artifactId;
+		super( groupId, artifactId );
+
 		this.version = version;
 	}
 
-	public String getGroupId()
+	public Gav( Gav gav )
 	{
-		return groupId;
-	}
-
-	public String getArtifactId()
-	{
-		return artifactId;
+		this( gav.getGroupId(), gav.getArtifactId(), gav.getVersion() );
 	}
 
 	public String getVersion()
@@ -59,13 +50,19 @@ public class Gav
 		return groupId + ":" + artifactId + ":" + version;
 	}
 
+	public boolean sameGroupArtifact( GroupArtifact ga )
+	{
+		if( ga == null )
+			return false;
+
+		return groupId.equals( ga.groupId ) && artifactId.equals( ga.artifactId );
+	}
+
 	@Override
 	public int hashCode()
 	{
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((artifactId == null) ? 0 : artifactId.hashCode());
-		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+		int result = super.hashCode();
 		result = prime * result + ((version == null) ? 0 : version.hashCode());
 		return result;
 	}
@@ -75,25 +72,11 @@ public class Gav
 	{
 		if( this == obj )
 			return true;
-		if( obj == null )
+		if( !super.equals( obj ) )
 			return false;
 		if( getClass() != obj.getClass() )
 			return false;
 		Gav other = (Gav) obj;
-		if( artifactId == null )
-		{
-			if( other.artifactId != null )
-				return false;
-		}
-		else if( !artifactId.equals( other.artifactId ) )
-			return false;
-		if( groupId == null )
-		{
-			if( other.groupId != null )
-				return false;
-		}
-		else if( !groupId.equals( other.groupId ) )
-			return false;
 		if( version == null )
 		{
 			if( other.version != null )
@@ -103,5 +86,4 @@ public class Gav
 			return false;
 		return true;
 	}
-
 }

@@ -1,7 +1,6 @@
 package fr.lteconsulting.pomexplorer.commands;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -9,6 +8,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.changes.ChangeSetManager;
 import fr.lteconsulting.pomexplorer.changes.GavChange;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class ChangeCommand
 {

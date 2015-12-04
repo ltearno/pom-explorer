@@ -8,7 +8,7 @@ public interface XWebServer
 
 	void onWebsocketMessage( Client client, String message );
 
-	String onGraphQuery( String sessionIdString );
+	String onGraphQuery( String sessionIdString, String graphQueryId );
 
 	void onClientLeft( Client client );
 }

@@ -1,6 +1,5 @@
 package fr.lteconsulting.pomexplorer.changes.processor;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
@@ -12,6 +11,7 @@ import fr.lteconsulting.pomexplorer.changes.PropertyChange;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 /**
  * Sometimes a GavChange consist in fact to change property values. This
@@ -44,7 +44,7 @@ public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 			if( "project.parent.version".equals( property ) )
 			{
 				PomGraphReadTransaction tx = session.graph().read();
-				
+
 				Gav parentProjectGav = tx.parent( depLoc.getProject().getGav() );
 				Project parentProject = session.projects().forGav( parentProjectGav );
 				if( parentProject == null )
@@ -57,7 +57,7 @@ public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 
 			log.html( Tools.warningMessage( "updating the '" + property + "' property" ) );
 
-			Project definitionProject = Tools.getPropertyDefinitionProject( session, depLoc.getProject(), property );
+			Project definitionProject = depLoc.getProject().getPropertyDefinitionProject( session, property );
 			if( definitionProject != null )
 			{
 				changeSet.addChange( new PropertyChange( new PropertyLocation( definitionProject, depLoc, property, definitionProject.getMavenProject().getProperties().getProperty( property ) ), change.getNewGav().getVersion() ), change );

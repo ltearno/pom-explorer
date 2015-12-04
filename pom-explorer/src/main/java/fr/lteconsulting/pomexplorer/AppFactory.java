@@ -27,7 +27,9 @@ import fr.lteconsulting.pomexplorer.commands.ReleaseCommand;
 import fr.lteconsulting.pomexplorer.commands.SessionCommand;
 import fr.lteconsulting.pomexplorer.commands.StatsCommand;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.webserver.Message;
 import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
 import fr.lteconsulting.pomexplorer.webserver.WebServer;
@@ -177,7 +179,7 @@ public class AppFactory
 		}
 
 		@Override
-		public String onGraphQuery( String sessionIdString )
+		public String onGraphQuery( String sessionIdString, String graphQueryId )
 		{
 			List<WorkingSession> sessions = AppFactory.get().sessions();
 			if( sessions == null || sessions.isEmpty() )
@@ -199,6 +201,7 @@ public class AppFactory
 						}
 					}
 				}
+
 			}
 			catch( Exception e )
 			{
@@ -206,23 +209,48 @@ public class AppFactory
 
 			if( session == null )
 				session = sessions.get( 0 );
-			
-			PomGraphReadTransaction tx = session.graph().read();
 
-			DirectedGraph<Gav, Relation> g = tx.internalGraph();
+			GraphQuery query = GraphQuery.get( graphQueryId );
+
+			PomGraphReadTransaction tx = session.graph().read();
 
 			GraphDto dto = new GraphDto();
 			dto.gavs = new HashSet<>();
 			dto.relations = new HashSet<>();
-			for( Gav gav : g.vertexSet() )
-			{
-				dto.gavs.add( gav.toString() );
 
-				for( Relation relation : g.outgoingEdgesOf( gav ) )
+			if( query != null && query.getRoots() != null )
+			{
+				for( Gav root : query.getRoots() )
 				{
-					Gav target = g.getEdgeTarget( relation );
-					EdgeDto edge = new EdgeDto( gav.toString(), target.toString(), relation );
-					dto.relations.add( edge );
+					Set<DependencyRelation> relations = tx.dependenciesRec( root );
+
+					dto.gavs.add( root.toString() );
+
+					for( DependencyRelation relation : relations )
+					{
+						Gav dSource = tx.sourceOf( relation );
+						Gav dTarget = tx.targetOf( relation );
+
+						dto.gavs.add( dSource.toString() );
+						dto.gavs.add( dTarget.toString() );
+
+						EdgeDto edge = new EdgeDto( dSource.toString(), dTarget.toString(), relation );
+						dto.relations.add( edge );
+					}
+				}
+			}
+			else
+			{
+				for( Gav gav : tx.gavs() )
+				{
+					dto.gavs.add( gav.toString() );
+
+					for( Relation relation : tx.dependencies( gav ) )
+					{
+						Gav target = tx.targetOf( relation );
+						EdgeDto edge = new EdgeDto( gav.toString(), target.toString(), relation );
+						dto.relations.add( edge );
+					}
 				}
 			}
 
@@ -310,6 +338,61 @@ public class AppFactory
 			this.relation = relation;
 
 			label = relation.toString();
+		}
+
+		@Override
+		public int hashCode()
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((from == null) ? 0 : from.hashCode());
+			result = prime * result + ((label == null) ? 0 : label.hashCode());
+			result = prime * result + ((relation == null) ? 0 : relation.hashCode());
+			result = prime * result + ((to == null) ? 0 : to.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals( Object obj )
+		{
+			if( this == obj )
+				return true;
+			if( obj == null )
+				return false;
+			if( getClass() != obj.getClass() )
+				return false;
+
+			EdgeDto other = (EdgeDto) obj;
+
+			if( from == null )
+			{
+				if( other.from != null )
+					return false;
+			}
+			else if( !from.equals( other.from ) )
+				return false;
+			if( label == null )
+			{
+				if( other.label != null )
+					return false;
+			}
+			else if( !label.equals( other.label ) )
+				return false;
+			if( relation == null )
+			{
+				if( other.relation != null )
+					return false;
+			}
+			else if( !relation.equals( other.relation ) )
+				return false;
+			if( to == null )
+			{
+				if( other.to != null )
+					return false;
+			}
+			else if( !to.equals( other.to ) )
+				return false;
+			return true;
 		}
 	}
 

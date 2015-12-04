@@ -1,72 +1,22 @@
 package fr.lteconsulting.pomexplorer.graph.relation;
 
-import fr.lteconsulting.pomexplorer.Gav;
+import fr.lteconsulting.pomexplorer.model.Dependency;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class DependencyRelation extends Relation
 {
-	public enum Scope
-	{
-		COMPILE,
-		PROVIDED,
-		RUNTIME,
-		TEST,
-		SYSTEM,
-		IMPORT;
-
-		public static Scope fromString( String scope )
-		{
-			if( scope == null || scope.isEmpty() )
-				return COMPILE;
-
-			return Scope.valueOf( scope.toUpperCase() );
-		}
-
-		@Override
-		public String toString()
-		{
-			return super.toString().toLowerCase();
-		}
-	}
-
-	private final Scope scope;
-
-	private final String classifier;
-
-	public DependencyRelation( Gav source, Gav target, Scope scope, String classifier )
+	private final Dependency dependency;
+	
+	public DependencyRelation( Gav source, Gav target, Dependency dependency )
 	{
 		super( source, target, RelationType.DEPENDENCY );
-		this.scope = scope;
-		if( this.scope == null )
-			throw new RuntimeException( "Scope is null for dependency between " + source + " to " + target );
-		this.classifier = classifier;
+		
+		this.dependency = dependency;
 	}
-
-	public Scope getScope()
+	
+	public Dependency getDependency()
 	{
-		return scope;
-	}
-
-	public String getClassifier()
-	{
-		return classifier;
-	}
-
-	@Override
-	public String toString()
-	{
-		String res = "";
-		String sep = "";
-
-		res += "scope:" + scope;
-		sep = ", ";
-
-		if( classifier != null && !classifier.isEmpty() )
-		{
-			res += sep + "classifier:" + classifier;
-			sep = ", ";
-		}
-
-		return res;
+		return dependency;
 	}
 
 	@Override
@@ -74,8 +24,7 @@ public class DependencyRelation extends Relation
 	{
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((classifier == null) ? 0 : classifier.hashCode());
-		result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+		result = prime * result + ((dependency == null) ? 0 : dependency.hashCode());
 		return result;
 	}
 
@@ -89,19 +38,12 @@ public class DependencyRelation extends Relation
 		if( getClass() != obj.getClass() )
 			return false;
 		DependencyRelation other = (DependencyRelation) obj;
-		if( classifier == null )
+		if( dependency == null )
 		{
-			if( other.classifier != null )
+			if( other.dependency != null )
 				return false;
 		}
-		else if( !classifier.equals( other.classifier ) )
-			return false;
-		if( scope == null )
-		{
-			if( other.scope != null )
-				return false;
-		}
-		else if( !scope.equals( other.scope ) )
+		else if( !dependency.equals( other.dependency ) )
 			return false;
 		return true;
 	}

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.GavTools;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
@@ -15,6 +14,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.javac.JavaSourceAnalyzer;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class GarbageCommand
 {
@@ -22,7 +22,7 @@ public class GarbageCommand
 	public void dependencies( WorkingSession session, ILogger log, CommandOptions options, FilteredGAVs gavFilter )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		log.html( "<i>Note : although this tool will follow all the transitive dependencies inside your own projects, it will not recursively fetch all your externaly dependencies. For example, if you declare 'undertow-servlet' and depend only on 'undertow-core', you will get warnings that undetow class references have no provider found. This is a sign that you depend on a transitive dependency (from an external library) without declaring it in your maven project.</i><br/>" );
 
 		for( Gav gav : gavFilter.getGavs( session ) )
@@ -36,10 +36,14 @@ public class GarbageCommand
 
 			// get all dependencies of the gav
 			Set<Gav> dependencies = new HashSet<>();
-			tx.relationsRec( gav ).stream().filter( r -> !(r instanceof BuildDependencyRelation) )
-					.map( r -> r.getTarget() ).forEach( dependencies::add );
+			tx.relationsRec( gav ).stream()
+					.filter( r -> !(r instanceof BuildDependencyRelation) )
+					.map( r -> tx.targetOf( r ) )
+					.forEach( dependencies::add );
 			Set<Gav> directDependencies = new HashSet<>();
-			tx.dependencies( gav ).stream().map( dep -> dep.getTarget() ).forEach( directDependencies::add );
+			tx.dependencies( gav ).stream()
+					.map( dep -> tx.targetOf( dep ) )
+					.forEach( directDependencies::add );
 
 			log.html( "Considered project's dependencies:<br/>" );
 			dependencies.stream().sorted( Tools.gavAlphabeticalComparator ).forEachOrdered( g -> log.html( g + "<br/>" ) );

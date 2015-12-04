@@ -18,10 +18,10 @@ public class ExportCommand
 	public void csv( Client client, WorkingSession session, ILogger log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		try
 		{
-			ExportVisitor visitor = new ExportVisitor();
+			ExportVisitor visitor = new ExportVisitor( session );
 
 			tx.relations().stream().forEach( visitor::visit );
 
@@ -40,10 +40,13 @@ public class ExportCommand
 
 class ExportVisitor
 {
+	private PomGraphReadTransaction tx;
 	private PrintWriter w;
 
-	public ExportVisitor() throws FileNotFoundException, UnsupportedEncodingException
+	public ExportVisitor( WorkingSession session ) throws FileNotFoundException, UnsupportedEncodingException
 	{
+		tx = session.graph().read();
+
 		File file = new File( "export.csv" );
 		w = new PrintWriter( file, "UTF-8" );
 
@@ -57,6 +60,6 @@ class ExportVisitor
 
 	public void visit( Relation relation )
 	{
-		w.println( relation.getSource() + ";" + relation.getRelationType() + ";" + relation.getTarget() );
+		w.println( tx.sourceOf( relation ) + ";" + relation.getRelationType() + ";" + tx.targetOf( relation ) );
 	}
 }

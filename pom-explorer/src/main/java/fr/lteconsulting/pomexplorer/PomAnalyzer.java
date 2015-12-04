@@ -13,6 +13,8 @@ import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
+import fr.lteconsulting.pomexplorer.model.Dependency;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class PomAnalyzer
 {
@@ -105,7 +107,7 @@ public class PomAnalyzer
 
 		log.html( "graph update<br/>" );
 
-		PomGraphWriteTransaction tx = session.graph().startTransaction();
+		PomGraphWriteTransaction tx = session.graph().write();
 
 		for( Project project : toGraphProjects )
 		{
@@ -173,7 +175,7 @@ public class PomAnalyzer
 		{
 			Gav gav = project.getGav();
 			Gav parentGav = project.getParent();
-			Collection<GavLocation> dependencies = project.getDependencies( session, log ).values();
+			Collection<GavLocation> dependencies = project.getDependencies( session, log );
 			Collection<GavLocation> pluginDependencies = project.getPluginDependencies( session, log ).values();
 
 			tx.addGav( gav );
@@ -186,7 +188,7 @@ public class PomAnalyzer
 			for( GavLocation location : dependencies )
 			{
 				tx.addGav( location.getResolvedGav() );
-				tx.addRelation( new DependencyRelation( gav, location.getResolvedGav(), location.getScope(), location.getClassifier() ) );
+				tx.addRelation( new DependencyRelation( gav, location.getResolvedGav(), new Dependency( location.getResolvedGav(), location.getScope(), location.getClassifier(), location.getType() ) ) );
 			}
 
 			for( GavLocation location : pluginDependencies )

@@ -12,6 +12,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import fr.lteconsulting.autothreaded.AutoThreaded;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
 
 @AutoThreaded
@@ -44,11 +45,11 @@ public class Builder
 		printBuildPipelineState( null );
 	}
 
-	public void buildProject(Project project, ILogger log)
+	public void buildProject( Project project, ILogger log )
 	{
-		if (!project.isBuildable())
+		if( !project.isBuildable() )
 		{
-			log.html(Tools.errorMessage("cannot build non buildable project " + project));
+			log.html( Tools.errorMessage( "cannot build non buildable project " + project ) );
 			return;
 		}
 
@@ -122,7 +123,7 @@ public class Builder
 	private void printBuildPipelineState( Project projectBuilding )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		try
 		{
 			TopologicalOrderIterator<Gav, Relation> iterator = new TopologicalOrderIterator<>( tx.internalGraph() );
@@ -164,7 +165,7 @@ public class Builder
 	private Project findProjectToBuild()
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		try
 		{
 			TopologicalOrderIterator<Gav, Relation> iterator = new TopologicalOrderIterator<>( tx.internalGraph() );
@@ -203,7 +204,7 @@ public class Builder
 		for( Gav gav : dependentsAndSelf( project.getGav() ) )
 		{
 			Project p = session.projects().forGav( gav );
-			if (p != null && p.isBuildable())
+			if( p != null && p.isBuildable() )
 			{
 				if( !inDependenciesOfMaintainedProjects( p ) )
 					continue;
@@ -229,10 +230,10 @@ public class Builder
 	private Set<Gav> dependenciesAndSelf( Gav gav )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		HashSet<Gav> res = new HashSet<>();
 		res.add( gav );
-		tx.relationsRec( gav ).stream().forEach( r -> res.add( r.getTarget() ) );
+		tx.relationsRec( gav ).stream().forEach( r -> res.add( tx.targetOf( r ) ) );
 		return res;
 	}
 
@@ -241,7 +242,7 @@ public class Builder
 		PomGraphReadTransaction tx = session.graph().read();
 		HashSet<Gav> res = new HashSet<>();
 		res.add( gav );
-		tx.relationsReverseRec( gav ).stream().forEach( r -> res.add( r.getSource() ) );
+		tx.relationsReverseRec( gav ).stream().forEach( r -> res.add( tx.sourceOf( r ) ) );
 		return res;
 	}
 

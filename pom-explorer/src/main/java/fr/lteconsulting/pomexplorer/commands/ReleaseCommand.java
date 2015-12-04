@@ -3,7 +3,6 @@ package fr.lteconsulting.pomexplorer.commands;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
@@ -16,6 +15,7 @@ import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class ReleaseCommand
 {
@@ -40,7 +40,7 @@ public class ReleaseCommand
 	public void allGavs( final ILogger log, CommandOptions options, Client client, WorkingSession session )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		ChangeSetManager changes = new ChangeSetManager();
 
 		for( Gav gav : tx.gavs() )
@@ -68,7 +68,7 @@ public class ReleaseCommand
 	private void releaseGav( Client client, WorkingSession session, Gav gav, ChangeSetManager changes, ILogger log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		String causeMessage = "release of " + gav;
 
 		if( !Tools.isReleased( gav ) )
@@ -80,17 +80,18 @@ public class ReleaseCommand
 		Set<Relation> relations = tx.relationsRec( gav );
 		for( Relation r : relations )
 		{
-			if( r.getTarget().getVersion() == null )
+			Gav target = tx.targetOf( r );
+			if( target.getVersion() == null )
 			{
-				log.html( "<span style='color:orange;'>No target version (" + r.getTarget() + ") !</span><br/>" );
+				log.html( "<span style='color:orange;'>No target version (" + target + ") !</span><br/>" );
 				continue;
 			}
 
-			if( Tools.isReleased( r.getTarget() ) )
+			if( Tools.isReleased( target ) )
 				continue;
 
-			Gav source = r.getSource();
-			Gav to = Tools.releasedGav( r.getTarget() );
+			Gav source = tx.sourceOf( r );
+			Gav to = Tools.releasedGav( target );
 
 			Project project = session.projects().forGav( source );
 			if( project == null )
@@ -99,13 +100,13 @@ public class ReleaseCommand
 				continue;
 			}
 
-			GavLocation targetLoc = new GavLocation( session.projects().forGav( r.getTarget() ), PomSection.PROJECT, r.getTarget() );
+			GavLocation targetLoc = new GavLocation( session.projects().forGav( target ), PomSection.PROJECT, target );
 			changes.addChange( new GavChange( targetLoc, Tools.releasedGav( targetLoc.getGav() ) ), causeMessage );
 
-			Location dependencyLocation = Tools.findDependencyLocation( session, log, project, r );
+			Location dependencyLocation = project.findDependencyLocation( session, log, r );
 			if( dependencyLocation == null )
 			{
-				log.html( Tools.errorMessage( "Cannot find the location of dependency to " + r.getTarget() + " in this project " + project ) );
+				log.html( Tools.errorMessage( "Cannot find the location of dependency to " + target + " in this project " + project ) );
 				continue;
 			}
 

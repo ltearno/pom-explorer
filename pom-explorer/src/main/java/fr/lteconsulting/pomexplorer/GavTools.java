@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import fr.lteconsulting.pomexplorer.model.Gav;
+
 public class GavTools
 {
 	public static List<String> analyseProvidedClasses( WorkingSession session, Gav gav, ILogger log )

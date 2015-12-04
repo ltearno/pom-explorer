@@ -1,12 +1,12 @@
 package fr.lteconsulting.pomexplorer.commands;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomAnalyzer;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class GavCommand
 {
@@ -36,7 +36,7 @@ public class GavCommand
 		else
 		{
 			PomGraphReadTransaction tx = session.graph().read();
-			
+
 			tx.gavs().stream().sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
 					.forEach( gav -> sb.append( gav + "<br/>" ) );
 		}

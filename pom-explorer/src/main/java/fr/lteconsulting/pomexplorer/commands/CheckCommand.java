@@ -10,12 +10,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class CheckCommand
 {
@@ -23,7 +23,7 @@ public class CheckCommand
 	public void main( Client client, WorkingSession session, ILogger log )
 	{
 		StringBuilder sb = new StringBuilder();
-		
+
 		List<Gav> gavsWithoutProject = gavsWithoutProject( session );
 		sb.append( "<b>GAVs without projects</b><br/>" );
 		if( gavsWithoutProject.isEmpty() )
@@ -38,7 +38,7 @@ public class CheckCommand
 		}
 
 		PomGraphReadTransaction tx = session.graph().read();
-		
+
 		sb.append( "<br/><br/><b>Projects without version</b><br/>" );
 		for( Project project : session.projects().values() )
 		{
@@ -81,7 +81,7 @@ public class CheckCommand
 		}
 
 		sb.append( "done.<br/>" );
-		
+
 		log.html( sb.toString() );
 	}
 

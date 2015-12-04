@@ -3,10 +3,10 @@ package fr.lteconsulting.pomexplorer.changes;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 /**
  * A change to be made in a pom.xml file.

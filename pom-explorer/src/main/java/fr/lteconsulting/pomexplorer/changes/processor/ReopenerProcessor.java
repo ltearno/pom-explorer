@@ -1,6 +1,5 @@
 package fr.lteconsulting.pomexplorer.changes.processor;
 
-import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -8,6 +7,7 @@ import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.changes.GavChange;
 import fr.lteconsulting.pomexplorer.changes.IChangeSet;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
+import fr.lteconsulting.pomexplorer.model.Gav;
 
 /**
  * When a change is made to a pom file, it should be ensured that this pom is in

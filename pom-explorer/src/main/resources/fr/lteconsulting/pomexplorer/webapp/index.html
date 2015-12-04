@@ -268,7 +268,7 @@ input[type=text]:focus.terminal {
             Terminal.prototype.print = function (text, talkId) {
             	var me = this;
             	
-            	var follow = (this.container.scrollHeight - this.container.scrollTop) == this.container.clientHeight;
+            	var follow = (this.container.scrollHeight - this.container.scrollTop) <= this.container.clientHeight + 10;
             	
             	var talk = this.talks[talkId];
             	if( ! talk )
