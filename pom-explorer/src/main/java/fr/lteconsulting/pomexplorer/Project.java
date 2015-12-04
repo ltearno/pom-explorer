@@ -139,7 +139,7 @@ public class Project
 		return gavs;
 	}
 
-	private Gav resolveGav( Gav gav, WorkingSession session, ILogger log, boolean resolveVersionWithDependencyMngt,
+	public Gav resolveGav(Gav gav, WorkingSession session, ILogger log, boolean resolveVersionWithDependencyMngt,
 			boolean resolveVersionWithBuildDependencyMngt )
 	{
 		String groupId;
