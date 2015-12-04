@@ -1,6 +1,7 @@
 package fr.lteconsulting.pomexplorer.commands;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -19,8 +20,6 @@ import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
-import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
-import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 
 public class ProjectsCommand
 {
@@ -101,60 +100,40 @@ public class ProjectsCommand
 				log.append( "</div></div>" );
 			}
 
-			log.append( "<div><div>dependencies</div><div>" );
 			Map<GAV, GavLocation> dependencies = project.getDependencies( session, logi );
-			if( dependencies.isEmpty() )
-			{
-				log.append( "no dependency<br/>" );
-			}
-				else
-				{
-					dependencies.values().stream().sorted( ( a, b ) -> a.getResolvedGav().toString().compareTo( b.getResolvedGav().toString() ) )
-							.forEach( d ->
-							{
-								log.append( d.getResolvedGav() );
+			appendDependencies( "dependencies", dependencies.values(), log );
 
-								if( !d.getResolvedGav().equals( d.getUnresolvedGav() ) )
-									log.append( " <i>declared: " + d.getUnresolvedGav() + "</i>" );
+			Map<GAV, GavLocation> buildDependencies = project.getPluginDependencies( session, logi );
+			appendDependencies( "build dependencies", buildDependencies.values(), log );
 
-								if( d.getClassifier() != null )
-									log.append( ":" + d.getClassifier() );
-								if( d.getScope() != null )
-									log.append( ":" + d.getScope() );
-								log.append( "<br/>" );
-							} );
-				}
-				log.append( "</div></div>" );
-
-				log.append( "<div><div>build dependencies</div><div>" );
-				Map<GAV, GavLocation> buildDependencies = project.getPluginDependencies( session, logi );
-				if( buildDependencies.isEmpty() )
-				{
-					log.append( "no plugin dependency<br/>" );
-				}
-				else
-				{
-					buildDependencies.values().stream().sorted( ( a, b ) -> a.getResolvedGav().toString().compareTo( b.getResolvedGav().toString() ) )
-							.forEach( d ->
-							{
-								log.append( d.getResolvedGav() );
-
-								if( !d.getResolvedGav().equals( d.getUnresolvedGav() ) )
-									log.append( " <i>declared: " + d.getUnresolvedGav() + "</i>" );
-
-								if( d.getClassifier() != null )
-									log.append( ":" + d.getClassifier() );
-								log.append( "<br/>" );
-							} );
-
-				}
-				log.append( "</div></div>" );
-
-				log.append( "</div></div>" );
-			} );
+			log.append( "</div></div>" );
+		} );
 
 		log.append( "</div>" );
 
 		logi.html( log.toString() );
+	}
+
+	private void appendDependencies( String title, Collection<GavLocation> dependencies, StringBuilder log )
+	{
+		if( dependencies.isEmpty() )
+			return;
+
+		log.append( "<div><div>" + title + "</div><div>" );
+		dependencies.stream().sorted( ( a, b ) -> a.getResolvedGav().toString().compareTo( b.getResolvedGav().toString() ) )
+				.forEach( d ->
+				{
+					log.append( d.getResolvedGav() );
+
+					if( !d.getResolvedGav().equals( d.getUnresolvedGav() ) )
+						log.append( " <i>declared: " + d.getUnresolvedGav() + "</i>" );
+
+					if( d.getClassifier() != null )
+						log.append( ":" + d.getClassifier() );
+					if( d.getScope() != null )
+						log.append( ":" + d.getScope() );
+					log.append( "<br/>" );
+				} );
+		log.append( "</div></div>" );
 	}
 }
