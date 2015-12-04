@@ -78,7 +78,7 @@ public class Project
 
 	public boolean isBuildable()
 	{
-		return !isExternal;
+		return !isExternal && pomFile.getParentFile().toPath().resolve("src").toFile().exists();
 	}
 
 	public Set<Gav> getMissingGavsForResolution(WorkingSession session, ILogger log)
