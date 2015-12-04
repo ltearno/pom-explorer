@@ -68,14 +68,24 @@ public class ProjectsCommand
 			log.append( "<div class='title'><span class='packaging'>" + unresolvedProject.getModel().getPackaging() + "</span>" );
 			if( project.isBuildable() )
 				log.append( "<span class='badge'>buildable</span>" );
-			log.append( "<span class='gav'>" + project.getGav().getGroupId() + ":<span class='artifactId'>" + project.getGav().getArtifactId() + "</span>:" + project.getGav().getVersion() + "</span>" );
-			log.append( "</div>" );
 
 			Set<Gav> missingProjects = project.getMissingGavsForResolution( session, logi, null );
 			if( missingProjects != null && !missingProjects.isEmpty() )
 				log.append( "<span class='badge error'>not resolvable</span>" );
 
+							log.append("<span class='gav'>" + project.getGav().getGroupId() + ":<span class='artifactId'>"
+									+ project.getGav().getArtifactId() + "</span>:" + project.getGav().getVersion() + "</span>");
+							log.append("</div>");
+
 			log.append( "<div class='properties'>" );
+
+							if (missingProjects != null && !missingProjects.isEmpty())
+							{
+								log.append("<div><div>missing projects</div><div style='color:orange;'>");
+								for (Gav missingProject : missingProjects)
+									log.append(missingProject + "<br/>");
+								log.append("</div></div>");
+							}
 
 			log.append( "<div><div>file</div><div>" + project.getPomFile().getAbsolutePath() + "</div></div>" );
 
