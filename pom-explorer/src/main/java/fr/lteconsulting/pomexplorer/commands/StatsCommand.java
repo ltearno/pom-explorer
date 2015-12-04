@@ -6,7 +6,7 @@ import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.alg.StrongConnectivityInspector;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
@@ -21,13 +21,13 @@ public class StatsCommand
 		
 		log.html( "There are " + tx.gavs().size() + " gavs<br/>" );
 
-		StrongConnectivityInspector<GAV, Relation> conn = new StrongConnectivityInspector<>( tx.internalGraph() );
+		StrongConnectivityInspector<Gav, Relation> conn = new StrongConnectivityInspector<>( tx.internalGraph() );
 		log.html( "There are " + conn.stronglyConnectedSets().size() + " strongly connected components<br/>" );
 
-		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( tx.internalGraph() );
+		ConnectivityInspector<Gav, Relation> ccon = new ConnectivityInspector<>( tx.internalGraph() );
 		log.html( "There are " + ccon.connectedSets().size() + " weakly connected components<br/>" );
 
-		CycleDetector<GAV, Relation> cycles = new CycleDetector<GAV, Relation>( tx.internalGraph() );
+		CycleDetector<Gav, Relation> cycles = new CycleDetector<Gav, Relation>( tx.internalGraph() );
 		log.html( "Is there cycles ? " + cycles.detectCycles() + "<br/>" );
 	}
 
@@ -36,13 +36,13 @@ public class StatsCommand
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		
-		ConnectivityInspector<GAV, Relation> ccon = new ConnectivityInspector<>( tx.internalGraph() );
+		ConnectivityInspector<Gav, Relation> ccon = new ConnectivityInspector<>( tx.internalGraph() );
 		log.html( "There are " + ccon.connectedSets().size() + " weakly connected components<br/>" );
 
-		for( Set<GAV> gavs : ccon.connectedSets() )
+		for( Set<Gav> gavs : ccon.connectedSets() )
 		{
 			log.html( "<br/>Set of connected GAVs :<br/>" );
-			for( GAV gav : gavs )
+			for( Gav gav : gavs )
 			{
 				log.html( "- " + gav + "<br/>" );
 			}

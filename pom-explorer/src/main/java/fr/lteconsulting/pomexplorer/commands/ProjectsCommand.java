@@ -14,7 +14,7 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Parent;
 import org.apache.maven.project.MavenProject;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -71,7 +71,7 @@ public class ProjectsCommand
 			log.append( "<span class='gav'>" + project.getGav().getGroupId() + ":<span class='artifactId'>" + project.getGav().getArtifactId() + "</span>:" + project.getGav().getVersion() + "</span>" );
 			log.append( "</div>" );
 
-			Set<GAV> missingProjects = project.getMissingGavsForResolution( session, logi, null );
+			Set<Gav> missingProjects = project.getMissingGavsForResolution( session, logi, null );
 			if( missingProjects != null && !missingProjects.isEmpty() )
 				log.append( "<span class='badge error'>not resolvable</span>" );
 
@@ -100,10 +100,10 @@ public class ProjectsCommand
 				log.append( "</div></div>" );
 			}
 
-			Map<GAV, GavLocation> dependencies = project.getDependencies( session, logi );
+			Map<Gav, GavLocation> dependencies = project.getDependencies( session, logi );
 			appendDependencies( "dependencies", dependencies.values(), log );
 
-			Map<GAV, GavLocation> buildDependencies = project.getPluginDependencies( session, logi );
+			Map<Gav, GavLocation> buildDependencies = project.getPluginDependencies( session, logi );
 			appendDependencies( "build dependencies", buildDependencies.values(), log );
 
 			log.append( "</div></div>" );

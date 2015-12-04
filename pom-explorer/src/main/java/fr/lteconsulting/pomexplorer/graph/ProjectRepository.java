@@ -5,14 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.Project;
 
 public class ProjectRepository
 {
-	private final Map<GAV, Project> projects = new HashMap<>();
+	private final Map<Gav, Project> projects = new HashMap<>();
 
-	public boolean contains( GAV gav )
+	public boolean contains( Gav gav )
 	{
 		return projects.containsKey( gav );
 	}
@@ -27,7 +27,7 @@ public class ProjectRepository
 		projects.remove( project );
 	}
 
-	public Project forGav( GAV gav )
+	public Project forGav( Gav gav )
 	{
 		return projects.get( gav );
 	}
@@ -37,7 +37,7 @@ public class ProjectRepository
 		return projects.size();
 	}
 
-	public Set<GAV> keySet()
+	public Set<Gav> keySet()
 	{
 		return projects.keySet();
 	}

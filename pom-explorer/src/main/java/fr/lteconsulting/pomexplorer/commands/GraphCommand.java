@@ -19,7 +19,7 @@ import org.jgrapht.graph.DirectedSubgraph;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 
 import fr.lteconsulting.pomexplorer.AppFactory;
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.GitTools;
 import fr.lteconsulting.pomexplorer.GraphFrame;
 import fr.lteconsulting.pomexplorer.ILogger;
@@ -44,7 +44,7 @@ public class GraphCommand
 		log.html( "To display the graph, go to : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
 	}
 
-	private boolean isOkGav( GAV gav )
+	private boolean isOkGav( Gav gav )
 	{
 		return true;
 	}
@@ -70,10 +70,10 @@ public class GraphCommand
 		
 		try
 		{
-			GraphMLExporter<GAV, Relation> exporter = new GraphMLExporter<GAV, Relation>( new IntegerNameProvider<GAV>(), new VertexNameProvider<GAV>()
+			GraphMLExporter<Gav, Relation> exporter = new GraphMLExporter<Gav, Relation>( new IntegerNameProvider<Gav>(), new VertexNameProvider<Gav>()
 			{
 				@Override
-				public String getVertexName( GAV vertex )
+				public String getVertexName( Gav vertex )
 				{
 					return vertex.toString();
 				}
@@ -102,10 +102,10 @@ public class GraphCommand
 				}
 			} );
 
-			DirectedGraph<GAV, Relation> g = tx.internalGraph();
+			DirectedGraph<Gav, Relation> g = tx.internalGraph();
 
-			DirectedGraph<GAV, Relation> ng = new DirectedMultigraph<GAV, Relation>( Relation.class );
-			for( GAV gav : g.vertexSet() )
+			DirectedGraph<Gav, Relation> ng = new DirectedMultigraph<Gav, Relation>( Relation.class );
+			for( Gav gav : g.vertexSet() )
 			{
 				if( !isOkGav( gav ) )
 					continue;
@@ -114,7 +114,7 @@ public class GraphCommand
 
 				for( Relation relation : g.outgoingEdgesOf( gav ) )
 				{
-					GAV target = g.getEdgeTarget( relation );
+					Gav target = g.getEdgeTarget( relation );
 
 					if( !isOkGav( target ) )
 						continue;
@@ -129,7 +129,7 @@ public class GraphCommand
 			}
 
 			DirectedGraph<Repository, RepositoryRelation> repoGraph = new DirectedMultigraph<Repository, RepositoryRelation>( RepositoryRelation.class );
-			for( GAV gav : ng.vertexSet() )
+			for( Gav gav : ng.vertexSet() )
 			{
 				String repoPath = getGAVRepository( session, gav );
 				if( repoPath == null )
@@ -140,7 +140,7 @@ public class GraphCommand
 
 				for( Relation relation : ng.outgoingEdgesOf( gav ) )
 				{
-					GAV target = ng.getEdgeTarget( relation );
+					Gav target = ng.getEdgeTarget( relation );
 					String targetRepoPath = getGAVRepository( session, target );
 					if( targetRepoPath == null )
 						continue;
@@ -189,7 +189,7 @@ public class GraphCommand
 		}
 	}
 
-	private String getGAVRepository( WorkingSession session, GAV gav )
+	private String getGAVRepository( WorkingSession session, Gav gav )
 	{
 		Project project = session.projects().forGav( gav );
 		if( project == null )
@@ -212,10 +212,10 @@ public class GraphCommand
 		if( filter != null )
 			filter = filter.toLowerCase();
 
-		DirectedGraph<GAV, Relation> fullGraph = tx.internalGraph();
+		DirectedGraph<Gav, Relation> fullGraph = tx.internalGraph();
 
-		Set<GAV> vertexSubset = new HashSet<>();
-		for( GAV gav : fullGraph.vertexSet() )
+		Set<Gav> vertexSubset = new HashSet<>();
+		for( Gav gav : fullGraph.vertexSet() )
 		{
 			if( filter == null || gav.toString().toLowerCase().contains( filter ) )
 				vertexSubset.add( gav );
@@ -228,9 +228,9 @@ public class GraphCommand
 				edgeSubset.add( r );
 		}
 
-		DirectedSubgraph<GAV, Relation> subGraph = new DirectedSubgraph<>( fullGraph, vertexSubset, edgeSubset );
+		DirectedSubgraph<Gav, Relation> subGraph = new DirectedSubgraph<>( fullGraph, vertexSubset, edgeSubset );
 
-		JGraphXAdapter<GAV, Relation> ga = new JGraphXAdapter<>( subGraph );
+		JGraphXAdapter<Gav, Relation> ga = new JGraphXAdapter<>( subGraph );
 
 		new GraphFrame( ga );
 

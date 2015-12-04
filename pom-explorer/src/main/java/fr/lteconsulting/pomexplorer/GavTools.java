@@ -10,7 +10,7 @@ import java.util.zip.ZipInputStream;
 
 public class GavTools
 {
-	public static List<String> analyseProvidedClasses( WorkingSession session, GAV gav, ILogger log )
+	public static List<String> analyseProvidedClasses( WorkingSession session, Gav gav, ILogger log )
 	{
 		log.html( "<br/><b>Java classes provided by gav " + gav + "</b> :<br/>" );
 

@@ -1,6 +1,6 @@
 package fr.lteconsulting.pomexplorer.graph.relation;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 
 public abstract class Relation
 {
@@ -38,13 +38,13 @@ public abstract class Relation
 		void onParentRelation( ParentRelation relation );
 	}
 
-	private final GAV source;
+	private final Gav source;
 
-	private final GAV target;
+	private final Gav target;
 
 	private final RelationType type;
 
-	public Relation( GAV source, GAV target, RelationType type )
+	public Relation( Gav source, Gav target, RelationType type )
 	{
 		this.source = source;
 		this.target = target;
@@ -96,12 +96,12 @@ public abstract class Relation
 		}
 	}
 
-	public GAV getSource()
+	public Gav getSource()
 	{
 		return source;
 	}
 
-	public GAV getTarget()
+	public Gav getTarget()
 	{
 		return target;
 	}

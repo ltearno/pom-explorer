@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.GavTools;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
@@ -25,7 +25,7 @@ public class GarbageCommand
 		
 		log.html( "<i>Note : although this tool will follow all the transitive dependencies inside your own projects, it will not recursively fetch all your externaly dependencies. For example, if you declare 'undertow-servlet' and depend only on 'undertow-core', you will get warnings that undetow class references have no provider found. This is a sign that you depend on a transitive dependency (from an external library) without declaring it in your maven project.</i><br/>" );
 
-		for( GAV gav : gavFilter.getGavs( session ) )
+		for( Gav gav : gavFilter.getGavs( session ) )
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )
@@ -35,20 +35,20 @@ public class GarbageCommand
 			}
 
 			// get all dependencies of the gav
-			Set<GAV> dependencies = new HashSet<>();
+			Set<Gav> dependencies = new HashSet<>();
 			tx.relationsRec( gav ).stream().filter( r -> !(r instanceof BuildDependencyRelation) )
 					.map( r -> r.getTarget() ).forEach( dependencies::add );
-			Set<GAV> directDependencies = new HashSet<>();
+			Set<Gav> directDependencies = new HashSet<>();
 			tx.dependencies( gav ).stream().map( dep -> dep.getTarget() ).forEach( directDependencies::add );
 
 			log.html( "Considered project's dependencies:<br/>" );
 			dependencies.stream().sorted( Tools.gavAlphabeticalComparator ).forEachOrdered( g -> log.html( g + "<br/>" ) );
 
-			Map<GAV, Set<String>> providers = new HashMap<>();
-			Map<String, Set<GAV>> fqnProviders = new HashMap<>();
+			Map<Gav, Set<String>> providers = new HashMap<>();
+			Map<String, Set<Gav>> fqnProviders = new HashMap<>();
 
 			// and for each dependency, get the provided classes
-			for( GAV provider : dependencies )
+			for( Gav provider : dependencies )
 			{
 				Set<String> providedClasses = new HashSet<>();
 				List<String> cc = GavTools.analyseProvidedClasses( session, provider, log );
@@ -61,7 +61,7 @@ public class GarbageCommand
 				providers.put( provider, providedClasses );
 				for( String cls : providedClasses )
 				{
-					Set<GAV> p = fqnProviders.get( cls );
+					Set<Gav> p = fqnProviders.get( cls );
 					if( p == null )
 					{
 						p = new HashSet<>();
@@ -84,12 +84,12 @@ public class GarbageCommand
 			analyzer.analyzeProject( project, options.hasFlag( "v" ), log );
 			Set<String> fqnReferences = analyzer.getUsageExtractor().getQualifiedNames();
 
-			Set<GAV> referencedTransitiveDependencies = new HashSet<>();
+			Set<Gav> referencedTransitiveDependencies = new HashSet<>();
 
-			Set<GAV> uselessGavs = new HashSet<>();
+			Set<Gav> uselessGavs = new HashSet<>();
 			providers.keySet().stream().filter( g -> !directDependencies.contains( g ) ).forEach( uselessGavs::add );
 
-			Set<GAV> uselessDirectGavs = new HashSet<>( directDependencies );
+			Set<Gav> uselessDirectGavs = new HashSet<>( directDependencies );
 
 			Set<String> noProviders = new HashSet<>();
 			for( String referencedFqn : fqnReferences )
@@ -97,7 +97,7 @@ public class GarbageCommand
 				if( referencedFqn.startsWith( "java." ) || referencedFqn.startsWith( "javax." ) || ownClasses.contains( referencedFqn ) )
 					continue;
 
-				Set<GAV> referenceProviders = fqnProviders.get( referencedFqn );
+				Set<Gav> referenceProviders = fqnProviders.get( referencedFqn );
 				if( referenceProviders == null )
 				{
 					noProviders.add( referencedFqn );
@@ -108,7 +108,7 @@ public class GarbageCommand
 				// System.out.println( "[MULTIPROVIDER] fqn " + referencedFqn +
 				// " is provided by those gavs : " + providers );
 
-				for( GAV providerGav : referenceProviders )
+				for( Gav providerGav : referenceProviders )
 				{
 					if( !directDependencies.contains( providerGav ) )
 					{

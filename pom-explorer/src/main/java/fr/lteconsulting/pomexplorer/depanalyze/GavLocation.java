@@ -1,6 +1,6 @@
 package fr.lteconsulting.pomexplorer.depanalyze;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation.Scope;
@@ -9,25 +9,25 @@ public class GavLocation extends Location
 {
 	private final PomSection section;
 
-	private GAV gav;
+	private Gav gav;
 
-	private GAV unresolvedGav;
+	private Gav unresolvedGav;
 
 	private Scope scope;
 
 	private String classifier;
 
-	public GavLocation( Project project, PomSection section, GAV gav )
+	public GavLocation( Project project, PomSection section, Gav gav )
 	{
 		this( project, section, gav, gav );
 	}
 
-	public GavLocation( Project project, PomSection section, GAV resolvedGav, GAV unresolvedGav )
+	public GavLocation( Project project, PomSection section, Gav resolvedGav, Gav unresolvedGav )
 	{
 		this( project, section, resolvedGav, unresolvedGav, null, null );
 	}
 
-	public GavLocation( Project project, PomSection section, GAV resolvedGav, GAV unresolvedGav, String scope, String classifier )
+	public GavLocation( Project project, PomSection section, Gav resolvedGav, Gav unresolvedGav, String scope, String classifier )
 	{
 		super( project, null );
 
@@ -53,7 +53,7 @@ public class GavLocation extends Location
 		return section;
 	}
 
-	public GAV getGav()
+	public Gav getGav()
 	{
 		if( gav != null )
 			return gav;
@@ -61,12 +61,12 @@ public class GavLocation extends Location
 		return unresolvedGav;
 	}
 
-	public GAV getResolvedGav()
+	public Gav getResolvedGav()
 	{
 		return gav;
 	}
 
-	public GAV getUnresolvedGav()
+	public Gav getUnresolvedGav()
 	{
 		return unresolvedGav;
 	}

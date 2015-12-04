@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -24,7 +24,7 @@ public class CheckCommand
 	{
 		StringBuilder sb = new StringBuilder();
 		
-		List<GAV> gavsWithoutProject = gavsWithoutProject( session );
+		List<Gav> gavsWithoutProject = gavsWithoutProject( session );
 		sb.append( "<b>GAVs without projects</b><br/>" );
 		if( gavsWithoutProject.isEmpty() )
 		{
@@ -33,7 +33,7 @@ public class CheckCommand
 		else
 		{
 			sb.append( gavsWithoutProject.size() + " GAV(s) without project :" );
-			for( GAV gav : gavsWithoutProject )
+			for( Gav gav : gavsWithoutProject )
 				sb.append( "<br/>" + gav );
 		}
 
@@ -47,14 +47,14 @@ public class CheckCommand
 				continue;
 
 			// and project should have a parent
-			GAV parentProjectGav = tx.parent( project.getGav() );
+			Gav parentProjectGav = tx.parent( project.getGav() );
 			if( parentProjectGav == null )
 				continue;
 
 			sb.append( project.toString() + "<br/>" );
 		}
 
-		Map<MiniGAV, Set<GAV>> multipleGavs = multipleGavs( session );
+		Map<MiniGAV, Set<Gav>> multipleGavs = multipleGavs( session );
 		sb.append( "<br/><br/><b>Multiple GAVs</b><br/>" );
 		if( multipleGavs.isEmpty() )
 		{
@@ -68,7 +68,7 @@ public class CheckCommand
 					{
 						sb.append( e.getKey() + " : " );
 						boolean coma = false;
-						for( GAV gav : e.getValue() )
+						for( Gav gav : e.getValue() )
 						{
 							if( coma )
 								sb.append( ", " );
@@ -85,15 +85,15 @@ public class CheckCommand
 		log.html( sb.toString() );
 	}
 
-	private Map<MiniGAV, Set<GAV>> multipleGavs( WorkingSession session )
+	private Map<MiniGAV, Set<Gav>> multipleGavs( WorkingSession session )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		Map<MiniGAV, Set<GAV>> prov = new HashMap<>();
+		Map<MiniGAV, Set<Gav>> prov = new HashMap<>();
 
-		for( GAV gav : tx.gavs() )
+		for( Gav gav : tx.gavs() )
 		{
 			MiniGAV miniGav = new MiniGAV( gav.getGroupId(), gav.getArtifactId() );
-			Set<GAV> list = prov.get( miniGav );
+			Set<Gav> list = prov.get( miniGav );
 			if( list == null )
 			{
 				list = new HashSet<>();
@@ -102,8 +102,8 @@ public class CheckCommand
 			list.add( gav );
 		}
 
-		Map<MiniGAV, Set<GAV>> res = new HashMap<>();
-		for( Entry<MiniGAV, Set<GAV>> e : prov.entrySet() )
+		Map<MiniGAV, Set<Gav>> res = new HashMap<>();
+		for( Entry<MiniGAV, Set<Gav>> e : prov.entrySet() )
 		{
 			if( e.getValue().size() > 1 )
 				res.put( e.getKey(), e.getValue() );
@@ -112,18 +112,18 @@ public class CheckCommand
 		return res;
 	}
 
-	private List<GAV> gavsWithoutProject( WorkingSession session )
+	private List<Gav> gavsWithoutProject( WorkingSession session )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		Set<GAV> res = new HashSet<GAV>();
+		Set<Gav> res = new HashSet<Gav>();
 
-		for( GAV gav : tx.gavs() )
+		for( Gav gav : tx.gavs() )
 		{
 			if( !session.projects().contains( gav ) )
 				res.add( gav );
 		}
 
-		ArrayList<GAV> list = new ArrayList<GAV>();
+		ArrayList<Gav> list = new ArrayList<Gav>();
 		list.addAll( res );
 		Collections.sort( list, Tools.gavAlphabeticalComparator );
 

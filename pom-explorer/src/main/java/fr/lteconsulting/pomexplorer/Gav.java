@@ -2,7 +2,7 @@ package fr.lteconsulting.pomexplorer;
 
 import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
 
-public class GAV
+public class Gav
 {
 	private final String groupId;
 
@@ -10,12 +10,12 @@ public class GAV
 
 	private final String version;
 
-	public GAV copyWithVersion( String version )
+	public Gav copyWithVersion( String version )
 	{
-		return new GAV( groupId, artifactId, version );
+		return new Gav( groupId, artifactId, version );
 	}
 
-	public GAV( String groupId, String artifactId, String version )
+	public Gav( String groupId, String artifactId, String version )
 	{
 		this.groupId = groupId;
 		this.artifactId = artifactId;
@@ -68,7 +68,7 @@ public class GAV
 			return false;
 		if( getClass() != obj.getClass() )
 			return false;
-		GAV other = (GAV) obj;
+		Gav other = (Gav) obj;
 		if( artifactId == null )
 		{
 			if( other.artifactId != null )

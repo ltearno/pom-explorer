@@ -29,13 +29,13 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class Tools
 {
-	public static GAV string2Gav( String gavString )
+	public static Gav string2Gav( String gavString )
 	{
 		String[] parts = gavString.split( ":" );
 		if( parts.length != 3 )
 			return null;
 
-		GAV gav = new GAV( parts[0], parts[1], parts[2] );
+		Gav gav = new Gav( parts[0], parts[1], parts[2] );
 
 		return gav;
 	}
@@ -77,7 +77,7 @@ public class Tools
 	 * Maven tools
 	 */
 
-	public static Set<Location> getDirectDependenciesLocations( WorkingSession session, ILogger log, GAV gav )
+	public static Set<Location> getDirectDependenciesLocations( WorkingSession session, ILogger log, Gav gav )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		Set<Location> set = new HashSet<>();
@@ -85,7 +85,7 @@ public class Tools
 		Set<Relation> relations = tx.relationsReverse( gav );
 		for( Relation relation : relations )
 		{
-			GAV updatedGav = relation.getSource();
+			Gav updatedGav = relation.getSource();
 
 			Project updatedProject = session.projects().forGav( updatedGav );
 			if( updatedProject == null )
@@ -111,7 +111,7 @@ public class Tools
 		return set;
 	}
 
-	public static List<String> getMavenProperties( GAV gav )
+	public static List<String> getMavenProperties( Gav gav )
 	{
 		if( gav == null )
 			return null;
@@ -154,7 +154,7 @@ public class Tools
 		PomGraphReadTransaction tx = session.graph().read();
 
 		// go deeper in hierarchy
-		GAV parentGav = tx.parent( startingProject.getGav() );
+		Gav parentGav = tx.parent( startingProject.getGav() );
 		Project parentProject = null;
 		if( parentGav != null )
 			parentProject = session.projects().forGav( parentGav );
@@ -211,7 +211,7 @@ public class Tools
 	}
 
 	public static GavLocation findDependencyLocationInDependencies( WorkingSession session, ILogger log, Project project,
-			GAV searchedDependency )
+			Gav searchedDependency )
 	{
 		if( project == null )
 			return null;
@@ -229,7 +229,7 @@ public class Tools
 		PomGraphReadTransaction tx = session.graph().read();
 
 		// parent
-		GAV parentGav = tx.parent( project.getGav() );
+		Gav parentGav = tx.parent( project.getGav() );
 		if( parentGav != null )
 		{
 			Project parentProject = session.projects().forGav( parentGav );
@@ -249,7 +249,7 @@ public class Tools
 		return null;
 	}
 
-	public static GavLocation findDependencyLocationInBuildDependencies( WorkingSession session, ILogger log, Project project, GAV searchedDependency )
+	public static GavLocation findDependencyLocationInBuildDependencies( WorkingSession session, ILogger log, Project project, Gav searchedDependency )
 	{
 		if( project == null )
 			return null;
@@ -267,7 +267,7 @@ public class Tools
 		PomGraphReadTransaction tx = session.graph().read();
 
 		// parent
-		GAV parentGav = tx.parent( project.getGav() );
+		Gav parentGav = tx.parent( project.getGav() );
 		if( parentGav != null )
 		{
 			Project parentProject = session.projects().forGav( parentGav );
@@ -363,10 +363,10 @@ public class Tools
 		return res;
 	}
 
-	public static final Comparator<GAV> gavAlphabeticalComparator = new Comparator<GAV>()
+	public static final Comparator<Gav> gavAlphabeticalComparator = new Comparator<Gav>()
 	{
 		@Override
-		public int compare( GAV o1, GAV o2 )
+		public int compare( Gav o1, Gav o2 )
 		{
 			int r = o1.getGroupId().compareTo( o2.getGroupId() );
 			if( r != 0 )
@@ -422,21 +422,21 @@ public class Tools
 
 	private final static String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
-	public static boolean isReleased( GAV gav )
+	public static boolean isReleased( Gav gav )
 	{
 		return !gav.getVersion().endsWith( SNAPSHOT_SUFFIX );
 	}
 
-	public static GAV releasedGav( GAV gav )
+	public static Gav releasedGav( Gav gav )
 	{
 		if( !isReleased( gav ) )
-			return new GAV( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0,
+			return new Gav( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0,
 					gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
 
 		return gav;
 	}
 
-	public static GAV openGavVersion( GAV gav )
+	public static Gav openGavVersion( Gav gav )
 	{
 		if( !isReleased( gav ) )
 			return gav;

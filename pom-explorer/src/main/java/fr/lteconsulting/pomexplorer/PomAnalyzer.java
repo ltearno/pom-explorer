@@ -59,11 +59,11 @@ public class PomAnalyzer
 				boolean isOk = true;
 				while( isOk )
 				{
-					Set<GAV> missingProjects = project.getMissingGavsForResolution( session, log );
+					Set<Gav> missingProjects = project.getMissingGavsForResolution( session, log );
 					if( missingProjects == null || missingProjects.isEmpty() )
 						break;
 
-					for( GAV missingProjectGav : missingProjects )
+					for( Gav missingProjectGav : missingProjects )
 					{
 						log.html( "fetching " + missingProjectGav + " to resolve " + project + "<br/>" );
 						File pomFile = session.mavenResolver().resolvePom( missingProjectGav, "pom" );
@@ -149,7 +149,7 @@ public class PomAnalyzer
 	 * @param session
 	 *            working session
 	 */
-	public Project fetchGavWithMaven( WorkingSession session, ILogger log, GAV gav )
+	public Project fetchGavWithMaven( WorkingSession session, ILogger log, Gav gav )
 	{
 		MavenResolver resolver = session.mavenResolver();
 
@@ -171,8 +171,8 @@ public class PomAnalyzer
 
 		try
 		{
-			GAV gav = project.getGav();
-			GAV parentGav = project.getParent();
+			Gav gav = project.getGav();
+			Gav parentGav = project.getParent();
 			Collection<GavLocation> dependencies = project.getDependencies( session, log ).values();
 			Collection<GavLocation> pluginDependencies = project.getPluginDependencies( session, log ).values();
 

@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
@@ -181,7 +181,7 @@ public class Commands
 					continue;
 				}
 
-				if (argTypes[curArg] == GAV.class)
+				if (argTypes[curArg] == Gav.class)
 				{
 					args[curArg] = parts[curPart] == null ? null : Tools.string2Gav(parts[curPart]);
 					if (args[curArg] == null)

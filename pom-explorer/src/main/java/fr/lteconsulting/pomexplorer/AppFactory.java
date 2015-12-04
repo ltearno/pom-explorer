@@ -209,18 +209,18 @@ public class AppFactory
 			
 			PomGraphReadTransaction tx = session.graph().read();
 
-			DirectedGraph<GAV, Relation> g = tx.internalGraph();
+			DirectedGraph<Gav, Relation> g = tx.internalGraph();
 
 			GraphDto dto = new GraphDto();
 			dto.gavs = new HashSet<>();
 			dto.relations = new HashSet<>();
-			for( GAV gav : g.vertexSet() )
+			for( Gav gav : g.vertexSet() )
 			{
 				dto.gavs.add( gav.toString() );
 
 				for( Relation relation : g.outgoingEdgesOf( gav ) )
 				{
-					GAV target = g.getEdgeTarget( relation );
+					Gav target = g.getEdgeTarget( relation );
 					EdgeDto edge = new EdgeDto( gav.toString(), target.toString(), relation );
 					dto.relations.add( edge );
 				}

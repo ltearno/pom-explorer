@@ -33,15 +33,15 @@ public class Project
 
 	private final MavenProject project;
 
-	private final GAV parentGav;
+	private final Gav parentGav;
 
-	private final GAV gav;
+	private final Gav gav;
 
 	private final Map<String, String> properties;
 
-	private Map<WorkingSession, Map<GAV, GavLocation>> dependencies;
+	private Map<WorkingSession, Map<Gav, GavLocation>> dependencies;
 
-	private Map<WorkingSession, Map<GAV, GavLocation>> pluginDependencies;
+	private Map<WorkingSession, Map<Gav, GavLocation>> pluginDependencies;
 
 	public Project( File pomFile, boolean isExternal ) throws Exception
 	{
@@ -55,7 +55,7 @@ public class Project
 		Parent parent = project.getModel().getParent();
 		if( parent != null )
 		{
-			parentGav = new GAV( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
+			parentGav = new Gav( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
 			if( !parentGav.isResolved() )
 				throw new RuntimeException( "parent project not resolved" );
 		}
@@ -67,7 +67,7 @@ public class Project
 		if( "${parent.version}".equals( version ) )
 			version = getParent().getVersion();
 
-		gav = new GAV( groupId, project.getArtifactId(), version );
+		gav = new Gav( groupId, project.getArtifactId(), version );
 
 		if( !gav.isResolved() )
 			throw new RuntimeException( "Non resolved project's GAV: " + gav );
@@ -81,12 +81,12 @@ public class Project
 		return !isExternal;
 	}
 
-	public Set<GAV> getMissingGavsForResolution( WorkingSession session, ILogger log )
+	public Set<Gav> getMissingGavsForResolution( WorkingSession session, ILogger log )
 	{
 		return getMissingGavsForResolution( session, log, null );
 	}
 
-	public Set<GAV> getMissingGavsForResolution( WorkingSession session, ILogger log, Set<GAV> gavs )
+	public Set<Gav> getMissingGavsForResolution( WorkingSession session, ILogger log, Set<Gav> gavs )
 	{
 		if( parentGav != null )
 		{
@@ -100,7 +100,7 @@ public class Project
 			}
 			else
 			{
-				Set<GAV> missingGavs = parentProject.getMissingGavsForResolution( session, log );
+				Set<Gav> missingGavs = parentProject.getMissingGavsForResolution( session, log );
 				if( missingGavs != null )
 					gavs.addAll( missingGavs );
 			}
@@ -118,7 +118,7 @@ public class Project
 					else
 						version = d.getVersion();
 
-					GAV bomGav = resolveGav( new GAV( d.getGroupId(), d.getArtifactId(), version ), session, log, true, false );
+					Gav bomGav = resolveGav( new Gav( d.getGroupId(), d.getArtifactId(), version ), session, log, true, false );
 
 					Project bomProject = session.projects().forGav( bomGav );
 					if( bomProject == null )
@@ -139,7 +139,7 @@ public class Project
 		return gavs;
 	}
 
-	private GAV resolveGav( GAV gav, WorkingSession session, ILogger log, boolean resolveVersionWithDependencyMngt,
+	private Gav resolveGav( Gav gav, WorkingSession session, ILogger log, boolean resolveVersionWithDependencyMngt,
 			boolean resolveVersionWithBuildDependencyMngt )
 	{
 		String groupId;
@@ -200,7 +200,7 @@ public class Project
 		if( !(isResolved( version ) && isResolved( groupId ) && isResolved( artifactId )) )
 			throw new IllegalStateException( toString() + " : cannot resolve incomplete gav : " + gav );
 
-		return new GAV( groupId, artifactId, version );
+		return new Gav( groupId, artifactId, version );
 	}
 
 	private boolean isResolved( String value )
@@ -301,7 +301,7 @@ public class Project
 
 				if( "import".equals( d.getScope() ) && "pom".equals( d.getType() ) )
 				{
-					GAV bomGav = resolveGav( new GAV( dependencyGroupId, dependencyArtifactId, d.getVersion() ), session, log,
+					Gav bomGav = resolveGav( new Gav( dependencyGroupId, dependencyArtifactId, d.getVersion() ), session, log,
 							false, false );
 
 					Project bomProject = session.projects().forGav( bomGav );
@@ -326,8 +326,8 @@ public class Project
 				{
 					if( d.getVersion() != null )
 					{
-						GAV unresolvedGav = new GAV( dependencyGroupId, dependencyArtifactId, d.getVersion() );
-						GAV g = resolveGav( unresolvedGav, session, log, true, false );
+						Gav unresolvedGav = new Gav( dependencyGroupId, dependencyArtifactId, d.getVersion() );
+						Gav g = resolveGav( unresolvedGav, session, log, true, false );
 						if( g.isResolved() )
 							return new GavLocation( this, PomSection.DEPENDENCY_MNGT, g, unresolvedGav, resolveValue( session, log, d.getScope() ), d.getClassifier() );
 					}
@@ -364,7 +364,7 @@ public class Project
 				{
 					if( d.getVersion() != null )
 					{
-						GAV g = resolveGav( new GAV( dependencyGroupId, dependencyArtifactId, d.getVersion() ), session, log,
+						Gav g = resolveGav( new Gav( dependencyGroupId, dependencyArtifactId, d.getVersion() ), session, log,
 								false, true );
 						if( g.isResolved() )
 							return new GavLocation( this, PomSection.DEPENDENCY_MNGT, g );
@@ -383,7 +383,7 @@ public class Project
 		return null;
 	}
 
-	public GAV getParent()
+	public Gav getParent()
 	{
 		return parentGav;
 	}
@@ -398,24 +398,24 @@ public class Project
 		return project;
 	}
 
-	public GAV getGav()
+	public Gav getGav()
 	{
 		return gav;
 	}
 
-	public Map<GAV, GavLocation> getDependencies( WorkingSession session, ILogger log )
+	public Map<Gav, GavLocation> getDependencies( WorkingSession session, ILogger log )
 	{
 		if( dependencies == null )
 			dependencies = new HashMap<>();
 
 		if( !dependencies.containsKey( session ) )
 		{
-			Map<GAV, GavLocation> dependencies = new HashMap<>();
+			Map<Gav, GavLocation> dependencies = new HashMap<>();
 
 			for( Dependency dependency : project.getDependencies() )
 			{
-				GAV unresolvedGav = new GAV( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
-				GAV dependencyGav = resolveGav( unresolvedGav, session, log, true, false );
+				Gav unresolvedGav = new Gav( dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion() );
+				Gav dependencyGav = resolveGav( unresolvedGav, session, log, true, false );
 
 				GavLocation info = new GavLocation( this, PomSection.DEPENDENCY, dependencyGav, unresolvedGav, resolveValue( session, log, dependency.getScope() ), dependency.getClassifier() );
 				dependencies.put( dependencyGav, info );
@@ -427,18 +427,18 @@ public class Project
 		return dependencies.get( session );
 	}
 
-	public Map<GAV, GavLocation> getPluginDependencies( WorkingSession session, ILogger log )
+	public Map<Gav, GavLocation> getPluginDependencies( WorkingSession session, ILogger log )
 	{
 		if( pluginDependencies == null )
 			pluginDependencies = new HashMap<>();
 
 		if( !pluginDependencies.containsKey( session ) )
 		{
-			Map<GAV, GavLocation> pluginDependencies = new HashMap<>();
+			Map<Gav, GavLocation> pluginDependencies = new HashMap<>();
 
 			for( Plugin plugin : project.getBuildPlugins() )
 			{
-				GAV dependencyGav = resolveGav( new GAV( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() ),
+				Gav dependencyGav = resolveGav( new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() ),
 						session, log, false, true );
 
 				GavLocation info = new GavLocation( this, PomSection.PLUGIN, dependencyGav, dependencyGav );

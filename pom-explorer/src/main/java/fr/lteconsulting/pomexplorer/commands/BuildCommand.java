@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -50,9 +50,9 @@ public class BuildCommand
 	public void maintain( Client client, WorkingSession session, ILogger log, FilteredGAVs gavs )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		Set<GAV> toWatch = new HashSet<>();
+		Set<Gav> toWatch = new HashSet<>();
 
-		for( GAV gav : gavs.getGavs( session ) )
+		for( Gav gav : gavs.getGavs( session ) )
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )
@@ -79,7 +79,7 @@ public class BuildCommand
 		else
 		{
 			log.html( "projects added to watch list:<br/>" );
-			for( GAV g : toWatch )
+			for( Gav g : toWatch )
 			{
 				Project p = session.projects().forGav( g );
 				if (p == null || !p.isBuildable())

@@ -3,7 +3,7 @@ package fr.lteconsulting.pomexplorer.commands;
 import java.util.List;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.GavTools;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
@@ -30,7 +30,7 @@ public class ClassesCommand
 
 		log.html( "<br/>GAV list filtered with '" + gavFilter + "' :<br/>" );
 
-		for( GAV gav : gavFilter.getGavs( session ) )
+		for( Gav gav : gavFilter.getGavs( session ) )
 		{
 			List<String> classes = GavTools.analyseProvidedClasses( session, gav, log );
 			if( classes == null )
@@ -56,7 +56,7 @@ public class ClassesCommand
 	{
 		JavaSourceAnalyzer analyzer = new JavaSourceAnalyzer();
 
-		for( GAV gav : gavFilter.getGavs( session ) )
+		for( Gav gav : gavFilter.getGavs( session ) )
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )

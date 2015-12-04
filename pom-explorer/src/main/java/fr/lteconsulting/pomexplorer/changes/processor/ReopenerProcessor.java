@@ -1,6 +1,6 @@
 package fr.lteconsulting.pomexplorer.changes.processor;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -23,7 +23,7 @@ public class ReopenerProcessor extends AbstractGavChangeProcessor
 		if( change.getLocation().getProject() == null )
 			return;
 
-		GAV gav = change.getLocation().getProject().getGav();
+		Gav gav = change.getLocation().getProject().getGav();
 
 		// maybe the change is itself opening a pom
 		if( change.getLocation().getSection() == PomSection.PROJECT && !Tools.isReleased( change.getNewGav() ) )
@@ -35,7 +35,7 @@ public class ReopenerProcessor extends AbstractGavChangeProcessor
 		log.html( Tools.warningMessage( "modifying a released gav (" + gav + "), reopening it" ) );
 
 		// find the opened version
-		GAV newGav = Tools.openGavVersion( gav );
+		Gav newGav = Tools.openGavVersion( gav );
 
 		// add the change to the changeset
 		changeSet.addChange( new GavChange( new GavLocation( change.getLocation().getProject(), PomSection.PROJECT, gav ), newGav ), change );

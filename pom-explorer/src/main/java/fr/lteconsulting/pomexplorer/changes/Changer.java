@@ -21,7 +21,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
@@ -85,7 +85,7 @@ public class Changer
 				if( "project.version".equals( pchange.getLocation().getPropertyName() ) )
 				{
 					GavLocation loc = new GavLocation( project, PomSection.PROJECT, project.getGav() );
-					GAV newGav = new GAV( loc.getGav().getGroupId(), loc.getGav().getArtifactId(), pchange.getNewValue() );
+					Gav newGav = new Gav( loc.getGav().getGroupId(), loc.getGav().getArtifactId(), pchange.getNewValue() );
 					doChange( document, new GavChange( loc, newGav ), log );
 				}
 				else
@@ -151,7 +151,7 @@ public class Changer
 
 	private void replaceProject( Document document, GavChange change, ILogger log )
 	{
-		GAV replacedGav = change.getLocation().getGav();
+		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project";
 
 		replaceDependency( document, change, log, replacedGav, expression );
@@ -159,7 +159,7 @@ public class Changer
 
 	private void replaceParent( Document document, GavChange change, ILogger log )
 	{
-		GAV replacedGav = change.getLocation().getGav();
+		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project/parent";
 
 		replaceDependency( document, change, log, replacedGav, expression );
@@ -167,7 +167,7 @@ public class Changer
 
 	private void replacePlugin( Document document, GavChange change, ILogger log )
 	{
-		GAV replacedGav = change.getLocation().getGav();
+		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project/build/plugins/plugin";
 
 		replaceDependency( document, change, log, replacedGav, expression );
@@ -175,7 +175,7 @@ public class Changer
 
 	private void replaceDependency( Document document, GavChange change, ILogger log )
 	{
-		GAV replacedGav = change.getLocation().getGav();
+		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project/dependencies/dependency";
 
 		replaceDependency( document, change, log, replacedGav, expression );
@@ -183,13 +183,13 @@ public class Changer
 
 	private void replaceDependencyManagement( Document document, GavChange change, ILogger log )
 	{
-		GAV replacedGav = change.getLocation().getGav();
+		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project/dependencyManagement/dependencies/dependency";
 
 		replaceDependency( document, change, log, replacedGav, expression );
 	}
 
-	private void replaceDependency( Document document, GavChange change, ILogger log, GAV replacedGav, String expression )
+	private void replaceDependency( Document document, GavChange change, ILogger log, Gav replacedGav, String expression )
 	{
 		NodeList nodeList = null;
 		try
@@ -205,7 +205,7 @@ public class Changer
 		for( int i = 0; i < nodeList.getLength(); i++ )
 		{
 			Node depNode = nodeList.item( i );
-			GAV gav = getGavFromDependencyNode( depNode );
+			Gav gav = getGavFromDependencyNode( depNode );
 
 			if( (gav.getGroupId() == null || replacedGav.getGroupId().equals( gav.getGroupId() )) && replacedGav.getArtifactId().equals( gav.getArtifactId() ) )
 			{
@@ -261,9 +261,9 @@ public class Changer
 			log.html( "<span style='color:orange;'>did not find property " + property + " definition in project " + change.getLocation().getProject().getGav() + "</span>" );
 	}
 
-	private GAV getGavFromDependencyNode( Node depNode )
+	private Gav getGavFromDependencyNode( Node depNode )
 	{
-		return new GAV( getSubNodeValue( "groupId", depNode ), getSubNodeValue( "artifactId", depNode ), getSubNodeValue( "version", depNode ) );
+		return new Gav( getSubNodeValue( "groupId", depNode ), getSubNodeValue( "artifactId", depNode ), getSubNodeValue( "version", depNode ) );
 	}
 
 	private String getSubNodeValue( String subNodeName, Node node )
@@ -274,7 +274,7 @@ public class Changer
 		return DomHelper.getNodeValue( subNode );
 	}
 
-	private void setGavInDependencyNode( GAV newGav, Node depNode )
+	private void setGavInDependencyNode( Gav newGav, Node depNode )
 	{
 		NodeList list = depNode.getChildNodes();
 		for( int i = 0; i < list.getLength(); i++ )

@@ -1,6 +1,6 @@
 package fr.lteconsulting.pomexplorer.changes.processor;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
@@ -35,9 +35,9 @@ public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 
 			if( "project.version".equals( property ) )
 			{
-				GAV projectGav = depLoc.getProject().getGav();
+				Gav projectGav = depLoc.getProject().getGav();
 				GavLocation projectLoc = new GavLocation( depLoc.getProject(), PomSection.PROJECT, projectGav );
-				changeSet.addChange( new GavChange( projectLoc, new GAV( projectGav.getGroupId(), projectGav.getArtifactId(), change.getNewGav().getVersion() ) ), change );
+				changeSet.addChange( new GavChange( projectLoc, new Gav( projectGav.getGroupId(), projectGav.getArtifactId(), change.getNewGav().getVersion() ) ), change );
 				return;
 			}
 
@@ -45,13 +45,13 @@ public class GavToPropertyProcessor extends AbstractGavChangeProcessor
 			{
 				PomGraphReadTransaction tx = session.graph().read();
 				
-				GAV parentProjectGav = tx.parent( depLoc.getProject().getGav() );
+				Gav parentProjectGav = tx.parent( depLoc.getProject().getGav() );
 				Project parentProject = session.projects().forGav( parentProjectGav );
 				if( parentProject == null )
 					return;
 
 				GavLocation projectLoc = new GavLocation( depLoc.getProject(), PomSection.PARENT, parentProjectGav );
-				changeSet.addChange( new GavChange( projectLoc, new GAV( parentProjectGav.getGroupId(), parentProjectGav.getArtifactId(), change.getNewGav().getVersion() ) ), change );
+				changeSet.addChange( new GavChange( projectLoc, new Gav( parentProjectGav.getGroupId(), parentProjectGav.getArtifactId(), change.getNewGav().getVersion() ) ), change );
 				return;
 			}
 

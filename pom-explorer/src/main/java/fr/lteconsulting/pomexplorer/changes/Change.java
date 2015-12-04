@@ -3,7 +3,7 @@ package fr.lteconsulting.pomexplorer.changes;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
@@ -88,7 +88,7 @@ public abstract class Change<L extends Location>
 		return res;
 	}
 
-	public static Change<? extends Location> create( Location location, GAV newGav )
+	public static Change<? extends Location> create( Location location, Gav newGav )
 	{
 		if( location instanceof GavLocation )
 			return new GavChange( ((GavLocation) location), newGav );

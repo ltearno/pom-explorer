@@ -46,7 +46,7 @@ public class MavenResolver
 		system = getField( mavenSession, "system" );
 	}
 
-	public File resolvePom( GAV gav, String extension )
+	public File resolvePom( Gav gav, String extension )
 	{
 		String key = gav.toString() + ":" + extension;
 

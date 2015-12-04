@@ -1,6 +1,6 @@
 package fr.lteconsulting.pomexplorer.changes.processor;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
@@ -27,7 +27,7 @@ public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 		if( change.getLocation().getSection() != PomSection.PROJECT )
 			return;
 
-		GAV projectGav = change.getLocation().getGav();
+		Gav projectGav = change.getLocation().getGav();
 		Project project = session.projects().forGav( projectGav );
 		if( project == null )
 		{
@@ -43,7 +43,7 @@ public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 		PomGraphReadTransaction tx = session.graph().read();
 
 		// and project should have a parent
-		GAV parentProjectGav = tx.parent( projectGav );
+		Gav parentProjectGav = tx.parent( projectGav );
 		if( parentProjectGav == null )
 			return;
 
@@ -59,7 +59,7 @@ public class NoVersionProjectProcessor extends AbstractGavChangeProcessor
 		changeSet.invalidateChange( change );
 
 		// add changing the parent's version in the change set
-		GAV parentProjectGavModified = new GAV( parentProjectGav.getGroupId(), parentProjectGav.getArtifactId(), change.getNewGav().getVersion() );
+		Gav parentProjectGavModified = new Gav( parentProjectGav.getGroupId(), parentProjectGav.getArtifactId(), change.getNewGav().getVersion() );
 		changeSet.addChange( new GavChange( session.projects().forGav( parentProjectGav ), PomSection.PROJECT, parentProjectGav, parentProjectGavModified ), change );
 	}
 }

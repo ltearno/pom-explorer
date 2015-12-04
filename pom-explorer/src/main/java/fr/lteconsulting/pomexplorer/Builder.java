@@ -125,8 +125,8 @@ public class Builder
 		
 		try
 		{
-			TopologicalOrderIterator<GAV, Relation> iterator = new TopologicalOrderIterator<>( tx.internalGraph() );
-			List<GAV> gavs = new ArrayList<>();
+			TopologicalOrderIterator<Gav, Relation> iterator = new TopologicalOrderIterator<>( tx.internalGraph() );
+			List<Gav> gavs = new ArrayList<>();
 			while( iterator.hasNext() )
 				gavs.add( iterator.next() );
 			Collections.reverse( gavs );
@@ -135,7 +135,7 @@ public class Builder
 
 			sb.append( "<br/>" );
 			sb.append( "build pipeline state:<br/>" );
-			for( GAV gav : gavs )
+			for( Gav gav : gavs )
 			{
 				Project project = session.projects().forGav( gav );
 				if( project != null && (inDependenciesOfMaintainedProjects( project ) || projectsToBuildForced.contains( project )) )
@@ -167,13 +167,13 @@ public class Builder
 		
 		try
 		{
-			TopologicalOrderIterator<GAV, Relation> iterator = new TopologicalOrderIterator<>( tx.internalGraph() );
-			List<GAV> gavs = new ArrayList<>();
+			TopologicalOrderIterator<Gav, Relation> iterator = new TopologicalOrderIterator<>( tx.internalGraph() );
+			List<Gav> gavs = new ArrayList<>();
 			while( iterator.hasNext() )
 				gavs.add( iterator.next() );
 			Collections.reverse( gavs );
 
-			for( GAV gav : gavs )
+			for( Gav gav : gavs )
 			{
 				Project project = session.projects().forGav( gav );
 				if( project != null && (!erroredProjects.contains( project )) && (projectsToBuildForced.contains( project ) || (projectsToBuild.contains( project ) && inDependenciesOfMaintainedProjects( project ))) )
@@ -200,7 +200,7 @@ public class Builder
 
 		log( "project " + project + " has been modified, appending to build list..." );
 
-		for( GAV gav : dependentsAndSelf( project.getGav() ) )
+		for( Gav gav : dependentsAndSelf( project.getGav() ) )
 		{
 			Project p = session.projects().forGav( gav );
 			if (p != null && p.isBuildable())
@@ -218,7 +218,7 @@ public class Builder
 		if( project == null )
 			return false;
 
-		Set<GAV> possibleGavs = new HashSet<>();
+		Set<Gav> possibleGavs = new HashSet<>();
 		for( Project p : session.maintainedProjects() )
 			possibleGavs.addAll( dependenciesAndSelf( p.getGav() ) );
 
@@ -226,20 +226,20 @@ public class Builder
 		return res;
 	}
 
-	private Set<GAV> dependenciesAndSelf( GAV gav )
+	private Set<Gav> dependenciesAndSelf( Gav gav )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		
-		HashSet<GAV> res = new HashSet<>();
+		HashSet<Gav> res = new HashSet<>();
 		res.add( gav );
 		tx.relationsRec( gav ).stream().forEach( r -> res.add( r.getTarget() ) );
 		return res;
 	}
 
-	private Set<GAV> dependentsAndSelf( GAV gav )
+	private Set<Gav> dependentsAndSelf( Gav gav )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
-		HashSet<GAV> res = new HashSet<>();
+		HashSet<Gav> res = new HashSet<>();
 		res.add( gav );
 		tx.relationsReverseRec( gav ).stream().forEach( r -> res.add( r.getSource() ) );
 		return res;

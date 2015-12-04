@@ -1,26 +1,26 @@
 package fr.lteconsulting.pomexplorer.changes;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 
 public class GavChange extends Change<GavLocation>
 {
-	private final GAV newGav;
+	private final Gav newGav;
 
-	public GavChange( Project project, PomSection pomSection, GAV gav, GAV newGav )
+	public GavChange( Project project, PomSection pomSection, Gav gav, Gav newGav )
 	{
 		this( new GavLocation( project, pomSection, gav ), newGav );
 	}
 
-	public GavChange( GavLocation location, GAV newGav )
+	public GavChange( GavLocation location, Gav newGav )
 	{
 		super( location );
 		this.newGav = newGav;
 	}
 
-	public GAV getNewGav()
+	public Gav getNewGav()
 	{
 		return newGav;
 	}

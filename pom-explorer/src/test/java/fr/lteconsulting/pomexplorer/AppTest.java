@@ -3,7 +3,7 @@ package fr.lteconsulting.pomexplorer;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.Tools;
 
 /**
@@ -40,7 +40,7 @@ public class AppTest
 
 	private void checkOpenVersion( String closed, String opened )
 	{
-		GAV newGav = Tools.openGavVersion( new GAV( "group", "artifact", closed ) );
+		Gav newGav = Tools.openGavVersion( new Gav( "group", "artifact", closed ) );
 		assertEquals( opened, newGav.getVersion() );
 	}
 }

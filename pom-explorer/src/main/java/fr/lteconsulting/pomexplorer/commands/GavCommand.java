@@ -1,7 +1,7 @@
 package fr.lteconsulting.pomexplorer.commands;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomAnalyzer;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -45,7 +45,7 @@ public class GavCommand
 	}
 
 	@Help( "analyze all the gav's dependencies and add them in the pom graph." )
-	public void add( WorkingSession session, ILogger log, Client client, GAV gav )
+	public void add( WorkingSession session, ILogger log, Client client, Gav gav )
 	{
 		PomAnalyzer analyzer = new PomAnalyzer();
 
@@ -74,7 +74,7 @@ public class GavCommand
 	{
 		PomAnalyzer analyzer = new PomAnalyzer();
 
-		GAV gav = Tools.string2Gav( gavString );
+		Gav gav = Tools.string2Gav( gavString );
 		if( gav == null )
 		{
 			log.html( Tools.warningMessage( "the string '" + gavString

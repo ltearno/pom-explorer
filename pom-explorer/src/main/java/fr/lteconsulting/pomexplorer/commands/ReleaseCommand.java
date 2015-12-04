@@ -3,7 +3,7 @@ package fr.lteconsulting.pomexplorer.commands;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
@@ -20,7 +20,7 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 public class ReleaseCommand
 {
 	@Help( "releases a gav, all dependencies are also released. GAVs depending on released GAVs are updated." )
-	public void gav( ILogger log, CommandOptions options, final Client client, WorkingSession session, GAV gav )
+	public void gav( ILogger log, CommandOptions options, final Client client, WorkingSession session, Gav gav )
 	{
 		log.html( "<b>Releasing</b> project " + gav + "<br/>" );
 		log.html( "All dependencies will be updated to a release version.<br/><br/>" );
@@ -43,7 +43,7 @@ public class ReleaseCommand
 		
 		ChangeSetManager changes = new ChangeSetManager();
 
-		for( GAV gav : tx.gavs() )
+		for( Gav gav : tx.gavs() )
 		{
 			if( gav.getVersion() == null )
 			{
@@ -65,7 +65,7 @@ public class ReleaseCommand
 		CommandTools.maybeApplyChanges( session, options, log, changes );
 	}
 
-	private void releaseGav( Client client, WorkingSession session, GAV gav, ChangeSetManager changes, ILogger log )
+	private void releaseGav( Client client, WorkingSession session, Gav gav, ChangeSetManager changes, ILogger log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		
@@ -89,8 +89,8 @@ public class ReleaseCommand
 			if( Tools.isReleased( r.getTarget() ) )
 				continue;
 
-			GAV source = r.getSource();
-			GAV to = Tools.releasedGav( r.getTarget() );
+			Gav source = r.getSource();
+			Gav to = Tools.releasedGav( r.getTarget() );
 
 			Project project = session.projects().forGav( source );
 			if( project == null )

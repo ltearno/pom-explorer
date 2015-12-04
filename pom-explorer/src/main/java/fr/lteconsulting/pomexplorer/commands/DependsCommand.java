@@ -3,7 +3,7 @@ package fr.lteconsulting.pomexplorer.commands;
 import java.util.HashSet;
 import java.util.Set;
 
-import fr.lteconsulting.pomexplorer.GAV;
+import fr.lteconsulting.pomexplorer.Gav;
 import fr.lteconsulting.pomexplorer.ILogger;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
@@ -17,7 +17,7 @@ import fr.lteconsulting.pomexplorer.graph.relation.Relation.RelationType;
 public class DependsCommand
 {
 	@Help( "lists the GAVs directly depending on the one given in parameter" )
-	public void on( WorkingSession session, ILogger log, GAV gav )
+	public void on( WorkingSession session, ILogger log, Gav gav )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		
@@ -33,12 +33,12 @@ public class DependsCommand
 		log.html( "([" + RelationType.DEPENDENCY.shortName() + "]=direct dependency, [" + RelationType.PARENT.shortName()
 				+ "]=parent's dependency, [" + RelationType.BUILD_DEPENDENCY.shortName() + "]=build dependency)<br/><br/>" );
 
-		Set<GAV> indirectDependents = new HashSet<>();
+		Set<Gav> indirectDependents = new HashSet<>();
 
 		relations.stream().sorted( ( a, b ) -> a.getSource().toString().compareTo( b.getSource().toString() ) )
 				.forEach( relation ->
 				{
-					GAV source = relation.getSource();
+					Gav source = relation.getSource();
 
 					RelationType type = relation.getRelationType();
 
@@ -54,12 +54,12 @@ public class DependsCommand
 				} );
 
 		log.html( "<br/><b>Indirectly depending on " + gav + "</b>, " + indirectDependents.size() + " GAVs :<br/>" );
-		for( GAV d : indirectDependents )
+		for( Gav d : indirectDependents )
 			log.html( d + "<br/>" );
 	}
 
 	@Help( "lists the GAVs that the GAV passed in parameters depends on" )
-	public void by( WorkingSession session, ILogger log, GAV gav )
+	public void by( WorkingSession session, ILogger log, Gav gav )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		
@@ -75,12 +75,12 @@ public class DependsCommand
 		log.html( "([" + RelationType.DEPENDENCY.shortName() + "]=direct dependency, [" + RelationType.PARENT.shortName()
 				+ "]=parent's dependency, [" + RelationType.BUILD_DEPENDENCY.shortName() + "]=build dependency)<br/><br/>" );
 
-		Set<GAV> indirectDependents = new HashSet<>();
+		Set<Gav> indirectDependents = new HashSet<>();
 
 		relations.stream().sorted( ( a, b ) -> a.getTarget().toString().compareTo( b.getTarget().toString() ) )
 				.forEach( relation ->
 				{
-					GAV target = relation.getTarget();
+					Gav target = relation.getTarget();
 					RelationType type = relation.getRelationType();
 
 					log.html( "[" + type.shortName() + "] " + target + " " );
@@ -99,7 +99,7 @@ public class DependsCommand
 
 	private void fillTextForDependency( WorkingSession session, ILogger log, Relation relation )
 	{
-		GAV source = relation.getSource();
+		Gav source = relation.getSource();
 
 		Project sourceProject = session.projects().forGav( source );
 		if( sourceProject == null )
