@@ -125,15 +125,38 @@ public class ProjectsCommand
 				{
 					log.append( d.getResolvedGav() );
 
-					if( !d.getResolvedGav().equals( d.getUnresolvedGav() ) )
-						log.append( " <i>declared: " + d.getUnresolvedGav() + "</i>" );
-
 					if( d.getClassifier() != null )
 						log.append( ":" + d.getClassifier() );
+
 					if( d.getScope() != null )
 						log.append( ":" + d.getScope() );
+
+					appendGavIfDifferent( d.getResolvedGav(), d.getUnresolvedGav(), log );
+
 					log.append( "<br/>" );
 				} );
 		log.append( "</div></div>" );
+	}
+
+	private void appendGavIfDifferent( Gav resolved, Gav unresolved, StringBuilder log )
+	{
+		if( !resolved.equals( unresolved ) )
+		{
+			log.append( " <i>declared: " );
+			appendMaybeDifferent( resolved.getGroupId(), unresolved.getGroupId(), log );
+			log.append( ":" );
+			appendMaybeDifferent( resolved.getArtifactId(), unresolved.getArtifactId(), log );
+			log.append( ":" );
+			appendMaybeDifferent( resolved.getVersion(), unresolved.getVersion(), log );
+			log.append( "</i>" );
+		}
+	}
+
+	private void appendMaybeDifferent( String a, String b, StringBuilder log )
+	{
+		if( a.equals( b ) )
+			log.append( a );
+		else
+			log.append( "<b>" + b + "</b>" );
 	}
 }

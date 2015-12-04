@@ -364,10 +364,11 @@ public class Project
 				{
 					if( d.getVersion() != null )
 					{
-						Gav g = resolveGav( new Gav( dependencyGroupId, dependencyArtifactId, d.getVersion() ), session, log,
+						Gav unresolvedGav = new Gav( dependencyGroupId, dependencyArtifactId, d.getVersion() );
+						Gav g = resolveGav( unresolvedGav, session, log,
 								false, true );
 						if( g.isResolved() )
-							return new GavLocation( this, PomSection.DEPENDENCY_MNGT, g );
+							return new GavLocation( this, PomSection.DEPENDENCY_MNGT, g, unresolvedGav );
 					}
 				}
 			}
@@ -438,10 +439,11 @@ public class Project
 
 			for( Plugin plugin : project.getBuildPlugins() )
 			{
-				Gav dependencyGav = resolveGav( new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() ),
+				Gav unresolvedGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
+				Gav dependencyGav = resolveGav( unresolvedGav,
 						session, log, false, true );
 
-				GavLocation info = new GavLocation( this, PomSection.PLUGIN, dependencyGav, dependencyGav );
+				GavLocation info = new GavLocation( this, PomSection.PLUGIN, dependencyGav, unresolvedGav );
 				pluginDependencies.put( dependencyGav, info );
 			}
 

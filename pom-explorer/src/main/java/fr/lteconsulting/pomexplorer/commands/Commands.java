@@ -219,7 +219,7 @@ public class Commands
 						+ (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString()))
 						+ "<br/>");
 
-			Tools.dumpStacktrace(e, log);
+			Tools.logStacktrace(e, log);
 		}
 	}
 

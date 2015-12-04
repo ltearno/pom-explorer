@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,10 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
-
-import org.apache.maven.model.Model;
-import org.jboss.shrinkwrap.resolver.api.maven.pom.ParsedPomFile;
-import org.jboss.shrinkwrap.resolver.impl.maven.pom.ParsedPomFileImpl;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.changes.Change;
@@ -100,36 +95,12 @@ public class Tools
 		return set;
 	}
 
-	public static List<String> getMavenProperties( Gav gav )
-	{
-		if( gav == null )
-			return null;
-
-		ArrayList<String> res = new ArrayList<>();
-
-		if( isMavenVariable( gav.getGroupId() ) )
-			res.add( extractMavenProperty( gav.getGroupId() ) );
-
-		if( isMavenVariable( gav.getArtifactId() ) )
-			res.add( extractMavenProperty( gav.getArtifactId() ) );
-
-		if( isMavenVariable( gav.getVersion() ) )
-			res.add( extractMavenProperty( gav.getVersion() ) );
-
-		return res;
-	}
-
 	public static boolean isMavenVariable( String text )
 	{
 		return text != null && text.startsWith( "${" ) && text.endsWith( "}" );
 	}
 
-	private static String extractMavenProperty( String variable )
-	{
-		assert isMavenVariable( variable );
-		return variable.substring( 2, variable.length() - 1 );
-	}
-
+	// TODO move to Project
 	public static Project getPropertyDefinitionProject( WorkingSession session, Project startingProject, String property )
 	{
 		if( property.startsWith( "project." ) )
@@ -158,6 +129,7 @@ public class Tools
 		return null;
 	}
 
+	// TODO move to Project
 	private static String propertyValue( Project startingProject, String property )
 	{
 		Object res = startingProject.getMavenProject().getProperties().get( property );
@@ -166,6 +138,7 @@ public class Tools
 		return null;
 	}
 
+	// TODO move to Project
 	public static Location findDependencyLocation( WorkingSession session, ILogger log, Project project, Relation relation )
 	{
 		if( project.getGav().equals( relation.getTarget() ) )
@@ -199,6 +172,7 @@ public class Tools
 		return name.substring( 2, name.length() - 1 );
 	}
 
+	// TODO move to Project
 	public static GavLocation findDependencyLocationInDependencies( WorkingSession session, ILogger log, Project project,
 			Gav searchedDependency )
 	{
@@ -238,6 +212,7 @@ public class Tools
 		return null;
 	}
 
+	// TODO move to Project
 	public static GavLocation findDependencyLocationInBuildDependencies( WorkingSession session, ILogger log, Project project, Gav searchedDependency )
 	{
 		if( project == null )
@@ -274,54 +249,6 @@ public class Tools
 		}
 
 		return null;
-	}
-
-	public static String undecorateMavenVariable( String propertyDeclaration )
-	{
-		return propertyDeclaration.replace( "${", "" ).replace( "}", "" );
-	}
-
-	public static String resolveProperty( WorkingSession session, Project project, String propertyName, ILogger log )
-	{
-		if( project == null )
-			return null;
-
-		String value = project.resolveProperty( session, log, propertyName );
-		if( value == null )
-			log.html( Tools.warningMessage( "cannot resolve value of property '" + propertyName + "' in project " + project ) );
-
-		return value;
-	}
-
-	private static Field modelField;
-
-	public static Model getParsedPomFileModel( ParsedPomFile parsedPomFile )
-	{
-		if( modelField == null )
-		{
-			try
-			{
-				modelField = ParsedPomFileImpl.class.getDeclaredField( "model" );
-				modelField.setAccessible( true );
-
-			}
-			catch( NoSuchFieldException | SecurityException | IllegalArgumentException e )
-			{
-				e.printStackTrace();
-				return null;
-			}
-		}
-
-		try
-		{
-			Model model = (Model) modelField.get( parsedPomFile );
-			return model;
-		}
-		catch( IllegalArgumentException | IllegalAccessException e )
-		{
-			e.printStackTrace();
-			return null;
-		}
 	}
 
 	/**
@@ -403,6 +330,22 @@ public class Tools
 	public static String errorMessage( String message )
 	{
 		return "<span style='color:red;'>" + message + "</span><br/>";
+	}
+
+	public static void logStacktrace( Exception e, ILogger log )
+	{
+		Throwable t = e;
+		if( t instanceof InvocationTargetException )
+			t = ((InvocationTargetException) t).getTargetException();
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append( t.toString() + "<br/>" );
+		
+		for( StackTraceElement st : t.getStackTrace() )
+			sb.append( st.toString() + "<br/>" );
+		
+		log.html( sb.toString() );
 	}
 
 	/**
@@ -524,16 +467,5 @@ public class Tools
 		}
 
 		return res;
-	}
-
-	public static void dumpStacktrace( Exception e, ILogger log )
-	{
-		Throwable t = e;
-		if( t instanceof InvocationTargetException )
-			t = ((InvocationTargetException) t).getTargetException();
-
-		log.html( t.toString() + "<br/>" );
-		for( StackTraceElement st : t.getStackTrace() )
-			log.html( st.toString() + "<br/>" );
 	}
 }
