@@ -3,7 +3,6 @@ package fr.lteconsulting.pomexplorer.commands;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -19,7 +18,8 @@ import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
-import fr.lteconsulting.pomexplorer.graph.relation.Relation;
+import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 
 public class ProjectsCommand
 {
@@ -102,7 +102,7 @@ public class ProjectsCommand
 
 			if( !unresolvedProject.getDependencies().isEmpty() )
 			{
-				log.append( "<div><div>dependencies</div><div>" );
+				log.append( "<div><div>declared dependencies</div><div>" );
 				for( Dependency dependency : unresolvedProject.getDependencies() )
 				{
 					log.append( dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion() );
@@ -115,42 +115,37 @@ public class ProjectsCommand
 				log.append( "</div></div>" );
 			}
 
+			PomGraphReadTransaction tx = session.graph().read();
+
 			log.append( "<div><div>effective dependencies</div><div>" );
-			Set<? extends Relation> directDependencies = effectiveDependencies( session, project.getGav() );
-			if( !directDependencies.isEmpty() )
+			Set<DependencyRelation> directDependencies = tx.dependencies( project.getGav() );
+			if( directDependencies.isEmpty() )
 			{
-				directDependencies.stream().sorted( ( a, b ) -> a.getTarget().toString().compareTo( b.getTarget().toString() ) )
-						.forEach( d -> log.append( "[" + d.getRelationType().shortName() + "] " + d.getTarget() + " "
-								+ d.toString() + "<br/>" ) );
+				log.append( "no dependency<br/>" );
 			}
 				else
 				{
-					log.append( "no dependency<br/>" );
+					directDependencies.stream().sorted( ( a, b ) -> a.getTarget().toString().compareTo( b.getTarget().toString() ) )
+							.forEach( d -> log.append( d.getTarget() + " " + d.toString() + "<br/>" ) );
 				}
 				log.append( "</div></div>" );
 
-				log.append( "</div>" );
-				log.append( "</div>" );
+				Set<BuildDependencyRelation> buildDependencies = tx.buildDependencies( project.getGav() );
+				if( !buildDependencies.isEmpty() )
+				{
+					log.append( "<div><div>effective build dependencies</div><div>" );
+
+					buildDependencies.stream().sorted( ( a, b ) -> a.getTarget().toString().compareTo( b.getTarget().toString() ) )
+							.forEach( d -> log.append( d.getTarget() + " " + d.toString() + "<br/>" ) );
+
+					log.append( "</div></div>" );
+				}
+
+				log.append( "</div></div>" );
 			} );
 
 		log.append( "</div>" );
 
 		logi.html( log.toString() );
-	}
-
-	private Set<Relation> effectiveDependencies( WorkingSession session, GAV gav )
-	{
-		PomGraphReadTransaction tx = session.graph().read();
-
-		HashSet<Relation> res = new HashSet<>();
-
-		GAV parent = tx.parent( gav );
-		if( parent != null )
-			res.addAll( effectiveDependencies( session, parent ) );
-
-		res.addAll( tx.dependencies( gav ) );
-		res.addAll( tx.buildDependencies( gav ) );
-
-		return res;
 	}
 }
