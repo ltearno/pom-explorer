@@ -148,7 +148,7 @@ public class DependsCommand
 		Map<Gact, List<DepInfo>> data = new HashMap<>();
 
 		for( DependencyRelation dependency : tx.dependencies( gav ) )
-			addDependency( 0, dependency.getDependency().getScope(), data, dependency, sb, tx );
+			addDependency( new HashSet<>(), 0, dependency.getDependency().getScope(), data, dependency, sb, tx );
 
 		Set<Dependency> compileDependencies = new HashSet<>();
 		Set<Dependency> testDependencies = new HashSet<>();
@@ -208,8 +208,15 @@ public class DependsCommand
 
 	}
 
-	private void addDependency( int level, Scope effectiveScope, Map<Gact, List<DepInfo>> data, DependencyRelation dependency, StringBuilder sb, PomGraphReadTransaction tx )
+	private void addDependency( Set<DependencyRelation> visitedRelations, int level, Scope effectiveScope, Map<Gact, List<DepInfo>> data, DependencyRelation dependency, StringBuilder sb, PomGraphReadTransaction tx )
 	{
+		if( visitedRelations.contains( dependency ) )
+		{
+			sb.append( Tools.warningMessage( "loop detected when resolving transitive dependency to " + dependency ) );
+			return;
+		}
+		visitedRelations.add( dependency );
+
 		// add itself
 		Gact key = getGact( dependency );
 		List<DepInfo> deps = data.get( key );
@@ -220,12 +227,14 @@ public class DependsCommand
 		}
 		deps.add( new DepInfo( level, false, dependency.getDependency().getVersion(), effectiveScope ) );
 
+		// TODO should detect loop by having a set of visited dependency
+
 		// maybe add dependencies
 		for( DependencyRelation dep : tx.dependencies( tx.targetOf( dependency ) ) )
 		{
 			Scope effScope = shouldAddTransitiveDependency( effectiveScope, dep.getDependency().getScope() );
 			if( effScope != null )
-				addDependency( level + 1, effScope, data, dep, sb, tx );
+				addDependency( visitedRelations, level + 1, effScope, data, dep, sb, tx );
 		}
 	}
 

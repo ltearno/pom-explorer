@@ -6,17 +6,23 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 public class DependencyRelation extends Relation
 {
 	private final Dependency dependency;
-	
+
 	public DependencyRelation( Gav source, Gav target, Dependency dependency )
 	{
 		super( source, target, RelationType.DEPENDENCY );
-		
+
 		this.dependency = dependency;
 	}
-	
+
 	public Dependency getDependency()
 	{
 		return dependency;
+	}
+
+	@Override
+	public String toString()
+	{
+		return source + "->" + dependency.toString();
 	}
 
 	@Override

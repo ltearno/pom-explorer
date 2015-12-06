@@ -4,9 +4,9 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 
 public abstract class Relation
 {
-	private final RelationType type;
-	private final Gav source;
-	private final Gav target;
+	protected final RelationType type;
+	protected final Gav source;
+	protected final Gav target;
 
 	protected Relation( Gav source, Gav target, RelationType type )
 	{
