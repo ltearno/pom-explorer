@@ -5,12 +5,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import fr.lteconsulting.pomexplorer.Log;
+import fr.lteconsulting.pomexplorer.PomAnalyzer;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class ProjectRepository
 {
 	private final Map<Gav, Project> projects = new HashMap<>();
+
+	public Project fetchProject( Gav gav, Session session, Log log )
+	{
+		PomAnalyzer analyzer = new PomAnalyzer();
+
+		Project project = analyzer.fetchGavWithMaven( session, log, gav );
+
+		return project;
+	}
 
 	public boolean contains( Gav gav )
 	{

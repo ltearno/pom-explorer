@@ -22,10 +22,10 @@ import fr.lteconsulting.pomexplorer.AppFactory;
 import fr.lteconsulting.pomexplorer.GitTools;
 import fr.lteconsulting.pomexplorer.GraphFrame;
 import fr.lteconsulting.pomexplorer.GraphQuery;
-import fr.lteconsulting.pomexplorer.ILogger;
+import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.Repository;
 import fr.lteconsulting.pomexplorer.graph.RepositoryRelation;
@@ -39,7 +39,7 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 public class GraphCommand
 {
 	@Help( "displays an interactive 3d WebGL graph of the projects" )
-	public void main( WorkingSession session, ILogger log )
+	public void main( Session session, Log log )
 	{
 		String url = "graph.html?session=" + System.identityHashCode( session );
 		url += "&graphQueryId=" + GraphQuery.register( null );
@@ -47,13 +47,13 @@ public class GraphCommand
 	}
 
 	@Help( "displays an interactive 3d WebGL graph of the projects, limited to dependency tree of the given root gavs" )
-	public void roots( WorkingSession session, ILogger log, FilteredGAVs roots )
+	public void roots( Session session, Log log, FilteredGAVs roots )
 	{
 		String url = "graph.html?session=" + System.identityHashCode( session );
 		url += "&graphQueryId=" + GraphQuery.register( new HashSet<>( roots.getGavs( session ) ) );
 		log.html( "Root gavs : " );
 		StringBuilder sb = new StringBuilder();
-		roots.getGavs( session ).forEach( root -> sb.append( root + "<br/>") );
+		roots.getGavs( session ).forEach( root -> sb.append( root + "<br/>" ) );
 		log.html( sb.toString() );
 		log.html( "To display the graph, go to : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
 	}
@@ -78,7 +78,7 @@ public class GraphCommand
 	}
 
 	@Help( "exports a GraphML file" )
-	public void export( WorkingSession session, ILogger log )
+	public void export( Session session, Log log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 
@@ -100,21 +100,22 @@ public class GraphCommand
 				}
 			} );
 
-			GraphMLExporter<Repository, RepositoryRelation> repoExporter = new GraphMLExporter<Repository, RepositoryRelation>( new IntegerNameProvider<Repository>(), new VertexNameProvider<Repository>()
-			{
-				@Override
-				public String getVertexName( Repository vertex )
-				{
-					return vertex.toString();
-				}
-			}, new IntegerEdgeNameProvider<RepositoryRelation>(), new EdgeNameProvider<RepositoryRelation>()
-			{
-				@Override
-				public String getEdgeName( RepositoryRelation edge )
-				{
-					return edge.toString();
-				}
-			} );
+			GraphMLExporter<Repository, RepositoryRelation> repoExporter = new GraphMLExporter<Repository, RepositoryRelation>( new IntegerNameProvider<Repository>(),
+					new VertexNameProvider<Repository>()
+					{
+						@Override
+						public String getVertexName( Repository vertex )
+						{
+							return vertex.toString();
+						}
+					}, new IntegerEdgeNameProvider<RepositoryRelation>(), new EdgeNameProvider<RepositoryRelation>()
+					{
+						@Override
+						public String getEdgeName( RepositoryRelation edge )
+						{
+							return edge.toString();
+						}
+					} );
 
 			DirectedGraph<Gav, Relation> g = tx.internalGraph();
 
@@ -203,7 +204,7 @@ public class GraphCommand
 		}
 	}
 
-	private String getGAVRepository( WorkingSession session, Gav gav )
+	private String getGAVRepository( Session session, Gav gav )
 	{
 		Project project = session.projects().forGav( gav );
 		if( project == null )
@@ -213,13 +214,13 @@ public class GraphCommand
 	}
 
 	@Help( "displays a graph on the server machine" )
-	public void server( WorkingSession session, ILogger log )
+	public void server( Session session, Log log )
 	{
 		server( session, null, log );
 	}
 
 	@Help( "displays a graph on the server machine. Parameter is the filter for GAVs" )
-	public void server( WorkingSession session, String filter, ILogger log )
+	public void server( Session session, String filter, Log log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 

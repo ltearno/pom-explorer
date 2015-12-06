@@ -99,7 +99,8 @@ public class WebServer
 		PathHandler pathHandler = new PathHandler();
 
 		// web app static files
-		pathHandler.addPrefixPath( "/", new ResourceHandler( new ClassPathResourceManager( getClass().getClassLoader(), "fr/lteconsulting/pomexplorer/webapp" ) ).addWelcomeFiles( "index.html" ) );
+		pathHandler.addPrefixPath( "/",
+				new ResourceHandler( new ClassPathResourceManager( getClass().getClassLoader(), "fr/lteconsulting/pomexplorer/webapp" ) ).addWelcomeFiles( "index.html" ) );
 
 		pathHandler.addPrefixPath( DATA_FILE_PREFIX_URL, new HttpHandler()
 		{
@@ -119,11 +120,11 @@ public class WebServer
 						exchange.getResponseHeaders().put( Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"" );
 						exchange.getResponseSender().send( buf );
 					}
-						else
-						{
-							exchange.getResponseSender().send( "not found !" );
-						}
-					} );
+					else
+					{
+						exchange.getResponseSender().send( "not found !" );
+					}
+				} );
 			}
 
 			private ByteBuffer readFile( String path )

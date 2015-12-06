@@ -6,16 +6,16 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.ILogger;
+import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 
 public class ExportCommand
 {
 	@Help( "exports the node connections in csv format (outputs the file 'export.csv')." )
-	public void csv( Client client, WorkingSession session, ILogger log )
+	public void csv( Client client, Session session, Log log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 
@@ -43,7 +43,7 @@ class ExportVisitor
 	private PomGraphReadTransaction tx;
 	private PrintWriter w;
 
-	public ExportVisitor( WorkingSession session ) throws FileNotFoundException, UnsupportedEncodingException
+	public ExportVisitor( Session session ) throws FileNotFoundException, UnsupportedEncodingException
 	{
 		tx = session.graph().read();
 

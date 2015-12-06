@@ -9,19 +9,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
-import fr.lteconsulting.pomexplorer.changes.Change;
-import fr.lteconsulting.pomexplorer.changes.ChangeSetManager;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
-import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
-import fr.lteconsulting.pomexplorer.graph.relation.Relation;
-import fr.lteconsulting.pomexplorer.model.Dependency;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.oldchanges.Change;
+import fr.lteconsulting.pomexplorer.oldchanges.ChangeSetManager;
 
 public class Tools
 {
@@ -37,7 +32,7 @@ public class Tools
 		return a.compareTo( b );
 	}
 
-	public static void printChangeList( ILogger log, ChangeSetManager changes )
+	public static void printChangeList( Log log, ChangeSetManager changes )
 	{
 		log.html( "<br/>Change list...<br/><br/>" );
 
@@ -73,39 +68,6 @@ public class Tools
 	/***
 	 * Maven tools
 	 */
-
-	public static Set<Location> getDirectDependenciesLocations( WorkingSession session, ILogger log, Gav gav )
-	{
-		PomGraphReadTransaction tx = session.graph().read();
-		Set<Location> set = new HashSet<>();
-
-		Set<Relation> relations = tx.relationsReverse( gav );
-		for( Relation relation : relations )
-		{
-			Gav updatedGav = tx.sourceOf( relation );
-
-			Project updatedProject = session.projects().forGav( updatedGav );
-			if( updatedProject == null )
-			{
-				if( log != null )
-					log.html( Tools.warningMessage( "Cannot find project for GAV " + updatedGav
-							+ " which dependency should be modified ! skipping." ) );
-				continue;
-			}
-
-			Location dependencyLocation = updatedProject.findDependencyLocation( session, log, relation );
-			if( dependencyLocation == null )
-			{
-				if( log != null )
-					log.html( Tools.errorMessage( "Cannot find the location of dependency to " + tx.targetOf( relation ) + " in this project " + updatedProject ) );
-				continue;
-			}
-
-			set.add( dependencyLocation );
-		}
-
-		return set;
-	}
 
 	public static boolean isMavenVariable( String text )
 	{
@@ -148,36 +110,6 @@ public class Tools
 		return res;
 	}
 
-	public static final Comparator<Gav> gavAlphabeticalComparator = new Comparator<Gav>()
-	{
-		@Override
-		public int compare( Gav o1, Gav o2 )
-		{
-			int r = o1.getGroupId().compareTo( o2.getGroupId() );
-			if( r != 0 )
-				return r;
-
-			r = o1.getArtifactId().compareTo( o2.getArtifactId() );
-			if( r != 0 )
-				return r;
-
-			if( o1.getVersion() == null && o2.getVersion() == null )
-				return 0;
-			if( o1.getVersion() == null )
-				return -1;
-			if( o2.getVersion() == null )
-				return 1;
-
-			r = o1.getVersion().compareTo( o2.getVersion() );
-
-			return 0;
-		}
-	};
-
-	public static final Comparator<Project> projectAlphabeticalComparator = ( a, b ) -> a.toString().compareTo( b.toString() );
-	
-	public static final Comparator<Dependency> dependencyAlphabeticalComparator = ( a, b ) -> a.toString().compareTo( b.toString() );
-
 	public static String logMessage( String message )
 	{
 		return "<span style=''>" + message + "</span><br/>";
@@ -203,7 +135,7 @@ public class Tools
 		return "<span style='color:red;'>" + message + "</span><br/>";
 	}
 
-	public static void logStacktrace( Exception e, ILogger log )
+	public static void logStacktrace( Exception e, Log log )
 	{
 		Throwable t = e;
 		if( t instanceof InvocationTargetException )
@@ -233,8 +165,7 @@ public class Tools
 	public static Gav releasedGav( Gav gav )
 	{
 		if( !isReleased( gav ) )
-			return new Gav( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0,
-					gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
+			return new Gav( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
 
 		return gav;
 	}

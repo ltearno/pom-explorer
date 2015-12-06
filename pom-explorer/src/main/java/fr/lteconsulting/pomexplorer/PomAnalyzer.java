@@ -4,11 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
@@ -18,20 +16,14 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class PomAnalyzer
 {
-	private final static Set<String> IGNORED_DIRS = new HashSet<>( Arrays.asList(
-			"target",
-			"bin",
-			"src",
-			"node_modules",
-			".git",
-			"war",
-			"gwt-unitCache",
-			".idea",
-			".settings" ) );
+	private final static Set<String> IGNORED_DIRS = new HashSet<>( Arrays.asList( "target", "bin", "src", "node_modules", ".git", "war", "gwt-unitCache", ".idea", ".settings" ) );
 
-	public void analyze( String directory, boolean verbose, WorkingSession session, ILogger log )
+	public void analyze( String directory, boolean verbose, boolean fetchMissingProjects, Session session, Log log )
 	{
 		log.html( "analyzing '" + directory + "'<br/>" );
+		if( !fetchMissingProjects )
+			log.html( Tools.warningMessage( "fetching missing projects is disabled" ) );
+
 		long duration = System.currentTimeMillis();
 
 		Set<File> pomFiles = new HashSet<>();
@@ -61,10 +53,14 @@ public class PomAnalyzer
 				boolean isOk = true;
 				while( isOk )
 				{
-					Set<Gav> missingProjects = project.getMissingGavsForResolution( session, log );
+					Set<Gav> missingProjects = project.getMissingGavsForResolution( log );
 					if( missingProjects == null || missingProjects.isEmpty() )
 						break;
 
+					if( !fetchMissingProjects )
+						break;
+
+					log.html( "fetching " + missingProjects.size() + " missing projects. you can disable this behavior with the <b>'-nofetch'</b> option.<br/>" );
 					for( Gav missingProjectGav : missingProjects )
 					{
 						log.html( "fetching " + missingProjectGav + " to resolve " + project + "<br/>" );
@@ -92,7 +88,7 @@ public class PomAnalyzer
 
 				if( isOk )
 				{
-					assert project.getMissingGavsForResolution( session, log, new HashSet<>() ).isEmpty() : "project should be resolvable here " + toString();
+					assert project.getMissingGavsForResolution( log, new HashSet<>() ).isEmpty() : "project should be resolvable here " + toString();
 					toGraphProjects.add( project );
 				}
 				else if( firstRound )
@@ -111,9 +107,9 @@ public class PomAnalyzer
 
 		for( Project project : toGraphProjects )
 		{
-			assert project.getMissingGavsForResolution( session, log, new HashSet<>() ).isEmpty() : "error : not resolvable project should not be in this set !";
+			assert project.getMissingGavsForResolution( log, new HashSet<>() ).isEmpty() : "error : not resolvable project should not be in this set !";
 
-			addProjectToGraph( project, tx, session, log );
+			addProjectToGraph( project, tx, fetchMissingProjects, session, log );
 		}
 
 		tx.commit();
@@ -123,24 +119,23 @@ public class PomAnalyzer
 		if( verbose )
 		{
 			log.html( "<br/>Loaded projects:<br/>" );
-			loadedProjects.stream().sorted( Tools.projectAlphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
+			loadedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
 
 			int fetchedProjects = toGraphProjects.size() - loadedProjects.size();
 			if( fetchedProjects > 0 )
 			{
 				log.html( "<br/>and " + fetchedProjects + " projects fetched to resolve loaded projects:<br/>" );
-				toGraphProjects.stream().filter( ( p ) -> !loadedProjects.contains( p ) ).sorted( Tools.projectAlphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
+				toGraphProjects.stream().filter( ( p ) -> !loadedProjects.contains( p ) ).sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
 			}
 
 			if( !unresolvedProjects.isEmpty() )
 			{
 				log.html( "<br/>sadly, there was " + unresolvedProjects.size() + " unresolvable projects:<br/>" );
-				unresolvedProjects.stream().sorted( Tools.projectAlphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
+				unresolvedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
 			}
 		}
 
-		log.html( "<br/>analysis report: " + loadedProjects.size() + " loaded projects, " + unresolvedProjects.size()
-				+ " unresolved, " + toGraphProjects.size() + " projects added to the pom graph in " + duration + " ms.<br/>" );
+		log.html( "<br/>analysis report: " + loadedProjects.size() + " loaded projects, " + unresolvedProjects.size() + " unresolved, " + toGraphProjects.size() + " projects added to the pom graph in " + duration + " ms.<br/>" );
 	}
 
 	/**
@@ -151,8 +146,11 @@ public class PomAnalyzer
 	 * @param session
 	 *            working session
 	 */
-	public Project fetchGavWithMaven( WorkingSession session, ILogger log, Gav gav )
+	public Project fetchGavWithMaven( Session session, Log log, Gav gav )
 	{
+		if( gav == null || !gav.isResolved() || gav.getVersion().startsWith( "[" ) || gav.getVersion().startsWith( "@" ) )
+			return null;
+
 		MavenResolver resolver = session.mavenResolver();
 
 		File pomFile = resolver.resolvePom( gav, "pom" );
@@ -167,7 +165,7 @@ public class PomAnalyzer
 		return project;
 	}
 
-	private void addProjectToGraph( Project project, PomGraphWriteTransaction tx, WorkingSession session, ILogger log )
+	private void addProjectToGraph( Project project, PomGraphWriteTransaction tx, boolean fetchMissingProjects, Session session, Log log )
 	{
 		tx.removeRelations( tx.relations( project.getGav() ) );
 
@@ -175,8 +173,8 @@ public class PomAnalyzer
 		{
 			Gav gav = project.getGav();
 			Gav parentGav = project.getParent();
-			Collection<GavLocation> dependencies = project.getDependencies( session, log );
-			Collection<GavLocation> pluginDependencies = project.getPluginDependencies( session, log ).values();
+			TransitiveDependencies dependencies = project.getTransitiveDependencies( fetchMissingProjects, log );
+			Set<Gav> pluginDependencies = project.getPluginDependencies( log );
 
 			tx.addGav( gav );
 			if( parentGav != null )
@@ -185,21 +183,26 @@ public class PomAnalyzer
 				tx.addRelation( new ParentRelation( gav, parentGav ) );
 			}
 
-			for( GavLocation location : dependencies )
+			for( DependencyInfo info : dependencies.getDependencies().values() )
 			{
-				tx.addGav( location.getResolvedGav() );
-				tx.addRelation( new DependencyRelation( gav, location.getResolvedGav(), new Dependency( location.getResolvedGav(), location.getScope(), location.getClassifier(), location.getType() ) ) );
+				if( info.level != 0 || !info.isDeclared() )
+					continue;
+
+				Gav dependencyGav = info.dependency.toGav();
+				tx.addGav( dependencyGav );
+				tx.addRelation( new DependencyRelation( gav, dependencyGav, new Dependency( dependencyGav, info.dependency.getScope(), info.dependency.getClassifier(), info.dependency.getType() ) ) );
 			}
 
-			for( GavLocation location : pluginDependencies )
+			for( Gav pluginGav : pluginDependencies )
 			{
-				tx.addGav( location.getResolvedGav() );
-				tx.addRelation( new BuildDependencyRelation( gav, location.getResolvedGav() ) );
+				tx.addGav( pluginGav );
+				tx.addRelation( new BuildDependencyRelation( gav, pluginGav ) );
 			}
 		}
 		catch( Exception e )
 		{
 			log.html( Tools.errorMessage( "Cannot add project " + project + " to graph. Cause: " + e.getMessage() ) );
+			Tools.logStacktrace( e, log );
 		}
 	}
 
@@ -211,7 +214,7 @@ public class PomAnalyzer
 		return true;
 	}
 
-	private void scanPomFiles( File file, WorkingSession session, ILogger log, Set<File> pomFiles )
+	private void scanPomFiles( File file, Session session, Log log, Set<File> pomFiles )
 	{
 		if( file == null )
 			return;
@@ -224,13 +227,10 @@ public class PomAnalyzer
 
 			try
 			{
-				Files.newDirectoryStream(
-						file.toPath(),
-						( filtered ) -> {
-							String filteredName = filtered.getFileName().toString();
-							return filteredName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( filteredName )
-									|| Files.isDirectory( filtered ) && acceptedDir( filteredName );
-						} ).forEach( ( path ) -> scanPomFiles( new File( path.toString() ), session, log, pomFiles ) );
+				Files.newDirectoryStream( file.toPath(), ( filtered ) -> {
+					String filteredName = filtered.getFileName().toString();
+					return filteredName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( filteredName ) || Files.isDirectory( filtered ) && acceptedDir( filteredName );
+				} ).forEach( ( path ) -> scanPomFiles( new File( path.toString() ), session, log, pomFiles ) );
 			}
 			catch( IOException e )
 			{
@@ -243,19 +243,18 @@ public class PomAnalyzer
 		}
 	}
 
-	private Project createAndRegisterProject( File pomFile, boolean isExternal, WorkingSession session, ILogger log )
+	private Project createAndRegisterProject( File pomFile, boolean isExternal, Session session, Log log )
 	{
 		try
 		{
-			Project project = new Project( pomFile, isExternal );
+			Project project = new Project( session, pomFile, isExternal );
 			session.projects().add( project );
 			session.repositories().add( project );
 			return project;
 		}
 		catch( Exception e )
 		{
-			log.html( Tools.errorMessage( "error loading pom file " + pomFile.getAbsolutePath() + ", message: "
-					+ e.getMessage() ) );
+			log.html( Tools.errorMessage( "error loading pom file " + pomFile.getAbsolutePath() + ", message: " + e.getMessage() ) );
 		}
 
 		return null;

@@ -13,7 +13,7 @@ public class Client
 
 	private final WebSocketChannel channel;
 
-	private WorkingSession currentSession;
+	private Session currentSession;
 
 	public Client( int id, WebSocketChannel channel )
 	{
@@ -21,12 +21,12 @@ public class Client
 		this.channel = channel;
 	}
 
-	public WorkingSession getCurrentSession()
+	public Session getCurrentSession()
 	{
 		return currentSession;
 	}
 
-	public void setCurrentSession( WorkingSession currentSession )
+	public void setCurrentSession( Session currentSession )
 	{
 		if( this.currentSession != null )
 			this.currentSession.removeClient( this );

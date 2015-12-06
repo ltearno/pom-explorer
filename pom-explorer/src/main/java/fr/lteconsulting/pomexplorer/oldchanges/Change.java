@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.changes;
+package fr.lteconsulting.pomexplorer.oldchanges;
 
 import java.util.ArrayList;
 import java.util.List;

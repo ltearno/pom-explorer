@@ -7,7 +7,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-import fr.lteconsulting.pomexplorer.ILogger;
+import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 
@@ -19,16 +19,17 @@ public class JavaSourceAnalyzer
 
 	private int nbFilesParsed = 0;
 
-	public void analyzeProject( Project project, boolean logFqns, ILogger log )
+	public void analyzeProject( Project project, boolean logFqns, Log log )
 	{
 		analyzeDirectory( Paths.get( project.getPomFile().getParent(), "src" ).toString(), logFqns, log );
 	}
 
-	public void analyzeDirectory( String directory, boolean logFqns, ILogger log )
+	public void analyzeDirectory( String directory, boolean logFqns, Log log )
 	{
 		log.html( "processing parsing java directory : " + directory + "<br/>" );
 		log.html( "<i><b>warning</b> : the analyzed fqns may contain false positives, because the java parsing is not fine tuned yet.<br/>"
-				+ "Also it does not detect references made to inner classes (that can be fixed) and through reflection (cannot be fixed), like Class.forName(...) calls.<br/>" + "Feel free to submit a pull request !</i><br/>" );
+				+ "Also it does not detect references made to inner classes (that can be fixed) and through reflection (cannot be fixed), like Class.forName(...) calls.<br/>"
+				+ "Feel free to submit a pull request !</i><br/>" );
 
 		processFile( new File( directory ) );
 

@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.GavTools;
-import fr.lteconsulting.pomexplorer.ILogger;
+import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.javac.JavaSourceAnalyzer;
@@ -19,7 +19,7 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 public class GarbageCommand
 {
 	@Help( "displays the list of dependencies declared but not used in the java code of a project and referenced transitive dependencies not declared in the pom file, arguments : gav_filter" )
-	public void dependencies( WorkingSession session, ILogger log, CommandOptions options, FilteredGAVs gavFilter )
+	public void dependencies( Session session, Log log, CommandOptions options, FilteredGAVs gavFilter )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 
@@ -36,17 +36,12 @@ public class GarbageCommand
 
 			// get all dependencies of the gav
 			Set<Gav> dependencies = new HashSet<>();
-			tx.relationsRec( gav ).stream()
-					.filter( r -> !(r instanceof BuildDependencyRelation) )
-					.map( r -> tx.targetOf( r ) )
-					.forEach( dependencies::add );
+			tx.relationsRec( gav ).stream().filter( r -> !(r instanceof BuildDependencyRelation) ).map( r -> tx.targetOf( r ) ).forEach( dependencies::add );
 			Set<Gav> directDependencies = new HashSet<>();
-			tx.dependencies( gav ).stream()
-					.map( dep -> tx.targetOf( dep ) )
-					.forEach( directDependencies::add );
+			tx.dependencies( gav ).stream().map( dep -> tx.targetOf( dep ) ).forEach( directDependencies::add );
 
 			log.html( "Considered project's dependencies:<br/>" );
-			dependencies.stream().sorted( Tools.gavAlphabeticalComparator ).forEachOrdered( g -> log.html( g + "<br/>" ) );
+			dependencies.stream().sorted( Gav.alphabeticalComparator ).forEachOrdered( g -> log.html( g + "<br/>" ) );
 
 			Map<Gav, Set<String>> providers = new HashMap<>();
 			Map<String, Set<Gav>> fqnProviders = new HashMap<>();
@@ -148,7 +143,7 @@ public class GarbageCommand
 
 			log.html( "GAV declared in project's hierarchy dependencies but not referenced in the project's sources (<i>may include false positives like imported or module poms</i>):<br/>" );
 			log.html( uselessGavs.size() + " declared but not used GAVs<br/>" );
-			uselessGavs.stream().sorted( Tools.gavAlphabeticalComparator ).forEachOrdered( g -> log.html( g + " (provides " + providers.get( g ).size() + " classes)<br/>" ) );
+			uselessGavs.stream().sorted( Gav.alphabeticalComparator ).forEachOrdered( g -> log.html( g + " (provides " + providers.get( g ).size() + " classes)<br/>" ) );
 			log.html( "<br/>" );
 
 			log.html( "Referenced FQNs from transitive dependencies :<br/>" );
@@ -158,7 +153,7 @@ public class GarbageCommand
 
 			log.html( "GAV declared directly in the project's dependencies but not referenced in the project's sources (<i>may include false positives like imported or module poms</i>):<br/>" );
 			log.html( uselessDirectGavs.size() + " declared but not used GAVs<br/>" );
-			uselessDirectGavs.stream().sorted( Tools.gavAlphabeticalComparator ).forEachOrdered( g -> log.html( g + " (provides " + providers.get( g ).size() + " classes)<br/>" ) );
+			uselessDirectGavs.stream().sorted( Gav.alphabeticalComparator ).forEachOrdered( g -> log.html( g + " (provides " + providers.get( g ).size() + " classes)<br/>" ) );
 			log.html( "<br/>" );
 		}
 	}

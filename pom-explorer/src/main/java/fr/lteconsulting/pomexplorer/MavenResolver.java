@@ -3,10 +3,13 @@ package fr.lteconsulting.pomexplorer;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -30,6 +33,10 @@ public class MavenResolver
 
 	private MavenRepositorySystem system;
 
+	private Settings settings;
+
+	private String localRepositoryPath;
+
 	private List<RemoteRepository> repositories;
 
 	private final Map<String, File> resolvedFiles = new HashMap<>();
@@ -46,13 +53,39 @@ public class MavenResolver
 		repositories = callMethod( mavenSession, "getRemoteRepositories" );
 		s = getField( mavenSession, "session" );
 		system = getField( mavenSession, "system" );
+		settings = getField( mavenSession, "settings" );
+		localRepositoryPath = getField( settings, "localRepository" );
 	}
 
 	public File resolvePom( Gav gav, String extension )
 	{
+		if( gav == null || !gav.isResolved() )
+			return null;
+
 		String key = gav.toString() + ":" + extension;
 
 		File pomFile = resolvedFiles.get( key );
+
+		if( pomFile == null && "pom".equals( extension ) && localRepositoryPath != null )
+		{
+			Path path = Paths.get( localRepositoryPath );
+			String[] parts = gav.getGroupId().split( "\\." );
+			if( parts != null )
+			{
+				for( String part : parts )
+					path = path.resolve( Paths.get( part ) );
+			}
+			path = path.resolve( Paths.get( gav.getArtifactId() ) );
+			path = path.resolve( Paths.get( gav.getVersion() ) );
+			path = path.resolve( gav.getArtifactId() + "-" + gav.getVersion() + ".pom" );
+
+			pomFile = path.toFile();
+			if( !pomFile.exists() || !pomFile.isFile() )
+				pomFile = null;
+			else
+				resolvedFiles.put( key, pomFile );
+		}
+
 		if( pomFile == null )
 		{
 			Artifact pomArtifact = new DefaultArtifact( gav.getGroupId(), gav.getArtifactId(), null, extension, gav.getVersion() );

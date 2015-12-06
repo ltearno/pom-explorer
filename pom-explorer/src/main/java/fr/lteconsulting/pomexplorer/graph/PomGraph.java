@@ -216,8 +216,7 @@ public class PomGraph
 		private Set<ParentRelation> filterParentRelations( Set<Relation> relations )
 		{
 			Set<ParentRelation> res = new HashSet<>();
-			relations.stream().filter( r -> r instanceof ParentRelation ).map( r -> (ParentRelation) r )
-					.forEach( r -> res.add( r ) );
+			relations.stream().filter( r -> r instanceof ParentRelation ).map( r -> (ParentRelation) r ).forEach( r -> res.add( r ) );
 
 			return res;
 		}
@@ -225,8 +224,7 @@ public class PomGraph
 		private Set<DependencyRelation> filterDependencyRelations( Set<Relation> relations )
 		{
 			Set<DependencyRelation> res = new HashSet<>();
-			relations.stream().filter( r -> r instanceof DependencyRelation ).map( r -> (DependencyRelation) r )
-					.forEach( r -> res.add( r ) );
+			relations.stream().filter( r -> r instanceof DependencyRelation ).map( r -> (DependencyRelation) r ).forEach( r -> res.add( r ) );
 
 			return res;
 		}
@@ -234,8 +232,7 @@ public class PomGraph
 		private Set<BuildDependencyRelation> filterBuildDependencyRelations( Set<Relation> relations )
 		{
 			Set<BuildDependencyRelation> res = new HashSet<>();
-			relations.stream().filter( r -> r instanceof BuildDependencyRelation ).map( r -> (BuildDependencyRelation) r )
-					.forEach( r -> res.add( r ) );
+			relations.stream().filter( r -> r instanceof BuildDependencyRelation ).map( r -> (BuildDependencyRelation) r ).forEach( r -> res.add( r ) );
 
 			return res;
 		}

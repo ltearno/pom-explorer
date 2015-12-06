@@ -4,23 +4,23 @@ import java.util.List;
 
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.GavTools;
-import fr.lteconsulting.pomexplorer.ILogger;
+import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.javac.JavaSourceAnalyzer;
 import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class ClassesCommand
 {
 	@Help( "gives the java classes provided by the session's gavs" )
-	public void main( WorkingSession session, ILogger log, Client client )
+	public void main( Session session, Log log, Client client )
 	{
 		providedBy( session, log, client, null );
 	}
 
 	@Help( "gives the java classes provided by the session's gavs, filtered by the given parameter" )
-	public void providedBy( WorkingSession session, ILogger log, Client client, FilteredGAVs gavFilter )
+	public void providedBy( Session session, Log log, Client client, FilteredGAVs gavFilter )
 	{
 		if( gavFilter == null )
 		{
@@ -52,7 +52,7 @@ public class ClassesCommand
 	 * references
 	 */
 	@Help( "gives the fqn list of referenced classes by the session's gavs, filtered by the given parameter" )
-	public void referencedBy( WorkingSession session, ILogger log, FilteredGAVs gavFilter )
+	public void referencedBy( Session session, Log log, FilteredGAVs gavFilter )
 	{
 		JavaSourceAnalyzer analyzer = new JavaSourceAnalyzer();
 

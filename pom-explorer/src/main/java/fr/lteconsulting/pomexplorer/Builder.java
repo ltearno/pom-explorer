@@ -22,7 +22,7 @@ public class Builder
 
 	private final String pipelineStatusTalkId = "buildPipelineStatus";
 
-	private WorkingSession session;
+	private Session session;
 
 	private final Set<Project> projectsToBuild = new HashSet<>();
 
@@ -32,7 +32,7 @@ public class Builder
 
 	private final Set<Project> erroredProjects = new HashSet<>();
 
-	public void setSession( WorkingSession session )
+	public void setSession( Session session )
 	{
 		this.session = session;
 	}
@@ -45,7 +45,7 @@ public class Builder
 		printBuildPipelineState( null );
 	}
 
-	public void buildProject( Project project, ILogger log )
+	public void buildProject( Project project, Log log )
 	{
 		if( !project.isBuildable() )
 		{
@@ -112,7 +112,9 @@ public class Builder
 			{
 				erroredProjects.add( toBuild );
 
-				error( "error building " + toBuild + " !<br/>this project and dependent ones are going to be removed from the build list.<br/>fix the problem which prevent the build to success and the build will restart automatically..." );
+				error( "error building "
+						+ toBuild
+						+ " !<br/>this project and dependent ones are going to be removed from the build list.<br/>fix the problem which prevent the build to success and the build will restart automatically..." );
 				dependentsAndSelf( toBuild.getGav() ).stream().map( g -> session.projects().forGav( g ) ).filter( p -> p != null ).forEach( p -> projectsToBuild.remove( p ) );
 			}
 
@@ -141,10 +143,12 @@ public class Builder
 				Project project = session.projects().forGav( gav );
 				if( project != null && (inDependenciesOfMaintainedProjects( project ) || projectsToBuildForced.contains( project )) )
 				{
-					sb.append( "<span class='" + (project == lastChangedProject ? "refreshedProject " : "") + (projectsToBuildForced.contains( project ) ? "BUILD FORCED " : "") + (projectsToBuild.contains( project ) ? "toBuildProject " : "")
-							+ (projectBuilding == project ? "buildingProject " : "") + (erroredProjects.contains( project ) ? "errorProject " : "") + (session.maintainedProjects().contains( project ) ? "maintainedProject " : "") + "'>" + project.getGav()
-							+ (session.maintainedProjects().contains( project ) ? " [maintained]" : "") + (projectBuilding == project ? " [building]" : "") + (projectsToBuild.contains( project ) ? " [build waiting...]" : "")
-							+ (erroredProjects.contains( project ) ? " [project in error]" : "") + "</span><br/>" );
+					sb.append( "<span class='" + (project == lastChangedProject ? "refreshedProject " : "") + (projectsToBuildForced.contains( project ) ? "BUILD FORCED " : "")
+							+ (projectsToBuild.contains( project ) ? "toBuildProject " : "") + (projectBuilding == project ? "buildingProject " : "")
+							+ (erroredProjects.contains( project ) ? "errorProject " : "") + (session.maintainedProjects().contains( project ) ? "maintainedProject " : "") + "'>"
+							+ project.getGav() + (session.maintainedProjects().contains( project ) ? " [maintained]" : "") + (projectBuilding == project ? " [building]" : "")
+							+ (projectsToBuild.contains( project ) ? " [build waiting...]" : "") + (erroredProjects.contains( project ) ? " [project in error]" : "")
+							+ "</span><br/>" );
 				}
 			}
 			sb.append( "<br/>" );
@@ -177,7 +181,8 @@ public class Builder
 			for( Gav gav : gavs )
 			{
 				Project project = session.projects().forGav( gav );
-				if( project != null && (!erroredProjects.contains( project )) && (projectsToBuildForced.contains( project ) || (projectsToBuild.contains( project ) && inDependenciesOfMaintainedProjects( project ))) )
+				if( project != null && (!erroredProjects.contains( project ))
+						&& (projectsToBuildForced.contains( project ) || (projectsToBuild.contains( project ) && inDependenciesOfMaintainedProjects( project ))) )
 				{
 					projectsToBuild.remove( project );
 					projectsToBuildForced.remove( project );
@@ -194,7 +199,7 @@ public class Builder
 		return null;
 	}
 
-	private void processProjectChange( WorkingSession session, Project project )
+	private void processProjectChange( Session session, Project project )
 	{
 		if( project == null || projectsToBuild.contains( project ) )
 			return;

@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import fr.lteconsulting.pomexplorer.change.graph.GraphChange;
+import fr.lteconsulting.pomexplorer.change.project.ProjectChange;
 import fr.lteconsulting.pomexplorer.graph.PomGraph;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
@@ -24,7 +26,7 @@ import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
  * @author Arnaud
  *
  */
-public class WorkingSession
+public class Session
 {
 	private String mavenSettingsFilePath = null;
 
@@ -46,7 +48,11 @@ public class WorkingSession
 
 	private final Map<String, MavenResolver> resolvers = new HashMap<>();
 
-	public WorkingSession()
+	private final Set<ProjectChange> projectChanges = new HashSet<>();
+
+	private final Set<GraphChange> graphChanges = new HashSet<>();
+
+	public Session()
 	{
 		builder.setSession( this );
 	}
@@ -95,6 +101,16 @@ public class WorkingSession
 		return builder;
 	}
 
+	public Set<ProjectChange> projectChanges()
+	{
+		return projectChanges;
+	}
+
+	public Set<GraphChange> graphChanges()
+	{
+		return graphChanges;
+	}
+
 	public void cleanBuildList()
 	{
 		builder.clearJobs();
@@ -124,10 +140,9 @@ public class WorkingSession
 	{
 		PomGraphReadTransaction tx = graph.read();
 		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : "
-				+ (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>"
-				+ "Maven shell command : "
-				+ (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>" + projects.size() + " projects<br/>"
-				+ tx.gavs().size() + " GAVs<br/>" + tx.relations().size() + " relations<br/></div>";
+				+ (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>" + "Maven shell command : "
+				+ (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>" + projects.size() + " projects<br/>" + tx.gavs().size() + " GAVs<br/>"
+				+ tx.relations().size() + " relations<br/></div>";
 	}
 
 	public void addClient( Client client )

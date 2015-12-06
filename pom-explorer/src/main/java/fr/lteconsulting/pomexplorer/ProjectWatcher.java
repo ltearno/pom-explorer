@@ -192,8 +192,7 @@ public class ProjectWatcher
 
 		try
 		{
-			WatchKey key = path.register( service, StandardWatchEventKinds.ENTRY_CREATE,
-					StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY );
+			WatchKey key = path.register( service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY );
 
 			keys.put( path, key );
 		}

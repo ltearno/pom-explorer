@@ -12,10 +12,9 @@ import java.util.Set;
 import org.jgrapht.alg.CycleDetector;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.ILogger;
+import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.model.Gav;
@@ -23,16 +22,18 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 public class CheckCommand
 {
 	@Help( "checks some commons points of errors, at least of attention..." )
-	public void main( Client client, WorkingSession session, ILogger log )
+	public void main( Client client, Session session, Log log )
 	{
 		StringBuilder sb = new StringBuilder();
 
 		CycleDetector<Gav, Relation> cycleDetector = new CycleDetector<>( session.graph().read().internalGraph() );
 		Set<Gav> cyclesGav = cycleDetector.findCycles();
 		if( cyclesGav != null && !cyclesGav.isEmpty() )
+		{
 			sb.append( "<b>There are cycles in the POM graph !<br/>Here are the gavs for the subgraph of all cycles:<br/>" );
-		cyclesGav.stream().sorted( Tools.gavAlphabeticalComparator ).forEach( gav -> sb.append( gav + "<br/>" ) );
-		sb.append( "<br/>" );
+			cyclesGav.stream().sorted( Gav.alphabeticalComparator ).forEach( gav -> sb.append( gav + "<br/>" ) );
+			sb.append( "<br/>" );
+		}
 
 		List<Gav> gavsWithoutProject = gavsWithoutProject( session );
 		sb.append( "<b>GAVs without projects</b><br/>" );
@@ -73,21 +74,19 @@ public class CheckCommand
 		else
 		{
 			sb.append( multipleGavs.size() + " GAVs with multiple versions :<br/>" );
-			multipleGavs.entrySet().stream().sorted( ( a, b ) -> a.getKey().toString().compareTo( b.getKey().toString() ) )
-					.forEach( e ->
-					{
-						sb.append( e.getKey() + " : " );
-						boolean coma = false;
-						for( Gav gav : e.getValue() )
-						{
-							if( coma )
-								sb.append( ", " );
-							else
-								coma = true;
-							sb.append( "" + gav.getVersion() );
-						}
-						sb.append( "<br/>" );
-					} );
+			multipleGavs.entrySet().stream().sorted( ( a, b ) -> a.getKey().toString().compareTo( b.getKey().toString() ) ).forEach( e -> {
+				sb.append( e.getKey() + " : " );
+				boolean coma = false;
+				for( Gav gav : e.getValue() )
+				{
+					if( coma )
+						sb.append( ", " );
+					else
+						coma = true;
+					sb.append( "" + gav.getVersion() );
+				}
+				sb.append( "<br/>" );
+			} );
 		}
 
 		sb.append( "done.<br/>" );
@@ -95,7 +94,7 @@ public class CheckCommand
 		log.html( sb.toString() );
 	}
 
-	private Map<MiniGAV, Set<Gav>> multipleGavs( WorkingSession session )
+	private Map<MiniGAV, Set<Gav>> multipleGavs( Session session )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		Map<MiniGAV, Set<Gav>> prov = new HashMap<>();
@@ -122,7 +121,7 @@ public class CheckCommand
 		return res;
 	}
 
-	private List<Gav> gavsWithoutProject( WorkingSession session )
+	private List<Gav> gavsWithoutProject( Session session )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		Set<Gav> res = new HashSet<Gav>();
@@ -135,7 +134,7 @@ public class CheckCommand
 
 		ArrayList<Gav> list = new ArrayList<Gav>();
 		list.addAll( res );
-		Collections.sort( list, Tools.gavAlphabeticalComparator );
+		Collections.sort( list, Gav.alphabeticalComparator );
 
 		return list;
 	}

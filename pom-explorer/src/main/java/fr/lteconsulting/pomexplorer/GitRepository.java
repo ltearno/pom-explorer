@@ -53,7 +53,7 @@ public class GitRepository
 		return path.hashCode();
 	}
 
-	public void getStatus( ILogger log, boolean details )
+	public void getStatus( Log log, boolean details )
 	{
 		ensureOpen();
 
@@ -61,7 +61,8 @@ public class GitRepository
 		try( Git git = Git.open( Paths.get( path.toString(), ".git" ).toFile() ) )
 		{
 			status = git.status().call();
-			int nb = status.getAdded().size() + status.getChanged().size() + status.getConflicting().size() + status.getMissing().size() + status.getModified().size() + status.getRemoved().size();
+			int nb = status.getAdded().size() + status.getChanged().size() + status.getConflicting().size() + status.getMissing().size() + status.getModified().size()
+					+ status.getRemoved().size();
 
 			log.html( (nb > 0 ? "[*] " : "[ ] ") + path.toAbsolutePath().toString() );
 			log.html( " " + git.getRepository().getBranch() );

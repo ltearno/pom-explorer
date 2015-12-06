@@ -9,13 +9,12 @@ import fr.lteconsulting.autothreaded.AutoThreaded;
 @AutoThreaded
 public class MavenBuildTask
 {
-	public Boolean build( WorkingSession session, Project project, String talkId )
+	public Boolean build( Session session, Project project, String talkId )
 	{
 		try
 		{
 			log( session, project, talkId, "start ..." );
-			Process p = Runtime.getRuntime().exec(
-					new String[] { session.getMavenShellCommand(), "install", "-N", "-B", "-DskipTests" }, null,
+			Process p = Runtime.getRuntime().exec( new String[] { session.getMavenShellCommand(), "install", "-N", "-B", "-DskipTests" }, null,
 					project.getPomFile().getParentFile() );
 
 			BufferedReader reader = new BufferedReader( new InputStreamReader( p.getInputStream(), "ISO-8859-1" ) );
@@ -39,7 +38,7 @@ public class MavenBuildTask
 		}
 	}
 
-	private void log( WorkingSession session, Project project, String talkId, String message )
+	private void log( Session session, Project project, String talkId, String message )
 	{
 		message = Tools.buildMessage( "[building " + project.getGav() + "] " + message );
 		for( Client client : session.getClients() )

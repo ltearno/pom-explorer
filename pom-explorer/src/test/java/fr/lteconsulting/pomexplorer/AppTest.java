@@ -3,7 +3,6 @@ package fr.lteconsulting.pomexplorer;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.model.Gav;
 
 /**

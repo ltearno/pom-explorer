@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jgrapht.DirectedGraph;
-
 import com.google.gson.Gson;
 
 import fr.lteconsulting.pomexplorer.commands.AnalyzeCommand;
@@ -15,7 +13,6 @@ import fr.lteconsulting.pomexplorer.commands.ChangeCommand;
 import fr.lteconsulting.pomexplorer.commands.CheckCommand;
 import fr.lteconsulting.pomexplorer.commands.ClassesCommand;
 import fr.lteconsulting.pomexplorer.commands.Commands;
-import fr.lteconsulting.pomexplorer.commands.DependsCommand;
 import fr.lteconsulting.pomexplorer.commands.ExportCommand;
 import fr.lteconsulting.pomexplorer.commands.GarbageCommand;
 import fr.lteconsulting.pomexplorer.commands.GavCommand;
@@ -23,7 +20,6 @@ import fr.lteconsulting.pomexplorer.commands.GitCommand;
 import fr.lteconsulting.pomexplorer.commands.GraphCommand;
 import fr.lteconsulting.pomexplorer.commands.HelpCommand;
 import fr.lteconsulting.pomexplorer.commands.ProjectsCommand;
-import fr.lteconsulting.pomexplorer.commands.ReleaseCommand;
 import fr.lteconsulting.pomexplorer.commands.SessionCommand;
 import fr.lteconsulting.pomexplorer.commands.StatsCommand;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
@@ -48,7 +44,7 @@ public class AppFactory
 		return INSTANCE;
 	}
 
-	private final List<WorkingSession> sessions = new ArrayList<>();
+	private final List<Session> sessions = new ArrayList<>();
 
 	private Commands commands;
 
@@ -56,7 +52,7 @@ public class AppFactory
 
 	private WebServer webServer;
 
-	public List<WorkingSession> sessions()
+	public List<Session> sessions()
 	{
 		return sessions;
 	}
@@ -74,8 +70,6 @@ public class AppFactory
 			commands.addCommand( new StatsCommand() );
 			commands.addCommand( new GavCommand() );
 			commands.addCommand( new ProjectsCommand() );
-			commands.addCommand( new DependsCommand() );
-			commands.addCommand( new ReleaseCommand() );
 			commands.addCommand( new ChangeCommand() );
 			commands.addCommand( new BuildCommand() );
 			commands.addCommand( new GraphCommand() );
@@ -181,18 +175,18 @@ public class AppFactory
 		@Override
 		public String onGraphQuery( String sessionIdString, String graphQueryId )
 		{
-			List<WorkingSession> sessions = AppFactory.get().sessions();
+			List<Session> sessions = AppFactory.get().sessions();
 			if( sessions == null || sessions.isEmpty() )
 				return "No session available. Go to main page !";
 
-			WorkingSession session = null;
+			Session session = null;
 
 			try
 			{
 				Integer sessionId = Integer.parseInt( sessionIdString );
 				if( sessionId != null )
 				{
-					for( WorkingSession s : sessions )
+					for( Session s : sessions )
 					{
 						if( System.identityHashCode( s ) == sessionId )
 						{
@@ -283,9 +277,9 @@ public class AppFactory
 		}
 	}
 
-	private ILogger createLogger( Client client, String talkId )
+	private Log createLogger( Client client, String talkId )
 	{
-		return new ILogger()
+		return new Log()
 		{
 			@Override
 			public void html( String log )

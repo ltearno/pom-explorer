@@ -15,7 +15,7 @@ public class ProjectsWatcher
 {
 	private final Map<Project, ProjectWatcher> watchers = new HashMap<>();
 
-	public void watchProject( Project project, ILogger log )
+	public void watchProject( Project project, Log log )
 	{
 		if( !project.isBuildable() )
 		{
@@ -26,7 +26,7 @@ public class ProjectsWatcher
 		if( watchers.containsKey( project ) )
 			return;
 
-		ProjectWatcher watcher = new ProjectWatcher( Paths.get( project.getPath() ) );
+		ProjectWatcher watcher = new ProjectWatcher( Paths.get( project.getPomFile().getParentFile().getAbsolutePath() ) );
 		watchers.put( project, watcher );
 
 		try

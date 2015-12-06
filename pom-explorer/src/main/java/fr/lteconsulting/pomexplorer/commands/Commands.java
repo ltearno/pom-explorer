@@ -11,9 +11,10 @@ import java.util.Map.Entry;
 
 import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.ILogger;
+import fr.lteconsulting.pomexplorer.Log;
+import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.WorkingSession;
 import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class Commands
@@ -70,8 +71,7 @@ public class Commands
 				{
 					Class<?> pCls = m.getParameterTypes()[i];
 
-					if( pCls == Client.class || pCls == WorkingSession.class || pCls == CommandOptions.class
-							|| pCls == ILogger.class )
+					if( pCls == Client.class || pCls == Session.class || pCls == CommandOptions.class || pCls == Log.class )
 						continue;
 
 					sb.append( " <b><i>" + m.getParameters()[i].getName() + "</i></b>" );
@@ -91,7 +91,7 @@ public class Commands
 	/**
 	 * Returns the error or null if success
 	 */
-	public void takeCommand( Client client, ILogger log, String text )
+	public void takeCommand( Client client, Log log, String text )
 	{
 		if( text == null || text.isEmpty() )
 		{
@@ -108,7 +108,7 @@ public class Commands
 			return;
 
 		CommandOptions options = new CommandOptions();
-		WorkingSession session = null;
+		Session session = client.getCurrentSession();
 		Class<?>[] argTypes = info.method.getParameterTypes();
 		Object[] args = new Object[argTypes.length];
 		int curPart = 2;
@@ -142,23 +142,19 @@ public class Commands
 					continue;
 				}
 
-				if( argTypes[curArg] == ILogger.class )
+				if( argTypes[curArg] == Log.class )
 				{
 					args[curArg] = log;
 					curArg++;
 					continue;
 				}
 
-				if( argTypes[curArg] == WorkingSession.class )
+				if( argTypes[curArg] == Session.class )
 				{
 					if( session == null )
 					{
-						session = client.getCurrentSession();
-						if( session == null )
-						{
-							log.html( Tools.warningMessage( "you should have a session, type 'session create'." ) );
-							return;
-						}
+						log.html( Tools.warningMessage( "you should have a session, type 'session create'." ) );
+						return;
 					}
 
 					args[curArg] = session;
@@ -186,8 +182,26 @@ public class Commands
 					args[curArg] = parts[curPart] == null ? null : Gav.parse( parts[curPart] );
 					if( args[curArg] == null )
 					{
-						log.html( Tools.warningMessage( "Argument " + (curArg + 1)
-								+ " should be a GAV specified with the group:artifact:version format please" ) );
+						log.html( Tools.warningMessage( "Argument " + (curArg + 1) + " should be a GAV specified with the group:artifact:version format please" ) );
+						return;
+					}
+					curArg++;
+					curPart++;
+					continue;
+				}
+
+				if( argTypes[curArg] == Project.class )
+				{
+					if( session == null )
+					{
+						log.html( Tools.warningMessage( "you should have a session, type 'session create'." ) );
+						return;
+					}
+
+					args[curArg] = parts[curPart] == null ? null : session.projects().forGav( Gav.parse( parts[curPart] ) );
+					if( args[curArg] == null )
+					{
+						log.html( Tools.warningMessage( "Argument " + (curArg + 1) + " should be a GAV specified with the group:artifact:version format please" ) );
 						return;
 					}
 					curArg++;
@@ -215,9 +229,7 @@ public class Commands
 			log.html( "Command class : <b>" + info.command.getClass().getSimpleName() + "</b><br/>" );
 			log.html( "Command method : <b>" + info.method.getName() + "</b><br/>" );
 			for( Object a : args )
-				log.html( "Argument : "
-						+ (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString()))
-						+ "<br/>" );
+				log.html( "Argument : " + (a == null ? "(null)" : ("class: " + a.getClass().getName() + " toString : " + a.toString())) + "<br/>" );
 
 			Tools.logStacktrace( e, log );
 		}
@@ -237,7 +249,7 @@ public class Commands
 	}
 
 	// public for testing
-	public CommandCallInfo findMethodForCommand( String[] parts, ILogger log )
+	public CommandCallInfo findMethodForCommand( String[] parts, Log log )
 	{
 		if( parts.length < 1 )
 		{
@@ -245,8 +257,7 @@ public class Commands
 			return null;
 		}
 
-		List<Entry<String, Object>> potentialCommands = Tools.filter( commands.entrySet(),
-				( e ) -> e.getKey().toLowerCase().startsWith( parts[0].toLowerCase() ) );
+		List<Entry<String, Object>> potentialCommands = Tools.filter( commands.entrySet(), ( e ) -> e.getKey().toLowerCase().startsWith( parts[0].toLowerCase() ) );
 
 		if( potentialCommands == null || potentialCommands.isEmpty() )
 		{
@@ -297,8 +308,7 @@ public class Commands
 			@Override
 			public Boolean exec( Method m )
 			{
-				return Modifier.isPublic( m.getModifiers() ) && m.getName().toLowerCase().startsWith( verb.toLowerCase() )
-						&& getRealParametersCount( m ) == nbParamsGiven;
+				return Modifier.isPublic( m.getModifiers() ) && m.getName().toLowerCase().startsWith( verb.toLowerCase() ) && getRealParametersCount( m ) == nbParamsGiven;
 			}
 		} );
 
@@ -313,7 +323,7 @@ public class Commands
 		int c = 0;
 		for( Class<?> t : m.getParameterTypes() )
 		{
-			if( t != Client.class && t != WorkingSession.class && t != CommandOptions.class && t != ILogger.class )
+			if( t != Client.class && t != Session.class && t != CommandOptions.class && t != Log.class )
 				c++;
 		}
 		return c;

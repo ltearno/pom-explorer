@@ -2,9 +2,20 @@ package fr.lteconsulting.pomexplorer.model;
 
 public class GroupArtifact
 {
-	protected final String groupId;
+	private final String groupId;
+	private final String artifactId;
 
-	protected final String artifactId;
+	public static GroupArtifact parse( String string )
+	{
+		if( string == null )
+			return null;
+
+		String[] parts = string.split( ":" );
+		if( parts == null || parts.length != 2 )
+			return null;
+
+		return new GroupArtifact( parts[0], parts[1] );
+	}
 
 	public GroupArtifact( String groupId, String artifactId )
 	{
@@ -20,6 +31,12 @@ public class GroupArtifact
 	public String getArtifactId()
 	{
 		return artifactId;
+	}
+
+	@Override
+	public String toString()
+	{
+		return groupId + ":" + artifactId;
 	}
 
 	@Override

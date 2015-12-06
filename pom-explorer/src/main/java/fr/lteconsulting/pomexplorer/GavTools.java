@@ -12,7 +12,7 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class GavTools
 {
-	public static List<String> analyseProvidedClasses( WorkingSession session, Gav gav, ILogger log )
+	public static List<String> analyseProvidedClasses( Session session, Gav gav, Log log )
 	{
 		log.html( "<br/><b>Java classes provided by gav " + gav + "</b> :<br/>" );
 

@@ -4,17 +4,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.ILogger;
+import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class BuildCommand
 {
 	@Help( "clear the build list. any currently building process will finish and no other will be started" )
-	public void stop( WorkingSession session, ILogger log )
+	public void stop( Session session, Log log )
 	{
 		session.cleanBuildList();
 
@@ -22,10 +22,9 @@ public class BuildCommand
 	}
 
 	@Help( "build the project(s) with the specified gav(s)" )
-	public void gav( WorkingSession session, ILogger log, FilteredGAVs gavs )
+	public void gav( Session session, Log log, FilteredGAVs gavs )
 	{
-		gavs.getGavs( session ).forEach( gav ->
-		{
+		gavs.getGavs( session ).forEach( gav -> {
 			Project project = session.projects().forGav( gav );
 			if( project == null )
 			{
@@ -40,14 +39,14 @@ public class BuildCommand
 	}
 
 	@Help( "builds all the watched projects, like if they were touched" )
-	public void all( WorkingSession session, ILogger log )
+	public void all( Session session, Log log )
 	{
 		log.html( "all watched projects marked to be built." );
 		session.builder().buildAll();
 	}
 
 	@Help( "adds a GAV to the list of maintained projects. A project needs to be found for that GAV." )
-	public void maintain( Client client, WorkingSession session, ILogger log, FilteredGAVs gavs )
+	public void maintain( Client client, Session session, Log log, FilteredGAVs gavs )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		Set<Gav> toWatch = new HashSet<>();
@@ -92,7 +91,7 @@ public class BuildCommand
 	}
 
 	@Help( "Displays the list of maintained projects in this working session." )
-	public void listMaintained( WorkingSession session, ILogger log )
+	public void listMaintained( Session session, Log log )
 	{
 		if( session.maintainedProjects().isEmpty() )
 		{

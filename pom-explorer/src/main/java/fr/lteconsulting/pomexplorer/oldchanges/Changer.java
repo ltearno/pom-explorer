@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.changes;
+package fr.lteconsulting.pomexplorer.oldchanges;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,10 +21,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import fr.lteconsulting.pomexplorer.ILogger;
+import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.PomSection;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.WorkingSession;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.depanalyze.GavLocation;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.model.Gav;
@@ -36,7 +36,7 @@ public class Changer
 
 	XPath xPath = XPathFactory.newInstance().newXPath();
 
-	public void doChanges( WorkingSession session, ChangeSetManager changes, ILogger log )
+	public void doChanges( Session session, ChangeSetManager changes, Log log )
 	{
 		for( Change<? extends Location> change : changes )
 		{
@@ -115,7 +115,7 @@ public class Changer
 		}
 	}
 
-	private void doChange( Document document, GavChange change, ILogger log )
+	private void doChange( Document document, GavChange change, Log log )
 	{
 		log.html( "[" + change.getLocation().getSection() + "] " );
 
@@ -149,7 +149,7 @@ public class Changer
 		}
 	}
 
-	private void replaceProject( Document document, GavChange change, ILogger log )
+	private void replaceProject( Document document, GavChange change, Log log )
 	{
 		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project";
@@ -157,7 +157,7 @@ public class Changer
 		replaceDependency( document, change, log, replacedGav, expression );
 	}
 
-	private void replaceParent( Document document, GavChange change, ILogger log )
+	private void replaceParent( Document document, GavChange change, Log log )
 	{
 		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project/parent";
@@ -165,7 +165,7 @@ public class Changer
 		replaceDependency( document, change, log, replacedGav, expression );
 	}
 
-	private void replacePlugin( Document document, GavChange change, ILogger log )
+	private void replacePlugin( Document document, GavChange change, Log log )
 	{
 		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project/build/plugins/plugin";
@@ -173,7 +173,7 @@ public class Changer
 		replaceDependency( document, change, log, replacedGav, expression );
 	}
 
-	private void replaceDependency( Document document, GavChange change, ILogger log )
+	private void replaceDependency( Document document, GavChange change, Log log )
 	{
 		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project/dependencies/dependency";
@@ -181,7 +181,7 @@ public class Changer
 		replaceDependency( document, change, log, replacedGav, expression );
 	}
 
-	private void replaceDependencyManagement( Document document, GavChange change, ILogger log )
+	private void replaceDependencyManagement( Document document, GavChange change, Log log )
 	{
 		Gav replacedGav = change.getLocation().getGav();
 		String expression = "/project/dependencyManagement/dependencies/dependency";
@@ -189,7 +189,7 @@ public class Changer
 		replaceDependency( document, change, log, replacedGav, expression );
 	}
 
-	private void replaceDependency( Document document, GavChange change, ILogger log, Gav replacedGav, String expression )
+	private void replaceDependency( Document document, GavChange change, Log log, Gav replacedGav, String expression )
 	{
 		NodeList nodeList = null;
 		try
@@ -219,12 +219,13 @@ public class Changer
 
 				// replace the version value
 				setGavInDependencyNode( change.getNewGav(), depNode );
-				log.html( "'" + gav + "' updated to '" + change.getNewGav() + "' in '" + (change.getLocation().getProject() != null ? change.getLocation().getProject().getGav() : "-") + "'<br/>" );
+				log.html( "'" + gav + "' updated to '" + change.getNewGav() + "' in '"
+						+ (change.getLocation().getProject() != null ? change.getLocation().getProject().getGav() : "-") + "'<br/>" );
 			}
 		}
 	}
 
-	private void doChange( Document document, PropertyChange change, ILogger log )
+	private void doChange( Document document, PropertyChange change, Log log )
 	{
 		String property = change.getLocation().getPropertyName();
 

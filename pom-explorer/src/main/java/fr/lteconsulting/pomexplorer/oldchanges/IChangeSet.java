@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.changes;
+package fr.lteconsulting.pomexplorer.oldchanges;
 
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 

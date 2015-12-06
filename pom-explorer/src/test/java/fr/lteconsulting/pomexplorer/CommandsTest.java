@@ -17,7 +17,7 @@ public class CommandsTest extends TestCase
 	public void testOne()
 	{
 		Commands cmd = AppFactory.get().commands();
-		ILogger log = new ILogger()
+		Log log = new Log()
 		{
 			@Override
 			public void html( String log )

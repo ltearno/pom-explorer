@@ -1,6 +1,6 @@
 package fr.lteconsulting.pomexplorer;
 
-public interface ILogger
+public interface Log
 {
 	void html( String log );
 

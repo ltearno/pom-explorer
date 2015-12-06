@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.changes;
+package fr.lteconsulting.pomexplorer.oldchanges;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,12 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import fr.lteconsulting.pomexplorer.ILogger;
-import fr.lteconsulting.pomexplorer.WorkingSession;
-import fr.lteconsulting.pomexplorer.changes.processor.FollowGavProcessor;
-import fr.lteconsulting.pomexplorer.changes.processor.GavToPropertyProcessor;
-import fr.lteconsulting.pomexplorer.changes.processor.NoVersionProjectProcessor;
-import fr.lteconsulting.pomexplorer.changes.processor.ReopenerProcessor;
+import fr.lteconsulting.pomexplorer.Log;
+import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.depanalyze.Location;
 
 /**
@@ -36,10 +32,6 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 
 	public ChangeSetManager()
 	{
-		addProcessor( new NoVersionProjectProcessor() );
-		addProcessor( new FollowGavProcessor() );
-		addProcessor( new GavToPropertyProcessor() );
-		addProcessor( new ReopenerProcessor() );
 	}
 
 	public void addProcessor( IChangeProcessor processor )
@@ -90,7 +82,7 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 	/**
 	 * Process change resolution
 	 */
-	public void resolveChanges( WorkingSession session, ILogger log )
+	public void resolveChanges( Session session, Log log )
 	{
 		log.html( "<br/>Resolving changes...<br/><br/>" );
 
@@ -122,7 +114,7 @@ public class ChangeSetManager implements IChangeSet, Iterable<Change<? extends L
 		}
 	}
 
-	private void processChange( WorkingSession session, ILogger log, ChangeInfo info )
+	private void processChange( Session session, Log log, ChangeInfo info )
 	{
 
 		for( IChangeProcessor processor : processors )

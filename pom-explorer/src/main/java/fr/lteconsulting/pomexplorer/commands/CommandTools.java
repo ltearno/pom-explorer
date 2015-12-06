@@ -1,13 +1,13 @@
 package fr.lteconsulting.pomexplorer.commands;
 
-import fr.lteconsulting.pomexplorer.ILogger;
-import fr.lteconsulting.pomexplorer.WorkingSession;
-import fr.lteconsulting.pomexplorer.changes.ChangeSetManager;
-import fr.lteconsulting.pomexplorer.changes.Changer;
+import fr.lteconsulting.pomexplorer.Log;
+import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.oldchanges.ChangeSetManager;
+import fr.lteconsulting.pomexplorer.oldchanges.Changer;
 
 public class CommandTools
 {
-	public static void maybeApplyChanges( WorkingSession session, CommandOptions options, ILogger log, ChangeSetManager changes )
+	public static void maybeApplyChanges( Session session, CommandOptions options, Log log, ChangeSetManager changes )
 	{
 		if( Boolean.TRUE.equals( options.getOption( "apply" ) ) )
 		{
