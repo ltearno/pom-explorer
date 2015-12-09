@@ -13,13 +13,23 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class ProjectRepository
 {
+	private final Session session;
+
 	private final Map<Gav, Project> projects = new HashMap<>();
 
-	public Project fetchProject( Gav gav, Session session, Log log )
+	public ProjectRepository( Session session )
 	{
+		this.session = session;
+	}
+
+	public Project fetchProject( Gav gav, boolean online, Log log )
+	{
+		if( contains( gav ) )
+			return forGav( gav );
+
 		PomAnalyzer analyzer = new PomAnalyzer();
 
-		Project project = analyzer.fetchGavWithMaven( session, log, gav );
+		Project project = analyzer.fetchGavWithMaven( session, log, gav, online );
 
 		return project;
 	}

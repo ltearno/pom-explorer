@@ -34,7 +34,7 @@ public class Session
 
 	private final GitRepositories gitRepositories = new GitRepositories();
 
-	private final ProjectRepository projects = new ProjectRepository();
+	private final ProjectRepository projects = new ProjectRepository( this );
 
 	private final PomGraph graph = new PomGraph();
 

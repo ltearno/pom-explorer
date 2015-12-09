@@ -22,6 +22,11 @@ public class Dependency
 		this( gav.getGroupId(), gav.getArtifactId(), gav.getVersion(), scope, classifier, type );
 	}
 
+	public Dependency( DependencyKey key, Scope scope, String version )
+	{
+		this( key.getGroupId(), key.getArtifactId(), version, scope, key.getClassifier(), key.getType() );
+	}
+
 	public Dependency( String groupId, String artifactId, String version, Scope scope, String classifier, String type )
 	{
 		this.groupId = groupId;

@@ -46,7 +46,9 @@ public class GavCommand
 	@Help( "analyze all the gav's dependencies and add them in the pom graph." )
 	public void add( Session session, Log log, Client client, Gav gav )
 	{
-		Project project = session.projects().fetchProject( gav, session, log );
+		log.html( "analyzing " + gav + "...<br/>" );
+		PomAnalyzer analyzer = new PomAnalyzer();
+		Project project = analyzer.fetchGavWithMaven( session, log, gav, true );
 		if( project == null )
 			log.html( Tools.errorMessage( "cannot fetch project " + gav ) );
 		else
@@ -61,26 +63,8 @@ public class GavCommand
 
 		tx.gavs().stream().filter( gav -> session.projects().forGav( gav ) == null ).parallel().forEach( gav -> {
 			log.html( "analyzing " + gav + "...<br/>" );
-			analyzer.fetchGavWithMaven( session, log, gav );
+			analyzer.fetchGavWithMaven( session, log, gav, true );
 		} );
-
-		log.html( "finished !<br/>" );
-	}
-
-	@Help( "load a gav from repository and analyze it" )
-	public void load( Session session, Log log, Client client, String gavString )
-	{
-		PomAnalyzer analyzer = new PomAnalyzer();
-
-		Gav gav = Gav.parse( gavString );
-		if( gav == null )
-		{
-			log.html( Tools.warningMessage( "the string '" + gavString + "' is not parsable into a fully qualified GAV (groupId:artifactId:version) !" ) );
-			return;
-		}
-
-		log.html( "analyzing " + gav + "...<br/>" );
-		analyzer.fetchGavWithMaven( session, log, gav );
 
 		log.html( "finished !<br/>" );
 	}

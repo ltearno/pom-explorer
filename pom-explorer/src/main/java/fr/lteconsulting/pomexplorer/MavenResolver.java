@@ -57,14 +57,19 @@ public class MavenResolver
 		localRepositoryPath = getField( settings, "localRepository" );
 	}
 
-	public File resolvePom( Gav gav, String extension )
+	public File resolvePom( Gav gav, String extension, boolean online )
 	{
 		if( gav == null || !gav.isResolved() )
 			return null;
 
 		String key = gav.toString() + ":" + extension;
 
+		if( gav.getVersion().startsWith( "[" ) )
+			return null;
+
 		File pomFile = resolvedFiles.get( key );
+		if( resolvedFiles.containsKey( key ) )
+			return pomFile;
 
 		if( pomFile == null && "pom".equals( extension ) && localRepositoryPath != null )
 		{
@@ -82,11 +87,9 @@ public class MavenResolver
 			pomFile = path.toFile();
 			if( !pomFile.exists() || !pomFile.isFile() )
 				pomFile = null;
-			else
-				resolvedFiles.put( key, pomFile );
 		}
 
-		if( pomFile == null )
+		if( pomFile == null && online )
 		{
 			Artifact pomArtifact = new DefaultArtifact( gav.getGroupId(), gav.getArtifactId(), null, extension, gav.getVersion() );
 			try
@@ -100,8 +103,9 @@ public class MavenResolver
 			}
 
 			pomFile = pomArtifact.getFile();
-			resolvedFiles.put( key, pomFile );
 		}
+
+		resolvedFiles.put( key, pomFile );
 
 		return pomFile;
 	}
