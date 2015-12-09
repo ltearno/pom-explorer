@@ -322,7 +322,7 @@ input[type=text]:focus.terminal {
 
         terminal.input.focus();
         
-        var socket = new WebSocket("ws://localhost:90/ws");
+        var socket = new WebSocket("ws://"+window.location.hostname+":"+window.location.port+"/ws");
 		socket.onopen = function (event) {
 			terminal.print("connected to the server.", "ff" + Math.random());
 		};

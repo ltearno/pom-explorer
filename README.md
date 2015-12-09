@@ -43,6 +43,10 @@ Then go with your browser on this address
 
 	http://localhost:90
 
+If your environment does not allow you to use the `90` tcp port, you can specify the listening port like this :
+
+	java -jar pom-explorer/target/pom-explorer.jar PORT
+
 This is the console to the application. You can type commands in the prompt, they will be sent to the server and it will answer.
 
 Let's start by typing `?` to get the available commands :

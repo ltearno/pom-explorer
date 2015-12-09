@@ -94,7 +94,7 @@ public class WebServer
 		return DATA_FILE_PREFIX_URL + fileName;
 	}
 
-	public void start()
+	public void start( int port )
 	{
 		PathHandler pathHandler = new PathHandler();
 
@@ -193,7 +193,7 @@ public class WebServer
 			}
 		} ) );
 
-		Undertow server = Undertow.builder().addHttpListener( 90, "0.0.0.0" ).setHandler( pathHandler ).build();
+		Undertow server = Undertow.builder().addHttpListener( port, "0.0.0.0" ).setHandler( pathHandler ).build();
 		server.start();
 	}
 }
