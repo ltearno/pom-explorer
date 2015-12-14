@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import org.jboss.shrinkwrap.resolver.impl.maven.MavenWorkingSessionImpl;
 import org.jboss.shrinkwrap.resolver.impl.maven.bootstrap.MavenRepositorySystem;
 
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
 
 public class MavenResolver
 {
@@ -59,6 +61,11 @@ public class MavenResolver
 
 	public File resolvePom( Gav gav, String extension, boolean online )
 	{
+		return resolvePom( gav, extension, online, null );
+	}
+
+	public File resolvePom( Gav gav, String extension, boolean online, List<Repository> additionalRepos )
+	{
 		if( gav == null || !gav.isResolved() )
 			return null;
 
@@ -94,7 +101,16 @@ public class MavenResolver
 			Artifact pomArtifact = new DefaultArtifact( gav.getGroupId(), gav.getArtifactId(), null, extension, gav.getVersion() );
 			try
 			{
-				ArtifactRequest request = new ArtifactRequest( pomArtifact, repositories, null );
+				List<RemoteRepository> remoteRepos = repositories;
+				if( false && additionalRepos != null )
+				{
+					remoteRepos = new ArrayList<>( remoteRepos );
+					for( Repository r : additionalRepos )
+					{
+						remoteRepos.add( new RemoteRepository.Builder( r.getId(), "default", r.getUrl() ).build() );
+					}
+				}
+				ArtifactRequest request = new ArtifactRequest( pomArtifact, remoteRepos, null );
 				pomArtifact = system.resolveArtifact( s, request ).getArtifact();
 			}
 			catch( ArtifactResolutionException e )

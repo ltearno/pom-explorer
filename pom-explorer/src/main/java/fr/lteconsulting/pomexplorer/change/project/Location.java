@@ -5,7 +5,7 @@ import fr.lteconsulting.pomexplorer.model.GroupArtifact;
 
 public class Location
 {
-	static class Parent extends Location
+	public static class Parent extends Location
 	{
 		@Override
 		public String toString()
@@ -14,7 +14,7 @@ public class Location
 		}
 	}
 
-	static class Project extends Location
+	public static class Project extends Location
 	{
 		@Override
 		public String toString()
@@ -23,7 +23,7 @@ public class Location
 		}
 	}
 
-	static class Property extends Location
+	public static class Property extends Location
 	{
 		@Override
 		public String toString()
@@ -32,7 +32,7 @@ public class Location
 		}
 	}
 
-	static class Dependency extends Location
+	public static class Dependency extends Location
 	{
 		private final DependencyKey key;
 
@@ -79,7 +79,7 @@ public class Location
 
 	}
 
-	static class DependencyManagement extends Location
+	public static class DependencyManagement extends Location
 	{
 		private final DependencyKey key;
 
@@ -126,7 +126,7 @@ public class Location
 
 	}
 
-	static class Plugin extends Location
+	public static class Plugin extends Location
 	{
 		private final GroupArtifact key;
 
@@ -173,7 +173,7 @@ public class Location
 
 	}
 
-	static class PluginManagement extends Location
+	public static class PluginManagement extends Location
 	{
 		private final GroupArtifact key;
 

@@ -5,10 +5,12 @@ import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -32,6 +34,7 @@ import fr.lteconsulting.pomexplorer.model.VersionScope;
 import fr.lteconsulting.pomexplorer.model.transitivity.DependencyManagement;
 import fr.lteconsulting.pomexplorer.model.transitivity.DependencyNode;
 import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
+import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
 
 /**
  * A POM project information
@@ -261,29 +264,16 @@ public class Project
 		return !isExternal && pomFile.getParentFile().toPath().resolve( "src" ).toFile().exists();
 	}
 
-	public Set<Gav> getMissingGavsForResolution( Log log )
-	{
-		return getMissingGavsForResolution( log, null );
-	}
-
-	public Set<Gav> getMissingGavsForResolution( Log log, Set<Gav> gavs )
+	public boolean fetchMissingGavsForResolution( boolean online, Log log )
 	{
 		if( parentGav != null )
 		{
-			if( gavs == null )
-				gavs = new HashSet<>();
-
-			Project parentProject = session.projects().forGav( parentGav );
+			Project parentProject = session.projects().fetchProject( parentGav, online, log );
 			if( parentProject == null )
-			{
-				gavs.add( parentGav );
-			}
-			else
-			{
-				Set<Gav> missingGavs = parentProject.getMissingGavsForResolution( log );
-				if( missingGavs != null )
-					gavs.addAll( missingGavs );
-			}
+				return false;
+
+			if( !parentProject.fetchMissingGavsForResolution( online, log ) )
+				return false;
 		}
 
 		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
@@ -300,23 +290,17 @@ public class Project
 
 					Gav bomGav = resolveGav( new Gav( d.getGroupId(), d.getArtifactId(), version ), log );
 
-					Project bomProject = session.projects().forGav( bomGav );
+					Project bomProject = session.projects().fetchProject( bomGav, online, log );
 					if( bomProject == null )
-					{
-						if( gavs == null )
-							gavs = new HashSet<>();
+						return false;
 
-						gavs.add( bomGav );
-					}
-					else
-					{
-						bomProject.getMissingGavsForResolution( log, gavs );
-					}
+					if( !bomProject.fetchMissingGavsForResolution( online, log ) )
+						return false;
 				}
 			}
 		}
 
-		return gavs;
+		return true;
 	}
 
 	public Map<DependencyKey, DependencyManagement> getLocalDependencyManagement( Map<DependencyKey, DependencyManagement> result, boolean online, Log log )
@@ -662,8 +646,11 @@ public class Project
 				if( scope == Scope.IMPORT || scope == Scope.SYSTEM )
 					continue;
 
+				// get remote repositories
+				List<Repository> additionalRepos = node.getProject().getProjectRepositories( log );
+
 				Gav dependencyGav = new Gav( dependencyKey.getGroupId(), dependencyKey.getArtifactId(), version );
-				Project childProject = session.projects().fetchProject( dependencyGav, online, log );
+				Project childProject = session.projects().fetchProject( dependencyGav, online, additionalRepos, log );
 				if( childProject == null )
 				{
 					// TODO : use specified repositories if needed !
@@ -690,6 +677,29 @@ public class Project
 				nodeQueue.add( child );
 			}
 		}
+	}
+
+	private List<Repository> getProjectRepositories( Log log )
+	{
+		List<Repository> res = null;
+
+		Project current = this;
+		while( current != null )
+		{
+			if( current.project.getRepositories() != null && !current.project.getRepositories().isEmpty() )
+			{
+				if( res == null )
+					res = new ArrayList<>();
+
+				for( org.apache.maven.model.Repository r : current.project.getRepositories() )
+				{
+					res.add( new Repository( r.getId(), r.getUrl() ) );
+				}
+			}
+			current = current.getParentProject( true, log );
+		}
+
+		return res;
 	}
 
 	private boolean isGroupArtifactExcluded( DependencyNode node, GroupArtifact ga )

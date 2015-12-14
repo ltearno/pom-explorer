@@ -47,9 +47,14 @@ public class ProjectChange extends Change
 	public static final String TYPE = "type";
 	public static final String CLASSIFIER = "classifier";
 
+	public static ProjectChange set( Project project, Location location, String nodeName, String value )
+	{
+		return new ProjectChange( project, location, value != null ? Action.SET : Action.REMOVE, nodeName, value );
+	}
+
 	public static ProjectChange set( Project project, String location, String nodeName, String value )
 	{
-		return new ProjectChange( project, parse( location ), Action.SET, nodeName, value );
+		return set( project, parse( location ), nodeName, value );
 	}
 
 	public static ProjectChange remove( Project project, String location, String nodeName )
@@ -60,6 +65,21 @@ public class ProjectChange extends Change
 	public static ProjectChange parentGroupId( Project project, String value )
 	{
 		return new ProjectChange( project, new Location.Parent(), Action.SET, GROUP_ID, value );
+	}
+
+	public static ProjectChange setDependency( Project project, DependencyKey key, String nodeName, String newValue )
+	{
+		return set( project, new Location.Dependency( key ), nodeName, newValue );
+	}
+
+	public static ProjectChange setPlugin( Project project, GroupArtifact key, String nodeName, String newValue )
+	{
+		return set( project, new Location.Plugin( key ), nodeName, newValue );
+	}
+
+	public static ProjectChange setParent( Project project, String nodeName, String newValue )
+	{
+		return set( project, new Location.Parent(), nodeName, newValue );
 	}
 
 	/**
@@ -137,7 +157,7 @@ public class ProjectChange extends Change
 		return "unknown project change";
 	}
 
-	private ProjectChange( Project project, Location location, Action action, String nodeName, String newValue )
+	public ProjectChange( Project project, Location location, Action action, String nodeName, String newValue )
 	{
 		this.project = project;
 		this.location = location;

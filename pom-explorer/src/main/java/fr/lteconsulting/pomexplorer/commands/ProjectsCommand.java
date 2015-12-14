@@ -81,9 +81,9 @@ public class ProjectsCommand
 			if( project.isBuildable() )
 				log.append( "<span class='badge'>buildable</span>" );
 
-			Set<Gav> missingProjects = project.getMissingGavsForResolution( logi, null );
-			if( missingProjects != null && !missingProjects.isEmpty() )
-				log.append( "<span class='badge error'>not resolvable</span>" );
+			Set<Gav> missingProjects = null;// project.getMissingGavsForResolution( logi, null );
+			// if( missingProjects != null && !missingProjects.isEmpty() )
+			// log.append( "<span class='badge error'>not resolvable</span>" );
 
 			log.append( "<span class='gav'>" + project.getGav().getGroupId() + ":<span class='artifactId'>" + project.getGav().getArtifactId() + "</span>:"
 					+ project.getGav().getVersion() + "</span>" );

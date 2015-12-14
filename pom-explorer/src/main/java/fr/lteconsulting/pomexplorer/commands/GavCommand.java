@@ -7,6 +7,7 @@ import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
 import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class GavCommand
@@ -50,9 +51,16 @@ public class GavCommand
 		PomAnalyzer analyzer = new PomAnalyzer();
 		Project project = analyzer.fetchGavWithMaven( session, log, gav, true );
 		if( project == null )
+		{
 			log.html( Tools.errorMessage( "cannot fetch project " + gav ) );
+		}
 		else
+		{
 			log.html( "project " + project + " fetched successfully.<br/>" );
+			PomGraphWriteTransaction tx = session.graph().write();
+			analyzer.addProjectToGraph( project, tx, true, true, session, log );
+			tx.commit();
+		}
 	}
 
 	@Help( "analyze gavs which have no associated project" )

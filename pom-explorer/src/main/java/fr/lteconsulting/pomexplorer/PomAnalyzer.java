@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
@@ -15,6 +16,7 @@ import fr.lteconsulting.pomexplorer.model.Dependency;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.model.transitivity.DependencyNode;
+import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
 
 public class PomAnalyzer
 {
@@ -29,7 +31,14 @@ public class PomAnalyzer
 		long duration = System.currentTimeMillis();
 
 		Set<File> pomFiles = new HashSet<>();
-		scanPomFiles( new File( directory ), session, log, pomFiles );
+		File file = new File( directory );
+		if( !file.exists() )
+		{
+			log.html( Tools.errorMessage( "'" + directory + "' does not exist !" ) );
+		}
+		scanPomFiles( file, session, log, pomFiles );
+
+		Set<Project> unresolvableProjects = new HashSet<>();
 
 		Set<Project> loadedProjects = new HashSet<>();
 		for( File pomFile : pomFiles )
@@ -39,16 +48,26 @@ public class PomAnalyzer
 				loadedProjects.add( project );
 		}
 
-		log.html( "graph update<br/>" );
+		log.html( "fetching additional projects (parents and boms)<br/>" );
 
 		PomGraphWriteTransaction tx = session.graph().write();
 
+		Set<Project> toGraphProjects = new HashSet<>();
 		for( Project project : loadedProjects )
 		{
-			assert project.getMissingGavsForResolution( log, new HashSet<>() ).isEmpty() : "error : not resolvable project should not be in this set !";
+			if( project.fetchMissingGavsForResolution( online, log ) )
+				toGraphProjects.add( project );
+			else
+				unresolvableProjects.add( project );
+		}
 
+		for( Project project : toGraphProjects )
+		{
 			addProjectToGraph( project, tx, fetchMissingProjects, online, session, log );
 		}
+
+		for( Project unresolvable : unresolvableProjects )
+			session.projects().remove( unresolvable );
 
 		tx.commit();
 
@@ -60,25 +79,33 @@ public class PomAnalyzer
 			loadedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
 		}
 
-		log.html( "<br/>analysis report: " + loadedProjects.size() + " loaded projects, projects added to the pom graph in " + duration + " ms.<br/>" );
+		log.html( "<br/>analysis report:<br/>" + loadedProjects.size() + " projects loaded and added to the pom graph,<br/>" + toGraphProjects.size()
+				+ " projects added to graph,<br/>in " + duration + " ms.<br/>" );
+
+		if( !unresolvableProjects.isEmpty() )
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append( unresolvableProjects.size() + " unresolvable projects:<br/>" );
+			sb.append( "<ul>" );
+			unresolvableProjects.stream().sorted( Project.alphabeticalComparator ).forEach( g -> sb.append( "<li>" + g + "</li>" ) );
+			sb.append( "</ul>" );
+			log.html( sb.toString() );
+		}
 	}
 
-	/**
-	 * Takes a GAV, download it if needed, analyse its dependencies and add them to the graph
-	 *
-	 * @param gav
-	 *            gav to be analyzed
-	 * @param session
-	 *            working session
-	 */
 	public Project fetchGavWithMaven( Session session, Log log, Gav gav, boolean online )
+	{
+		return fetchGavWithMaven( session, log, gav, online, null );
+	}
+
+	public Project fetchGavWithMaven( Session session, Log log, Gav gav, boolean online, List<Repository> additionalRepos )
 	{
 		if( gav == null || !gav.isResolved() || gav.getVersion().startsWith( "[" ) || gav.getVersion().startsWith( "@" ) )
 			return null;
 
 		MavenResolver resolver = session.mavenResolver();
 
-		File pomFile = resolver.resolvePom( gav, "pom", online );
+		File pomFile = resolver.resolvePom( gav, "pom", online, additionalRepos );
 
 		Project project = null;
 		if( pomFile != null )
@@ -90,7 +117,7 @@ public class PomAnalyzer
 		return project;
 	}
 
-	private void addProjectToGraph( Project project, PomGraphWriteTransaction tx, boolean fetchMissingProjects, boolean online, Session session, Log log )
+	public void addProjectToGraph( Project project, PomGraphWriteTransaction tx, boolean fetchMissingProjects, boolean online, Session session, Log log )
 	{
 		tx.removeRelations( tx.relations( project.getGav() ) );
 

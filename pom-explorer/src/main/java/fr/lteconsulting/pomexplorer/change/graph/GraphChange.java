@@ -21,6 +21,29 @@ public abstract class GraphChange extends Change
 		this.newValue = newTarget;
 	}
 
+	public interface Visitor
+	{
+		void visit( ParentChange parentChange );
+
+		void visit( DependencyChange change );
+
+		void visit( PluginChange change );
+
+		void visit( GavChange change );
+	}
+
+	public void visit( Visitor v )
+	{
+		if( this instanceof ParentChange )
+			v.visit( (ParentChange) this );
+		if( this instanceof DependencyChange )
+			v.visit( (DependencyChange) this );
+		if( this instanceof PluginChange )
+			v.visit( (PluginChange) this );
+		if( this instanceof GavChange )
+			v.visit( (GavChange) this );
+	}
+
 	public abstract static class RelationChange extends GraphChange
 	{
 		enum Action
@@ -117,6 +140,11 @@ public abstract class GraphChange extends Change
 			super( source, newTarget );
 			this.relationKey = relationKey;
 		}
+		
+		public DependencyKey getRelationKey()
+		{
+			return relationKey;
+		}
 
 		@Override
 		public String toString()
@@ -137,6 +165,11 @@ public abstract class GraphChange extends Change
 		{
 			super( source, newTarget );
 			this.relationKey = relationKey;
+		}
+		
+		public GroupArtifact getRelationKey()
+		{
+			return relationKey;
 		}
 
 		@Override

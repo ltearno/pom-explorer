@@ -5,18 +5,29 @@ import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.change.Change.ChangeCause;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange;
+import fr.lteconsulting.pomexplorer.change.graph.GraphChange.DependencyChange;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange.GavChange;
+import fr.lteconsulting.pomexplorer.change.graph.GraphChange.ParentChange;
+import fr.lteconsulting.pomexplorer.change.graph.GraphChange.PluginChange;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange.RelationChange;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChangeProcessing;
 import fr.lteconsulting.pomexplorer.change.project.ProjectChange;
+import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.model.GroupArtifact;
 
 public class ChangeCommand
 {
+	@Help( "lists the change set" )
+	public void main( Session session, Log log )
+	{
+		list( session, log );
+	}
+
 	@Help( "lists the change set" )
 	public void list( Session session, Log log )
 	{
@@ -63,6 +74,7 @@ public class ChangeCommand
 				}
 				sb.append( "<br/>" );
 			} );
+			log.html( sb.toString() );
 		}
 	}
 
@@ -86,7 +98,7 @@ public class ChangeCommand
 		session.graphChanges().clear();
 
 		log.html( "resolving " + changes.size() + " graph changes...<br/>" );
-		log.html( "<i>project changes will be generated from those graph structure changes</i><br/>" );
+		log.html( "<i>project changes will be generated from graph structure changes</i><br/>" );
 
 		for( GraphChange change : changes )
 		{
@@ -97,22 +109,74 @@ public class ChangeCommand
 				continue;
 			}
 
-			if( change instanceof GavChange )
+			// - change something which is defined as a property => change the property value instead
+			// - change a project's version when it is defined by the parent's version => change the parent version.
+			// - same for groupId...
+			// TODO : if groupId is defined by the parent, change the parent instead
+			// TODO : if the version is defined by the parent, change the parent version instead
+			change.visit( new GraphChange.Visitor()
 			{
-				Gav newValue = change.getNewValue();
+				@Override
+				public void visit( GavChange change )
+				{
+					Gav newValue = change.getNewValue();
+					assert newValue != null;
 
-				// TODO same kind of processor system :
-				// - change something which is defined as a property => change the proerty value instead
-				// - change a project's version when it is defined by the parent's version => change the parent version.
-				// - same for groupId...
+					String groupId = newValue.getGroupId() != null ? newValue.getGroupId() : null;
+					String artifactId = newValue.getArtifactId() != null ? newValue.getArtifactId() : null;
+					String version = newValue.getVersion() != null ? newValue.getVersion() : null;
 
-				// the most simple one : change the project's gav
-				// TODO : if groupId is defined by the parent, change the parent instead
-				session.projectChanges().add( ProjectChange.set( changedProject, "project", "groupId", newValue.getGroupId() ) );
-				session.projectChanges().add( ProjectChange.set( changedProject, "project", "artifactId", newValue.getArtifactId() ) );
-				// TODO : if the version is defined by the parent, change the parent version instead
-				session.projectChanges().add( ProjectChange.set( changedProject, "project", "version", newValue.getVersion() ) );
-			}
+					session.projectChanges().add( ProjectChange.set( changedProject, "project", "groupId", groupId ) );
+					session.projectChanges().add( ProjectChange.set( changedProject, "project", "artifactId", artifactId ) );
+					session.projectChanges().add( ProjectChange.set( changedProject, "project", "version", version ) );
+				}
+
+				@Override
+				public void visit( PluginChange change )
+				{
+					Gav newTarget = change.getNewValue();
+					GroupArtifact key = change.getRelationKey();
+					assert key != null;
+
+					String groupId = newTarget != null ? newTarget.getGroupId() : null;
+					String artifactId = newTarget != null ? newTarget.getArtifactId() : null;
+					String version = newTarget != null ? newTarget.getVersion() : null;
+
+					session.projectChanges().add( ProjectChange.setPlugin( changedProject, key, "groupId", groupId ) );
+					session.projectChanges().add( ProjectChange.setPlugin( changedProject, key, "artifactId", artifactId ) );
+					session.projectChanges().add( ProjectChange.setPlugin( changedProject, key, "version", version ) );
+				}
+
+				@Override
+				public void visit( DependencyChange change )
+				{
+					Gav newTarget = change.getNewValue();
+					DependencyKey key = change.getRelationKey();
+					assert key != null;
+
+					String groupId = newTarget != null ? newTarget.getGroupId() : null;
+					String artifactId = newTarget != null ? newTarget.getArtifactId() : null;
+					String version = newTarget != null ? newTarget.getVersion() : null;
+
+					session.projectChanges().add( ProjectChange.setDependency( changedProject, key, "groupId", groupId ) );
+					session.projectChanges().add( ProjectChange.setDependency( changedProject, key, "artifactId", artifactId ) );
+					session.projectChanges().add( ProjectChange.setDependency( changedProject, key, "version", version ) );
+				}
+
+				@Override
+				public void visit( ParentChange parentChange )
+				{
+					Gav newParent = parentChange.getNewValue();
+
+					String groupId = newParent != null ? newParent.getGroupId() : null;
+					String artifactId = newParent != null ? newParent.getArtifactId() : null;
+					String version = newParent != null ? newParent.getVersion() : null;
+
+					session.projectChanges().add( ProjectChange.setParent( changedProject, "groupId", groupId ) );
+					session.projectChanges().add( ProjectChange.setParent( changedProject, "artifactId", artifactId ) );
+					session.projectChanges().add( ProjectChange.setParent( changedProject, "version", version ) );
+				}
+			} );
 		}
 	}
 
