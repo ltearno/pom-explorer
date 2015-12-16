@@ -1,5 +1,6 @@
 package fr.lteconsulting.pomexplorer.commands;
 
+import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -58,7 +59,8 @@ public class ProjectsCommand
 		logi.html( "<i>possible options: managed, nofetch, offline</i><br/>" );
 
 		StringBuilder log = new StringBuilder();
-		List<Project> list = gavFilter.getGavs( session ).stream().map( gav -> session.projects().forGav( gav ) ).filter( p -> p != null ).sorted( Project.alphabeticalComparator ).collect( toList() );
+		List<Project> list = gavFilter.getGavs( session ).stream().map( gav -> session.projects().forGav( gav ) ).filter( p -> p != null ).sorted( Project.alphabeticalComparator )
+				.collect( toList() );
 		if( list.isEmpty() )
 		{
 			logi.html( "found no project corresponding to your search...<br/>" );
@@ -85,7 +87,8 @@ public class ProjectsCommand
 			// if( missingProjects != null && !missingProjects.isEmpty() )
 			// log.append( "<span class='badge error'>not resolvable</span>" );
 
-			log.append( "<span class='gav'>" + project.getGav().getGroupId() + ":<span class='artifactId'>" + project.getGav().getArtifactId() + "</span>:" + project.getGav().getVersion() + "</span>" );
+			log.append( "<span class='gav'>" + project.getGav().getGroupId() + ":<span class='artifactId'>" + project.getGav().getArtifactId() + "</span>:"
+					+ project.getGav().getVersion() + "</span>" );
 			log.append( "</div>" );
 
 			log.append( "<div class='properties'>" );
@@ -141,10 +144,11 @@ public class ProjectsCommand
 		if( mavenProject.getPluginManagement() != null && mavenProject.getPluginManagement().getPlugins() != null && !mavenProject.getPluginManagement().getPlugins().isEmpty() )
 		{
 			sb.append( "<div><div>plugin management</div><div>" );
-			mavenProject.getPluginManagement().getPlugins().stream().map( p -> new Gav( p.getGroupId(), p.getArtifactId(), p.getVersion() ) ).sorted( Gav.alphabeticalComparator ).forEach( gav -> {
-				showGav( project, gav, sb, log );
-				sb.append( "<br/>" );
-			} );
+			mavenProject.getPluginManagement().getPlugins().stream().map( p -> new Gav( p.getGroupId(), p.getArtifactId(), p.getVersion() ) ).sorted( Gav.alphabeticalComparator )
+					.forEach( gav -> {
+						showGav( project, gav, sb, log );
+						sb.append( "<br/>" );
+					} );
 			sb.append( "</div></div>" );
 		}
 	}
@@ -155,10 +159,12 @@ public class ProjectsCommand
 		if( mavenProject.getDependencies() != null && !mavenProject.getDependencies().isEmpty() )
 		{
 			sb.append( "<div><div>dependencies</div><div>" );
-			mavenProject.getDependencies().stream().map( d -> new Dependency( d.getGroupId(), d.getArtifactId(), d.getVersion(), Scope.fromString( d.getScope() ), d.getClassifier(), d.getType() ) ).sorted( Dependency.alphabeticalComparator ).forEach( dependency -> {
-				showDependency( project, dependency, sb, log );
-				sb.append( "<br/>" );
-			} );
+			mavenProject.getDependencies().stream()
+					.map( d -> new Dependency( d.getGroupId(), d.getArtifactId(), d.getVersion(), Scope.fromString( d.getScope() ), d.getClassifier(), d.getType() ) )
+					.sorted( Dependency.alphabeticalComparator ).forEach( dependency -> {
+						showDependency( project, dependency, sb, log );
+						sb.append( "<br/>" );
+					} );
 			sb.append( "</div></div>" );
 		}
 	}
@@ -169,7 +175,9 @@ public class ProjectsCommand
 		if( mavenProject.getDependencyManagement() != null && !mavenProject.getDependencyManagement().getDependencies().isEmpty() )
 		{
 			sb.append( "<div><div>dependency management</div><div>" );
-			mavenProject.getDependencyManagement().getDependencies().stream().map( d -> new Dependency( d.getGroupId(), d.getArtifactId(), d.getVersion(), Scope.fromString( d.getScope() ), d.getClassifier(), d.getType() ) ).sorted( Dependency.alphabeticalComparator )
+			mavenProject.getDependencyManagement().getDependencies().stream()
+					.map( d -> new Dependency( d.getGroupId(), d.getArtifactId(), d.getVersion(), Scope.fromString( d.getScope() ), d.getClassifier(), d.getType() ) )
+					.sorted( Dependency.alphabeticalComparator )
 					.forEach( dependency -> {
 						showDependency( project, dependency, sb, log );
 						sb.append( "<br/>" );
@@ -216,11 +224,11 @@ public class ProjectsCommand
 		{
 			sb.append( resolution.getResolved() );
 
-			sb.append( "<span class='inline-badge'>" );
+			sb.append( " <span class='inline-badge'>" );
 
-			if( properties.size() == 1 )
+			if( isMavenVariable( value ) )
 			{
-				sb.append( " (" + Tools.getPropertyNameFromPropertyReference( value ) + ")" );
+				sb.append( "(" + Tools.getPropertyNameFromPropertyReference( value ) + ")" );
 			}
 			else
 			{
@@ -324,7 +332,8 @@ public class ProjectsCommand
 		}
 	}
 
-	private void showTransitiveDependencies( boolean showManaged, boolean fetchMissingProjects, boolean online, StringBuilder sb, PomGraphReadTransaction tx, Project project, Session session, Log log )
+	private void showTransitiveDependencies( boolean showManaged, boolean fetchMissingProjects, boolean online, StringBuilder sb, PomGraphReadTransaction tx, Project project,
+			Session session, Log log )
 	{
 		sb.append( "<div><div>transitive dependencies</div><div>" );
 

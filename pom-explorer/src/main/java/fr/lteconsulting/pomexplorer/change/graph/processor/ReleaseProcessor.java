@@ -3,9 +3,9 @@ package fr.lteconsulting.pomexplorer.change.graph.processor;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.change.ChangeProcessor;
+import fr.lteconsulting.pomexplorer.change.ChangeSet;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange;
-import fr.lteconsulting.pomexplorer.change.graph.ChangeProcessor;
-import fr.lteconsulting.pomexplorer.change.graph.ChangeSet;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange.GavChange;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 

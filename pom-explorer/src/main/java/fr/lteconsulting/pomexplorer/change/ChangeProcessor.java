@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.change.graph;
+package fr.lteconsulting.pomexplorer.change;
 
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Session;

@@ -1,9 +1,21 @@
 package fr.lteconsulting.pomexplorer.change.project;
 
+import java.util.Map;
+
+import fr.lteconsulting.Mandatory;
+import fr.lteconsulting.UseBuilderGenerator;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.change.Change;
+import fr.lteconsulting.pomexplorer.change.project.Location.Dependency;
+import fr.lteconsulting.pomexplorer.change.project.Location.DependencyManagement;
+import fr.lteconsulting.pomexplorer.change.project.Location.Parent;
+import fr.lteconsulting.pomexplorer.change.project.Location.Plugin;
+import fr.lteconsulting.pomexplorer.change.project.Location.PluginManagement;
+import fr.lteconsulting.pomexplorer.change.project.Location.Property;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
+import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.model.GroupArtifact;
+import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
 
 public class ProjectChange extends Change
 {
@@ -47,6 +59,115 @@ public class ProjectChange extends Change
 	public static final String TYPE = "type";
 	public static final String CLASSIFIER = "classifier";
 
+	public Location getLocation()
+	{
+		return location;
+	}
+
+	public String getNewValue()
+	{
+		return newValue;
+	}
+
+	public String getNodeName()
+	{
+		return nodeName;
+	}
+
+	public String getCurrentValue()
+	{
+		return location.visit( new Location.Visitor<String>()
+		{
+			@Override
+			public String visit( PluginManagement pluginManagement )
+			{
+				throw new IllegalStateException( "nyi" );
+			}
+
+			@Override
+			public String visit( Plugin plugin )
+			{
+				throw new IllegalStateException( "nyi" );
+			}
+
+			@Override
+			public String visit( DependencyManagement dependencyManagement )
+			{
+				throw new IllegalStateException( "nyi" );
+			}
+
+			@Override
+			public String visit( Dependency dependency )
+			{
+				Map<DependencyKey, RawDependency> deps = project.getRawDependencies();
+				DependencyKey key = dependency.getKey();
+
+				RawDependency dep = deps.get( key );
+				if( dep == null )
+					return null;
+
+				return getDependencyValue( key, dep, nodeName );
+			}
+
+			@Override
+			public String visit( Property property )
+			{
+				return project.getProperties().get( nodeName );
+			}
+
+			@Override
+			public String visit( fr.lteconsulting.pomexplorer.change.project.Location.Project project )
+			{
+				Gav gav = ProjectChange.this.project.getDeclaredGav();
+				return getGavValue( gav, nodeName );
+			}
+
+			@Override
+			public String visit( Parent parent )
+			{
+				Gav gav = ProjectChange.this.project.getDeclaredParentGav();
+				return getGavValue( gav, nodeName );
+			}
+		} );
+	}
+
+	private static String getDependencyValue( DependencyKey key, RawDependency dep, String nodeName )
+	{
+		switch( nodeName )
+		{
+			case GROUP_ID:
+				return key.getGroupId();
+			case ARTIFACT_ID:
+				return key.getArtifactId();
+			case VERSION:
+				return dep.getVs().getVersion();
+			case SCOPE:
+				// TODO bad !
+				return dep.getVs().getScope().toString().toLowerCase();
+			case TYPE:
+				return key.getType();
+			case CLASSIFIER:
+				return key.getClassifier();
+			default:
+				throw new IllegalArgumentException( "this node name is illegal for a Dependency location: " + nodeName );
+		}
+	}
+
+	private static String getGavValue( Gav gav, String nodeName )
+	{
+		switch( nodeName )
+		{
+			case GROUP_ID:
+				return gav.getGroupId();
+			case ARTIFACT_ID:
+				return gav.getArtifactId();
+			case VERSION:
+				return gav.getVersion();
+			default:
+				throw new IllegalArgumentException( "this node name is illegal for a Gav location: " + nodeName );
+		}
+	}
+
 	public static ProjectChange set( Project project, Location location, String nodeName, String value )
 	{
 		return new ProjectChange( project, location, value != null ? Action.SET : Action.REMOVE, nodeName, value );
@@ -65,6 +186,17 @@ public class ProjectChange extends Change
 	public static ProjectChange parentGroupId( Project project, String value )
 	{
 		return new ProjectChange( project, new Location.Parent(), Action.SET, GROUP_ID, value );
+	}
+
+	public static ProjectChange setProject( Project project, String nodeName, String newValue )
+	{
+		return set( project, new Location.Project(), nodeName, newValue );
+	}
+
+	@UseBuilderGenerator
+	public static ProjectChange setProperty( @Mandatory Project project, @Mandatory String propertyName, @Mandatory String newValue )
+	{
+		return set( project, new Location.Property(), propertyName, newValue );
 	}
 
 	public static ProjectChange setDependency( Project project, DependencyKey key, String nodeName, String newValue )

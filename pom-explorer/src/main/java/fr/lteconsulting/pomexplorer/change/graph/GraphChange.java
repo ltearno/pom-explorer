@@ -140,7 +140,7 @@ public abstract class GraphChange extends Change
 			super( source, newTarget );
 			this.relationKey = relationKey;
 		}
-		
+
 		public DependencyKey getRelationKey()
 		{
 			return relationKey;
@@ -166,7 +166,7 @@ public abstract class GraphChange extends Change
 			super( source, newTarget );
 			this.relationKey = relationKey;
 		}
-		
+
 		public GroupArtifact getRelationKey()
 		{
 			return relationKey;

@@ -15,12 +15,12 @@ public class DependencyManagement
 	{
 		this.vs = vs;
 	}
-	
+
 	public VersionScope getVs()
 	{
 		return vs;
 	}
-	
+
 	public Set<GroupArtifact> getExclusions()
 	{
 		return exclusions;
@@ -30,7 +30,7 @@ public class DependencyManagement
 	{
 		if( this.exclusions == null )
 			exclusions = new HashSet<>();
-		
+
 		exclusions.add( ga );
 	}
 }

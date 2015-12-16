@@ -23,7 +23,7 @@ public class ProjectRepository
 	{
 		this.session = session;
 	}
-	
+
 	public Project fetchProject( Gav gav, boolean online, Log log )
 	{
 		return fetchProject( gav, online, null, log );

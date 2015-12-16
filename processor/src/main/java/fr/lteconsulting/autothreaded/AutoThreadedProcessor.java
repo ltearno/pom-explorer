@@ -23,7 +23,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 @SupportedAnnotationTypes( AutoThreadedProcessor.AnnotationFqn )
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion( SourceVersion.RELEASE_8 )
 public class AutoThreadedProcessor extends AbstractProcessor
 {
 	public final static String AnnotationFqn = "fr.lteconsulting.autothreaded.AutoThreaded";
@@ -38,6 +38,8 @@ public class AutoThreadedProcessor extends AbstractProcessor
 			else
 				processClass( element );
 		}
+
+		roundEnv.errorRaised();
 
 		return true;
 	}
@@ -156,7 +158,7 @@ public class AutoThreadedProcessor extends AbstractProcessor
 		StringBuilder delegate = new StringBuilder();
 		StringBuilder methods = new StringBuilder();
 		StringBuilder loopEntry = new StringBuilder();
-		
+
 		int id = -1;
 		for( Element child : element.getEnclosedElements() )
 		{
@@ -169,9 +171,9 @@ public class AutoThreadedProcessor extends AbstractProcessor
 			{
 				processingEnv.getMessager().printMessage( Kind.NOTE, "This method will be called on loop entry", child );
 				loopEntry.append( "                    " + autothreadedName + ".this.onEmptyMessageQueue();" );
-				
+
 				constructor.append( " true " );
-				
+
 				continue;
 			}
 

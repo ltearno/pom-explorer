@@ -5,6 +5,43 @@ import fr.lteconsulting.pomexplorer.model.GroupArtifact;
 
 public class Location
 {
+	public interface Visitor<R>
+	{
+		R visit( Parent parent );
+
+		R visit( Project project );
+
+		R visit( Property property );
+
+		R visit( Dependency dependency );
+
+		R visit( DependencyManagement dependencyManagement );
+
+		R visit( Plugin plugin );
+
+		R visit( PluginManagement pluginManagement );
+	}
+
+	public <R> R visit( Visitor<R> v )
+	{
+		if( this instanceof Parent )
+			return v.visit( (Parent) this );
+		if( this instanceof Project )
+			return v.visit( (Project) this );
+		if( this instanceof Property )
+			return v.visit( (Property) this );
+		if( this instanceof Dependency )
+			return v.visit( (Dependency) this );
+		if( this instanceof DependencyManagement )
+			return v.visit( (DependencyManagement) this );
+		if( this instanceof Plugin )
+			return v.visit( (Plugin) this );
+		if( this instanceof PluginManagement )
+			return v.visit( (PluginManagement) this );
+
+		throw new RuntimeException();
+	}
+
 	public static class Parent extends Location
 	{
 		@Override
@@ -48,6 +85,11 @@ public class Location
 			return "dependency " + key;
 		}
 
+		public DependencyKey getKey()
+		{
+			return key;
+		}
+
 		@Override
 		public int hashCode()
 		{
@@ -87,6 +129,11 @@ public class Location
 		{
 			assert key != null;
 			this.key = key;
+		}
+
+		public DependencyKey getKey()
+		{
+			return key;
 		}
 
 		@Override
@@ -181,6 +228,11 @@ public class Location
 		{
 			assert key != null;
 			this.key = key;
+		}
+
+		public GroupArtifact getKey()
+		{
+			return key;
 		}
 
 		@Override

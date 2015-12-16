@@ -120,11 +120,11 @@ public class WebServer
 						exchange.getResponseHeaders().put( Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"" );
 						exchange.getResponseSender().send( buf );
 					}
-					else
-					{
-						exchange.getResponseSender().send( "not found !" );
-					}
-				} );
+						else
+						{
+							exchange.getResponseSender().send( "not found !" );
+						}
+					} );
 			}
 
 			private ByteBuffer readFile( String path )

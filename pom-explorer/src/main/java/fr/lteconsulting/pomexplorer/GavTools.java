@@ -18,7 +18,7 @@ public class GavTools
 
 		MavenResolver resolver = session.mavenResolver();
 
-		File resolvedFile = resolver.resolvePom( gav, "jar", true );
+		File resolvedFile = resolver.resolvePom( gav, "jar", true, log );
 		if( resolvedFile == null )
 		{
 			log.html( Tools.warningMessage( "cannot resolve the gav " + gav ) );

@@ -15,7 +15,9 @@ import fr.lteconsulting.pomexplorer.change.graph.GraphChange.ParentChange;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange.PluginChange;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange.RelationChange;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChangeProcessing;
+import fr.lteconsulting.pomexplorer.change.project.ChangerVTD;
 import fr.lteconsulting.pomexplorer.change.project.ProjectChange;
+import fr.lteconsulting.pomexplorer.change.project.ProjectChangeProcessing;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.model.GroupArtifact;
@@ -65,7 +67,7 @@ public class ChangeCommand
 			session.projectChanges().stream().sorted( ( a, b ) -> Project.alphabeticalComparator.compare( a.getProject(), b.getProject() ) ).forEach( c -> {
 				Set<ChangeCause> causes = c.getCauses();
 
-				sb.append( c );
+				sb.append( c + ", current value: " + c.getCurrentValue() );
 				if( causes != null && !causes.isEmpty() )
 				{
 					sb.append( "<span style='color:grey;font-size:90%;'>" );
@@ -91,9 +93,6 @@ public class ChangeCommand
 	@Help( "resolve the current graph changeset. That is all the graph changes are converted into project changes and injected in the project changeset." )
 	public void resolveChanges( Session session, Log log )
 	{
-		// TODO : resolveChanges
-		// TODO : project details : show where dependencies are defined
-
 		Set<GraphChange> changes = new HashSet<>( session.graphChanges() );
 		session.graphChanges().clear();
 
@@ -109,11 +108,6 @@ public class ChangeCommand
 				continue;
 			}
 
-			// - change something which is defined as a property => change the property value instead
-			// - change a project's version when it is defined by the parent's version => change the parent version.
-			// - same for groupId...
-			// TODO : if groupId is defined by the parent, change the parent instead
-			// TODO : if the version is defined by the parent, change the parent version instead
 			change.visit( new GraphChange.Visitor()
 			{
 				@Override
@@ -126,9 +120,9 @@ public class ChangeCommand
 					String artifactId = newValue.getArtifactId() != null ? newValue.getArtifactId() : null;
 					String version = newValue.getVersion() != null ? newValue.getVersion() : null;
 
-					session.projectChanges().add( ProjectChange.set( changedProject, "project", "groupId", groupId ) );
-					session.projectChanges().add( ProjectChange.set( changedProject, "project", "artifactId", artifactId ) );
-					session.projectChanges().add( ProjectChange.set( changedProject, "project", "version", version ) );
+					session.projectChanges().add( ProjectChange.setProject( changedProject, "groupId", groupId ) );
+					session.projectChanges().add( ProjectChange.setProject( changedProject, "artifactId", artifactId ) );
+					session.projectChanges().add( ProjectChange.setProject( changedProject, "version", version ) );
 				}
 
 				@Override
@@ -178,11 +172,30 @@ public class ChangeCommand
 				}
 			} );
 		}
+
+		ProjectChangeProcessing processing = new ProjectChangeProcessing();
+		Set<ProjectChange> processedChanges = processing.process( session, log, session.projectChanges() );
+		session.projectChanges().clear();
+		session.projectChanges().addAll( processedChanges );
+		log.html( "Done !<br/>Use the 'change list' command to see the new changesets<br/>" );
 	}
 
 	@Help( "applies the project changes in the pom.xml files" )
-	public void apply()
+	public void apply( Session session, Log log )
 	{
+		log.html( "applying project changes<br/>" );
+		ChangerVTD changer = new ChangerVTD();
+		changer.doChanges( session, session.projectChanges(), log );
+		log.html( "done<br/>" );
+	}
+
+	@Help( "clears the graph and project changes list" )
+	public void clear( Session session, Log log )
+	{
+		log.html( "clearing change set<br/>" );
+		session.graphChanges().clear();
+		session.projectChanges().clear();
+		log.html( "done<br/>" );
 	}
 
 	@Help( "changes a gav in the graph" )

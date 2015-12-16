@@ -110,6 +110,20 @@ public class Project
 		return gav;
 	}
 
+	public Gav getDeclaredGav()
+	{
+		return new Gav( project.getModel().getGroupId(), project.getModel().getArtifactId(), project.getModel().getVersion() );
+	}
+
+	public Gav getDeclaredParentGav()
+	{
+		Parent parent = project.getModel().getParent();
+		if( parent == null )
+			return null;
+
+		return new Gav( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
+	}
+
 	public Gav getParent()
 	{
 		return parentGav;
@@ -123,6 +137,11 @@ public class Project
 	public MavenProject getMavenProject()
 	{
 		return project;
+	}
+
+	public Map<String, String> getProperties()
+	{
+		return properties;
 	}
 
 	public Map<DependencyKey, Dependency> getDependencyManagement( Log log )
@@ -255,32 +274,56 @@ public class Project
 		}
 	}
 
+	private Map<String, ValueResolution> cachedResolutions;
+
 	public ValueResolution resolveValueEx( Log log, String value )
 	{
+		if( cachedResolutions != null && cachedResolutions.containsKey( value ) )
+			return cachedResolutions.get( value );
+
 		ValueResolution res = new ValueResolution();
 		res.raw = value;
 
-		while( value != null && Tools.isNonResolvedValue( value ) )
+		if( value != null )
 		{
-			int begin = value.indexOf( "${" );
-			int end = value.indexOf( "}", begin );
+			int start = value.indexOf( "${" );
+			int end = -1;
+			if( start >= 0 )
+			{
+				StringBuilder sb = new StringBuilder();
 
-			StringBuilder sb = new StringBuilder();
-			if( begin > 0 )
-				sb.append( value.substring( 0, begin ) );
+				while( start >= 0 )
+				{
+					if( start > end + 1 )
+						sb.append( value.substring( end + 1, start ) );
 
-			String propertyReference = value.substring( begin + 2, end );
-			String propertyResolved = resolveProperty( log, propertyReference );
-			if( res.properties == null )
-				res.properties = new HashMap<>();
-			res.properties.put( propertyReference, propertyResolved );
-			sb.append( propertyResolved );
-			sb.append( value.substring( end + 1 ) );
+					end = value.indexOf( "}", start );
 
-			value = sb.toString();
+					String propertyReference = value.substring( start + 2, end );
+					String propertyResolved = resolveProperty( log, propertyReference );
+					if( res.properties == null )
+						res.properties = new HashMap<>();
+					else
+						res.properties.size();
+					res.properties.put( propertyReference, propertyResolved );
+					sb.append( propertyResolved );
+					sb.append( value.substring( end + 1 ) );
+
+					start = value.indexOf( "${", end + 1 );
+				}
+
+				if( end < value.length() - 1 )
+					sb.append( value.substring( end + 1 ) );
+
+				value = sb.toString();
+			}
 		}
 
 		res.resolved = value;
+
+		if( cachedResolutions == null )
+			cachedResolutions = new HashMap<>();
+		cachedResolutions.put( value, res );
 
 		return res;
 	}
@@ -346,8 +389,15 @@ public class Project
 		return true;
 	}
 
+	private Map<DependencyKey, DependencyManagement> cachedLocalDependencyManagement;
+
 	public Map<DependencyKey, DependencyManagement> getLocalDependencyManagement( Map<DependencyKey, DependencyManagement> result, boolean online, Log log )
 	{
+		if( result == null && cachedLocalDependencyManagement != null )
+			return cachedLocalDependencyManagement;
+
+		boolean storeInCache = result == null;
+
 		Project current = this;
 		while( current != null )
 		{
@@ -355,6 +405,9 @@ public class Project
 
 			current = current.getParentProject( online, log );
 		}
+
+		if( storeInCache )
+			cachedLocalDependencyManagement = result;
 
 		return result;
 	}
@@ -424,6 +477,27 @@ public class Project
 			res = current.getDeclaredDependencies( res, log );
 
 			current = current.getParentProject( online, log );
+		}
+
+		return res;
+	}
+
+	public Map<DependencyKey, RawDependency> getRawDependencies()
+	{
+		Map<DependencyKey, RawDependency> res = new HashMap<>();
+
+		for( org.apache.maven.model.Dependency d : getMavenProject().getDependencies() )
+		{
+			DependencyKey key = new DependencyKey( d.getGroupId(), d.getArtifactId(), d.getClassifier(), d.getType() );
+
+			RawDependency raw = new RawDependency( new VersionScope( d.getVersion(), Scope.fromString( d.getScope() ) ), d.isOptional() );
+			if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
+			{
+				for( Exclusion exclusion : d.getExclusions() )
+					raw.addExclusion( new GroupArtifact( exclusion.getGroupId(), exclusion.getArtifactId() ) );
+			}
+
+			res.put( key, raw );
 		}
 
 		return res;
@@ -633,13 +707,13 @@ public class Project
 				if( isGroupArtifactExcluded( node, ga ) )
 					continue;
 
-				DependencyNode existingNode = node.getRootNode().getForGroupArtifact( ga );
+				DependencyNode existingNode = node.searchNodeForGroupArtifact( ga );
 				if( existingNode != null )
 				{
 					if( existingNode.getLevel() <= node.getLevel() + 1 )
 						continue;
 					else
-						existingNode.remove();
+						existingNode.removeFromParent();
 				}
 
 				String version = null;
@@ -705,8 +779,9 @@ public class Project
 				}
 
 				DependencyNode child = new DependencyNode( childProject, dependencyKey, new VersionScope( version, scope ) );
-				child.setParent( node );
 				child.addExclusions( dependency.getExclusions() );
+
+				node.addChild( child );
 
 				DependencyManagement dm = node.getLocalManagement( dependencyKey );
 				if( dm != null )

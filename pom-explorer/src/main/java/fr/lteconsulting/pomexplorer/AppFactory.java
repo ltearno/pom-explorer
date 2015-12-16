@@ -23,7 +23,6 @@ import fr.lteconsulting.pomexplorer.commands.ProjectsCommand;
 import fr.lteconsulting.pomexplorer.commands.SessionCommand;
 import fr.lteconsulting.pomexplorer.commands.StatsCommand;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.webserver.Message;
@@ -216,11 +215,11 @@ public class AppFactory
 			{
 				for( Gav root : query.getRoots() )
 				{
-					Set<DependencyRelation> relations = tx.dependenciesRec( root );
+					Set<Relation> relations = tx.relationsRec( root );
 
 					dto.gavs.add( root.toString() );
 
-					for( DependencyRelation relation : relations )
+					for( Relation relation : relations )
 					{
 						Gav dSource = tx.sourceOf( relation );
 						Gav dTarget = tx.targetOf( relation );
@@ -239,7 +238,7 @@ public class AppFactory
 				{
 					dto.gavs.add( gav.toString() );
 
-					for( Relation relation : tx.dependencies( gav ) )
+					for( Relation relation : tx.relations( gav ) )
 					{
 						Gav target = tx.targetOf( relation );
 						EdgeDto edge = new EdgeDto( gav.toString(), target.toString(), relation );

@@ -1,6 +1,7 @@
 package fr.lteconsulting.pomexplorer.model.transitivity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -93,16 +94,24 @@ public class DependencyNode
 		return parent;
 	}
 
-	public void setParent( DependencyNode parent )
-	{
-		this.parent = parent;
+	Map<GroupArtifact, DependencyNode> cachedNodesByGA;
 
-		if( parent.children == null )
-			parent.children = new ArrayList<>();
-		parent.children.add( this );
+	public void addChild( DependencyNode child )
+	{
+		child.parent = this;
+
+		if( children == null )
+			children = new ArrayList<>();
+		children.add( child );
+
+		// signaler au parent qu'on est la
+		DependencyNode root = getRootNode();
+		if( root.cachedNodesByGA == null )
+			root.cachedNodesByGA = new HashMap<>();
+		root.cachedNodesByGA.put( new GroupArtifact( gact.getGroupId(), gact.getArtifactId() ), child );
 	}
 
-	public void remove()
+	public void removeFromParent()
 	{
 		if( parent != null )
 		{
@@ -152,22 +161,17 @@ public class DependencyNode
 		return res;
 	}
 
-	public DependencyNode getForGroupArtifact( GroupArtifact ga )
+	public DependencyNode searchNodeForGroupArtifact( GroupArtifact ga )
 	{
-		if( gact.getGroupId().equals( ga.getGroupId() ) && gact.getArtifactId().equals( ga.getArtifactId() ) )
-			return this;
+		DependencyNode root = getRootNode();
 
-		if( children == null || children.isEmpty() )
+		if( root.cachedNodesByGA == null )
 			return null;
 
-		for( DependencyNode child : children )
-		{
-			DependencyNode res = child.getForGroupArtifact( ga );
-			if( res != null )
-				return res;
-		}
-
-		return null;
+		DependencyNode res = root.cachedNodesByGA.get( ga );
+		if( res != null && res.parent == null )
+			return null; // the node has been detached since then
+		return res;
 	}
 
 	public boolean isExcluded( GroupArtifact ga )

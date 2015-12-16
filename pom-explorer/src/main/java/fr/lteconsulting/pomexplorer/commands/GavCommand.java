@@ -69,7 +69,7 @@ public class GavCommand
 		PomGraphReadTransaction tx = session.graph().read();
 		PomAnalyzer analyzer = new PomAnalyzer();
 
-		tx.gavs().stream().filter( gav -> session.projects().forGav( gav ) == null ).parallel().forEach( gav -> {
+		tx.gavs().stream().filter( gav -> session.projects().forGav( gav ) == null ).forEach( gav -> {
 			log.html( "analyzing " + gav + "...<br/>" );
 			analyzer.fetchGavWithMaven( session, log, gav, true );
 		} );

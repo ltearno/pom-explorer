@@ -22,7 +22,7 @@ public enum Scope
 	{
 		return super.toString().toLowerCase();
 	}
-	
+
 	public static Scope getScopeTransformation( Scope source, Scope declaredScope )
 	{
 		if( declaredScope == null )

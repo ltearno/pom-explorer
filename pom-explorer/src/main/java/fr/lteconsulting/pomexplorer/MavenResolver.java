@@ -59,27 +59,25 @@ public class MavenResolver
 		localRepositoryPath = getField( settings, "localRepository" );
 	}
 
-	public File resolvePom( Gav gav, String extension, boolean online )
+	public File resolvePom( Gav gav, String extension, boolean online, Log log )
 	{
-		return resolvePom( gav, extension, online, null );
+		return resolvePom( gav, extension, online, null, log );
 	}
 
-	public File resolvePom( Gav gav, String extension, boolean online, List<Repository> additionalRepos )
+	public File resolvePom( Gav gav, String extension, boolean online, List<Repository> additionalRepos, Log log )
 	{
-		if( gav == null || !gav.isResolved() )
+		if( gav == null || !gav.isResolved() || gav.getVersion().startsWith( "[" ) )
 			return null;
 
 		String key = gav.toString() + ":" + extension;
-
-		if( gav.getVersion().startsWith( "[" ) )
-			return null;
-
-		File pomFile = resolvedFiles.get( key );
 		if( resolvedFiles.containsKey( key ) )
-			return pomFile;
+			return resolvedFiles.get( key );
 
-		if( pomFile == null && "pom".equals( extension ) && localRepositoryPath != null )
+		File pomFile = null;
+
+		if( "pom".equals( extension ) && localRepositoryPath != null )
 		{
+			log.html( "<i>look-up in repo for artifact " + gav + "...</i><br/>" );
 			Path path = Paths.get( localRepositoryPath );
 			String[] parts = gav.getGroupId().split( "\\." );
 			if( parts != null )
@@ -98,6 +96,7 @@ public class MavenResolver
 
 		if( pomFile == null && online )
 		{
+			log.html( "<i>downloading artifact " + gav + "...</i><br/>" );
 			Artifact pomArtifact = new DefaultArtifact( gav.getGroupId(), gav.getArtifactId(), null, extension, gav.getVersion() );
 			try
 			{
@@ -112,13 +111,15 @@ public class MavenResolver
 				}
 				ArtifactRequest request = new ArtifactRequest( pomArtifact, remoteRepos, null );
 				pomArtifact = system.resolveArtifact( s, request ).getArtifact();
+				pomFile = pomArtifact.getFile();
 			}
 			catch( ArtifactResolutionException e )
 			{
-				return null;
+				log.html( Tools.warningMessage( "failed to download " + gav ) );
 			}
-
-			pomFile = pomArtifact.getFile();
+			finally
+			{
+			}
 		}
 
 		resolvedFiles.put( key, pomFile );

@@ -151,6 +151,8 @@ public class PomGraph
 		 */
 		public Set<Relation> relationsReverse( Gav gav )
 		{
+			if( !txGraph.containsVertex( gav ) )
+				return null;
 			return txGraph.incomingEdgesOf( gav );
 		}
 

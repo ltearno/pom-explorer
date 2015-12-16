@@ -11,8 +11,6 @@ import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Session;
-import fr.lteconsulting.pomexplorer.change.graph.ChangeProcessor;
-import fr.lteconsulting.pomexplorer.change.graph.ChangeSet;
 
 public class ChangeProcessing<T>
 {

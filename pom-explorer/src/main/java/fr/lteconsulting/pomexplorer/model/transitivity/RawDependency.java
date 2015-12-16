@@ -12,23 +12,23 @@ public class RawDependency
 	private final boolean optional;
 
 	private Set<GroupArtifact> exclusions;
-	
+
 	public RawDependency( VersionScope vs, boolean optional )
 	{
 		this.vs = vs;
 		this.optional = optional;
 	}
-	
+
 	public boolean isOptional()
 	{
 		return optional;
 	}
-	
+
 	public VersionScope getVs()
 	{
 		return vs;
 	}
-	
+
 	public Set<GroupArtifact> getExclusions()
 	{
 		return exclusions;

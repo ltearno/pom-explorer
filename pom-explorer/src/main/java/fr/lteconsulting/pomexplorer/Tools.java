@@ -7,16 +7,10 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
-import fr.lteconsulting.hexa.client.tools.Func1;
-import fr.lteconsulting.pomexplorer.depanalyze.Location;
 import fr.lteconsulting.pomexplorer.model.Gav;
-import fr.lteconsulting.pomexplorer.oldchanges.Change;
-import fr.lteconsulting.pomexplorer.oldchanges.ChangeSetManager;
 
 public class Tools
 {
@@ -32,46 +26,13 @@ public class Tools
 		return a.compareTo( b );
 	}
 
-	public static void printChangeList( Log log, ChangeSetManager changes )
-	{
-		log.html( "<br/>Change list...<br/><br/>" );
-
-		List<Change<? extends Location>> changeList = new ArrayList<>();
-		for( Change<? extends Location> c : changes )
-			changeList.add( c );
-
-		Collections.sort( changeList, new Comparator<Change<? extends Location>>()
-		{
-			@Override
-			public int compare( Change<? extends Location> o1, Change<? extends Location> o2 )
-			{
-				Project p1 = o1.getLocation().getProject();
-				Project p2 = o2.getLocation().getProject();
-
-				if( p1 == null && p2 == null )
-					return 0;
-				if( p1 == null )
-					return -1;
-				if( p2 == null )
-					return 1;
-
-				return p1.getPomFile().getAbsolutePath().compareTo( p2.getPomFile().getAbsolutePath() );
-			}
-		} );
-
-		for( Change<? extends Location> c : changeList )
-		{
-			log.html( c.toString() );
-		}
-	}
-
 	/***
 	 * Maven tools
 	 */
 
 	public static boolean isNonResolvedValue( String text )
 	{
-		return text != null && (text.contains( "${" ) && text.contains( "}" ));
+		return text != null && text.contains( "${" );// && text.contains( "}" ));
 	}
 
 	public static boolean isMavenVariable( String text )
@@ -90,30 +51,6 @@ public class Tools
 	/**
 	 * Collection utilities
 	 */
-
-	public static <T> List<T> filter( Iterable<T> list, Func1<T, Boolean> predicate )
-	{
-		List<T> res = new ArrayList<>();
-		if( list == null )
-			return res;
-
-		for( T t : list )
-			if( predicate.exec( t ) )
-				res.add( t );
-		return res;
-	}
-
-	public static <T> List<T> filter( T[] list, Func1<T, Boolean> predicate )
-	{
-		List<T> res = new ArrayList<>();
-		if( list == null )
-			return res;
-
-		for( T t : list )
-			if( predicate.exec( t ) )
-				res.add( t );
-		return res;
-	}
 
 	public static String logMessage( String message )
 	{

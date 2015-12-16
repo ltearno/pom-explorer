@@ -105,14 +105,11 @@ public class PomAnalyzer
 
 		MavenResolver resolver = session.mavenResolver();
 
-		File pomFile = resolver.resolvePom( gav, "pom", online, additionalRepos );
+		File pomFile = resolver.resolvePom( gav, "pom", online, additionalRepos, log );
 
 		Project project = null;
 		if( pomFile != null )
 			project = createAndRegisterProject( pomFile, true, session, log );
-
-		if( project == null )
-			log.html( Tools.warningMessage( "cannot fetch " + gav + " through maven" ) );
 
 		return project;
 	}

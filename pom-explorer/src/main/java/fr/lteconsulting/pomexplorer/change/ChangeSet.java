@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.change.graph;
+package fr.lteconsulting.pomexplorer.change;
 
 public interface ChangeSet<T>
 {

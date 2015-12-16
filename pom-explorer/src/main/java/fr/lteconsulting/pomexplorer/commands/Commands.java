@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
-import fr.lteconsulting.hexa.client.tools.Func1;
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
@@ -257,7 +257,9 @@ public class Commands
 			return null;
 		}
 
-		List<Entry<String, Object>> potentialCommands = Tools.filter( commands.entrySet(), ( e ) -> e.getKey().toLowerCase().startsWith( parts[0].toLowerCase() ) );
+		List<Entry<String, Object>> potentialCommands = commands.entrySet().stream()
+				.filter( e -> e.getKey().toLowerCase().startsWith( parts[0].toLowerCase() ) )
+				.collect( Collectors.toList() );
 
 		if( potentialCommands == null || potentialCommands.isEmpty() )
 		{
@@ -303,14 +305,14 @@ public class Commands
 
 	private Method findMethodWith( Object o, final String verb, final int nbParamsGiven )
 	{
-		List<Method> methods = Tools.filter( o.getClass().getMethods(), new Func1<Method, Boolean>()
+		List<Method> methods = new ArrayList<>();
+		for( Method m : o.getClass().getMethods() )
 		{
-			@Override
-			public Boolean exec( Method m )
-			{
-				return Modifier.isPublic( m.getModifiers() ) && m.getName().toLowerCase().startsWith( verb.toLowerCase() ) && getRealParametersCount( m ) == nbParamsGiven;
-			}
-		} );
+			if( !(Modifier.isPublic( m.getModifiers() ) && m.getName().toLowerCase().startsWith( verb.toLowerCase() ) && getRealParametersCount( m ) == nbParamsGiven) )
+				continue;
+
+			methods.add( m );
+		}
 
 		if( methods == null || methods.size() != 1 )
 			return null;
