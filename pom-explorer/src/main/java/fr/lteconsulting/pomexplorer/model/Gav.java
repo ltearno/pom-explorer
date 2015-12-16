@@ -1,6 +1,6 @@
 package fr.lteconsulting.pomexplorer.model;
 
-import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
+import static fr.lteconsulting.pomexplorer.Tools.isNonResolvedValue;
 
 import java.util.Comparator;
 
@@ -86,7 +86,7 @@ public class Gav
 
 	public boolean isResolved()
 	{
-		return isAllComponentsNotNull() && !isMavenVariable( groupId ) && !isMavenVariable( artifactId ) && !isMavenVariable( version );
+		return isAllComponentsNotNull() && !isNonResolvedValue( groupId ) && !isNonResolvedValue( artifactId ) && !isNonResolvedValue( version );
 	}
 
 	@Override

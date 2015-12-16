@@ -69,9 +69,14 @@ public class Tools
 	 * Maven tools
 	 */
 
+	public static boolean isNonResolvedValue( String text )
+	{
+		return text != null && (text.contains( "${" ) && text.contains( "}" ));
+	}
+
 	public static boolean isMavenVariable( String text )
 	{
-		return text != null && text.startsWith( "${" ) && text.endsWith( "}" );
+		return text != null && (text.startsWith( "${" ) && text.endsWith( "}" ));
 	}
 
 	public static String getPropertyNameFromPropertyReference( String name )

@@ -218,7 +218,7 @@ public class Project
 		return null;
 	}
 
-	public String resolveProperty( Log log, String propertyName )
+	private String resolveProperty( Log log, String propertyName )
 	{
 		PropertyLocation propertyDefinition = getPropertyDefinition( log, propertyName, true );
 		if( propertyDefinition == null )
@@ -233,13 +233,62 @@ public class Project
 		return propertyDefinition.getPropertyValue();
 	}
 
+	public static class ValueResolution
+	{
+		private String raw;
+		private String resolved;
+		private Map<String, String> properties;
+
+		public String getRaw()
+		{
+			return raw;
+		}
+
+		public String getResolved()
+		{
+			return resolved;
+		}
+
+		public Map<String, String> getProperties()
+		{
+			return properties;
+		}
+	}
+
+	public ValueResolution resolveValueEx( Log log, String value )
+	{
+		ValueResolution res = new ValueResolution();
+		res.raw = value;
+
+		while( value != null && Tools.isNonResolvedValue( value ) )
+		{
+			int begin = value.indexOf( "${" );
+			int end = value.indexOf( "}", begin );
+
+			StringBuilder sb = new StringBuilder();
+			if( begin > 0 )
+				sb.append( value.substring( 0, begin ) );
+
+			String propertyReference = value.substring( begin + 2, end );
+			String propertyResolved = resolveProperty( log, propertyReference );
+			if( res.properties == null )
+				res.properties = new HashMap<>();
+			res.properties.put( propertyReference, propertyResolved );
+			sb.append( propertyResolved );
+			sb.append( value.substring( end + 1 ) );
+
+			value = sb.toString();
+		}
+
+		res.resolved = value;
+
+		return res;
+	}
+
 	public String resolveValue( Log log, String value )
 	{
-		if( value == null )
-			return null;
-		if( isMavenVariable( value ) )
-			return resolveProperty( log, value );
-		return value;
+		ValueResolution res = resolveValueEx( log, value );
+		return res.resolved;
 	}
 
 	public Gav resolveGav( Gav gav, Log log )
@@ -282,13 +331,7 @@ public class Project
 			{
 				if( "import".equals( d.getScope() ) && "pom".equals( d.getType() ) )
 				{
-					String version;
-					if( isMavenVariable( d.getVersion() ) )
-						version = resolveProperty( log, d.getVersion() );
-					else
-						version = d.getVersion();
-
-					Gav bomGav = resolveGav( new Gav( d.getGroupId(), d.getArtifactId(), version ), log );
+					Gav bomGav = resolveGav( new Gav( d.getGroupId(), d.getArtifactId(), d.getVersion() ), log );
 
 					Project bomProject = session.projects().fetchProject( bomGav, online, log );
 					if( bomProject == null )
