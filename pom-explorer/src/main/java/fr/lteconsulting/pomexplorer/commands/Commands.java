@@ -1,5 +1,6 @@
 package fr.lteconsulting.pomexplorer.commands;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -82,10 +83,33 @@ public class Commands
 					sb.append( " : " + help.value() );
 
 				sb.append( "<br/>" );
+
+				Annotation[][] pass = m.getParameterAnnotations();
+				for( int i = 0; i < m.getParameterTypes().length; i++ )
+				{
+					Help ph = getAnnotation( pass[i], Help.class );
+					if( ph != null && !ph.value().isEmpty() )
+					{
+						sb.append( "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>" + m.getParameters()[i].getName() + "</i></b> : " );
+						sb.append( ph.value() );
+						sb.append( "<br/>" );
+					}
+				}
 			}
 		}
 
 		return sb.toString();
+	}
+
+	@SuppressWarnings( "unchecked" )
+	private static <T> T getAnnotation( Annotation[] annotations, Class<?> clazz )
+	{
+		if( annotations == null || annotations.length == 0 )
+			return null;
+		for( Annotation a : annotations )
+			if( clazz.isAssignableFrom( a.getClass() ) )
+				return (T) a;
+		return null;
 	}
 
 	/**

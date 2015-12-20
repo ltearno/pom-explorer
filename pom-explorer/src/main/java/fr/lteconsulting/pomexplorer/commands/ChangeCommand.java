@@ -15,7 +15,7 @@ import fr.lteconsulting.pomexplorer.change.graph.GraphChange.ParentChange;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange.PluginChange;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange.RelationChange;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChangeProcessing;
-import fr.lteconsulting.pomexplorer.change.project.ChangerVTD;
+import fr.lteconsulting.pomexplorer.change.project.PomChanger;
 import fr.lteconsulting.pomexplorer.change.project.ProjectChange;
 import fr.lteconsulting.pomexplorer.change.project.ProjectChangeProcessing;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
@@ -184,8 +184,8 @@ public class ChangeCommand
 	public void apply( Session session, Log log )
 	{
 		log.html( "applying project changes<br/>" );
-		ChangerVTD changer = new ChangerVTD();
-		changer.doChanges( session, session.projectChanges(), log );
+		PomChanger changer = new PomChanger();
+		changer.applyChanges( session, session.projectChanges(), log );
 		log.html( "done<br/>" );
 	}
 
@@ -237,7 +237,13 @@ public class ChangeCommand
 	}
 
 	@Help( "sets or adds a dependency to a project" )
-	public void setProject( Session session, Log log, FilteredGAVs gavs, String location, String nodeName, String newValue )
+	public void setProject(
+			Session session,
+			Log log,
+			FilteredGAVs gavs,
+			@Help( "can be <i>project</i>, <i>parent</i>, <i>property</i>, <i>d:group:artifact:classifier:type</i>, <i>dm:group:artifact:classifier:type</i>, <i>p:group:artifact</i> or <i>pm:group:artifact</i>" ) String location,
+			@Help( "can be <i>groupId</i>, <i>artifactId</i>, <i>version</i>, <i>scope</i>, or a property name" ) String nodeName,
+			String newValue )
 	{
 		for( Gav gav : gavs.getGavs( session ) )
 		{
