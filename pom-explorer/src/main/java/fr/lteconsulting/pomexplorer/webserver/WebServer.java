@@ -6,6 +6,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
+import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.util.Headers;
 import io.undertow.websockets.WebSocketConnectionCallback;
@@ -98,9 +99,19 @@ public class WebServer
 	{
 		PathHandler pathHandler = new PathHandler();
 
-		// web app static files
-		pathHandler.addPrefixPath( "/",
-				new ResourceHandler( new ClassPathResourceManager( getClass().getClassLoader(), "fr/lteconsulting/pomexplorer/webapp" ) ).addWelcomeFiles( "index.html" ) );
+		String localDirectoryName = "pomexplorer-ui/pomexplorer-ui";
+		File servedDirectory = new File( localDirectoryName );
+		if( servedDirectory.exists() && servedDirectory.isDirectory() )
+		{
+			pathHandler.addPrefixPath( "/", new ResourceHandler( new FileResourceManager( servedDirectory, 0 ) ) );
+			System.out.println( "serving from local " + localDirectoryName + " directory" );
+		}
+		else
+		{
+			// web app static files
+			pathHandler.addPrefixPath( "/",
+					new ResourceHandler( new ClassPathResourceManager( getClass().getClassLoader(), "fr/lteconsulting/pomexplorer/webapp" ) ).addWelcomeFiles( "index.html" ) );
+		}
 
 		pathHandler.addPrefixPath( DATA_FILE_PREFIX_URL, new HttpHandler()
 		{
