@@ -26,7 +26,7 @@ class Domlet {
 
     public point(name: string): HTMLElement {
         var list = this.points[name];
-        return this._point(list);
+        return this.pointInternal(list);
     }
 
     public getComingChild(p: HTMLElement, element: HTMLElement) {
@@ -51,7 +51,7 @@ class Domlet {
         return indexOf(p, comingChild);
     }
 
-    private _point(list: number[]): HTMLElement {
+    private pointInternal(list: number[]): HTMLElement {
         var current = this.element;
         if (list != null) {
             for (var i in list) {
@@ -358,7 +358,7 @@ window.onload = () => {
         projectPanel.projectList().appendChild(card.element);
     }
     
-    panel.addMenuItem('Projects');
+    panel.addMenuItem("Projects");
     panel.addMenuItem('Changes');
     panel.addMenuItem('Graph');
     panel.addMenuItem('Build');
@@ -377,11 +377,13 @@ window.onload = () => {
         }
     });
 
-    var socket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/ws");
-    socket.onopen = function (event) {
-        consolePanel.print("connected to the server.", "ff" + Math.random());
+    var socket = new WebSocket(`ws://${window.location.hostname}:${window.location.port}/ws`);
+
+    socket.onopen = () => {
+        consolePanel.print("connected to the server.", `ff${Math.random()}`);
     };
-    socket.onmessage = function (event) {
+
+    socket.onmessage = event => {
         var msg = JSON.parse(event.data);
         var payload = msg.payload;
         var talkId = msg.talkGuid;
@@ -395,11 +397,13 @@ window.onload = () => {
             consolePanel.currentHangout = msg;
         }
     }
-    socket.onerror = function (event) {
-        consolePanel.print("server communication error", "ff" + Math.random());
+
+    socket.onerror = () => {
+        consolePanel.print("server communication error", `ff${Math.random()}`);
     }
-    socket.onclose = function (event) {
-        consolePanel.print("disconnected from server", "ff" + Math.random());
+
+    socket.onclose = () => {
+        consolePanel.print("disconnected from server", `ff${Math.random()}`);
     }
 
     consolePanel.oninput = function (userInput) {

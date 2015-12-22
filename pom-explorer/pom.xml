@@ -137,21 +137,12 @@
 		</plugins>
 		<resources>
 			<resource>
-				<directory>src/main/resources</directory>
+				<directory>pomexplorer-ui</directory>
 				<includes>
-					<include>**/*.java</include>
-					<include>**/*.js</include>
-					<include>**/*.html</include>
-					<include>**/*.*</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/main/java</directory>
-				<includes>
-					<include>**/*.java</include>
-					<include>**/*.js</include>
-					<include>**/*.html</include>
-					<include>**/*.*</include>
+					<include>pomexplorer-ui/*.css</include>
+					<include>pomexplorer-ui/*.js</include>
+					<include>pomexplorer-ui/*.map</include>
+					<include>pomexplorer-ui/*.html</include>
 				</includes>
 			</resource>
 		</resources>

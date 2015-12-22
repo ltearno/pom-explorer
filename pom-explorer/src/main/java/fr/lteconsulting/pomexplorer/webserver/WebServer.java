@@ -110,7 +110,7 @@ public class WebServer
 		{
 			// web app static files
 			pathHandler.addPrefixPath( "/",
-					new ResourceHandler( new ClassPathResourceManager( getClass().getClassLoader(), "fr/lteconsulting/pomexplorer/webapp" ) ).addWelcomeFiles( "index.html" ) );
+					new ResourceHandler( new ClassPathResourceManager( getClass().getClassLoader(), "pomexplorer-ui" ) ).addWelcomeFiles( "index.html" ) );
 		}
 
 		pathHandler.addPrefixPath( DATA_FILE_PREFIX_URL, new HttpHandler()

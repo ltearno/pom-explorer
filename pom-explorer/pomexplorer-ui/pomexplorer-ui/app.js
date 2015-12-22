@@ -19,7 +19,7 @@ var Domlet = (function () {
     }
     Domlet.prototype.point = function (name) {
         var list = this.points[name];
-        return this._point(list);
+        return this.pointInternal(list);
     };
     Domlet.prototype.getComingChild = function (p, element) {
         var directChild = element;
@@ -39,7 +39,7 @@ var Domlet = (function () {
             return null;
         return indexOf(p, comingChild);
     };
-    Domlet.prototype._point = function (list) {
+    Domlet.prototype.pointInternal = function (list) {
         var current = this.element;
         if (list != null) {
             for (var i in list) {
@@ -248,7 +248,7 @@ window.onload = function () {
         card.content().innerText = 'Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.';
         projectPanel.projectList().appendChild(card.element);
     }
-    panel.addMenuItem('Projects');
+    panel.addMenuItem("Projects");
     panel.addMenuItem('Changes');
     panel.addMenuItem('Graph');
     panel.addMenuItem('Build');
@@ -266,7 +266,7 @@ window.onload = function () {
         }
     });
     var socket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/ws");
-    socket.onopen = function (event) {
+    socket.onopen = function () {
         consolePanel.print("connected to the server.", "ff" + Math.random());
     };
     socket.onmessage = function (event) {
@@ -282,10 +282,10 @@ window.onload = function () {
             consolePanel.currentHangout = msg;
         }
     };
-    socket.onerror = function (event) {
+    socket.onerror = function () {
         consolePanel.print("server communication error", "ff" + Math.random());
     };
-    socket.onclose = function (event) {
+    socket.onclose = function () {
         consolePanel.print("disconnected from server", "ff" + Math.random());
     };
     consolePanel.oninput = function (userInput) {
