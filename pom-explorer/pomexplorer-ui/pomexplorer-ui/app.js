@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 function buildHtml(html) {
-    var c = document.createElement('div');
+    var c = document.createElement("div");
     c.innerHTML = html;
     return c.children[0];
 }
@@ -71,6 +71,18 @@ var MaterialDomlet = (function (_super) {
     };
     return MaterialDomlet;
 })(Domlet);
+var SearchPanel = (function (_super) {
+    __extends(SearchPanel, _super);
+    function SearchPanel() {
+        _super.call(this, "\n<form action=\"#\">\n  <div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\">\n    <input class=\"mdl-textfield__input\" type=\"text\" id=\"sample3\">\n    <label class=\"mdl-textfield__label\" for=\"sample3\">Project search...</label>\n  </div>\n<div class=\"mdl-button mdl-button--icon\">\n  <i class=\"material-icons\">search</i>\n</div>\n</form>\n", {
+            'input': [0, 0]
+        });
+    }
+    SearchPanel.prototype.input = function () {
+        return this.point('input');
+    };
+    return SearchPanel;
+})(MaterialDomlet);
 var Card = (function (_super) {
     __extends(Card, _super);
     function Card() {
@@ -82,25 +94,18 @@ var Card = (function (_super) {
         });
     }
     Card.prototype.main = function () {
-        return this.point('main');
+        return this.point("main");
     };
     Card.prototype.title = function () {
-        return this.point('title');
+        return this.point("title");
     };
     Card.prototype.content = function () {
-        return this.point('content');
+        return this.point("content");
     };
     Card.prototype.actions = function () {
-        return this.point('actions');
+        return this.point("actions");
     };
     return Card;
-})(MaterialDomlet);
-var SearchPanel = (function (_super) {
-    __extends(SearchPanel, _super);
-    function SearchPanel() {
-        _super.call(this, "\n<form action=\"#\">\n  <div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\">\n    <!--<label class=\"mdl-button mdl-js-button mdl-button--icon\" for=\"sample6\">\n      <i class=\"material-icons\">search</i>\n    </label>-->\n    <input class=\"mdl-textfield__input\" type=\"text\" id=\"sample3\">\n    <label class=\"mdl-textfield__label\" for=\"sample3\">Project search...</label>\n  </div>\n<div class=\"mdl-button mdl-button--icon\">\n  <i class=\"material-icons\">search</i>\n</div>\n</form>\n", {});
-    }
-    return SearchPanel;
 })(MaterialDomlet);
 var ApplicationPanel = (function (_super) {
     __extends(ApplicationPanel, _super);
@@ -114,45 +119,62 @@ var ApplicationPanel = (function (_super) {
     }
     ApplicationPanel.prototype.addMenuHandler = function (handler) {
         var _this = this;
-        var menu = this.point('menu');
-        menu.addEventListener('click', function (e) {
+        var menu = this.point("menu");
+        menu.addEventListener("click", function (e) {
             var target = e.target;
             var comingMenuItem = _this.getComingChild(menu, target);
             var index = indexOf(menu, comingMenuItem);
             handler(index, comingMenuItem, e);
-            e.preventDefault();
-            e.stopPropagation();
+            //e.preventDefault();
+            //e.stopPropagation();
             console.log("click menu index: " + index);
             _this.hideDrawer();
         });
     };
     ApplicationPanel.prototype.addMenuItem = function (name) {
-        var menu = this.point('menu');
+        var menu = this.point("menu");
         menu.appendChild(buildHtml("<a class=\"mdl-navigation__link\" href=\"#\">" + name + "</a>"));
     };
     ApplicationPanel.prototype.main = function () {
-        return this.point('main');
+        return this.point("main");
     };
     ApplicationPanel.prototype.content = function () {
-        return this.point('content');
+        return this.point("content");
     };
     ApplicationPanel.prototype.hideDrawer = function () {
-        this.point('drawer').className = 'mdl-layout__drawer';
+        // fix : the obfuscator is still visible if only remove is-visible from the drawer
+        document.getElementsByClassName("mdl-layout__obfuscator")[0].classList.remove("is-visible");
+        this.point("drawer").classList.remove("is-visible");
     };
     return ApplicationPanel;
 })(MaterialDomlet);
 var ProjectPanel = (function (_super) {
     __extends(ProjectPanel, _super);
     function ProjectPanel() {
+        var _this = this;
         _super.call(this, "\n<div>\n    <div></div>\n    <div class='projects-list'></div>\n</div>\n", {
             'search-place': [0],
             'project-list': [1]
         });
         this.search = new SearchPanel();
-        this.point('search-place').appendChild(this.search.element);
+        this.point("search-place").appendChild(this.search.element);
+        var card;
+        this.search.input().addEventListener("input", function (e) {
+            var value = e.target.value;
+            card = new Card();
+            card.title().innerHTML = "fr.lteconsulting<br/>" + value + "<br/>1.0-SNAPSHOT";
+            card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
+            _this.projectList().appendChild(card.element);
+        });
+        for (var i = 0; i < 0; i++) {
+            card = new Card();
+            card.title().innerHTML = "fr.lteconsulting<br/>accounting<br/>1.0-SNAPSHOT";
+            card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
+            this.projectList().appendChild(card.element);
+        }
     }
     ProjectPanel.prototype.projectList = function () {
-        return this.point('project-list');
+        return this.point("project-list");
     };
     return ProjectPanel;
 })(MaterialDomlet);
@@ -165,21 +187,21 @@ var ConsolePanel = (function (_super) {
         });
         this.talks = {};
         this.currentHangout = null;
-        this.output = this.point('output');
+        this.output = this.point("output");
         this.initInput();
     }
     ConsolePanel.prototype.clear = function () {
-        this.output.innerHTML = '';
+        this.output.innerHTML = "";
     };
     ConsolePanel.prototype.initInput = function () {
-        var history = [''];
+        var _this = this;
+        var history = [""];
         var historyIndex = 0;
-        var me = this;
-        var input = this.point('input');
+        var input = this.point("input");
         input.onkeyup = function (e) {
             if (e.which === 13) {
                 var value = input.value;
-                me.oninput(value);
+                _this.oninput(value);
                 if (value != history[historyIndex]) {
                     history = history.slice(0, historyIndex + 1);
                     history.push(value);
@@ -215,8 +237,8 @@ var ConsolePanel = (function (_super) {
         var follow = (this.output.scrollHeight - this.output.scrollTop) <= this.output.clientHeight + 10;
         var talk = this.talks[talkId];
         if (!talk) {
-            talk = document.createElement('div');
-            talk.className = 'talk';
+            talk = document.createElement("div");
+            talk.className = "talk";
             if (talkId == "buildPipelineStatus")
                 document.getElementById("buildPipelineStatus").appendChild(talk);
             else
@@ -224,12 +246,12 @@ var ConsolePanel = (function (_super) {
             this.talks[talkId] = talk;
             talk.innerHTML += "<div style='float:right;' onclick='killTalk(this)'>X</div>";
         }
-        if (0 != message.indexOf("<span") && 0 != message.indexOf("<div"))
+        if (0 !== message.indexOf("<span") && 0 !== message.indexOf("<div"))
             message = "<div>" + message + "</div>";
-        if (talkId == "buildPipelineStatus")
+        if (talkId === "buildPipelineStatus")
             talk.innerHTML = "<div style='float:right;' onclick='killTalk(this)'>X</div>" + message;
         else
-            talk.insertAdjacentHTML('beforeend', message);
+            talk.insertAdjacentHTML("beforeend", message);
         if (follow)
             this.output.scrollTop = this.output.scrollHeight;
     };
@@ -237,29 +259,22 @@ var ConsolePanel = (function (_super) {
 })(MaterialDomlet);
 window.onload = function () {
     var panel = new ApplicationPanel();
-    document.getElementsByTagName('body')[0].innerHTML = '';
-    document.getElementsByTagName('body')[0].appendChild(panel.element);
+    document.getElementsByTagName("body")[0].innerHTML = "";
+    document.getElementsByTagName("body")[0].appendChild(panel.element);
     var projectPanel = new ProjectPanel();
     var consolePanel = new ConsolePanel();
-    // TODO for demo only, to be removed...
-    for (var i = 0; i < 100; i++) {
-        var card = new Card();
-        card.title().innerHTML = 'fr.lteconsulting<br/>accounting<br/>1.0-SNAPSHOT';
-        card.content().innerText = 'Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.';
-        projectPanel.projectList().appendChild(card.element);
-    }
     panel.addMenuItem("Projects");
-    panel.addMenuItem('Changes');
-    panel.addMenuItem('Graph');
-    panel.addMenuItem('Build');
-    panel.addMenuItem('Console');
+    panel.addMenuItem("Changes");
+    panel.addMenuItem("Graph");
+    panel.addMenuItem("Build");
+    panel.addMenuItem("Console");
     panel.addMenuHandler(function (index, menuItem, event) {
-        panel.content().innerHTML = '';
+        panel.content().innerHTML = "";
         switch (menuItem.innerText) {
-            case 'Projects':
+            case "Projects":
                 panel.content().appendChild(projectPanel.element);
                 break;
-            case 'Console':
+            case "Console":
                 panel.content().appendChild(consolePanel.element);
                 consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
                 break;
@@ -273,10 +288,10 @@ window.onload = function () {
         var msg = JSON.parse(event.data);
         var payload = msg.payload;
         var talkId = msg.talkGuid;
-        if (msg.payloadFormat == 'html') {
+        if (msg.payloadFormat == "html") {
             consolePanel.print(payload, talkId);
         }
-        else if (msg.payloadFormat == 'hangout/question') {
+        else if (msg.payloadFormat == "hangout/question") {
             //consolePanel.input.placeholder = "question: " + msg.payload;
             consolePanel.print("question: " + msg.payload, talkId);
             consolePanel.currentHangout = msg;
@@ -301,7 +316,7 @@ window.onload = function () {
                 talkGuid: talkId,
                 responseTo: null,
                 isClosing: false,
-                payloadFormat: 'text/command',
+                payloadFormat: "text/command",
                 payload: userInput
             };
             consolePanel.print("<div class='entry'>" + userInput + "</div>", talkId);
@@ -313,8 +328,8 @@ window.onload = function () {
                 talkGuid: this.currentHangout.talkGuid,
                 responseTo: this.currentHangout.guid,
                 isClosing: false,
-                payloadFormat: 'hangout/reply',
-                payload: 'userInput'
+                payloadFormat: "hangout/reply",
+                payload: "userInput"
             };
             this.currentHangout = null;
             socket.send(JSON.stringify(message));

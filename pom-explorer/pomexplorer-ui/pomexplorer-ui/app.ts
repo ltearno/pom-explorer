@@ -1,7 +1,7 @@
 ﻿declare var componentHandler: any;
 
 function buildHtml(html: string): HTMLElement {
-    var c = document.createElement('div');
+    var c = document.createElement("div");
     c.innerHTML = html;
     return <HTMLElement>c.children[0];
 }
@@ -24,12 +24,12 @@ class Domlet {
         this.points = points;
     }
 
-    public point(name: string): HTMLElement {
+    point(name: string): HTMLElement {
         var list = this.points[name];
         return this.pointInternal(list);
     }
 
-    public getComingChild(p: HTMLElement, element: HTMLElement) {
+    getComingChild(p: HTMLElement, element: HTMLElement) {
         var directChild = element;
         while (directChild != null && directChild.parentElement != p) {
             if (directChild == this.element)
@@ -39,7 +39,7 @@ class Domlet {
         return directChild;
     }
 
-    public indexOf(point: string, element: HTMLElement) {
+    indexOf(point: string, element: HTMLElement) {
         var p = this.point(point);
         if (p == null)
             return null;
@@ -84,6 +84,28 @@ class MaterialDomlet extends Domlet {
     }
 }
 
+class SearchPanel extends MaterialDomlet {
+    constructor() {
+        super(`
+<form action="#">
+  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+    <input class="mdl-textfield__input" type="text" id="sample3">
+    <label class="mdl-textfield__label" for="sample3">Project search...</label>
+  </div>
+<div class="mdl-button mdl-button--icon">
+  <i class="material-icons">search</i>
+</div>
+</form>
+`, {
+                'input': [0, 0]
+            });
+    }
+
+    input(): HTMLElement {
+        return this.point('input');
+    }
+}
+
 class Card extends MaterialDomlet {
     constructor() {
         super(`
@@ -107,39 +129,20 @@ class Card extends MaterialDomlet {
             });
     }
 
-    public main(): HTMLDivElement {
-        return <HTMLDivElement>this.point('main');
+    main(): HTMLDivElement {
+        return <HTMLDivElement>this.point("main");
     }
 
-    public title(): HTMLElement {
-        return <HTMLDivElement>this.point('title');
+    title(): HTMLElement {
+        return <HTMLDivElement>this.point("title");
     }
 
-    public content(): HTMLDivElement {
-        return <HTMLDivElement>this.point('content');
+    content(): HTMLDivElement {
+        return <HTMLDivElement>this.point("content");
     }
 
-    public actions(): HTMLDivElement {
-        return <HTMLDivElement>this.point('actions');
-    }
-}
-
-class SearchPanel extends MaterialDomlet {
-    constructor() {
-        super(`
-<form action="#">
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-    <!--<label class="mdl-button mdl-js-button mdl-button--icon" for="sample6">
-      <i class="material-icons">search</i>
-    </label>-->
-    <input class="mdl-textfield__input" type="text" id="sample3">
-    <label class="mdl-textfield__label" for="sample3">Project search...</label>
-  </div>
-<div class="mdl-button mdl-button--icon">
-  <i class="material-icons">search</i>
-</div>
-</form>
-`, {});
+    actions(): HTMLDivElement {
+        return <HTMLDivElement>this.point("actions");
     }
 }
 
@@ -168,39 +171,40 @@ class ApplicationPanel extends MaterialDomlet {
             });
     }
 
-    public addMenuHandler(handler: { (index: number, menuItem: HTMLElement, event: any): void; }) {
-        var menu = this.point('menu');
-        menu.addEventListener('click', (e) => {
+    addMenuHandler(handler: { (index: number, menuItem: HTMLElement, event: any): void; }) {
+        var menu = this.point("menu");
+        menu.addEventListener("click", (e) => {
             var target = <HTMLElement>e.target;
             var comingMenuItem = this.getComingChild(menu, target);
             var index = indexOf(menu, comingMenuItem);
 
             handler(index, comingMenuItem, e);
 
-            e.preventDefault();
-            e.stopPropagation();
+            //e.preventDefault();
+            //e.stopPropagation();
 
-            
-            console.log("click menu index: " + index);
+            console.log(`click menu index: ${index}`);
             this.hideDrawer();
         });
     }
 
-    public addMenuItem(name: string) {
-        var menu = this.point('menu');
+    addMenuItem(name: string) {
+        var menu = this.point("menu");
         menu.appendChild(buildHtml(`<a class="mdl-navigation__link" href="#">${name}</a>`));
     }
 
-    public main(): HTMLDivElement {
-        return <HTMLDivElement>this.point('main');
+    main(): HTMLDivElement {
+        return <HTMLDivElement>this.point("main");
     }
 
-    public content(): HTMLDivElement {
-        return <HTMLDivElement>this.point('content');
+    content(): HTMLDivElement {
+        return <HTMLDivElement>this.point("content");
     }
 
     protected hideDrawer() {
-        this.point('drawer').className = 'mdl-layout__drawer';
+        // fix : the obfuscator is still visible if only remove is-visible from the drawer
+        document.getElementsByClassName("mdl-layout__obfuscator")[0].classList.remove("is-visible");
+        this.point("drawer").classList.remove("is-visible");
     }
 }
 
@@ -219,11 +223,28 @@ class ProjectPanel extends MaterialDomlet {
             });
 
         this.search = new SearchPanel();
-        this.point('search-place').appendChild(this.search.element);
+        this.point("search-place").appendChild(this.search.element);
+        var card: Card;
+
+        this.search.input().addEventListener("input", (e) => {
+            var value = (<HTMLInputElement>e.target).value;
+
+            card = new Card();
+            card.title().innerHTML = `fr.lteconsulting<br/>${value}<br/>1.0-SNAPSHOT`;
+            card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
+            this.projectList().appendChild(card.element);
+        });
+
+        for (var i = 0; i < 0; i++) {
+            card = new Card();
+            card.title().innerHTML = "fr.lteconsulting<br/>accounting<br/>1.0-SNAPSHOT";
+            card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
+            this.projectList().appendChild(card.element);
+        }
     }
 
-    public projectList(): HTMLDivElement {
-        return <HTMLDivElement>this.point('project-list');
+    projectList(): HTMLDivElement {
+        return <HTMLDivElement>this.point("project-list");
     }
 }
 
@@ -244,7 +265,7 @@ class ConsolePanel extends MaterialDomlet {
                 'output': [0]
             });
 
-        this.output = this.point('output');
+        this.output = this.point("output");
         this.initInput();
     }
 
@@ -253,22 +274,20 @@ class ConsolePanel extends MaterialDomlet {
     talks = {};
     currentHangout = null;
 
-    public clear() {
-        this.output.innerHTML = '';
+    clear() {
+        this.output.innerHTML = "";
     }
 
     private initInput() {
-        var history = [''];
+        var history = [""];
         var historyIndex = 0;
+        var input = <HTMLInputElement>this.point("input");
 
-        var me = this;
-        var input = <HTMLInputElement>this.point('input');
-
-        input.onkeyup = function (e) {
+        input.onkeyup = e => {
             if (e.which === 13) {
                 var value = input.value;
 
-                me.oninput(value);
+                this.oninput(value);
 
                 if (value != history[historyIndex]) {
                     history = history.slice(0, historyIndex + 1);
@@ -310,15 +329,15 @@ class ConsolePanel extends MaterialDomlet {
         }
     }
 
-    public print(message: string, talkId: any): void {
+    print(message: string, talkId: any): void {
         var me = this;
 
         var follow = (this.output.scrollHeight - this.output.scrollTop) <= this.output.clientHeight + 10;
 
         var talk = this.talks[talkId];
         if (!talk) {
-            talk = document.createElement('div');
-            talk.className = 'talk';
+            talk = document.createElement("div");
+            talk.className = "talk";
 
             if (talkId == "buildPipelineStatus")
                 document.getElementById("buildPipelineStatus").appendChild(talk);
@@ -329,13 +348,13 @@ class ConsolePanel extends MaterialDomlet {
             talk.innerHTML += "<div style='float:right;' onclick='killTalk(this)'>X</div>";
         }
 
-        if (0 != message.indexOf("<span") && 0 != message.indexOf("<div"))
-            message = "<div>" + message + "</div>";
+        if (0 !== message.indexOf("<span") && 0 !== message.indexOf("<div"))
+            message = `<div>${message}</div>`;
 
-        if (talkId == "buildPipelineStatus")
-            talk.innerHTML = "<div style='float:right;' onclick='killTalk(this)'>X</div>" + message;
+        if (talkId === "buildPipelineStatus")
+            talk.innerHTML = `<div style='float:right;' onclick='killTalk(this)'>X</div>${message}`;
         else
-            talk.insertAdjacentHTML('beforeend', message);
+            talk.insertAdjacentHTML("beforeend", message);
 
         if (follow)
             this.output.scrollTop = this.output.scrollHeight;
@@ -344,33 +363,25 @@ class ConsolePanel extends MaterialDomlet {
 
 window.onload = () => {
     var panel = new ApplicationPanel();
-    document.getElementsByTagName('body')[0].innerHTML = '';
-    document.getElementsByTagName('body')[0].appendChild(panel.element);
+    document.getElementsByTagName("body")[0].innerHTML = "";
+    document.getElementsByTagName("body")[0].appendChild(panel.element);
 
     var projectPanel = new ProjectPanel();
     var consolePanel = new ConsolePanel();
     
-    // TODO for demo only, to be removed...
-    for (var i = 0; i < 100; i++) {
-        var card = new Card();
-        card.title().innerHTML = 'fr.lteconsulting<br/>accounting<br/>1.0-SNAPSHOT';
-        card.content().innerText = 'Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.';
-        projectPanel.projectList().appendChild(card.element);
-    }
-    
     panel.addMenuItem("Projects");
-    panel.addMenuItem('Changes');
-    panel.addMenuItem('Graph');
-    panel.addMenuItem('Build');
-    panel.addMenuItem('Console');
+    panel.addMenuItem("Changes");
+    panel.addMenuItem("Graph");
+    panel.addMenuItem("Build");
+    panel.addMenuItem("Console");
 
     panel.addMenuHandler((index, menuItem, event) => {
-        panel.content().innerHTML = '';
+        panel.content().innerHTML = "";
         switch (menuItem.innerText) {
-            case 'Projects':
+            case "Projects":
                 panel.content().appendChild(projectPanel.element);
                 break;
-            case 'Console':
+            case "Console":
                 panel.content().appendChild(consolePanel.element);
                 consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
                 break;
@@ -388,12 +399,12 @@ window.onload = () => {
         var payload = msg.payload;
         var talkId = msg.talkGuid;
 
-        if (msg.payloadFormat == 'html') {
+        if (msg.payloadFormat == "html") {
             consolePanel.print(payload, talkId);
         }
-        else if (msg.payloadFormat == 'hangout/question') {
+        else if (msg.payloadFormat == "hangout/question") {
             //consolePanel.input.placeholder = "question: " + msg.payload;
-            consolePanel.print("question: " + msg.payload, talkId);
+            consolePanel.print(`question: ${msg.payload}`, talkId);
             consolePanel.currentHangout = msg;
         }
     }
@@ -415,29 +426,29 @@ window.onload = () => {
         var message: any;
 
         if (this.currentHangout == null) {
-            var talkId = "command-" + Math.random();
+            var talkId = `command-${Math.random()}`;
 
             message = {
-                guid: "message-" + Math.random(),
+                guid: `message-${Math.random()}`,
                 talkGuid: talkId,
                 responseTo: null,
                 isClosing: false,
-                payloadFormat: 'text/command',
+                payloadFormat: "text/command",
                 payload: userInput
             };
 
-            consolePanel.print("<div class='entry'>" + userInput + "</div>", talkId);
+            consolePanel.print(`<div class='entry'>${userInput}</div>`, talkId);
 
             socket.send(JSON.stringify(message));
         }
         else {
             message = {
-                guid: "message-" + Math.random(),
+                guid: `message-${Math.random()}`,
                 talkGuid: this.currentHangout.talkGuid,
                 responseTo: this.currentHangout.guid,
                 isClosing: false,
-                payloadFormat: 'hangout/reply',
-                payload: 'userInput'
+                payloadFormat: "hangout/reply",
+                payload: "userInput"
             };
 
             this.currentHangout = null;
