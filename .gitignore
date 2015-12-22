@@ -28,3 +28,4 @@ served-data/
 *.graphml
 /target/
 pom-explorer/export.csv
+pom-explorer/pomexplorer-ui/pomexplorer-ui/obj/

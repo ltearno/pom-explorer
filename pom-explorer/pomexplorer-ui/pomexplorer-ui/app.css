@@ -1,0 +1,157 @@
+﻿body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+span {
+    font-style: italic;
+}
+
+.page-content{
+    width:100%;
+    height:100%;
+}
+
+.projects-list {
+    display: flex;
+    flex-flow: row wrap;
+    align-items:baseline;
+    align-content: space-around;
+}
+
+.projects-list>div {
+    margin: 1em;
+}
+
+.content-repositionning {
+    display: flex;
+}
+
+.console-panel {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: auto;
+
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.console-output {
+    flex-grow: 1;
+
+    font-family: Monaco, Courier;
+
+    overflow: auto;
+}
+
+.console-input {
+    flex-grow: 0;
+}
+
+.talk {
+	margin-top: 5px;
+	margin-bottom: 5px;
+	border-left: 7px solid grey;
+	padding-left: 7px;
+	border-top-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+
+.entry {
+	background-color: #12a;
+	color: white;
+	font-size: 105%;
+	border-radius: 5px;
+	padding: 3px;
+}
+
+.refreshedProject {
+	font-weight: bold;
+}
+
+.toBuildProject {
+	color: orange;
+}
+
+.buildingProject {
+	border: 1px solid orange;
+}
+
+.errorProject {
+	background-color: red;
+}
+
+.maintainedProject {
+	font-style: italic;
+}
+
+.projects {
+	display: flex;
+	flex-flow: column wrap;
+	justify-content: flex-start;
+	align-items: baseline;
+}
+
+.project {
+	margin: 0.5em;
+	padding: 0 0.3em 0.3em 0.3em;
+}
+
+.project .title {
+	display: inline-block;
+}
+
+.project .gav .artifactId {
+	font-weight: bold;
+	font-size: 110%;
+}
+
+.project .gav {
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+.project .packaging,
+.project .badge {
+	float: right;
+	display: block;
+	background-color: #349;
+	border-radius: 0.5em;
+	color: white;
+	font-size: 1em;
+	padding: 0 0.25em;
+	margin: 0 0.25em;
+}
+
+.project .inline-badge {
+	background-color: #115F50;
+	border-radius: 0.5em;
+	color: white;
+	font-size: 1em;
+	padding: 0 0.25em;
+	margin: 0 0.25em;
+}
+
+.project .error {
+	background-color: red;
+}
+
+.project .properties {
+}
+
+.project .properties>div {
+	margin-top: 0.2em;
+}
+
+.project .properties>div>div:first-child {
+	width: 7em;
+	text-align: right;
+	padding-right: 1em;
+	display: inline-block;
+	vertical-align:top;
+	font-size: 90%;
+	color: #4e4242;
+}
+
+.project .properties>div>div:nth-child(2) {
+	display: inline-block;
+}
