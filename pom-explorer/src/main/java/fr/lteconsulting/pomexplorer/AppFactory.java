@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 
@@ -161,6 +162,13 @@ public class AppFactory
 						}
 					}
 				}
+			}
+			else if( "application/rpc".equals( message.getPayloadFormat() ) )
+			{
+				// project filter
+				List<String> result = client.getCurrentSession().projects().values().stream().filter( ( p ) -> p.getGav().toString().contains( message.getPayload() ) )
+						.map( ( p ) -> p.getGav().toString() ).collect( Collectors.toList() );
+				client.send( new Message( MessageFactory.newGuid(), message.getTalkGuid(), null, true, "application/rpc", gson.toJson( result ) ) );
 			}
 			else
 			{

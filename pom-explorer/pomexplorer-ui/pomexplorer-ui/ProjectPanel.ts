@@ -1,7 +1,9 @@
 class ProjectPanel extends MaterialDomlet {
     search: SearchPanel;
 
-    constructor() {
+    private service: Service;
+
+    constructor(service:Service) {
         super(`
 <div>
     <div></div>
@@ -12,6 +14,7 @@ class ProjectPanel extends MaterialDomlet {
             'project-list': [1]
         });
 
+        this.service = service;
         this.search = new SearchPanel();
         this.point("search-place").appendChild(this.search.element);
         var card: Card;
@@ -19,10 +22,17 @@ class ProjectPanel extends MaterialDomlet {
         this.search.input().addEventListener("input", (e) => {
             var value = (<HTMLInputElement>e.target).value;
 
-            card = new Card();
-            card.title().innerHTML = `fr.lteconsulting<br/>${value}<br/>1.0-SNAPSHOT`;
-            card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
-            this.projectList().appendChild(card.element);
+            this.service.sendRpc(value, (message) => {
+                this.projectList().innerHTML = "";
+
+                var list = JSON.parse(message.payload);
+                for (var ii in list) {
+                    card = new Card();
+                    card.title().innerHTML = list[ii];
+                    card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
+                    this.projectList().appendChild(card.element);
+                }
+            });
         });
 
         for (var i = 0; i < 0; i++) {

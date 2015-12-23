@@ -2,7 +2,8 @@ window.onload = function () {
     var panel = new ApplicationPanel();
     document.getElementsByTagName("body")[0].innerHTML = "";
     document.getElementsByTagName("body")[0].appendChild(panel.element);
-    var projectPanel = new ProjectPanel();
+    var service = new Service();
+    var projectPanel = new ProjectPanel(service);
     var consolePanel = new ConsolePanel();
     panel.addMenuItem("Projects");
     panel.addMenuItem("Changes");
@@ -21,7 +22,6 @@ window.onload = function () {
                 break;
         }
     });
-    var service = new Service();
     service.onUnknownMessage = function (message) {
         consolePanel.print(message.payload, message.talkGuid);
     };
@@ -61,7 +61,7 @@ window.onload = function () {
         }
         else {
             this.currentHangout = null;
-            service.sendHangoutReploy(this.currentHangout.guid, this.currentHangout.talkGuid, userInput);
+            service.sendHangoutReply(this.currentHangout.guid, this.currentHangout.talkGuid, userInput);
         }
     };
 };

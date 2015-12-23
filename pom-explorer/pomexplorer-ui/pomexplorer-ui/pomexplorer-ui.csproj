@@ -32,6 +32,15 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
+    <TypeScriptCompile Include="ApplicationPanel.ts" />
+    <TypeScriptCompile Include="Card.ts" />
+    <TypeScriptCompile Include="ConsolePanel.ts" />
+    <TypeScriptCompile Include="Domlet.ts" />
+    <TypeScriptCompile Include="MaterialDomlet.ts" />
+    <TypeScriptCompile Include="ProjectPanel.ts" />
+    <TypeScriptCompile Include="SearchPanel.ts" />
+    <TypeScriptCompile Include="Service.ts" />
+    <TypeScriptCompile Include="Utils.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="material.min.css.map" />
@@ -72,6 +81,17 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptModuleKind>None</TypeScriptModuleKind>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>

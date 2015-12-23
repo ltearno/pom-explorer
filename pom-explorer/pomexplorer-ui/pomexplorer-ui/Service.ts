@@ -22,6 +22,21 @@
         };
     }
 
+    public sendRpc(command: string, callback: ServiceCallback) {
+        var message = {
+            guid: `message-${Math.random()}`,
+            talkGuid: `talkGuid-${Math.random()}`,
+            responseTo: null,
+            isClosing: false,
+            payloadFormat: "application/rpc",
+            payload: command
+        };
+
+        this.waitingCallbacks[message.talkGuid] = callback;
+
+        this.socket.send(JSON.stringify(message));
+    }
+
     public sendTextCommand(talkId:string, command:string, callback:ServiceCallback) {
         var message = {
             guid: `message-${Math.random()}`,
@@ -37,7 +52,7 @@
         this.socket.send(JSON.stringify(message));
     }
 
-    public sendHangoutReploy(guid: string, talkGuid:string, content:string) {
+    public sendHangoutReply(guid: string, talkGuid:string, content:string) {
         var message = {
             guid: `message-${Math.random()}`,
             talkGuid: talkGuid,

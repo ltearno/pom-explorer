@@ -5,21 +5,28 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var ProjectPanel = (function (_super) {
     __extends(ProjectPanel, _super);
-    function ProjectPanel() {
+    function ProjectPanel(service) {
         var _this = this;
         _super.call(this, "\n<div>\n    <div></div>\n    <div class='projects-list'></div>\n</div>\n", {
             'search-place': [0],
             'project-list': [1]
         });
+        this.service = service;
         this.search = new SearchPanel();
         this.point("search-place").appendChild(this.search.element);
         var card;
         this.search.input().addEventListener("input", function (e) {
             var value = e.target.value;
-            card = new Card();
-            card.title().innerHTML = "fr.lteconsulting<br/>" + value + "<br/>1.0-SNAPSHOT";
-            card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
-            _this.projectList().appendChild(card.element);
+            _this.service.sendRpc(value, function (message) {
+                _this.projectList().innerHTML = "";
+                var list = JSON.parse(message.payload);
+                for (var ii in list) {
+                    card = new Card();
+                    card.title().innerHTML = list[ii];
+                    card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
+                    _this.projectList().appendChild(card.element);
+                }
+            });
         });
         for (var i = 0; i < 0; i++) {
             card = new Card();

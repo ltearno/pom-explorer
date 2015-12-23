@@ -13,6 +13,18 @@ var Service = (function () {
             _this.handleMessage(msg);
         };
     };
+    Service.prototype.sendRpc = function (command, callback) {
+        var message = {
+            guid: "message-" + Math.random(),
+            talkGuid: "talkGuid-" + Math.random(),
+            responseTo: null,
+            isClosing: false,
+            payloadFormat: "application/rpc",
+            payload: command
+        };
+        this.waitingCallbacks[message.talkGuid] = callback;
+        this.socket.send(JSON.stringify(message));
+    };
     Service.prototype.sendTextCommand = function (talkId, command, callback) {
         var message = {
             guid: "message-" + Math.random(),
@@ -25,7 +37,7 @@ var Service = (function () {
         this.waitingCallbacks[talkId] = callback;
         this.socket.send(JSON.stringify(message));
     };
-    Service.prototype.sendHangoutReploy = function (guid, talkGuid, content) {
+    Service.prototype.sendHangoutReply = function (guid, talkGuid, content) {
         var message = {
             guid: "message-" + Math.random(),
             talkGuid: talkGuid,
