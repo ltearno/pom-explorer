@@ -25,22 +25,42 @@ class ProjectPanel extends MaterialDomlet {
             this.service.sendRpc(value, (message) => {
                 this.projectList().innerHTML = "";
 
-                var list = JSON.parse(message.payload);
-                for (var ii in list) {
+                var list : Project[] = JSON.parse(message.payload);
+                for (var pi in list) {
+                    var project = list[pi];
+
                     card = new Card();
-                    card.title().innerHTML = list[ii];
-                    card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
+                    
+                    var title = "";
+                    title += project.gav.split(":").join("<br/>");
+                    card.title().innerHTML = title;
+
+                    var content = "";
+                    if (project.buildable)
+                        content += "<span class='badge'>buildable</span>";
+                    content += `<span class='packaging'>${project.packaging}</span>`;
+                    if (project.description)
+                        content += project.description + "<br/><br/>";
+                    if (project.parentChain && project.parentChain.length>0)
+                        content += `<i>parent${project.parentChain.length>1?"s":""}:</i><br/>${project.parentChain.join("<br/>")}<br/><br/>`;
+                    if (project.file)
+                        content += `<i>file:</i> ${project.file}<br/><br/>`;
+                    if (project.properties) {
+                        var a = true;
+                        for (var name in project.properties) {
+                            if (a) {
+                                a = false;
+                                content += "<i>properties:</i><br/>";
+                            }
+                            content += `<nowrap>${name}: <b>${project.properties[name]}</b></nowrap><br/>`;
+                        }
+                    }
+                    card.content().innerHTML = content;
+
                     this.projectList().appendChild(card.element);
                 }
             });
         });
-
-        for (var i = 0; i < 0; i++) {
-            card = new Card();
-            card.title().innerHTML = "fr.lteconsulting<br/>accounting<br/>1.0-SNAPSHOT";
-            card.content().innerText = "Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.";
-            this.projectList().appendChild(card.element);
-        }
     }
 
     projectList(): HTMLDivElement {

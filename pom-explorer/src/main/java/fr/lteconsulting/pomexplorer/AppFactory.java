@@ -26,6 +26,7 @@ import fr.lteconsulting.pomexplorer.commands.StatsCommand;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.uirpc.ProjectDto;
 import fr.lteconsulting.pomexplorer.webserver.Message;
 import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
 import fr.lteconsulting.pomexplorer.webserver.WebServer;
@@ -166,8 +167,9 @@ public class AppFactory
 			else if( "application/rpc".equals( message.getPayloadFormat() ) )
 			{
 				// project filter
-				List<String> result = client.getCurrentSession().projects().values().stream().filter( ( p ) -> p.getGav().toString().contains( message.getPayload() ) )
-						.map( ( p ) -> p.getGav().toString() ).collect( Collectors.toList() );
+				List<ProjectDto> result = client.getCurrentSession().projects().values().stream()
+						.filter( ( p ) -> p.getGav().toString().contains( message.getPayload() ) )
+						.map( ( p ) -> ProjectDto.fromProject( client.getCurrentSession(), p ) ).limit( 100 ).collect( Collectors.toList() );
 				client.send( new Message( MessageFactory.newGuid(), message.getTalkGuid(), null, true, "application/rpc", gson.toJson( result ) ) );
 			}
 			else

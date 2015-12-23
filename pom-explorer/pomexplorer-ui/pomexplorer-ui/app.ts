@@ -19,13 +19,19 @@
         switch (menuItem.innerText) {
         case "Projects":
             panel.content().appendChild(projectPanel.element);
+            projectPanel.search.input().focus();
             break;
         case "Console":
             panel.content().appendChild(consolePanel.element);
             consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
+            consolePanel.input().focus();
             break;
         }
     });
+
+    panel.content().appendChild(consolePanel.element);
+    consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
+    consolePanel.input().focus();
 
     service.onUnknownMessage = (message: Message) => {
         consolePanel.print(message.payload, message.talkGuid);

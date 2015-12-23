@@ -18,6 +18,9 @@ var ConsolePanel = (function (_super) {
     ConsolePanel.prototype.clear = function () {
         this.output.innerHTML = "";
     };
+    ConsolePanel.prototype.input = function () {
+        return this.point("input");
+    };
     ConsolePanel.prototype.initInput = function () {
         var _this = this;
         var history = [""];
@@ -58,13 +61,14 @@ var ConsolePanel = (function (_super) {
         };
     };
     ConsolePanel.prototype.print = function (message, talkId) {
-        var me = this;
+        if (message == null)
+            return;
         var follow = (this.output.scrollHeight - this.output.scrollTop) <= this.output.clientHeight + 10;
         var talk = this.talks[talkId];
         if (!talk) {
             talk = document.createElement("div");
             talk.className = "talk";
-            if (talkId == "buildPipelineStatus")
+            if (talkId === "buildPipelineStatus")
                 document.getElementById("buildPipelineStatus").appendChild(talk);
             else
                 this.output.appendChild(talk);

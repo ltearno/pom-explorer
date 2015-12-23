@@ -28,6 +28,10 @@
         this.output.innerHTML = "";
     }
 
+    input(): HTMLElement {
+        return <HTMLElement>this.point("input");
+    }
+
     private initInput() {
         var history = [""];
         var historyIndex = 0;
@@ -80,7 +84,8 @@
     }
 
     print(message: string, talkId: any): void {
-        var me = this;
+        if (message == null)
+            return;
 
         var follow = (this.output.scrollHeight - this.output.scrollTop) <= this.output.clientHeight + 10;
 
@@ -89,7 +94,7 @@
             talk = document.createElement("div");
             talk.className = "talk";
 
-            if (talkId == "buildPipelineStatus")
+            if (talkId === "buildPipelineStatus")
                 document.getElementById("buildPipelineStatus").appendChild(talk);
             else
                 this.output.appendChild(talk);

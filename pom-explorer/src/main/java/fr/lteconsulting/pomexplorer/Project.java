@@ -128,6 +128,14 @@ public class Project
 	{
 		return parentGav;
 	}
+	
+	public Project getParentProject()
+	{
+		if( parentGav == null)
+			return null;
+		
+		return session.projects().forGav( parentGav );
+	}
 
 	public File getPomFile()
 	{
