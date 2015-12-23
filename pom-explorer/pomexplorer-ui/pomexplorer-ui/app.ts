@@ -5,7 +5,7 @@
 
     var projectPanel = new ProjectPanel();
     var consolePanel = new ConsolePanel();
-    
+
     panel.addMenuItem("Projects");
     panel.addMenuItem("Changes");
     panel.addMenuItem("Graph");
@@ -15,82 +15,61 @@
     panel.addMenuHandler((index, menuItem, event) => {
         panel.content().innerHTML = "";
         switch (menuItem.innerText) {
-            case "Projects":
-                panel.content().appendChild(projectPanel.element);
-                break;
-            case "Console":
-                panel.content().appendChild(consolePanel.element);
-                consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
-                break;
+        case "Projects":
+            panel.content().appendChild(projectPanel.element);
+            break;
+        case "Console":
+            panel.content().appendChild(consolePanel.element);
+            consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
+            break;
         }
     });
 
-    var socket = new WebSocket(`ws://${window.location.hostname}:${window.location.port}/ws`);
+    var service = new Service();
 
-    socket.onopen = () => {
-        consolePanel.print("connected to the server.", `ff${Math.random()}`);
+    service.onUnknownMessage = (message: Message) => {
+        consolePanel.print(message.payload, message.talkGuid);
     };
 
-    socket.onmessage = event => {
-        var msg = JSON.parse(event.data);
-        var payload = msg.payload;
-        var talkId = msg.talkGuid;
-
-        if (msg.payloadFormat == "html") {
-            consolePanel.print(payload, talkId);
+    service.onStatus = (status: Status) => {
+        switch (status) {
+        case Status.Connected:
+            consolePanel.print("connected to the server.", `ff${Math.random()}`);
+            break;
+        case Status.Error:
+            consolePanel.print("server communication error", `ff${Math.random()}`);
+            break;
+        case Status.Disconnected:
+            consolePanel.print("disconnected from server", `ff${Math.random()}`);
+            break;
+        default:
         }
-        else if (msg.payloadFormat == "hangout/question") {
-            //consolePanel.input.placeholder = "question: " + msg.payload;
-            consolePanel.print(`question: ${msg.payload}`, talkId);
-            consolePanel.currentHangout = msg;
-        }
-    }
+    };
 
-    socket.onerror = () => {
-        consolePanel.print("server communication error", `ff${Math.random()}`);
-    }
+    service.connect();
 
-    socket.onclose = () => {
-        consolePanel.print("disconnected from server", `ff${Math.random()}`);
-    }
-
-    consolePanel.oninput = function (userInput) {
-        if (userInput == "cls" || userInput == "clear") {
+    consolePanel.oninput = function(userInput) {
+        if (userInput === "cls" || userInput === "clear") {
             consolePanel.clear();
             return;
         }
 
-        var message: any;
-
         if (this.currentHangout == null) {
             var talkId = `command-${Math.random()}`;
-
-            message = {
-                guid: `message-${Math.random()}`,
-                talkGuid: talkId,
-                responseTo: null,
-                isClosing: false,
-                payloadFormat: "text/command",
-                payload: userInput
-            };
-
             consolePanel.print(`<div class='entry'>${userInput}</div>`, talkId);
-
-            socket.send(JSON.stringify(message));
-        }
-        else {
-            message = {
-                guid: `message-${Math.random()}`,
-                talkGuid: this.currentHangout.talkGuid,
-                responseTo: this.currentHangout.guid,
-                isClosing: false,
-                payloadFormat: "hangout/reply",
-                payload: "userInput"
-            };
-
+            service.sendTextCommand(talkId, userInput, (replyMessage: Message) => {
+                if (replyMessage.payloadFormat === "html") {
+                    consolePanel.print(replyMessage.payload, talkId);
+                } else if (replyMessage.payloadFormat === "hangout/question") {
+                    //consolePanel.input.placeholder = "question: " + msg.payload;
+                    consolePanel.print(`question: ${replyMessage.payload}`, talkId);
+                    consolePanel.currentHangout = replyMessage;
+                }
+            });
+        } else {
             this.currentHangout = null;
 
-            socket.send(JSON.stringify(message));
+            service.sendHangoutReploy(this.currentHangout.guid, this.currentHangout.talkGuid, userInput);
         }
     };
 };

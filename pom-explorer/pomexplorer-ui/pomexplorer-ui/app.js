@@ -21,59 +21,47 @@ window.onload = function () {
                 break;
         }
     });
-    var socket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/ws");
-    socket.onopen = function () {
-        consolePanel.print("connected to the server.", "ff" + Math.random());
+    var service = new Service();
+    service.onUnknownMessage = function (message) {
+        consolePanel.print(message.payload, message.talkGuid);
     };
-    socket.onmessage = function (event) {
-        var msg = JSON.parse(event.data);
-        var payload = msg.payload;
-        var talkId = msg.talkGuid;
-        if (msg.payloadFormat == "html") {
-            consolePanel.print(payload, talkId);
+    service.onStatus = function (status) {
+        switch (status) {
+            case Status.Connected:
+                consolePanel.print("connected to the server.", "ff" + Math.random());
+                break;
+            case Status.Error:
+                consolePanel.print("server communication error", "ff" + Math.random());
+                break;
+            case Status.Disconnected:
+                consolePanel.print("disconnected from server", "ff" + Math.random());
+                break;
+            default:
         }
-        else if (msg.payloadFormat == "hangout/question") {
-            //consolePanel.input.placeholder = "question: " + msg.payload;
-            consolePanel.print("question: " + msg.payload, talkId);
-            consolePanel.currentHangout = msg;
-        }
     };
-    socket.onerror = function () {
-        consolePanel.print("server communication error", "ff" + Math.random());
-    };
-    socket.onclose = function () {
-        consolePanel.print("disconnected from server", "ff" + Math.random());
-    };
+    service.connect();
     consolePanel.oninput = function (userInput) {
-        if (userInput == "cls" || userInput == "clear") {
+        if (userInput === "cls" || userInput === "clear") {
             consolePanel.clear();
             return;
         }
-        var message;
         if (this.currentHangout == null) {
             var talkId = "command-" + Math.random();
-            message = {
-                guid: "message-" + Math.random(),
-                talkGuid: talkId,
-                responseTo: null,
-                isClosing: false,
-                payloadFormat: "text/command",
-                payload: userInput
-            };
             consolePanel.print("<div class='entry'>" + userInput + "</div>", talkId);
-            socket.send(JSON.stringify(message));
+            service.sendTextCommand(talkId, userInput, function (replyMessage) {
+                if (replyMessage.payloadFormat === "html") {
+                    consolePanel.print(replyMessage.payload, talkId);
+                }
+                else if (replyMessage.payloadFormat === "hangout/question") {
+                    //consolePanel.input.placeholder = "question: " + msg.payload;
+                    consolePanel.print("question: " + replyMessage.payload, talkId);
+                    consolePanel.currentHangout = replyMessage;
+                }
+            });
         }
         else {
-            message = {
-                guid: "message-" + Math.random(),
-                talkGuid: this.currentHangout.talkGuid,
-                responseTo: this.currentHangout.guid,
-                isClosing: false,
-                payloadFormat: "hangout/reply",
-                payload: "userInput"
-            };
             this.currentHangout = null;
-            socket.send(JSON.stringify(message));
+            service.sendHangoutReploy(this.currentHangout.guid, this.currentHangout.talkGuid, userInput);
         }
     };
 };
