@@ -3,11 +3,15 @@ declare var componentHandler: any;
 class MaterialDomlet extends Domlet {
     constructor(template: string, points: { [key: string]: number[] }) {
         super(template, points);
-
-        this.init(this.element);
     }
 
-    private init(e:HTMLElement) {
+    buildHtml() {
+        var element = super.buildHtml();
+        this.initMaterialElement(element);
+        return element;
+    }
+
+    private initMaterialElement(e:HTMLElement) {
         if (e == null)
             return;
         try {
@@ -17,6 +21,6 @@ class MaterialDomlet extends Domlet {
         }
 
         for (var c in e.children)
-            this.init(<HTMLElement>e.children[c]);
+            this.initMaterialElement(<HTMLElement>e.children[c]);
     }
 }

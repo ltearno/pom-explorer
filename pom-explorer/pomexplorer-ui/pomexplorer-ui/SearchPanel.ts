@@ -15,7 +15,9 @@ class SearchPanel extends MaterialDomlet {
         });
     }
 
-    input(): HTMLElement {
-        return this.point('input');
+    input(domlet:HTMLElement): HTMLElement {
+        return this.point('input', domlet);
     }
 }
+
+var SearchPanelDomlet = new SearchPanel();

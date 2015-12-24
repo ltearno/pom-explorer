@@ -15,7 +15,7 @@ window.onload = function () {
         switch (menuItem.innerText) {
             case "Projects":
                 panel.content().appendChild(projectPanel.element);
-                projectPanel.search.input().focus();
+                projectPanel.searchInput().focus();
                 break;
             case "Console":
                 panel.content().appendChild(consolePanel.element);

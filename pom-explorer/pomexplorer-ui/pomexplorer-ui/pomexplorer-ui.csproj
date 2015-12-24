@@ -28,6 +28,7 @@
     <Content Include="material.js" />
     <Content Include="material.min.css" />
     <Content Include="material.min.js" />
+    <Content Include="rx.all.min.js" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +38,7 @@
     <TypeScriptCompile Include="ConsolePanel.ts" />
     <TypeScriptCompile Include="Domlet.ts" />
     <TypeScriptCompile Include="MaterialDomlet.ts" />
+    <TypeScriptCompile Include="RpcDto.ts" />
     <TypeScriptCompile Include="ProjectPanel.ts" />
     <TypeScriptCompile Include="SearchPanel.ts" />
     <TypeScriptCompile Include="Service.ts" />

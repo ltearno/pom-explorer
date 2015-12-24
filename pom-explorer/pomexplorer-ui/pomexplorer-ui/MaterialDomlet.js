@@ -7,9 +7,13 @@ var MaterialDomlet = (function (_super) {
     __extends(MaterialDomlet, _super);
     function MaterialDomlet(template, points) {
         _super.call(this, template, points);
-        this.init(this.element);
     }
-    MaterialDomlet.prototype.init = function (e) {
+    MaterialDomlet.prototype.buildHtml = function () {
+        var element = _super.prototype.buildHtml.call(this);
+        this.initMaterialElement(element);
+        return element;
+    };
+    MaterialDomlet.prototype.initMaterialElement = function (e) {
         if (e == null)
             return;
         try {
@@ -18,7 +22,7 @@ var MaterialDomlet = (function (_super) {
         catch (ex) {
         }
         for (var c in e.children)
-            this.init(e.children[c]);
+            this.initMaterialElement(e.children[c]);
     };
     return MaterialDomlet;
 })(Domlet);

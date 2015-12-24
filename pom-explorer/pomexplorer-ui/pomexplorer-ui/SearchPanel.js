@@ -10,9 +10,10 @@ var SearchPanel = (function (_super) {
             'input': [0, 0]
         });
     }
-    SearchPanel.prototype.input = function () {
-        return this.point('input');
+    SearchPanel.prototype.input = function (domlet) {
+        return this.point('input', domlet);
     };
     return SearchPanel;
 })(MaterialDomlet);
+var SearchPanelDomlet = new SearchPanel();
 //# sourceMappingURL=SearchPanel.js.map

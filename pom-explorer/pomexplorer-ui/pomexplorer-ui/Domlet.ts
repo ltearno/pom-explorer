@@ -1,41 +1,45 @@
 class Domlet {
-    element: HTMLElement;
+    template: string;
     points: { [key: string]: number[] };
 
     constructor(template: string, points: { [key: string]: number[] }) {
-        this.element = buildHtml(template);
+        this.template = template;
         this.points = points;
     }
 
-    point(name: string): HTMLElement {
-        var list = this.points[name];
-        return this.pointInternal(list);
+    buildHtml() {
+        return buildHtml(this.template);
     }
 
-    getComingChild(p: HTMLElement, element: HTMLElement) {
+    point(name: string, domletElement: HTMLElement): HTMLElement {
+        var list = this.points[name];
+        return this.pointInternal(list, domletElement);
+    }
+
+    getComingChild(p: HTMLElement, element: HTMLElement, domletElement:HTMLElement) {
         var directChild = element;
-        while (directChild != null && directChild.parentElement != p) {
-            if (directChild == this.element)
+        while (directChild != null && directChild.parentElement !== p) {
+            if (directChild === domletElement)
                 return null;
             directChild = directChild.parentElement;
         }
         return directChild;
     }
 
-    indexOf(point: string, element: HTMLElement) {
-        var p = this.point(point);
+    indexOf(point: string, element: HTMLElement, domletElement: HTMLElement) {
+        var p = this.point(point, domletElement);
         if (p == null)
             return null;
 
-        var comingChild = this.getComingChild(p, element);
+        var comingChild = this.getComingChild(p, element, domletElement);
         if (comingChild == null)
             return null;
         
         return indexOf(p, comingChild);
     }
 
-    private pointInternal(list: number[]): HTMLElement {
-        var current = this.element;
+    private pointInternal(list: number[], domletElement: HTMLElement): HTMLElement {
+        var current = domletElement;
         if (list != null) {
             for (var i in list) {
                 var index = list[i];

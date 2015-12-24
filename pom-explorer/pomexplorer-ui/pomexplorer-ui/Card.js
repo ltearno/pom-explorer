@@ -13,18 +13,19 @@ var Card = (function (_super) {
             'actions': [2]
         });
     }
-    Card.prototype.main = function () {
-        return this.point("main");
+    Card.prototype.main = function (domlet) {
+        return this.point("main", domlet);
     };
-    Card.prototype.title = function () {
-        return this.point("title");
+    Card.prototype.title = function (domlet) {
+        return this.point("title", domlet);
     };
-    Card.prototype.content = function () {
-        return this.point("content");
+    Card.prototype.content = function (domlet) {
+        return this.point("content", domlet);
     };
-    Card.prototype.actions = function () {
-        return this.point("actions");
+    Card.prototype.actions = function (domlet) {
+        return this.point("actions", domlet);
     };
     return Card;
 })(MaterialDomlet);
+var CardDomlet = new Card();
 //# sourceMappingURL=Card.js.map

@@ -1,6 +1,4 @@
-﻿class ConsolePanel extends MaterialDomlet {
-    constructor() {
-        super(`
+﻿var ConsolePanelDomlet = new MaterialDomlet(`
 <div class="console-panel">
     <div class='console-output'></div>
     <form action="#" class='console-input'>
@@ -11,11 +9,17 @@
     </form>
 </div>
 `, {
-            'input': [1, 0, 0],
-            'output': [0]
-        });
+    'input': [1, 0, 0],
+    'output': [0]
+});
 
-        this.output = this.point("output");
+class ConsolePanel {
+    element: HTMLElement;
+
+    constructor() {
+        this.element = ConsolePanelDomlet.buildHtml();
+
+        this.output = ConsolePanelDomlet.point("output", this.element);
         this.initInput();
     }
 
@@ -28,14 +32,14 @@
         this.output.innerHTML = "";
     }
 
-    input(): HTMLElement {
-        return <HTMLElement>this.point("input");
+    input(): HTMLInputElement {
+        return <HTMLInputElement>ConsolePanelDomlet.point("input", this.element);
     }
 
     private initInput() {
         var history = [""];
         var historyIndex = 0;
-        var input = <HTMLInputElement>this.point("input");
+        var input = this.input();
 
         input.onkeyup = e => {
             if (e.which === 13) {
@@ -54,8 +58,7 @@
 
                 e.preventDefault();
                 e.stopPropagation();
-            }
-            else if (e.which === 38) {
+            } else if (e.which === 38) {
                 var value = input.value;
 
                 if (value != history[historyIndex])
@@ -66,8 +69,7 @@
 
                 e.preventDefault();
                 e.stopPropagation();
-            }
-            else if (e.which === 40) {
+            } else if (e.which === 40) {
                 var value = input.value;
 
                 if (value != history[historyIndex])

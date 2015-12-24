@@ -20,19 +20,21 @@ class Card extends MaterialDomlet {
         });
     }
 
-    main(): HTMLDivElement {
-        return <HTMLDivElement>this.point("main");
+    main(domlet: HTMLElement): HTMLDivElement {
+        return <HTMLDivElement>this.point("main", domlet);
     }
 
-    title(): HTMLElement {
-        return <HTMLDivElement>this.point("title");
+    title(domlet: HTMLElement): HTMLElement {
+        return <HTMLDivElement>this.point("title", domlet);
     }
 
-    content(): HTMLDivElement {
-        return <HTMLDivElement>this.point("content");
+    content(domlet: HTMLElement): HTMLDivElement {
+        return <HTMLDivElement>this.point("content", domlet);
     }
 
-    actions(): HTMLDivElement {
-        return <HTMLDivElement>this.point("actions");
+    actions(domlet: HTMLElement): HTMLDivElement {
+        return <HTMLDivElement>this.point("actions", domlet);
     }
 }
+
+var CardDomlet = new Card();

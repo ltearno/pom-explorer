@@ -1,31 +1,26 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var ConsolePanel = (function (_super) {
-    __extends(ConsolePanel, _super);
+var ConsolePanelDomlet = new MaterialDomlet("\n<div class=\"console-panel\">\n    <div class='console-output'></div>\n    <form action=\"#\" class='console-input'>\n        <div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\">\n            <input class=\"mdl-textfield__input\" type=\"text\" id=\"sample3\">\n            <label class=\"mdl-textfield__label\" for=\"sample3\">enter a command, or just \"?\" to get help</label>\n        </div>\n    </form>\n</div>\n", {
+    'input': [1, 0, 0],
+    'output': [0]
+});
+var ConsolePanel = (function () {
     function ConsolePanel() {
-        _super.call(this, "\n<div class=\"console-panel\">\n    <div class='console-output'></div>\n    <form action=\"#\" class='console-input'>\n        <div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\">\n            <input class=\"mdl-textfield__input\" type=\"text\" id=\"sample3\">\n            <label class=\"mdl-textfield__label\" for=\"sample3\">enter a command, or just \"?\" to get help</label>\n        </div>\n    </form>\n</div>\n", {
-            'input': [1, 0, 0],
-            'output': [0]
-        });
         this.talks = {};
         this.currentHangout = null;
-        this.output = this.point("output");
+        this.element = ConsolePanelDomlet.buildHtml();
+        this.output = ConsolePanelDomlet.point("output", this.element);
         this.initInput();
     }
     ConsolePanel.prototype.clear = function () {
         this.output.innerHTML = "";
     };
     ConsolePanel.prototype.input = function () {
-        return this.point("input");
+        return ConsolePanelDomlet.point("input", this.element);
     };
     ConsolePanel.prototype.initInput = function () {
         var _this = this;
         var history = [""];
         var historyIndex = 0;
-        var input = this.point("input");
+        var input = this.input();
         input.onkeyup = function (e) {
             if (e.which === 13) {
                 var value = input.value;
@@ -85,5 +80,5 @@ var ConsolePanel = (function (_super) {
             this.output.scrollTop = this.output.scrollHeight;
     };
     return ConsolePanel;
-})(MaterialDomlet);
+})();
 //# sourceMappingURL=ConsolePanel.js.map
