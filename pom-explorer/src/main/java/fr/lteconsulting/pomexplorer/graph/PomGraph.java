@@ -33,15 +33,12 @@ public class PomGraph
 
 	private DirectedMultigraph<Gav, Relation> copyGraph( DirectedMultigraph<Gav, Relation> graph )
 	{
-		synchronized( graph )
-		{
-			DirectedMultigraph<Gav, Relation> newGraph = createGraph();
-			for( Gav gav : graph.vertexSet() )
-				newGraph.addVertex( gav );
-			for( Relation edge : graph.edgeSet() )
-				newGraph.addEdge( graph.getEdgeSource( edge ), graph.getEdgeTarget( edge ), edge );
-			return newGraph;
-		}
+		DirectedMultigraph<Gav, Relation> newGraph = createGraph();
+		for( Gav gav : graph.vertexSet() )
+			newGraph.addVertex( gav );
+		for( Relation edge : graph.edgeSet() )
+			newGraph.addEdge( graph.getEdgeSource( edge ), graph.getEdgeTarget( edge ), edge );
+		return newGraph;
 	}
 
 	private DirectedMultigraph<Gav, Relation> createGraph()

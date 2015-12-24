@@ -52,7 +52,17 @@ class ProjectPanel extends MaterialDomlet {
                                 a = false;
                                 content += "<i>properties:</i><br/>";
                             }
-                            content += `<nowrap>${name}: <b>${project.properties[name]}</b></nowrap><br/>`;
+                            content += `${name}: <b>${project.properties[name]}</b><br/>`;
+                        }
+                        if (!a)
+                            content += "<br/>";
+                    }
+                    if (project.references && project.references.length > 0) {
+                        content += "<i>referenced by:</i><br/>";
+                        console.log('rr ' + project.references);
+                        for (var ii = 0; ii < project.references.length; ii++) {
+                            var ref = project.references[ii];
+                            content += `${ref.gav} as ${ref.dependencyType}<br/>`;
                         }
                     }
                     card.content().innerHTML = content;
