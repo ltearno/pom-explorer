@@ -5,22 +5,29 @@ class MaterialDomlet extends Domlet {
         super(template, points);
     }
 
-    buildHtml() {
-        var element = super.buildHtml();
+    htmlElement() {
+        var element = super.htmlElement();
         this.initMaterialElement(element);
         return element;
     }
 
-    private initMaterialElement(e:HTMLElement) {
+    initMaterialElement(e:HTMLElement) {
         if (e == null)
             return;
-        try {
-            componentHandler.upgradeElement(e);
-        }
-        catch (ex) {
-        }
 
-        for (var c in e.children)
-            this.initMaterialElement(<HTMLElement>e.children[c]);
+        var upgrade = false;
+        for (var i = 0; i < e.classList.length; i++)
+            if (e.classList[i].indexOf("mdl-") >= 0) {
+                upgrade = true;
+                break;
+            }
+
+        if (upgrade)
+            componentHandler.upgradeElement(e);
+        
+        for (var c in e.children) {
+            if (e.children[c] instanceof HTMLElement)
+                this.initMaterialElement(<HTMLElement>e.children[c]);
+        }
     }
 }

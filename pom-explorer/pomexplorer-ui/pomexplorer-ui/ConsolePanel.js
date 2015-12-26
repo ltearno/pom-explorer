@@ -6,7 +6,7 @@ var ConsolePanel = (function () {
     function ConsolePanel() {
         this.talks = {};
         this.currentHangout = null;
-        this.element = ConsolePanelDomlet.buildHtml();
+        this.element = ConsolePanelDomlet.htmlElement();
         this.output = ConsolePanelDomlet.point("output", this.element);
         this.initInput();
     }

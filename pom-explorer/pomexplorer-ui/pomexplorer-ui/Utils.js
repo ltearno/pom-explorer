@@ -1,4 +1,4 @@
-function buildHtml(html) {
+function buildHtmlElement(html) {
     var c = document.createElement("div");
     c.innerHTML = html;
     return c.children[0];

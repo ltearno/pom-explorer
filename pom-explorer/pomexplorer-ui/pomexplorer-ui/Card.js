@@ -6,7 +6,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 var Card = (function (_super) {
     __extends(Card, _super);
     function Card() {
-        _super.call(this, "\n<div class=\"project-card mdl-card mdl-shadow--2dp\">\n  <div class=\"mdl-card__title mdl-card--expand\">\n    <h2 class=\"mdl-card__title-text\"></h2>\n  </div>\n  <div class=\"mdl-card__supporting-text\">\n  </div>\n  <div class=\"mdl-card__actions mdl-card--border\">\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\">Details</a>\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\">Build</a>\n  </div>\n</div>\n", {
+        _super.call(this, "\n<div class=\"project-card mdl-card mdl-shadow--2dp\">\n  <div class=\"mdl-card__title mdl-card--expand\">\n    <h2 class=\"mdl-card__title-text\">{{{title}}}</h2>\n  </div>\n  <div class=\"mdl-card__supporting-text\">\n    {{{content}}}\n  </div>\n  <div class=\"mdl-card__actions mdl-card--border\">\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\">Details</a>\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\">Build</a>\n  </div>\n</div>\n", {
             'main': [],
             'title': [0, 0],
             'content': [1],

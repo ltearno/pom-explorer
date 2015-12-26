@@ -1,3 +1,11 @@
+declare var Mustache: {
+    render(template: string, data: any): string;
+};
+
+/**
+ * TODO : mustache should not be used here, and a creation DTO should be expected to
+ * contain fields for each of the (terminal) points
+ */
 class Domlet {
     template: string;
     points: { [key: string]: number[] };
@@ -7,8 +15,13 @@ class Domlet {
         this.points = points;
     }
 
-    buildHtml() {
-        return buildHtml(this.template);
+    html(mustacheDto: any = null) {
+        return Mustache.render(this.template, mustacheDto);
+    }
+
+    htmlElement(mustacheDto: any = null) {
+        var html = this.html(mustacheDto);
+        return buildHtmlElement(html);
     }
 
     point(name: string, domletElement: HTMLElement): HTMLElement {

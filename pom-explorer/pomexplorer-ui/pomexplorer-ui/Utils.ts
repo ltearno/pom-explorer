@@ -1,6 +1,6 @@
 ﻿declare var Rx: any;
 
-function buildHtml(html: string): HTMLElement {
+function buildHtmlElement(html: string): HTMLElement {
     var c = document.createElement("div");
     c.innerHTML = html;
     return <HTMLElement>c.children[0];

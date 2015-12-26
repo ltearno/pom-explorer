@@ -1,10 +1,20 @@
+/**
+ * TODO : mustache should not be used here, and a creation DTO should be expected to
+ * contain fields for each of the (terminal) points
+ */
 var Domlet = (function () {
     function Domlet(template, points) {
         this.template = template;
         this.points = points;
     }
-    Domlet.prototype.buildHtml = function () {
-        return buildHtml(this.template);
+    Domlet.prototype.html = function (mustacheDto) {
+        if (mustacheDto === void 0) { mustacheDto = null; }
+        return Mustache.render(this.template, mustacheDto);
+    };
+    Domlet.prototype.htmlElement = function (mustacheDto) {
+        if (mustacheDto === void 0) { mustacheDto = null; }
+        var html = this.html(mustacheDto);
+        return buildHtmlElement(html);
     };
     Domlet.prototype.point = function (name, domletElement) {
         var list = this.points[name];

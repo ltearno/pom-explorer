@@ -16,13 +16,11 @@ class ProjectPanel {
     private service: Service;
 
     constructor(service: Service) {
-        this.element = ProjectPanelDomlet.buildHtml();
+        this.element = ProjectPanelDomlet.htmlElement();
 
         this.service = service;
-        this.search = SearchPanelDomlet.buildHtml();
+        this.search = SearchPanelDomlet.htmlElement();
         ProjectPanelDomlet.point("search-place", this.element).appendChild(this.search);
-        var card: HTMLElement;
-
 
         Rx.Observable.fromEvent(SearchPanelDomlet.input(this.search), "input")
             .pluck("target", "value")
@@ -33,14 +31,14 @@ class ProjectPanel {
                     this.projectList().innerHTML = "";
 
                     var list: Project[] = JSON.parse(message.payload);
+
+                    var htmlString = "";
+
                     for (var pi in list) {
                         var project = list[pi];
 
-                        card = CardDomlet.buildHtml();
-
                         var title = "";
                         title += project.gav.split(":").join("<br/>");
-                        CardDomlet.title(card).innerHTML = title;
 
                         var content = "";
                         if (project.buildable)
@@ -71,10 +69,15 @@ class ProjectPanel {
                                 content += `${ref.gav} as ${ref.dependencyType}<br/>`;
                             }
                         }
-                        CardDomlet.content(card).innerHTML = content;
 
-                        this.projectList().appendChild(card);
+                        htmlString += CardDomlet.html({
+                            title: title,
+                            content: content
+                        });
                     }
+                    
+                    this.projectList().innerHTML = htmlString;
+                    CardDomlet.initMaterialElement(this.projectList());
                 });
             });
     }

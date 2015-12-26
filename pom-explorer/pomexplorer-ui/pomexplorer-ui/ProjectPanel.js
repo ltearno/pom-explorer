@@ -5,11 +5,10 @@ var ProjectPanelDomlet = new MaterialDomlet("\n<div>\n    <div></div>\n    <div 
 var ProjectPanel = (function () {
     function ProjectPanel(service) {
         var _this = this;
-        this.element = ProjectPanelDomlet.buildHtml();
+        this.element = ProjectPanelDomlet.htmlElement();
         this.service = service;
-        this.search = SearchPanelDomlet.buildHtml();
+        this.search = SearchPanelDomlet.htmlElement();
         ProjectPanelDomlet.point("search-place", this.element).appendChild(this.search);
-        var card;
         Rx.Observable.fromEvent(SearchPanelDomlet.input(this.search), "input")
             .pluck("target", "value")
             .debounce(100)
@@ -18,12 +17,11 @@ var ProjectPanel = (function () {
             _this.service.sendRpc(value, function (message) {
                 _this.projectList().innerHTML = "";
                 var list = JSON.parse(message.payload);
+                var htmlString = "";
                 for (var pi in list) {
                     var project = list[pi];
-                    card = CardDomlet.buildHtml();
                     var title = "";
                     title += project.gav.split(":").join("<br/>");
-                    CardDomlet.title(card).innerHTML = title;
                     var content = "";
                     if (project.buildable)
                         content += "<span class='badge'>buildable</span>";
@@ -53,9 +51,13 @@ var ProjectPanel = (function () {
                             content += ref.gav + " as " + ref.dependencyType + "<br/>";
                         }
                     }
-                    CardDomlet.content(card).innerHTML = content;
-                    _this.projectList().appendChild(card);
+                    htmlString += CardDomlet.html({
+                        title: title,
+                        content: content
+                    });
                 }
+                _this.projectList().innerHTML = htmlString;
+                CardDomlet.initMaterialElement(_this.projectList());
             });
         });
     }

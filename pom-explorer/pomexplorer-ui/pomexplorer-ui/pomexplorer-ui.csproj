@@ -28,6 +28,7 @@
     <Content Include="material.js" />
     <Content Include="material.min.css" />
     <Content Include="material.min.js" />
+    <Content Include="mustache.min.js" />
     <Content Include="rx.all.min.js" />
     <Content Include="web.config" />
   </ItemGroup>

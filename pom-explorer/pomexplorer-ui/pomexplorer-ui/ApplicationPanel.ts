@@ -24,7 +24,7 @@ class ApplicationPanel {
     element: HTMLElement;
 
     constructor() {
-        this.element = ApplicationPanelDomlet.buildHtml();
+        this.element = ApplicationPanelDomlet.htmlElement();
     }
 
     addMenuHandler(handler: { (index: number, menuItem: HTMLElement, event: any): void; }) {
@@ -36,14 +36,13 @@ class ApplicationPanel {
 
             handler(index, comingMenuItem, e);
 
-            console.log(`click menu index: ${index}`);
             this.hideDrawer();
         });
     }
 
     addMenuItem(name: string) {
         var menu = ApplicationPanelDomlet.point("menu", this.element);
-        menu.appendChild(buildHtml(`<a class="mdl-navigation__link" href="#">${name}</a>`));
+        menu.appendChild(buildHtmlElement(`<a class="mdl-navigation__link" href="#">${name}</a>`));
     }
 
     main(): HTMLDivElement {

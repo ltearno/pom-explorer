@@ -17,7 +17,7 @@ class ConsolePanel {
     element: HTMLElement;
 
     constructor() {
-        this.element = ConsolePanelDomlet.buildHtml();
+        this.element = ConsolePanelDomlet.htmlElement();
 
         this.output = ConsolePanelDomlet.point("output", this.element);
         this.initInput();

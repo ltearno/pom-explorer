@@ -6,7 +6,7 @@ var ApplicationPanelDomlet = new MaterialDomlet("\n<div class=\"mdl-layout mdl-j
 });
 var ApplicationPanel = (function () {
     function ApplicationPanel() {
-        this.element = ApplicationPanelDomlet.buildHtml();
+        this.element = ApplicationPanelDomlet.htmlElement();
     }
     ApplicationPanel.prototype.addMenuHandler = function (handler) {
         var _this = this;
@@ -16,13 +16,12 @@ var ApplicationPanel = (function () {
             var comingMenuItem = ApplicationPanelDomlet.getComingChild(menu, target, _this.element);
             var index = indexOf(menu, comingMenuItem);
             handler(index, comingMenuItem, e);
-            console.log("click menu index: " + index);
             _this.hideDrawer();
         });
     };
     ApplicationPanel.prototype.addMenuItem = function (name) {
         var menu = ApplicationPanelDomlet.point("menu", this.element);
-        menu.appendChild(buildHtml("<a class=\"mdl-navigation__link\" href=\"#\">" + name + "</a>"));
+        menu.appendChild(buildHtmlElement("<a class=\"mdl-navigation__link\" href=\"#\">" + name + "</a>"));
     };
     ApplicationPanel.prototype.main = function () {
         return ApplicationPanelDomlet.point("main", this.element);
