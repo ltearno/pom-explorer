@@ -8,26 +8,10 @@
     parentChain: string[];
     references: Reference[];
     scm: string;
-    dependencyManagement: DependencyManagement[];
-    dependencies: Dependency[];
-    pluginManagement: PluginManagement[];
-    plugins: Plugin[];
-}
-
-interface Dependency {
-    
-}
-
-interface DependencyManagement {
-    
-}
-
-interface PluginManagement {
-    
-}
-
-interface Plugin {
-    
+    dependencyManagement: string;
+    dependencies: string;
+    pluginManagement: string;
+    plugins: string;
 }
 
 interface Reference {

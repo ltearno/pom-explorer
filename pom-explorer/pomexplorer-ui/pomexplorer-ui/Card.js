@@ -6,11 +6,14 @@ var __extends = (this && this.__extends) || function (d, b) {
 var Card = (function (_super) {
     __extends(Card, _super);
     function Card() {
-        _super.call(this, "\n<div class=\"project-card mdl-card mdl-shadow--2dp\">\n  <div class=\"mdl-card__title mdl-card--expand\">\n    <h2 class=\"mdl-card__title-text\">{{{title}}}</h2>\n  </div>\n  <div class=\"mdl-card__supporting-text\">\n    {{{content}}}\n  </div>\n  <div class=\"mdl-card__actions mdl-card--border\">\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\">Details</a>\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\">Build</a>\n  </div>\n</div>\n", {
+        _super.call(this, "\n<div class=\"project-card mdl-card mdl-shadow--2dp\">\n  <div class=\"mdl-card__title mdl-card--expand\">\n    <h2 class=\"mdl-card__title-text\">{{{title}}}</h2>\n  </div>\n  <div class=\"mdl-card__supporting-text\">\n    {{{content}}}\n  </div>\n  <div class=\"mdl-card__supporting-text\" style=\"display:none;\">\n    {{{details}}}\n  </div>\n  <div class=\"mdl-card__actions mdl-card--border\">\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\">Details</a>\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\">Build</a>\n  </div>\n</div>\n", {
             'main': [],
             'title': [0, 0],
             'content': [1],
-            'actions': [2]
+            'details': [2],
+            'actions': [3],
+            'actions-details': [3, 0],
+            'actions-build': [3, 1]
         });
     }
     Card.prototype.main = function (domlet) {
@@ -22,8 +25,17 @@ var Card = (function (_super) {
     Card.prototype.content = function (domlet) {
         return this.point("content", domlet);
     };
+    Card.prototype.details = function (domlet) {
+        return this.point("details", domlet);
+    };
     Card.prototype.actions = function (domlet) {
         return this.point("actions", domlet);
+    };
+    Card.prototype.actionsDetails = function (domlet) {
+        return this.point("actions-details", domlet);
+    };
+    Card.prototype.actionsBuild = function (domlet) {
+        return this.point("actions-build", domlet);
     };
     return Card;
 })(MaterialDomlet);

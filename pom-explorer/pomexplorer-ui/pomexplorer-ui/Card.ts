@@ -8,6 +8,9 @@ class Card extends MaterialDomlet {
   <div class="mdl-card__supporting-text">
     {{{content}}}
   </div>
+  <div class="mdl-card__supporting-text" style="display:none;">
+    {{{details}}}
+  </div>
   <div class="mdl-card__actions mdl-card--border">
     <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Details</a>
     <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Build</a>
@@ -17,7 +20,10 @@ class Card extends MaterialDomlet {
             'main': [],
             'title': [0, 0],
             'content': [1],
-            'actions': [2]
+            'details': [2],
+            'actions': [3],
+            'actions-details': [3, 0],
+            'actions-build': [3, 1]
         });
     }
 
@@ -33,8 +39,20 @@ class Card extends MaterialDomlet {
         return <HTMLDivElement>this.point("content", domlet);
     }
 
+    details(domlet: HTMLElement): HTMLDivElement {
+        return <HTMLDivElement>this.point("details", domlet);
+    }
+
     actions(domlet: HTMLElement): HTMLDivElement {
         return <HTMLDivElement>this.point("actions", domlet);
+    }
+
+    actionsDetails(domlet: HTMLElement): HTMLDivElement {
+        return <HTMLDivElement>this.point("actions-details", domlet);
+    }
+
+    actionsBuild(domlet: HTMLElement): HTMLDivElement {
+        return <HTMLDivElement>this.point("actions-build", domlet);
     }
 }
 
