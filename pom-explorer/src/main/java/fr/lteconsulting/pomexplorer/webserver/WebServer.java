@@ -75,6 +75,9 @@ public class WebServer
 	{
 		try
 		{
+			File dataDir = new File( DATA_FILE_STORE_DIR );
+			dataDir.mkdirs();
+			
 			FileWriter fileWriter = new FileWriter( Paths.get( DATA_FILE_STORE_DIR, fileName ).toString() );
 			return fileWriter;
 		}
