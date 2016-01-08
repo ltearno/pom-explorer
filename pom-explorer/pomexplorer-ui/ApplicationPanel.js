@@ -3,61 +3,82 @@
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./MaterialDomlet", "./Utils", "./node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "./Utils", "./node_modules/tardigrade/target/engine/engine", "./node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
-    var MaterialDomlet_1 = require("./MaterialDomlet");
     var Utils_1 = require("./Utils");
+    var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
-    var ApplicationPanelDomlet = new MaterialDomlet_1.MaterialDomlet(`
+    engine_1.TardigradeEngine.addTemplate("Application", `
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
             <span class="mdl-layout-title">Pom Explorer</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="mdl-badge" data-badge="!">beta</span>
         </div>
     </header>
-    <div class="mdl-layout__drawer">
+    <div x-id="Drawer" class="mdl-layout__drawer">
         <span class="mdl-layout-title">Pom Explorer</span>
-        <nav class="mdl-navigation">
+        <nav x-id="Menu" class="mdl-navigation">
         </nav>
     </div>
-    <main class="mdl-layout__content content-repositionning">
+    <main x-id="Content" class="mdl-layout__content content-repositionning">
     </main>
 </div>
-`, {
-        'main': [],
-        'content': [2],
-        'menu': [1, 1],
-        'drawer': [1]
-    });
+`);
+    function initMaterialElement(e) {
+        if (e == null)
+            return;
+        var upgrade = false;
+        for (var i = 0; i < e.classList.length; i++)
+            if (e.classList[i].indexOf("mdl-") >= 0) {
+                upgrade = true;
+                break;
+            }
+        if (upgrade)
+            componentHandler.upgradeElement(e);
+        for (var c in e.children) {
+            if (e.children[c] instanceof HTMLElement)
+                initMaterialElement(e.children[c]);
+        }
+    }
+    function getComingChild(p, element, domletElement) {
+        var directChild = element;
+        while (directChild != null && directChild.parentElement !== p) {
+            if (directChild === domletElement)
+                return null;
+            directChild = directChild.parentElement;
+        }
+        return directChild;
+    }
     class ApplicationPanel {
         constructor() {
-            this.element = ApplicationPanelDomlet.htmlElement();
+            this.element = runtime_1.createElement(engine_1.TardigradeEngine.buildHtml("Application", {}));
+            initMaterialElement(this.element);
         }
         addMenuHandler(handler) {
-            var menu = ApplicationPanelDomlet.point("menu", this.element);
+            var menu = engine_1.TardigradeEngine.getPoint(this.element, "Application", { "Menu": 0 });
             menu.addEventListener("click", (e) => {
                 var target = e.target;
-                var comingMenuItem = ApplicationPanelDomlet.getComingChild(menu, target, this.element);
+                var comingMenuItem = getComingChild(menu, target, this.element);
                 var index = runtime_1.indexOf(menu, comingMenuItem);
                 handler(index, comingMenuItem, e);
                 this.hideDrawer();
             });
         }
         addMenuItem(name) {
-            var menu = ApplicationPanelDomlet.point("menu", this.element);
+            var menu = engine_1.TardigradeEngine.getPoint(this.element, "Application", { "Menu": 0 });
             menu.appendChild(Utils_1.buildHtmlElement(`<a class="mdl-navigation__link" href="#">${name}</a>`));
         }
         main() {
-            return ApplicationPanelDomlet.point("main", this.element);
+            return this.element;
         }
         content() {
-            return ApplicationPanelDomlet.point("content", this.element);
+            return engine_1.TardigradeEngine.getPoint(this.element, "Application", { "Content": 0 });
         }
         hideDrawer() {
             // fix : the obfuscator is still visible if only remove is-visible from the drawer
             document.getElementsByClassName("mdl-layout__obfuscator")[0].classList.remove("is-visible");
-            ApplicationPanelDomlet.point("drawer", this.element).classList.remove("is-visible");
+            engine_1.TardigradeEngine.getPoint(this.element, "Application", { "Drawer": 0 }).classList.remove("is-visible");
         }
     }
     exports.ApplicationPanel = ApplicationPanel;
