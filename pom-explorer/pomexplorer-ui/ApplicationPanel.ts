@@ -1,5 +1,8 @@
 import { MaterialDomlet } from "./MaterialDomlet";
-import { buildHtmlElement, indexOf, domChain } from "./Utils";
+import { buildHtmlElement } from "./Utils";
+
+import { TardigradeEngine as e } from "./node_modules/tardigrade/target/engine/engine";
+import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
 
 var ApplicationPanelDomlet = new MaterialDomlet(`
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
