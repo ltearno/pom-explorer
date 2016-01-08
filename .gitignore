@@ -29,3 +29,4 @@ served-data/
 /target/
 pom-explorer/export.csv
 pom-explorer/pomexplorer-ui/pomexplorer-ui/obj/
+pom-explorer/pomexplorer-ui/node_modules/

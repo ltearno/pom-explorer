@@ -99,7 +99,7 @@ public class WebServer
 	{
 		PathHandler pathHandler = new PathHandler();
 
-		String localDirectoryName = "pomexplorer-ui/pomexplorer-ui";
+		String localDirectoryName = "pomexplorer-ui";
 		File servedDirectory = new File( localDirectoryName );
 		if( servedDirectory.exists() && servedDirectory.isDirectory() )
 		{

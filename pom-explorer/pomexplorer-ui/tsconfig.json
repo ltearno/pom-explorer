@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "umd",
+        "target": "es6",
+        "rootDir": "./",
+        "sourceMap": true,
+        "declaration": false,
+        "listFiles": true,
+        "emitBOM": true,
+        "diagnostics": true
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
