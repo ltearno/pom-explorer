@@ -4,6 +4,8 @@ import { buildHtmlElement } from "./Utils";
 import { TardigradeEngine } from "./node_modules/tardigrade/target/engine/engine";
 import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
 
+TardigradeEngine.addTemplate("MenuItem", `<a x-id="Title" class="mdl-navigation__link" href="#"></a>`);
+
 TardigradeEngine.addTemplate("Application", `
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
@@ -14,7 +16,7 @@ TardigradeEngine.addTemplate("Application", `
     <div x-id="Drawer" class="mdl-layout__drawer">
         <span class="mdl-layout-title">Pom Explorer</span>
         <nav x-id="Menu" class="mdl-navigation">
-            <div x-id="MenuItems" x-cardinal="*"/>
+            <MenuItem x-id="MenuItems" x-cardinal="*"/>
         </nav>
     </div>
     <main x-id="Content" class="mdl-layout__content content-repositionning">
@@ -44,16 +46,6 @@ function initMaterialElement(e: HTMLElement) {
     }
 }
 
-function getComingChild(p: HTMLElement, element: HTMLElement, domletElement: HTMLElement) {
-    var directChild = element;
-    while (directChild != null && directChild.parentElement !== p) {
-        if (directChild === domletElement)
-            return null;
-        directChild = directChild.parentElement;
-    }
-    return directChild;
-}
-
 export class ApplicationPanel {
     element: HTMLElement;
 
@@ -79,7 +71,7 @@ export class ApplicationPanel {
 
     addMenuItem(name: string) {
         var menu = TardigradeEngine.getPoint(this.element, "Application", { "Menu": 0 });
-        menu.appendChild(buildHtmlElement(`<a class="mdl-navigation__link" href="#">${name}</a>`));
+        menu.appendChild(createElement(TardigradeEngine.buildHtml("MenuItem", { "Title": name })));
     }
 
     main(): HTMLDivElement {

@@ -21,12 +21,12 @@ window.onload = () => {
 
     panel.addMenuHandler((index, menuItem, event) => {
         panel.content().innerHTML = "";
-        switch (menuItem.innerText) {
-            case "Projects":
+        switch (index) {
+            case 0:
                 panel.content().appendChild(projectPanel.element);
                 projectPanel.searchInput().focus();
                 break;
-            case "Console":
+            case 4:
                 panel.content().appendChild(consolePanel.element);
                 consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
                 consolePanel.input().focus();
