@@ -16,7 +16,9 @@ TardigradeEngine.addTemplate("Application", `
     <div x-id="Drawer" class="mdl-layout__drawer">
         <span class="mdl-layout-title">Pom Explorer</span>
         <nav x-id="Menu" class="mdl-navigation">
-            <MenuItem x-id="MenuItems" x-cardinal="*"/>
+            <MenuItem x-id="MenuItems" x-cardinal="*">
+                <Title x-id="Title"/>
+            </MenuItem>
         </nav>
     </div>
     <main x-id="Content" class="mdl-layout__content content-repositionning">
@@ -54,7 +56,7 @@ export class ApplicationPanel {
         initMaterialElement(this.element);
     }
 
-    addMenuHandler(handler: { (index: number, menuItem: HTMLElement, event: any): void; }) {
+    addMenuHandler(handler: { (index: number, menuName: string, event: any): void; }) {
         var menu = TardigradeEngine.getPoint(this.element, "Application", { "Menu": 0 });
         menu.addEventListener("click", (e) => {
             var target = <HTMLElement>e.target;
@@ -62,8 +64,10 @@ export class ApplicationPanel {
             var location = TardigradeEngine.getLocation(this.element, "Application", target);
             if (location != null && ("MenuItems" in location)) {
                 let index = location["MenuItems"];
+                // access to the menu title element
+                location["Title"] = 0;
                 let menuItem = TardigradeEngine.getPoint(this.element, "Application", location);
-                handler(index, menuItem, e);
+                handler(index, menuItem.innerText, e);
                 this.hideDrawer();
             }
         });

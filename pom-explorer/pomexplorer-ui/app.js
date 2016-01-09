@@ -22,14 +22,14 @@
         panel.addMenuItem("Graph");
         panel.addMenuItem("Build");
         panel.addMenuItem("Console");
-        panel.addMenuHandler((index, menuItem, event) => {
+        panel.addMenuHandler((index, menuName, event) => {
             panel.content().innerHTML = "";
-            switch (index) {
-                case 0:
+            switch (menuName) {
+                case "Projects":
                     panel.content().appendChild(projectPanel.element);
                     projectPanel.searchInput().focus();
                     break;
-                case 4:
+                case "Console":
                     panel.content().appendChild(consolePanel.element);
                     consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
                     consolePanel.input().focus();

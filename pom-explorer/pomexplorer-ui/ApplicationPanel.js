@@ -19,7 +19,9 @@
     <div x-id="Drawer" class="mdl-layout__drawer">
         <span class="mdl-layout-title">Pom Explorer</span>
         <nav x-id="Menu" class="mdl-navigation">
-            <MenuItem x-id="MenuItems" x-cardinal="*"/>
+            <MenuItem x-id="MenuItems" x-cardinal="*">
+                <Title x-id="Title"/>
+            </MenuItem>
         </nav>
     </div>
     <main x-id="Content" class="mdl-layout__content content-repositionning">
@@ -54,8 +56,10 @@
                 var location = engine_1.TardigradeEngine.getLocation(this.element, "Application", target);
                 if (location != null && ("MenuItems" in location)) {
                     let index = location["MenuItems"];
+                    // access to the menu title element
+                    location["Title"] = 0;
                     let menuItem = engine_1.TardigradeEngine.getPoint(this.element, "Application", location);
-                    handler(index, menuItem, e);
+                    handler(index, menuItem.innerText, e);
                     this.hideDrawer();
                 }
             });
