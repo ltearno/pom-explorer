@@ -14,6 +14,7 @@ TardigradeEngine.addTemplate("Application", `
     <div x-id="Drawer" class="mdl-layout__drawer">
         <span class="mdl-layout-title">Pom Explorer</span>
         <nav x-id="Menu" class="mdl-navigation">
+            <div x-id="MenuItems" x-cardinal="*"/>
         </nav>
     </div>
     <main x-id="Content" class="mdl-layout__content content-repositionning">
@@ -65,12 +66,14 @@ export class ApplicationPanel {
         var menu = TardigradeEngine.getPoint(this.element, "Application", { "Menu": 0 });
         menu.addEventListener("click", (e) => {
             var target = <HTMLElement>e.target;
-            var comingMenuItem = getComingChild(menu, target, this.element);
-            var index = indexOf(menu, comingMenuItem);
 
-            handler(index, comingMenuItem, e);
-
-            this.hideDrawer();
+            var location = TardigradeEngine.getLocation(this.element, "Application", target);
+            if (location != null && ("MenuItems" in location)) {
+                let index = location["MenuItems"];
+                let menuItem = TardigradeEngine.getPoint(this.element, "Application", location);
+                handler(index, menuItem, e);
+                this.hideDrawer();
+            }
         });
     }
 

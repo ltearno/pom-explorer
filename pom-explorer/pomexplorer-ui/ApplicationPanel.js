@@ -13,12 +13,13 @@
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
-            <span class="mdl-layout-title">Pom Explorer</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="mdl-badge" data-badge="!">beta</span>
+            <span class="mdl-layout-title">OHOH Pom Explorer</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="mdl-badge" data-badge="!">beta</span>
         </div>
     </header>
     <div x-id="Drawer" class="mdl-layout__drawer">
         <span class="mdl-layout-title">Pom Explorer</span>
         <nav x-id="Menu" class="mdl-navigation">
+            <div x-id="MenuItems" x-cardinal="*"/>
         </nav>
     </div>
     <main x-id="Content" class="mdl-layout__content content-repositionning">
@@ -59,10 +60,13 @@
             var menu = engine_1.TardigradeEngine.getPoint(this.element, "Application", { "Menu": 0 });
             menu.addEventListener("click", (e) => {
                 var target = e.target;
-                var comingMenuItem = getComingChild(menu, target, this.element);
-                var index = runtime_1.indexOf(menu, comingMenuItem);
-                handler(index, comingMenuItem, e);
-                this.hideDrawer();
+                var location = engine_1.TardigradeEngine.getLocation(this.element, "Application", target);
+                if (location != null && ("MenuItems" in location)) {
+                    let index = location["MenuItems"];
+                    let menuItem = engine_1.TardigradeEngine.getPoint(this.element, "Application", location);
+                    handler(index, menuItem, e);
+                    this.hideDrawer();
+                }
             });
         }
         addMenuItem(name) {
