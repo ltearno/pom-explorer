@@ -54,8 +54,19 @@
                 return location["MenuItems"];
             return -1;
         }
+        addMenuItem(rootElement, dto) {
+            // grab the parent node
+            // TODO this may be not doable if the parent does not have an id...
+            // TODO think about a better solution...
+            let menu = applicationTemplate.menu(rootElement);
+            let menuItem = this.buildNodeHtml("MenuItems", dto);
+            menu.appendChild(runtime_1.createElement(menuItem));
+        }
         getLocation(rootElement, hitTest) {
             return engine_1.tardigradeEngine.getLocation(rootElement, this.id, hitTest);
+        }
+        buildNodeHtml(nodeId, dto) {
+            return engine_1.tardigradeEngine.buildNodeHtml(this.id, nodeId, dto);
         }
     }
     var applicationTemplate = new ApplicationTemplate();
@@ -78,10 +89,7 @@
             });
         }
         addMenuItem(name) {
-            let menu = applicationTemplate.menu(this.element);
-            let menuItem = engine_1.tardigradeEngine.buildNodeHtml("Application", "MenuItems", { "MenuItems": name });
-            console.log(menuItem);
-            menu.appendChild(runtime_1.createElement(menuItem));
+            applicationTemplate.addMenuItem(this.element, { _root: name });
         }
         main() {
             return this.element;

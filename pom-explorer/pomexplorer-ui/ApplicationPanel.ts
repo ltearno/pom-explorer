@@ -4,6 +4,18 @@ import { initMaterialElement } from "./Utils";
 import { tardigradeEngine } from "./node_modules/tardigrade/target/engine/engine";
 import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
 
+interface MenuItemsDto {
+    _root?: string;
+}
+
+interface ApplicationTemplateDto {
+    _root?: string;
+    Drawer?: string;
+    Menu?: string;
+    MenuItems?: string | string[] | MenuItemsDto | MenuItemsDto[];
+    Content?: string;
+}
+
 class ApplicationTemplate {
     private id: string;
 
@@ -28,11 +40,11 @@ class ApplicationTemplate {
 `);
     }
 
-    buildHtml(dto: {}) {
+    buildHtml(dto: ApplicationTemplateDto) {
         return tardigradeEngine.buildHtml(this.id, dto);
     }
 
-    buildElement(dto: {}) {
+    buildElement(dto: ApplicationTemplateDto) {
         return createElement(this.buildHtml(dto));
     }
 
@@ -59,8 +71,21 @@ class ApplicationTemplate {
         return -1;
     }
 
+    addMenuItem(rootElement: HTMLElement, dto: MenuItemsDto) {
+        // grab the parent node
+        // TODO this may be not doable if the parent does not have an id...
+        // TODO think about a better solution...
+        let menu = applicationTemplate.menu(rootElement);
+        let menuItem = this.buildNodeHtml("MenuItems", dto);
+        menu.appendChild(createElement(menuItem));
+    }
+
     private getLocation(rootElement: HTMLElement, hitTest: HTMLElement) {
         return tardigradeEngine.getLocation(rootElement, this.id, hitTest);
+    }
+
+    private buildNodeHtml(nodeId: string, dto: {}) {
+        return tardigradeEngine.buildNodeHtml(this.id, nodeId, dto);
     }
 }
 
@@ -90,10 +115,7 @@ export class ApplicationPanel {
     }
 
     addMenuItem(name: string) {
-        let menu = applicationTemplate.menu(this.element);
-        let menuItem = tardigradeEngine.buildNodeHtml("Application", "MenuItems", { "MenuItems": name });
-        console.log(menuItem);
-        menu.appendChild(createElement(menuItem));
+        applicationTemplate.addMenuItem(this.element, { _root: name});
     }
 
     main(): HTMLDivElement {
