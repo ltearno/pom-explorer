@@ -4,7 +4,7 @@
     "description": "Pom Explorer front end",
     "author": "Arnaud Tournier",
     "scripts": {
-        "prepublish": "tsc && browserify -d app.js > app-bundle.js"
+        "prepublish": "tsc && browserify app.js > app-bundle.js"
     },
     "dependencies": {
         "tardigrade": "^1.1.0"

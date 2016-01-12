@@ -1,6 +1,6 @@
 "use strict";
 
-import { buildHtmlElement, indexOf, domChain } from "./Utils";
+import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
 
 declare var Mustache: {
     render(template: string, data: any): string;
@@ -25,7 +25,7 @@ export class Domlet {
 
     htmlElement(mustacheDto: any) {
         var html = this.html(mustacheDto);
-        return buildHtmlElement(html);
+        return createElement(html);
     }
 
     point(name: string, domletElement: HTMLElement): HTMLElement {

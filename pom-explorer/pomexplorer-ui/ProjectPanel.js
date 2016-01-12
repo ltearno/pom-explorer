@@ -3,13 +3,14 @@
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./MaterialDomlet", "./Card", "./SearchPanel", "./Utils"], factory);
+        define(["require", "exports", "./MaterialDomlet", "./Card", "./SearchPanel", "./Utils", "./node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     var MaterialDomlet_1 = require("./MaterialDomlet");
     var Card_1 = require("./Card");
     var SearchPanel_1 = require("./SearchPanel");
     var Utils_1 = require("./Utils");
+    var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
     var ProjectPanelDomlet = new MaterialDomlet_1.MaterialDomlet(`
 <div>
     <div></div>
@@ -26,7 +27,7 @@
             var search = SearchPanel_1.SearchPanelDomlet.htmlElement();
             ProjectPanelDomlet.point("search-place", this.element).appendChild(search);
             this.projectList().addEventListener("click", event => {
-                var dc = Utils_1.domChain(this.projectList(), event.target);
+                var dc = runtime_1.domChain(this.projectList(), event.target);
                 var card = dc[1];
                 var cardDetailsButton = Card_1.CardDomlet.actionsDetails(card);
                 if (Array.prototype.indexOf.call(dc, cardDetailsButton) >= 0) {
@@ -36,7 +37,7 @@
                         Card_1.CardDomlet.details(card).style.display = "none";
                 }
             });
-            Rx.Observable.fromEvent(SearchPanel_1.SearchPanelDomlet.input(search), "input")
+            Utils_1.rx.Observable.fromEvent(SearchPanel_1.SearchPanelDomlet.input(search), "input")
                 .pluck("target", "value")
                 .debounce(100)
                 .distinctUntilChanged()

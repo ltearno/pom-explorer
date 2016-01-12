@@ -1,25 +1,25 @@
 ﻿declare var Rx: any;
 
-export function buildHtmlElement(html: string): HTMLElement {
-    var c = document.createElement("div");
-    c.innerHTML = html;
-    return <HTMLElement>c.children[0];
-}
+declare var componentHandler: any;
 
-export function indexOf(parent: HTMLElement, child: HTMLElement) {
-    var index = [].indexOf.call(parent.children, child);
-    return index;
-}
+export var rx = Rx;
 
-export function domChain(parent: HTMLElement, child: HTMLElement): HTMLElement[] {
-    var res = [];
-    while (child != null) {
-        res.push(child);
-        if (child === parent) {
-            res = res.reverse();
-            return res;
+export function initMaterialElement(e: HTMLElement) {
+    if (e == null)
+        return;
+
+    var upgrade = false;
+    for (var i = 0; i < e.classList.length; i++)
+        if (e.classList[i].indexOf("mdl-") >= 0) {
+            upgrade = true;
+            break;
         }
-        child = child.parentElement;
+
+    if (upgrade)
+        componentHandler.upgradeElement(e);
+
+    for (var c in e.children) {
+        if (e.children[c] instanceof HTMLElement)
+            initMaterialElement(<HTMLElement>e.children[c]);
     }
-    return null;
 }

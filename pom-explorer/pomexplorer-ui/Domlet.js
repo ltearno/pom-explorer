@@ -3,11 +3,11 @@
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./Utils"], factory);
+        define(["require", "exports", "./node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var Utils_1 = require("./Utils");
+    var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
     /**
      * TODO : mustache should not be used here, and a creation DTO should be expected to
      * contain fields for each of the (terminal) points
@@ -22,7 +22,7 @@
         }
         htmlElement(mustacheDto) {
             var html = this.html(mustacheDto);
-            return Utils_1.buildHtmlElement(html);
+            return runtime_1.createElement(html);
         }
         point(name, domletElement) {
             var list = this.points[name];
@@ -44,7 +44,7 @@
             var comingChild = this.getComingChild(p, element, domletElement);
             if (comingChild == null)
                 return null;
-            return Utils_1.indexOf(p, comingChild);
+            return runtime_1.indexOf(p, comingChild);
         }
         pointInternal(list, domletElement) {
             var current = domletElement;

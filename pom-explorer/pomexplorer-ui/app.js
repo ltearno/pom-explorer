@@ -23,20 +23,21 @@
         panel.addMenuItem("Build");
         panel.addMenuItem("Console");
         panel.addMenuHandler((index, menuName, event) => {
-            panel.content().innerHTML = "";
             switch (menuName) {
                 case "Projects":
-                    panel.content().appendChild(projectPanel.element);
+                    panel.setContent(projectPanel.element);
                     projectPanel.searchInput().focus();
                     break;
                 case "Console":
-                    panel.content().appendChild(consolePanel.element);
+                    panel.setContent(consolePanel.element);
                     consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
                     consolePanel.input().focus();
                     break;
+                default:
+                    panel.setContent(null);
             }
         });
-        panel.content().appendChild(consolePanel.element);
+        panel.setContent(consolePanel.element);
         consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
         consolePanel.input().focus();
         service.onUnknownMessage = (message) => {

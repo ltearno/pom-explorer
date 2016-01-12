@@ -1,10 +1,9 @@
 import { MaterialDomlet } from "./MaterialDomlet";
 import { CardDomlet, Card } from "./Card";
 import { SearchPanelDomlet, SearchPanel } from "./SearchPanel";
-import { buildHtmlElement, indexOf, domChain } from "./Utils";
-import {Service, Status, Message, ServiceCallback} from "./Service";
-
-declare var Rx: any;
+import { initMaterialElement, rx } from "./Utils";
+import { Service, Status, Message, ServiceCallback } from "./Service";
+import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
 
 var ProjectPanelDomlet = new MaterialDomlet(`
 <div>
@@ -12,9 +11,9 @@ var ProjectPanelDomlet = new MaterialDomlet(`
     <div class='projects-list'></div>
 </div>
 `, {
-    'search-place': [0],
-    'project-list': [1]
-});
+        'search-place': [0],
+        'project-list': [1]
+    });
 
 export class ProjectPanel {
     element: HTMLElement;
@@ -32,7 +31,7 @@ export class ProjectPanel {
             var dc = domChain(this.projectList(), event.target as HTMLElement);
             var card = dc[1];
             var cardDetailsButton = CardDomlet.actionsDetails(card);
-            if (Array.prototype.indexOf.call(dc, cardDetailsButton)>=0) {
+            if (Array.prototype.indexOf.call(dc, cardDetailsButton) >= 0) {
                 if (CardDomlet.details(card).style.display === "none")
                     CardDomlet.details(card).style.display = null;
                 else
@@ -40,7 +39,7 @@ export class ProjectPanel {
             }
         });
 
-        Rx.Observable.fromEvent(SearchPanelDomlet.input(search), "input")
+        rx.Observable.fromEvent(SearchPanelDomlet.input(search), "input")
             .pluck("target", "value")
             .debounce(100)
             .distinctUntilChanged()
@@ -113,7 +112,7 @@ export class ProjectPanel {
                             details: details
                         });
                     }
-                    
+
                     this.projectList().innerHTML = htmlString;
                     CardDomlet.initMaterialElement(this.projectList());
                 });

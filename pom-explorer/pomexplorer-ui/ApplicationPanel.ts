@@ -1,12 +1,16 @@
 import { MaterialDomlet } from "./MaterialDomlet";
-import { buildHtmlElement } from "./Utils";
+import { initMaterialElement } from "./Utils";
 
-import { TardigradeEngine } from "./node_modules/tardigrade/target/engine/engine";
+import { tardigradeEngine } from "./node_modules/tardigrade/target/engine/engine";
 import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
 
-TardigradeEngine.addTemplate("MenuItem", `<a x-id="Title" class="mdl-navigation__link" href="#"></a>`);
+class ApplicationTemplate {
+    private id: string;
 
-TardigradeEngine.addTemplate("Application", `
+    constructor() {
+        this.id = "Application";
+
+        tardigradeEngine.addTemplate(this.id, `
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
@@ -16,79 +20,96 @@ TardigradeEngine.addTemplate("Application", `
     <div x-id="Drawer" class="mdl-layout__drawer">
         <span class="mdl-layout-title">Pom Explorer</span>
         <nav x-id="Menu" class="mdl-navigation">
-            <MenuItem x-id="MenuItems" x-cardinal="*">
-                <Title x-id="Title"/>
-            </MenuItem>
+            <a x-id="MenuItems" x-cardinal="*" class="mdl-navigation__link" href="#"/>
         </nav>
     </div>
-    <main x-id="Content" class="mdl-layout__content content-repositionning">
-    </main>
+    <main x-id="Content" class="mdl-layout__content content-repositionning"/>
 </div>
 `);
+    }
 
-declare var componentHandler: any;
+    buildHtml(dto: {}) {
+        return tardigradeEngine.buildHtml(this.id, dto);
+    }
 
-function initMaterialElement(e: HTMLElement) {
-    if (e == null)
-        return;
+    buildElement(dto: {}) {
+        return createElement(this.buildHtml(dto));
+    }
 
-    var upgrade = false;
-    for (var i = 0; i < e.classList.length; i++)
-        if (e.classList[i].indexOf("mdl-") >= 0) {
-            upgrade = true;
-            break;
-        }
+    content(rootElement: HTMLElement): HTMLDivElement {
+        return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, this.id, { "Content": 0 });
+    }
 
-    if (upgrade)
-        componentHandler.upgradeElement(e);
+    menu(rootElement: HTMLElement) {
+        return tardigradeEngine.getPoint(rootElement, this.id, { "Menu": 0 });
+    }
 
-    for (var c in e.children) {
-        if (e.children[c] instanceof HTMLElement)
-            initMaterialElement(<HTMLElement>e.children[c]);
+    menuItems(rootElement: HTMLElement, menuItemsIndex: number) {
+        return tardigradeEngine.getPoint(rootElement, this.id, { "Menu": 0, "MenuItems": menuItemsIndex });
+    }
+
+    drawer(rootElement: HTMLElement) {
+        return tardigradeEngine.getPoint(rootElement, this.id, { "Drawer": 0 });
+    }
+
+    menuItemsIndex(rootElement: HTMLElement, hitTest: HTMLElement) {
+        let location = this.getLocation(rootElement, hitTest);
+        if (location != null && ("MenuItems" in location))
+            return location["MenuItems"];
+        return -1;
+    }
+
+    private getLocation(rootElement: HTMLElement, hitTest: HTMLElement) {
+        return tardigradeEngine.getLocation(rootElement, this.id, hitTest);
     }
 }
+
+var applicationTemplate = new ApplicationTemplate();
 
 export class ApplicationPanel {
     element: HTMLElement;
 
     constructor() {
-        this.element = createElement(TardigradeEngine.buildHtml("Application", {}));
+        this.element = applicationTemplate.buildElement({});
         initMaterialElement(this.element);
+        applicationTemplate.menu(this.element).innerHTML = "";
     }
 
     addMenuHandler(handler: { (index: number, menuName: string, event: any): void; }) {
-        var menu = TardigradeEngine.getPoint(this.element, "Application", { "Menu": 0 });
+        var menu = applicationTemplate.menu(this.element);
         menu.addEventListener("click", (e) => {
             var target = <HTMLElement>e.target;
 
-            var location = TardigradeEngine.getLocation(this.element, "Application", target);
-            if (location != null && ("MenuItems" in location)) {
-                let index = location["MenuItems"];
-                // access to the menu title element
-                location["Title"] = 0;
-                let menuItem = TardigradeEngine.getPoint(this.element, "Application", location);
-                handler(index, menuItem.innerText, e);
+            let menuItemsIndex = applicationTemplate.menuItemsIndex(this.element, target);
+            if (menuItemsIndex >= 0) {
+                let menuItem = applicationTemplate.menuItems(this.element, menuItemsIndex);
+                handler(menuItemsIndex, menuItem.innerText, e);
                 this.hideDrawer();
             }
         });
     }
 
     addMenuItem(name: string) {
-        var menu = TardigradeEngine.getPoint(this.element, "Application", { "Menu": 0 });
-        menu.appendChild(createElement(TardigradeEngine.buildHtml("MenuItem", { "Title": name })));
+        let menu = applicationTemplate.menu(this.element);
+        let menuItem = tardigradeEngine.buildNodeHtml("Application", "MenuItems", { "MenuItems": name });
+        console.log(menuItem);
+        menu.appendChild(createElement(menuItem));
     }
 
     main(): HTMLDivElement {
         return <HTMLDivElement>this.element;
     }
 
-    content(): HTMLDivElement {
-        return <HTMLDivElement>TardigradeEngine.getPoint(this.element, "Application", { "Content": 0 });
+    setContent(contentElement: HTMLElement) {
+        let content = applicationTemplate.content(this.element);
+        content.innerHTML = "";
+        if (contentElement != null)
+            content.appendChild(contentElement);
     }
 
     protected hideDrawer() {
         // fix : the obfuscator is still visible if only remove is-visible from the drawer
         document.getElementsByClassName("mdl-layout__obfuscator")[0].classList.remove("is-visible");
-        TardigradeEngine.getPoint(this.element, "Application", { "Drawer": 0 }).classList.remove("is-visible");
+        applicationTemplate.drawer(this.element).classList.remove("is-visible");
     }
 }

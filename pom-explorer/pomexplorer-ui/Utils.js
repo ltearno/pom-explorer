@@ -6,29 +6,23 @@
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
-    function buildHtmlElement(html) {
-        var c = document.createElement("div");
-        c.innerHTML = html;
-        return c.children[0];
-    }
-    exports.buildHtmlElement = buildHtmlElement;
-    function indexOf(parent, child) {
-        var index = [].indexOf.call(parent.children, child);
-        return index;
-    }
-    exports.indexOf = indexOf;
-    function domChain(parent, child) {
-        var res = [];
-        while (child != null) {
-            res.push(child);
-            if (child === parent) {
-                res = res.reverse();
-                return res;
+    exports.rx = Rx;
+    function initMaterialElement(e) {
+        if (e == null)
+            return;
+        var upgrade = false;
+        for (var i = 0; i < e.classList.length; i++)
+            if (e.classList[i].indexOf("mdl-") >= 0) {
+                upgrade = true;
+                break;
             }
-            child = child.parentElement;
+        if (upgrade)
+            componentHandler.upgradeElement(e);
+        for (var c in e.children) {
+            if (e.children[c] instanceof HTMLElement)
+                initMaterialElement(e.children[c]);
         }
-        return null;
     }
-    exports.domChain = domChain;
+    exports.initMaterialElement = initMaterialElement;
 });
 //# sourceMappingURL=Utils.js.map
