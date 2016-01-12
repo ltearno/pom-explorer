@@ -9138,7 +9138,6 @@ arguments[4][66][0].apply(exports,arguments)
     class Parser {
         parseTardigradeTemplate(html) {
             var htmlTree = this.parseHtml(html);
-            //htmlTree.log("> ");
             return this.buildNode(htmlTree);
         }
         fillParentNode(node, html) {
