@@ -6,7 +6,7 @@ import {Service, Status, Message, ServiceCallback} from "./Service";
 window.onload = () => {
     var panel = new ApplicationPanel();
     document.getElementsByTagName("body")[0].innerHTML = "";
-    document.getElementsByTagName("body")[0].appendChild(panel.element);
+    document.getElementsByTagName("body")[0].appendChild(panel.main());
 
     var service = new Service();
 

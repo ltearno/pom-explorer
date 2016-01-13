@@ -13,7 +13,7 @@
     window.onload = () => {
         var panel = new ApplicationPanel_1.ApplicationPanel();
         document.getElementsByTagName("body")[0].innerHTML = "";
-        document.getElementsByTagName("body")[0].appendChild(panel.element);
+        document.getElementsByTagName("body")[0].appendChild(panel.main());
         var service = new Service_1.Service();
         var projectPanel = new ProjectPanel_1.ProjectPanel(service);
         var consolePanel = new ConsolePanel_1.ConsolePanel();

@@ -1,4 +1,8 @@
 import { MaterialDomlet } from "./MaterialDomlet";
+import { initMaterialElement } from "./Utils";
+
+import { tardigradeEngine } from "./node_modules/tardigrade/target/engine/engine";
+import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
 
 export class Card extends MaterialDomlet {
     constructor() {

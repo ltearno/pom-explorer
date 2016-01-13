@@ -12,8 +12,7 @@
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
     class ApplicationTemplate {
         constructor() {
-            this.id = "Application";
-            engine_1.tardigradeEngine.addTemplate(this.id, `
+            engine_1.tardigradeEngine.addTemplate("Application", `
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
@@ -31,71 +30,69 @@
 `);
         }
         buildHtml(dto) {
-            return engine_1.tardigradeEngine.buildHtml(this.id, dto);
+            return engine_1.tardigradeEngine.buildHtml("Application", dto);
         }
         buildElement(dto) {
             return runtime_1.createElement(this.buildHtml(dto));
         }
-        content(rootElement) {
-            return engine_1.tardigradeEngine.getPoint(rootElement, this.id, { "Content": 0 });
-        }
-        menu(rootElement) {
-            return engine_1.tardigradeEngine.getPoint(rootElement, this.id, { "Menu": 0 });
-        }
-        menuItems(rootElement, menuItemsIndex) {
-            return engine_1.tardigradeEngine.getPoint(rootElement, this.id, { "Menu": 0, "MenuItems": menuItemsIndex });
-        }
-        drawer(rootElement) {
-            return engine_1.tardigradeEngine.getPoint(rootElement, this.id, { "Drawer": 0 });
-        }
-        menuItemsIndex(rootElement, hitTest) {
-            let location = this.getLocation(rootElement, hitTest);
-            if (location != null && ("MenuItems" in location))
-                return location["MenuItems"];
-            return -1;
-        }
-        addMenuItem(rootElement, dto) {
-            // grab the parent node
-            // TODO this may be not doable if the parent does not have an id...
-            // TODO think about a better solution...
-            let menu = applicationTemplate.menu(rootElement);
-            let menuItem = this.buildNodeHtml("MenuItems", dto);
-            menu.appendChild(runtime_1.createElement(menuItem));
-        }
-        getLocation(rootElement, hitTest) {
-            return engine_1.tardigradeEngine.getLocation(rootElement, this.id, hitTest);
-        }
-        buildNodeHtml(nodeId, dto) {
-            return engine_1.tardigradeEngine.buildNodeHtml(this.id, nodeId, dto);
+        of(rootElement) {
+            let me = {
+                _root() { return rootElement; },
+                content() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "Content": 0 });
+                },
+                menu() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "Menu": 0 });
+                },
+                menuItems(menuItemsIndex) {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "Menu": 0, "MenuItems": menuItemsIndex });
+                },
+                drawer() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "Drawer": 0 });
+                },
+                menuItemsIndex(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Application", hitTest);
+                    if (location != null && ("MenuItems" in location))
+                        return location["MenuItems"];
+                    return -1;
+                },
+                // TODO not sure
+                addMenuItem(dto) {
+                    let menuItem = engine_1.tardigradeEngine.buildNodeHtml("Application", "MenuItems", dto);
+                    me.menu().appendChild(runtime_1.createElement(menuItem));
+                }
+            };
+            return me;
         }
     }
     var applicationTemplate = new ApplicationTemplate();
     class ApplicationPanel {
         constructor() {
-            this.element = applicationTemplate.buildElement({});
-            Utils_1.initMaterialElement(this.element);
-            applicationTemplate.menu(this.element).innerHTML = "";
+            this.template = applicationTemplate.of(applicationTemplate.buildElement({}));
+            Utils_1.initMaterialElement(this.template._root());
+            console.log("hh" + this.template._root());
+            this.template.menu().innerHTML = "";
         }
         addMenuHandler(handler) {
-            var menu = applicationTemplate.menu(this.element);
+            var menu = this.template.menu();
             menu.addEventListener("click", (e) => {
                 var target = e.target;
-                let menuItemsIndex = applicationTemplate.menuItemsIndex(this.element, target);
+                let menuItemsIndex = this.template.menuItemsIndex(target);
                 if (menuItemsIndex >= 0) {
-                    let menuItem = applicationTemplate.menuItems(this.element, menuItemsIndex);
+                    let menuItem = this.template.menuItems(menuItemsIndex);
                     handler(menuItemsIndex, menuItem.innerText, e);
                     this.hideDrawer();
                 }
             });
         }
         addMenuItem(name) {
-            applicationTemplate.addMenuItem(this.element, { _root: name });
+            this.template.addMenuItem({ _root: name });
         }
         main() {
-            return this.element;
+            return this.template._root();
         }
         setContent(contentElement) {
-            let content = applicationTemplate.content(this.element);
+            let content = this.template.content();
             content.innerHTML = "";
             if (contentElement != null)
                 content.appendChild(contentElement);
@@ -103,7 +100,7 @@
         hideDrawer() {
             // fix : the obfuscator is still visible if only remove is-visible from the drawer
             document.getElementsByClassName("mdl-layout__obfuscator")[0].classList.remove("is-visible");
-            applicationTemplate.drawer(this.element).classList.remove("is-visible");
+            this.template.drawer().classList.remove("is-visible");
         }
     }
     exports.ApplicationPanel = ApplicationPanel;
@@ -660,7 +657,7 @@
     window.onload = () => {
         var panel = new ApplicationPanel_1.ApplicationPanel();
         document.getElementsByTagName("body")[0].innerHTML = "";
-        document.getElementsByTagName("body")[0].appendChild(panel.element);
+        document.getElementsByTagName("body")[0].appendChild(panel.main());
         var service = new Service_1.Service();
         var projectPanel = new ProjectPanel_1.ProjectPanel(service);
         var consolePanel = new ConsolePanel_1.ConsolePanel();
@@ -8721,7 +8718,7 @@ arguments[4][66][0].apply(exports,arguments)
             if (templateNode == null)
                 return null;
             var nodeToBuild = this.findNode(templateNode, nodeId);
-            return this.buildNode(templateNode, nodeToBuild, [dto]);
+            return this.buildNode(nodeToBuild, nodeToBuild, [dto]);
         }
         getPoint(templateElement, templateName, intermediates) {
             var templateRootNode = this.templates[templateName];
@@ -9146,6 +9143,7 @@ arguments[4][66][0].apply(exports,arguments)
     class Parser {
         parseTardigradeTemplate(html) {
             var htmlTree = this.parseHtml(html);
+            //htmlTree.log("> ");
             return this.buildNode(htmlTree);
         }
         fillParentNode(node, html) {

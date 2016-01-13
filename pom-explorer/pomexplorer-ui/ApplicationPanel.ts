@@ -16,13 +16,19 @@ interface ApplicationTemplateDto {
     Content?: string;
 }
 
+interface ApplicationTemplateElement {
+    _root(): HTMLElement;
+    content(): HTMLElement;
+    menu(): HTMLElement;
+    menuItems(menuItemsIndex: number): HTMLElement;
+    drawer(): HTMLElement;
+    menuItemsIndex(hitTest: HTMLElement): number;
+    addMenuItem(dto: MenuItemsDto);
+}
+
 class ApplicationTemplate {
-    private id: string;
-
     constructor() {
-        this.id = "Application";
-
-        tardigradeEngine.addTemplate(this.id, `
+        tardigradeEngine.addTemplate("Application", `
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
@@ -41,73 +47,70 @@ class ApplicationTemplate {
     }
 
     buildHtml(dto: ApplicationTemplateDto) {
-        return tardigradeEngine.buildHtml(this.id, dto);
+        return tardigradeEngine.buildHtml("Application", dto);
     }
 
     buildElement(dto: ApplicationTemplateDto) {
         return createElement(this.buildHtml(dto));
     }
 
-    content(rootElement: HTMLElement): HTMLDivElement {
-        return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, this.id, { "Content": 0 });
-    }
+    of(rootElement: HTMLElement): ApplicationTemplateElement {
+        let me = {
+            _root() { return rootElement; },
 
-    menu(rootElement: HTMLElement) {
-        return tardigradeEngine.getPoint(rootElement, this.id, { "Menu": 0 });
-    }
+            content(): HTMLDivElement {
+                return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Application", { "Content": 0 });
+            },
 
-    menuItems(rootElement: HTMLElement, menuItemsIndex: number) {
-        return tardigradeEngine.getPoint(rootElement, this.id, { "Menu": 0, "MenuItems": menuItemsIndex });
-    }
+            menu() {
+                return tardigradeEngine.getPoint(rootElement, "Application", { "Menu": 0 });
+            },
 
-    drawer(rootElement: HTMLElement) {
-        return tardigradeEngine.getPoint(rootElement, this.id, { "Drawer": 0 });
-    }
+            menuItems(menuItemsIndex: number) {
+                return tardigradeEngine.getPoint(rootElement, "Application", { "Menu": 0, "MenuItems": menuItemsIndex });
+            },
 
-    menuItemsIndex(rootElement: HTMLElement, hitTest: HTMLElement) {
-        let location = this.getLocation(rootElement, hitTest);
-        if (location != null && ("MenuItems" in location))
-            return location["MenuItems"];
-        return -1;
-    }
+            drawer() {
+                return tardigradeEngine.getPoint(rootElement, "Application", { "Drawer": 0 });
+            },
 
-    addMenuItem(rootElement: HTMLElement, dto: MenuItemsDto) {
-        // grab the parent node
-        // TODO this may be not doable if the parent does not have an id...
-        // TODO think about a better solution...
-        let menu = applicationTemplate.menu(rootElement);
-        let menuItem = this.buildNodeHtml("MenuItems", dto);
-        menu.appendChild(createElement(menuItem));
-    }
+            menuItemsIndex(hitTest: HTMLElement) {
+                let location = tardigradeEngine.getLocation(rootElement, "Application", hitTest);
+                if (location != null && ("MenuItems" in location))
+                    return location["MenuItems"];
+                return -1;
+            },
 
-    private getLocation(rootElement: HTMLElement, hitTest: HTMLElement) {
-        return tardigradeEngine.getLocation(rootElement, this.id, hitTest);
-    }
-
-    private buildNodeHtml(nodeId: string, dto: {}) {
-        return tardigradeEngine.buildNodeHtml(this.id, nodeId, dto);
+            // TODO not sure
+            addMenuItem(dto: MenuItemsDto) {
+                let menuItem = tardigradeEngine.buildNodeHtml("Application", "MenuItems", dto);
+                me.menu().appendChild(createElement(menuItem));
+            }
+        };
+        
+        return me;
     }
 }
 
 var applicationTemplate = new ApplicationTemplate();
 
 export class ApplicationPanel {
-    element: HTMLElement;
+    template: ApplicationTemplateElement;
 
     constructor() {
-        this.element = applicationTemplate.buildElement({});
-        initMaterialElement(this.element);
-        applicationTemplate.menu(this.element).innerHTML = "";
+        this.template = applicationTemplate.of(applicationTemplate.buildElement({}));
+        initMaterialElement(this.template._root());
+        this.template.menu().innerHTML = "";
     }
 
     addMenuHandler(handler: { (index: number, menuName: string, event: any): void; }) {
-        var menu = applicationTemplate.menu(this.element);
+        var menu = this.template.menu();
         menu.addEventListener("click", (e) => {
             var target = <HTMLElement>e.target;
 
-            let menuItemsIndex = applicationTemplate.menuItemsIndex(this.element, target);
+            let menuItemsIndex = this.template.menuItemsIndex(target);
             if (menuItemsIndex >= 0) {
-                let menuItem = applicationTemplate.menuItems(this.element, menuItemsIndex);
+                let menuItem = this.template.menuItems(menuItemsIndex);
                 handler(menuItemsIndex, menuItem.innerText, e);
                 this.hideDrawer();
             }
@@ -115,15 +118,15 @@ export class ApplicationPanel {
     }
 
     addMenuItem(name: string) {
-        applicationTemplate.addMenuItem(this.element, { _root: name});
+        this.template.addMenuItem({ _root: name });
     }
 
     main(): HTMLDivElement {
-        return <HTMLDivElement>this.element;
+        return <HTMLDivElement>this.template._root();
     }
 
     setContent(contentElement: HTMLElement) {
-        let content = applicationTemplate.content(this.element);
+        let content = this.template.content();
         content.innerHTML = "";
         if (contentElement != null)
             content.appendChild(contentElement);
@@ -132,6 +135,6 @@ export class ApplicationPanel {
     protected hideDrawer() {
         // fix : the obfuscator is still visible if only remove is-visible from the drawer
         document.getElementsByClassName("mdl-layout__obfuscator")[0].classList.remove("is-visible");
-        applicationTemplate.drawer(this.element).classList.remove("is-visible");
+        this.template.drawer().classList.remove("is-visible");
     }
 }
