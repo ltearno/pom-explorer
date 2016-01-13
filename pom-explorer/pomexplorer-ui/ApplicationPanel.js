@@ -69,7 +69,6 @@
         constructor() {
             this.template = applicationTemplate.of(applicationTemplate.buildElement({}));
             Utils_1.initMaterialElement(this.template._root());
-            console.log("hh" + this.template._root());
             this.template.menu().innerHTML = "";
         }
         addMenuHandler(handler) {
