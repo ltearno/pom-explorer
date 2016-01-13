@@ -12,7 +12,7 @@ interface ApplicationTemplateDto {
     _root?: string;
     Drawer?: string;
     Menu?: string;
-    MenuItems?: string | string[] | MenuItemsDto | MenuItemsDto[];
+    MenuItems?: string | string[] | MenuItemsDto | MenuItemsDto[] | any;
     Content?: string;
 }
 

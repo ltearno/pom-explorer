@@ -28,13 +28,13 @@
             ProjectPanelDomlet.point("search-place", this.element).appendChild(search);
             this.projectList().addEventListener("click", event => {
                 var dc = runtime_1.domChain(this.projectList(), event.target);
-                var card = dc[1];
-                var cardDetailsButton = Card_1.CardDomlet.actionsDetails(card);
+                var card = Card_1.cardTemplate.of(dc[1]);
+                var cardDetailsButton = card.actionDetails();
                 if (Array.prototype.indexOf.call(dc, cardDetailsButton) >= 0) {
-                    if (Card_1.CardDomlet.details(card).style.display === "none")
-                        Card_1.CardDomlet.details(card).style.display = null;
+                    if (card.details().style.display === "none")
+                        card.details().style.display = null;
                     else
-                        Card_1.CardDomlet.details(card).style.display = "none";
+                        card.details().style.display = "none";
                 }
             });
             Utils_1.rx.Observable.fromEvent(SearchPanel_1.SearchPanelDomlet.input(search), "input")
@@ -97,14 +97,14 @@
                             details += project.plugins;
                             details += "<br/>";
                         }
-                        htmlString += Card_1.CardDomlet.html({
+                        htmlString += Card_1.cardTemplate.buildHtml({
                             title: title,
                             content: content,
                             details: details
                         });
                     }
                     this.projectList().innerHTML = htmlString;
-                    Card_1.CardDomlet.initMaterialElement(this.projectList());
+                    Utils_1.initMaterialElement(this.projectList());
                 });
             });
         }

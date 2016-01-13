@@ -1,5 +1,5 @@
 import { MaterialDomlet } from "./MaterialDomlet";
-import { CardDomlet, Card } from "./Card";
+import { cardTemplate } from "./Card";
 import { SearchPanelDomlet, SearchPanel } from "./SearchPanel";
 import { initMaterialElement, rx } from "./Utils";
 import { Service, Status, Message, ServiceCallback } from "./Service";
@@ -29,13 +29,13 @@ export class ProjectPanel {
 
         this.projectList().addEventListener("click", event => {
             var dc = domChain(this.projectList(), event.target as HTMLElement);
-            var card = dc[1];
-            var cardDetailsButton = CardDomlet.actionsDetails(card);
+            var card = cardTemplate.of(dc[1]);
+            var cardDetailsButton = card.actionDetails();
             if (Array.prototype.indexOf.call(dc, cardDetailsButton) >= 0) {
-                if (CardDomlet.details(card).style.display === "none")
-                    CardDomlet.details(card).style.display = null;
+                if (card.details().style.display === "none")
+                    card.details().style.display = null;
                 else
-                    CardDomlet.details(card).style.display = "none";
+                    card.details().style.display = "none";
             }
         });
 
@@ -106,7 +106,7 @@ export class ProjectPanel {
                             details += "<br/>";
                         }
 
-                        htmlString += CardDomlet.html({
+                        htmlString += cardTemplate.buildHtml({
                             title: title,
                             content: content,
                             details: details
@@ -114,7 +114,7 @@ export class ProjectPanel {
                     }
 
                     this.projectList().innerHTML = htmlString;
-                    CardDomlet.initMaterialElement(this.projectList());
+                    initMaterialElement(this.projectList());
                 });
             });
     }
