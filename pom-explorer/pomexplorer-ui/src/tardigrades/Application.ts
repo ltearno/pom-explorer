@@ -1,7 +1,7 @@
 "use strict";
 
-import { tardigradeEngine } from "../node_modules/tardigrade/target/engine/engine";
-import { createElement, domChain, indexOf } from "../node_modules/tardigrade/target/engine/runtime";
+import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
+import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
 export interface MenuItemsDto {
     _root?: string;

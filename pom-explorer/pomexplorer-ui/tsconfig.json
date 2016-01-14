@@ -2,7 +2,8 @@
     "compilerOptions": {
         "module": "umd",
         "target": "es6",
-        "rootDir": "./",
+        "rootDir": "src",
+        "outDir": "target",
         "sourceMap": true,
         "declaration": false,
         "listFiles": true,

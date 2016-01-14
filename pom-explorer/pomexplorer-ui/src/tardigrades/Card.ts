@@ -1,9 +1,9 @@
 "use strict";
 
-import { initMaterialElement } from "./Utils";
+import { initMaterialElement } from "../Utils";
 
-import { tardigradeEngine } from "../node_modules/tardigrade/target/engine/engine";
-import { createElement, domChain, indexOf } from "../node_modules/tardigrade/target/engine/runtime";
+import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
+import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
 interface CardTemplateDto {
     _root?: string;

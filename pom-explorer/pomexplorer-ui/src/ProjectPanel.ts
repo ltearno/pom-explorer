@@ -3,7 +3,7 @@
 import { cardTemplate } from "./tardigrades/Card";
 import { initMaterialElement, rx } from "./Utils";
 import { Service, Status, Message, ServiceCallback } from "./Service";
-import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
+import { createElement, domChain, indexOf } from "../node_modules/tardigrade/target/engine/runtime";
 import { IWorkPanel } from "./IWorkPanel";
 import { projectPanelTemplate, ProjectPanelTemplateElement } from "./tardigrades/ProjectPanel";
 

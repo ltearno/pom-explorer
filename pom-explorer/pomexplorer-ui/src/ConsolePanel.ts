@@ -2,7 +2,7 @@
 
 import { IWorkPanel } from "./IWorkPanel";
 import { initMaterialElement, rx } from "./Utils";
-import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
+import { createElement, domChain, indexOf } from "../node_modules/tardigrade/target/engine/runtime";
 
 import { consolePanelTemplate, ConsolePanelTemplateElement } from "./tardigrades/ConsolePanel";
 
