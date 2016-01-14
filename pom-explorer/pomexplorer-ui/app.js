@@ -22,24 +22,28 @@
         panel.addMenuItem("Graph");
         panel.addMenuItem("Build");
         panel.addMenuItem("Console");
+        let setPanel = (p) => {
+            if (p) {
+                panel.setContent(p.element());
+                p.focus();
+            }
+            else {
+                panel.setContent(null);
+            }
+        };
         panel.addMenuHandler((index, menuName, event) => {
             switch (menuName) {
                 case "Projects":
-                    panel.setContent(projectPanel.element);
-                    projectPanel.searchInput().focus();
+                    setPanel(projectPanel);
                     break;
                 case "Console":
-                    panel.setContent(consolePanel.element);
-                    consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
-                    consolePanel.input().focus();
+                    setPanel(consolePanel);
                     break;
                 default:
-                    panel.setContent(null);
+                    setPanel(null);
             }
         });
-        panel.setContent(consolePanel.element);
-        consolePanel.output.scrollTop = consolePanel.output.scrollHeight;
-        consolePanel.input().focus();
+        setPanel(consolePanel);
         service.onUnknownMessage = (message) => {
             consolePanel.print(message.payload, message.talkGuid);
         };

@@ -1,41 +1,88 @@
 ﻿import { MaterialDomlet } from "./MaterialDomlet";
+import { IWorkPanel } from "./IWorkPanel";
+import { initMaterialElement, rx } from "./Utils";
+import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
+import { tardigradeEngine } from "./node_modules/tardigrade/target/engine/engine";
 
-var ConsolePanelDomlet = new MaterialDomlet(`
+interface ConsolePanelTemplateDto {
+}
+
+interface ConsolePanelTemplateElement {
+    _root(): HTMLElement;
+    input(): HTMLInputElement;
+    output(): HTMLDivElement;
+}
+
+class ConsolePanelTemplate {
+    constructor() {
+        tardigradeEngine.addTemplate("ConsolePanel", `
 <div class="console-panel">
-    <div class='console-output'></div>
+    <div x-id="output" class='console-output'></div>
     <form action="#" class='console-input'>
         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <input class="mdl-textfield__input" type="text" id="sample3">
+            <input x-id="input" class="mdl-textfield__input" type="text" id="sample3">
             <label class="mdl-textfield__label" for="sample3">enter a command, or just "?" to get help</label>
         </div>
     </form>
 </div>
-`, {
-    'input': [1, 0, 0],
-    'output': [0]
-});
+`);
+    }
 
-export class ConsolePanel {
-    element: HTMLElement;
+    buildHtml(dto: ConsolePanelTemplateDto) {
+        return tardigradeEngine.buildHtml("ConsolePanel", dto);
+    }
+
+    buildElement(dto: ConsolePanelTemplateDto) {
+        return createElement(this.buildHtml(dto));
+    }
+
+    of(rootElement: HTMLElement): ConsolePanelTemplateElement {
+        return {
+            _root(): HTMLDivElement {
+                return <HTMLDivElement>rootElement;
+            },
+
+            input() {
+                return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
+            },
+
+            output() {
+                return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
+            }
+        };
+    }
+}
+
+var consolePanelTemplate = new ConsolePanelTemplate();
+
+export class ConsolePanel implements IWorkPanel {
+    private domlet: ConsolePanelTemplateElement;
 
     constructor() {
-        this.element = ConsolePanelDomlet.htmlElement();
-
-        this.output = ConsolePanelDomlet.point("output", this.element);
+        this.domlet = consolePanelTemplate.of(consolePanelTemplate.buildElement({}));
+        initMaterialElement(this.domlet._root());
         this.initInput();
     }
 
-    output: HTMLElement;
     oninput: { (value: string) };
     talks = {};
     currentHangout = null;
 
     clear() {
-        this.output.innerHTML = "";
+        this.domlet.output().innerHTML = "";
     }
 
     input(): HTMLInputElement {
-        return <HTMLInputElement>ConsolePanelDomlet.point("input", this.element);
+        return this.domlet.input();
+    }
+
+    focus() {
+        this.domlet.output().scrollTop = this.domlet.output().scrollHeight;
+        this.input().focus();
+    }
+
+    element() {
+        return this.domlet._root();
     }
 
     private initInput() {
@@ -91,7 +138,9 @@ export class ConsolePanel {
         if (message == null)
             return;
 
-        var follow = (this.output.scrollHeight - this.output.scrollTop) <= this.output.clientHeight + 10;
+        let output = this.domlet.output();
+
+        var follow = (output.scrollHeight - output.scrollTop) <= output.clientHeight + 10;
 
         var talk = this.talks[talkId];
         if (!talk) {
@@ -101,7 +150,7 @@ export class ConsolePanel {
             if (talkId === "buildPipelineStatus")
                 document.getElementById("buildPipelineStatus").appendChild(talk);
             else
-                this.output.appendChild(talk);
+                output.appendChild(talk);
             this.talks[talkId] = talk;
 
             talk.innerHTML += "<div style='float:right;' onclick='killTalk(this)'>X</div>";
@@ -116,6 +165,6 @@ export class ConsolePanel {
             talk.insertAdjacentHTML("beforeend", message);
 
         if (follow)
-            this.output.scrollTop = this.output.scrollHeight;
+            output.scrollTop = output.scrollHeight;
     }
 }

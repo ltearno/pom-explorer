@@ -3,37 +3,67 @@
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./MaterialDomlet"], factory);
+        define(["require", "exports", "./Utils", "./node_modules/tardigrade/target/engine/runtime", "./node_modules/tardigrade/target/engine/engine"], factory);
     }
 })(function (require, exports) {
-    var MaterialDomlet_1 = require("./MaterialDomlet");
-    var ConsolePanelDomlet = new MaterialDomlet_1.MaterialDomlet(`
+    var Utils_1 = require("./Utils");
+    var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
+    var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
+    class ConsolePanelTemplate {
+        constructor() {
+            engine_1.tardigradeEngine.addTemplate("ConsolePanel", `
 <div class="console-panel">
-    <div class='console-output'></div>
+    <div x-id="output" class='console-output'></div>
     <form action="#" class='console-input'>
         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <input class="mdl-textfield__input" type="text" id="sample3">
+            <input x-id="input" class="mdl-textfield__input" type="text" id="sample3">
             <label class="mdl-textfield__label" for="sample3">enter a command, or just "?" to get help</label>
         </div>
     </form>
 </div>
-`, {
-        'input': [1, 0, 0],
-        'output': [0]
-    });
+`);
+        }
+        buildHtml(dto) {
+            return engine_1.tardigradeEngine.buildHtml("ConsolePanel", dto);
+        }
+        buildElement(dto) {
+            return runtime_1.createElement(this.buildHtml(dto));
+        }
+        of(rootElement) {
+            return {
+                _root() {
+                    return rootElement;
+                },
+                input() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
+                },
+                output() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
+                }
+            };
+        }
+    }
+    var consolePanelTemplate = new ConsolePanelTemplate();
     class ConsolePanel {
         constructor() {
             this.talks = {};
             this.currentHangout = null;
-            this.element = ConsolePanelDomlet.htmlElement();
-            this.output = ConsolePanelDomlet.point("output", this.element);
+            this.domlet = consolePanelTemplate.of(consolePanelTemplate.buildElement({}));
+            Utils_1.initMaterialElement(this.domlet._root());
             this.initInput();
         }
         clear() {
-            this.output.innerHTML = "";
+            this.domlet.output().innerHTML = "";
         }
         input() {
-            return ConsolePanelDomlet.point("input", this.element);
+            return this.domlet.input();
+        }
+        focus() {
+            this.domlet.output().scrollTop = this.domlet.output().scrollHeight;
+            this.input().focus();
+        }
+        element() {
+            return this.domlet._root();
         }
         initInput() {
             var history = [""];
@@ -76,7 +106,8 @@
         print(message, talkId) {
             if (message == null)
                 return;
-            var follow = (this.output.scrollHeight - this.output.scrollTop) <= this.output.clientHeight + 10;
+            let output = this.domlet.output();
+            var follow = (output.scrollHeight - output.scrollTop) <= output.clientHeight + 10;
             var talk = this.talks[talkId];
             if (!talk) {
                 talk = document.createElement("div");
@@ -84,7 +115,7 @@
                 if (talkId === "buildPipelineStatus")
                     document.getElementById("buildPipelineStatus").appendChild(talk);
                 else
-                    this.output.appendChild(talk);
+                    output.appendChild(talk);
                 this.talks[talkId] = talk;
                 talk.innerHTML += "<div style='float:right;' onclick='killTalk(this)'>X</div>";
             }
@@ -95,7 +126,7 @@
             else
                 talk.insertAdjacentHTML("beforeend", message);
             if (follow)
-                this.output.scrollTop = this.output.scrollHeight;
+                output.scrollTop = output.scrollHeight;
         }
     }
     exports.ConsolePanel = ConsolePanel;

@@ -3,31 +3,83 @@
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./MaterialDomlet", "./Card", "./SearchPanel", "./Utils", "./node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "./Card", "./Utils", "./node_modules/tardigrade/target/engine/runtime", "./node_modules/tardigrade/target/engine/engine"], factory);
     }
 })(function (require, exports) {
-    var MaterialDomlet_1 = require("./MaterialDomlet");
     var Card_1 = require("./Card");
-    var SearchPanel_1 = require("./SearchPanel");
     var Utils_1 = require("./Utils");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
-    var ProjectPanelDomlet = new MaterialDomlet_1.MaterialDomlet(`
-<div>
-    <div></div>
-    <div class='projects-list'></div>
+    var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
+    class SearchPanelTemplate {
+        constructor() {
+            engine_1.tardigradeEngine.addTemplate("SearchPanel", `
+<form action="#">
+  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+    <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox">
+    <label class="mdl-textfield__label" for="searchBox">Project search...</label>
+  </div>
+<div class="mdl-button mdl-button--icon">
+  <i class="material-icons">search</i>
 </div>
-`, {
-        'search-place': [0],
-        'project-list': [1]
-    });
+</form>`);
+        }
+        buildHtml(dto) {
+            return engine_1.tardigradeEngine.buildHtml("SearchPanel", dto);
+        }
+        buildElement(dto) {
+            return runtime_1.createElement(this.buildHtml(dto));
+        }
+        of(rootElement) {
+            return {
+                _root() {
+                    return rootElement;
+                },
+                input() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
+                }
+            };
+        }
+    }
+    exports.searchPanelTemplate = new SearchPanelTemplate();
+    class ProjectPanelTemplate {
+        constructor() {
+            engine_1.tardigradeEngine.addTemplate("ProjectPanel", `
+<div>
+    <SearchPanel>
+        <input x-id="searchInput"/>
+    </SearchPanel>
+    <div x-id="projectList" class='projects-list'></div>
+</div>
+`);
+        }
+        buildHtml(dto) {
+            return engine_1.tardigradeEngine.buildHtml("ProjectPanel", dto);
+        }
+        buildElement(dto) {
+            return runtime_1.createElement(this.buildHtml(dto));
+        }
+        of(rootElement) {
+            return {
+                _root() {
+                    return rootElement;
+                },
+                searchInput() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "searchInput": 0 });
+                },
+                projectList() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
+                }
+            };
+        }
+    }
+    exports.projectPanelTemplate = new ProjectPanelTemplate();
     class ProjectPanel {
         constructor(service) {
-            this.element = ProjectPanelDomlet.htmlElement();
+            this.domlet = exports.projectPanelTemplate.of(exports.projectPanelTemplate.buildElement({}));
+            Utils_1.initMaterialElement(this.domlet._root());
             this.service = service;
-            var search = SearchPanel_1.SearchPanelDomlet.htmlElement();
-            ProjectPanelDomlet.point("search-place", this.element).appendChild(search);
-            this.projectList().addEventListener("click", event => {
-                var dc = runtime_1.domChain(this.projectList(), event.target);
+            this.domlet.projectList().addEventListener("click", event => {
+                var dc = runtime_1.domChain(this.domlet.projectList(), event.target);
                 var card = Card_1.cardTemplate.of(dc[1]);
                 var cardDetailsButton = card.actionDetails();
                 if (Array.prototype.indexOf.call(dc, cardDetailsButton) >= 0) {
@@ -37,13 +89,13 @@
                         card.details().style.display = "none";
                 }
             });
-            Utils_1.rx.Observable.fromEvent(SearchPanel_1.SearchPanelDomlet.input(search), "input")
+            Utils_1.rx.Observable.fromEvent(this.domlet.searchInput(), "input")
                 .pluck("target", "value")
                 .debounce(100)
                 .distinctUntilChanged()
                 .subscribe(value => {
                 this.service.sendRpc(value, (message) => {
-                    this.projectList().innerHTML = "";
+                    this.domlet.projectList().innerHTML = "";
                     var list = JSON.parse(message.payload);
                     var htmlString = "";
                     for (var pi in list) {
@@ -103,17 +155,16 @@
                             details: details
                         });
                     }
-                    this.projectList().innerHTML = htmlString;
-                    Utils_1.initMaterialElement(this.projectList());
+                    this.domlet.projectList().innerHTML = htmlString;
+                    Utils_1.initMaterialElement(this.domlet.projectList());
                 });
             });
         }
-        searchInput() {
-            var search = ProjectPanelDomlet.point("search-place", this.element);
-            return SearchPanel_1.SearchPanelDomlet.input(search);
+        focus() {
+            this.domlet.searchInput().focus();
         }
-        projectList() {
-            return ProjectPanelDomlet.point("project-list", this.element);
+        element() {
+            return this.domlet._root();
         }
     }
     exports.ProjectPanel = ProjectPanel;
