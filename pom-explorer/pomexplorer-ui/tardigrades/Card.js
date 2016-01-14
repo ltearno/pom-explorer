@@ -3,12 +3,12 @@
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./node_modules/tardigrade/target/engine/engine", "./node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "../node_modules/tardigrade/target/engine/engine", "../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
-    var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
+    var engine_1 = require("../node_modules/tardigrade/target/engine/engine");
+    var runtime_1 = require("../node_modules/tardigrade/target/engine/runtime");
     class CardTemplate {
         constructor() {
             engine_1.tardigradeEngine.addTemplate("Card", `

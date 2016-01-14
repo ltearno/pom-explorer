@@ -1,6 +1,6 @@
 "use strict";
 
-﻿﻿declare var Rx: any;
+declare var Rx: any;
 
 declare var componentHandler: any;
 

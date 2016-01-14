@@ -1,107 +1,12 @@
 "use strict";
 
-﻿import { MaterialDomlet } from "./MaterialDomlet";
-import { cardTemplate } from "./Card";
+import { cardTemplate } from "./tardigrades/Card";
 import { initMaterialElement, rx } from "./Utils";
 import { Service, Status, Message, ServiceCallback } from "./Service";
 import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
 import { IWorkPanel } from "./IWorkPanel";
-import { tardigradeEngine } from "./node_modules/tardigrade/target/engine/engine";
+import { projectPanelTemplate, ProjectPanelTemplateElement } from "./tardigrades/ProjectPanel";
 
-interface SearchPanelTemplateDto {
-    input?: string;
-}
-
-interface SearchPanelTemplateElement {
-    _root(): HTMLDivElement;
-    input(): HTMLInputElement;
-}
-
-class SearchPanelTemplate {
-    constructor() {
-        tardigradeEngine.addTemplate("SearchPanel", `
-<form action="#">
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-    <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox">
-    <label class="mdl-textfield__label" for="searchBox">Project search...</label>
-  </div>
-<div class="mdl-button mdl-button--icon">
-  <i class="material-icons">search</i>
-</div>
-</form>`);
-    }
-
-    buildHtml(dto: SearchPanelTemplateDto) {
-        return tardigradeEngine.buildHtml("SearchPanel", dto);
-    }
-
-    buildElement(dto: SearchPanelTemplateDto) {
-        return createElement(this.buildHtml(dto));
-    }
-
-    of(rootElement: HTMLElement): SearchPanelTemplateElement {
-        return {
-            _root(): HTMLDivElement {
-                return <HTMLDivElement>rootElement;
-            },
-
-            input() {
-                return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
-            }
-        };
-    }
-}
-
-export var searchPanelTemplate = new SearchPanelTemplate();
-
-interface ProjectPanelTemplateDto {
-
-}
-
-interface ProjectPanelTemplateElement {
-    _root(): HTMLElement;
-    searchInput(): HTMLInputElement;
-    projectList(): HTMLElement;
-}
-
-class ProjectPanelTemplate {
-    constructor() {
-        tardigradeEngine.addTemplate("ProjectPanel", `
-<div>
-    <SearchPanel>
-        <input x-id="searchInput"/>
-    </SearchPanel>
-    <div x-id="projectList" class='projects-list'></div>
-</div>
-`);
-    }
-
-    buildHtml(dto: ProjectPanelTemplateDto) {
-        return tardigradeEngine.buildHtml("ProjectPanel", dto);
-    }
-
-    buildElement(dto: ProjectPanelTemplateDto) {
-        return createElement(this.buildHtml(dto));
-    }
-
-    of(rootElement: HTMLElement): ProjectPanelTemplateElement {
-        return {
-            _root(): HTMLDivElement {
-                return <HTMLDivElement>rootElement;
-            },
-
-            searchInput() {
-                return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "searchInput": 0 });
-            },
-
-            projectList() {
-                return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
-            }
-        };
-    }
-}
-
-export var projectPanelTemplate = new ProjectPanelTemplate();
 
 export class ProjectPanel implements IWorkPanel {
     private domlet: ProjectPanelTemplateElement;

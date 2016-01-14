@@ -1,6 +1,6 @@
 "use strict";
 
-﻿import {ApplicationPanel} from "./ApplicationPanel";
+import {ApplicationPanel} from "./ApplicationPanel";
 import {ProjectPanel} from "./ProjectPanel";
 import {ConsolePanel} from "./ConsolePanel";
 import {Service, Status, Message, ServiceCallback} from "./Service";

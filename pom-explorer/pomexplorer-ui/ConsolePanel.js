@@ -3,53 +3,17 @@
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./Utils", "./node_modules/tardigrade/target/engine/runtime", "./node_modules/tardigrade/target/engine/engine"], factory);
+        define(["require", "exports", "./Utils", "./tardigrades/ConsolePanel"], factory);
     }
 })(function (require, exports) {
     "use strict";
     var Utils_1 = require("./Utils");
-    var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
-    var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
-    class ConsolePanelTemplate {
-        constructor() {
-            engine_1.tardigradeEngine.addTemplate("ConsolePanel", `
-<div class="console-panel">
-    <div x-id="output" class='console-output'></div>
-    <form action="#" class='console-input'>
-        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <input x-id="input" class="mdl-textfield__input" type="text" id="sample3">
-            <label class="mdl-textfield__label" for="sample3">enter a command, or just "?" to get help</label>
-        </div>
-    </form>
-</div>
-`);
-        }
-        buildHtml(dto) {
-            return engine_1.tardigradeEngine.buildHtml("ConsolePanel", dto);
-        }
-        buildElement(dto) {
-            return runtime_1.createElement(this.buildHtml(dto));
-        }
-        of(rootElement) {
-            return {
-                _root() {
-                    return rootElement;
-                },
-                input() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
-                },
-                output() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
-                }
-            };
-        }
-    }
-    var consolePanelTemplate = new ConsolePanelTemplate();
+    var ConsolePanel_1 = require("./tardigrades/ConsolePanel");
     class ConsolePanel {
         constructor() {
             this.talks = {};
             this.currentHangout = null;
-            this.domlet = consolePanelTemplate.of(consolePanelTemplate.buildElement({}));
+            this.domlet = ConsolePanel_1.consolePanelTemplate.of(ConsolePanel_1.consolePanelTemplate.buildElement({}));
             Utils_1.initMaterialElement(this.domlet._root());
             this.initInput();
         }

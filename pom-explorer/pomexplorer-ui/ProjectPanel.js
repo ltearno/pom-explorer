@@ -1,82 +1,19 @@
-(function (factory) {
+﻿(function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./Card", "./Utils", "./node_modules/tardigrade/target/engine/runtime", "./node_modules/tardigrade/target/engine/engine"], factory);
+        define(["require", "exports", "./tardigrades/Card", "./Utils", "./node_modules/tardigrade/target/engine/runtime", "./tardigrades/ProjectPanel"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var Card_1 = require("./Card");
+    var Card_1 = require("./tardigrades/Card");
     var Utils_1 = require("./Utils");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
-    var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
-    class SearchPanelTemplate {
-        constructor() {
-            engine_1.tardigradeEngine.addTemplate("SearchPanel", `
-<form action="#">
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-    <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox">
-    <label class="mdl-textfield__label" for="searchBox">Project search...</label>
-  </div>
-<div class="mdl-button mdl-button--icon">
-  <i class="material-icons">search</i>
-</div>
-</form>`);
-        }
-        buildHtml(dto) {
-            return engine_1.tardigradeEngine.buildHtml("SearchPanel", dto);
-        }
-        buildElement(dto) {
-            return runtime_1.createElement(this.buildHtml(dto));
-        }
-        of(rootElement) {
-            return {
-                _root() {
-                    return rootElement;
-                },
-                input() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
-                }
-            };
-        }
-    }
-    exports.searchPanelTemplate = new SearchPanelTemplate();
-    class ProjectPanelTemplate {
-        constructor() {
-            engine_1.tardigradeEngine.addTemplate("ProjectPanel", `
-<div>
-    <SearchPanel>
-        <input x-id="searchInput"/>
-    </SearchPanel>
-    <div x-id="projectList" class='projects-list'></div>
-</div>
-`);
-        }
-        buildHtml(dto) {
-            return engine_1.tardigradeEngine.buildHtml("ProjectPanel", dto);
-        }
-        buildElement(dto) {
-            return runtime_1.createElement(this.buildHtml(dto));
-        }
-        of(rootElement) {
-            return {
-                _root() {
-                    return rootElement;
-                },
-                searchInput() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "searchInput": 0 });
-                },
-                projectList() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
-                }
-            };
-        }
-    }
-    exports.projectPanelTemplate = new ProjectPanelTemplate();
+    var ProjectPanel_1 = require("./tardigrades/ProjectPanel");
     class ProjectPanel {
         constructor(service) {
-            this.domlet = exports.projectPanelTemplate.of(exports.projectPanelTemplate.buildElement({}));
+            this.domlet = ProjectPanel_1.projectPanelTemplate.of(ProjectPanel_1.projectPanelTemplate.buildElement({}));
             Utils_1.initMaterialElement(this.domlet._root());
             this.service = service;
             this.domlet.projectList().addEventListener("click", event => {
