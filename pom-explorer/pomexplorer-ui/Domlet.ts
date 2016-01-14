@@ -1,6 +1,6 @@
 "use strict";
 
-import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
+﻿import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";
 
 declare var Mustache: {
     render(template: string, data: any): string;
@@ -51,7 +51,7 @@ export class Domlet {
         var comingChild = this.getComingChild(p, element, domletElement);
         if (comingChild == null)
             return null;
-        
+
         return indexOf(p, comingChild);
     }
 

@@ -6,6 +6,7 @@
         define(["require", "exports", "./ApplicationPanel", "./ProjectPanel", "./ConsolePanel", "./Service"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var ApplicationPanel_1 = require("./ApplicationPanel");
     var ProjectPanel_1 = require("./ProjectPanel");
     var ConsolePanel_1 = require("./ConsolePanel");

@@ -1,4 +1,6 @@
-import { MaterialDomlet } from "./MaterialDomlet";
+"use strict";
+
+﻿import { MaterialDomlet } from "./MaterialDomlet";
 import { initMaterialElement } from "./Utils";
 
 import { tardigradeEngine } from "./node_modules/tardigrade/target/engine/engine";
@@ -87,7 +89,7 @@ class ApplicationTemplate {
                 me.menu().appendChild(createElement(menuItem));
             }
         };
-        
+
         return me;
     }
 }

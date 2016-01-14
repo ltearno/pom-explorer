@@ -1,4 +1,6 @@
-﻿export class Service {
+"use strict";
+
+﻿﻿export class Service {
     onStatus: (status: Status) => void;
 
     onUnknownMessage: ( message: Message) => void;

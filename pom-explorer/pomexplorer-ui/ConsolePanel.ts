@@ -1,4 +1,6 @@
-﻿import { MaterialDomlet } from "./MaterialDomlet";
+"use strict";
+
+﻿﻿import { MaterialDomlet } from "./MaterialDomlet";
 import { IWorkPanel } from "./IWorkPanel";
 import { initMaterialElement, rx } from "./Utils";
 import { createElement, domChain, indexOf } from "./node_modules/tardigrade/target/engine/runtime";

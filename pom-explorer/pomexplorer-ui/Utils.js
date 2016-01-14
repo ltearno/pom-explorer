@@ -6,6 +6,7 @@
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     exports.rx = Rx;
     function initMaterialElement(e) {
         if (e == null)

@@ -6,6 +6,7 @@
         define(["require", "exports", "./Utils", "./node_modules/tardigrade/target/engine/runtime", "./node_modules/tardigrade/target/engine/engine"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var Utils_1 = require("./Utils");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
     var engine_1 = require("./node_modules/tardigrade/target/engine/engine");

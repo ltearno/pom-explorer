@@ -7,6 +7,7 @@
         define(["require", "exports", "./Utils", "./node_modules/tardigrade/target/engine/engine", "./node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var Utils_1 = require("./Utils");
     var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
@@ -114,6 +115,7 @@
         define(["require", "exports", "./node_modules/tardigrade/target/engine/engine", "./node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
     class CardTemplate {
@@ -176,6 +178,7 @@
         define(["require", "exports", "./Utils", "./node_modules/tardigrade/target/engine/runtime", "./node_modules/tardigrade/target/engine/engine"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var Utils_1 = require("./Utils");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
     var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
@@ -311,6 +314,7 @@
         define(["require", "exports", "./Card", "./Utils", "./node_modules/tardigrade/target/engine/runtime", "./node_modules/tardigrade/target/engine/engine"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var Card_1 = require("./Card");
     var Utils_1 = require("./Utils");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
@@ -399,9 +403,12 @@
                 .debounce(100)
                 .distinctUntilChanged()
                 .subscribe(value => {
+                this.domlet.projectList().innerHTML = `<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>`;
+                Utils_1.initMaterialElement(this.domlet.projectList().children[0]);
                 this.service.sendRpc(value, (message) => {
                     this.domlet.projectList().innerHTML = "";
                     var list = JSON.parse(message.payload);
+                    console.log("REPLY WITH " + list.length);
                     var htmlString = "";
                     for (var pi in list) {
                         var project = list[pi];
@@ -484,6 +491,7 @@
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     class Service {
         constructor() {
             this.waitingCallbacks = {};
@@ -564,6 +572,7 @@
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     exports.rx = Rx;
     function initMaterialElement(e) {
         if (e == null)
@@ -593,6 +602,7 @@
         define(["require", "exports", "./ApplicationPanel", "./ProjectPanel", "./ConsolePanel", "./Service"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var ApplicationPanel_1 = require("./ApplicationPanel");
     var ProjectPanel_1 = require("./ProjectPanel");
     var ConsolePanel_1 = require("./ConsolePanel");

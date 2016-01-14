@@ -6,5 +6,6 @@
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
+    "use strict";
 });
 //# sourceMappingURL=IWorkPanel.js.map

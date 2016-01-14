@@ -1,4 +1,6 @@
-﻿interface Project {
+"use strict";
+
+﻿﻿interface Project {
     gav: string;
     packaging: string;
     buildable: boolean;

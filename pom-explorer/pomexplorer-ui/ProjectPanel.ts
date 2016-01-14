@@ -1,4 +1,6 @@
-import { MaterialDomlet } from "./MaterialDomlet";
+"use strict";
+
+﻿import { MaterialDomlet } from "./MaterialDomlet";
 import { cardTemplate } from "./Card";
 import { initMaterialElement, rx } from "./Utils";
 import { Service, Status, Message, ServiceCallback } from "./Service";
@@ -58,7 +60,7 @@ interface ProjectPanelTemplateDto {
 
 interface ProjectPanelTemplateElement {
     _root(): HTMLElement;
-    searchInput(): HTMLElement;
+    searchInput(): HTMLInputElement;
     projectList(): HTMLElement;
 }
 
@@ -129,9 +131,10 @@ export class ProjectPanel implements IWorkPanel {
             .debounce(100)
             .distinctUntilChanged()
             .subscribe(value => {
-                this.service.sendRpc(value, (message) => {
-                    this.domlet.projectList().innerHTML = "";
+                this.domlet.projectList().innerHTML = `<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>`;
+                initMaterialElement(<HTMLElement>this.domlet.projectList().children[0]);
 
+                this.service.sendRpc(value, (message) => {
                     var list: Project[] = JSON.parse(message.payload);
 
                     var htmlString = "";

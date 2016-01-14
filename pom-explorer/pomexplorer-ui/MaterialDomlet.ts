@@ -1,4 +1,6 @@
-declare var componentHandler: any;
+"use strict";
+
+﻿declare var componentHandler: any;
 
 import { Domlet } from "./Domlet";
 

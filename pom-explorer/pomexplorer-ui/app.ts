@@ -1,3 +1,5 @@
+"use strict";
+
 ﻿import {ApplicationPanel} from "./ApplicationPanel";
 import {ProjectPanel} from "./ProjectPanel";
 import {ConsolePanel} from "./ConsolePanel";

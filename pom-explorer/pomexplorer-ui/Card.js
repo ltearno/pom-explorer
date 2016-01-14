@@ -6,6 +6,7 @@
         define(["require", "exports", "./node_modules/tardigrade/target/engine/engine", "./node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var engine_1 = require("./node_modules/tardigrade/target/engine/engine");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
     class CardTemplate {

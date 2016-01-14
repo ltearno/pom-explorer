@@ -6,6 +6,7 @@
         define(["require", "exports", "./Domlet"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var Domlet_1 = require("./Domlet");
     class MaterialDomlet extends Domlet_1.Domlet {
         constructor(template, points) {

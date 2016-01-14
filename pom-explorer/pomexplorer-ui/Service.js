@@ -6,6 +6,7 @@
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     class Service {
         constructor() {
             this.waitingCallbacks = {};

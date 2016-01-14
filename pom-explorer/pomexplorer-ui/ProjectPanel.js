@@ -1,4 +1,4 @@
-﻿(function (factory) {
+(function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
@@ -6,6 +6,7 @@
         define(["require", "exports", "./Card", "./Utils", "./node_modules/tardigrade/target/engine/runtime", "./node_modules/tardigrade/target/engine/engine"], factory);
     }
 })(function (require, exports) {
+    "use strict";
     var Card_1 = require("./Card");
     var Utils_1 = require("./Utils");
     var runtime_1 = require("./node_modules/tardigrade/target/engine/runtime");
@@ -94,8 +95,9 @@
                 .debounce(100)
                 .distinctUntilChanged()
                 .subscribe(value => {
+                this.domlet.projectList().innerHTML = `<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>`;
+                Utils_1.initMaterialElement(this.domlet.projectList().children[0]);
                 this.service.sendRpc(value, (message) => {
-                    this.domlet.projectList().innerHTML = "";
                     var list = JSON.parse(message.payload);
                     var htmlString = "";
                     for (var pi in list) {
