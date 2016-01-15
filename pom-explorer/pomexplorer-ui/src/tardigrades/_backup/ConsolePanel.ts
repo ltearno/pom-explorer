@@ -1,31 +1,21 @@
 "use strict";
 
-import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
 import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
+import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
-
-
 export interface ConsolePanelTemplateDto {
-    _root?: string;
 }
 
 export interface ConsolePanelTemplateElement {
     _root(): HTMLElement;
-    output(): HTMLElement;
-input(): HTMLElement;
-
+    input(): HTMLInputElement;
+    output(): HTMLDivElement;
 }
 
-class ConsolePanelTemplate {
-    ensureLoaded() {
-    }
-    
+export class ConsolePanelTemplate {
     constructor() {
-        
-        
-        tardigradeEngine.addTemplate("ConsolePanel", tardigradeParser.parseTemplate(`<html>
-<body>
+        tardigradeEngine.addTemplate("ConsolePanel", tardigradeParser.parseTemplate(`
 <div class="console-panel">
     <div x-id="output" class='console-output'></div>
     <form action="#" class='console-input'>
@@ -35,8 +25,7 @@ class ConsolePanelTemplate {
         </div>
     </form>
 </div>
-</body>
-</html>`));
+`));
     }
 
     buildHtml(dto: ConsolePanelTemplateDto) {
@@ -48,21 +37,19 @@ class ConsolePanelTemplate {
     }
 
     of(rootElement: HTMLElement): ConsolePanelTemplateElement {
-        let domlet = {
-            _root() { return rootElement; },
-            
-            output(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
-},
+        return {
+            _root(): HTMLDivElement {
+                return <HTMLDivElement>rootElement;
+            },
 
-input(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
-},
+            input() {
+                return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
+            },
 
-
+            output() {
+                return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
+            }
         };
-        
-        return domlet;
     }
 }
 

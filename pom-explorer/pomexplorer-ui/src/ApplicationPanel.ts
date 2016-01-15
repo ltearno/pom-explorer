@@ -3,6 +3,9 @@
 import { initMaterialElement } from "./Utils";
 import { applicationTemplate, ApplicationTemplateElement } from "./tardigrades/Application";
 
+import { tardigradeEngine } from "../node_modules/tardigrade/target/engine/engine";
+import { createElement, domChain, indexOf } from "../node_modules/tardigrade/target/engine/runtime";
+
 export class ApplicationPanel {
     template: ApplicationTemplateElement;
 
@@ -27,7 +30,9 @@ export class ApplicationPanel {
     }
 
     addMenuItem(name: string) {
-        this.template.addMenuItem({ _root: name });
+        // TODO template should provide this !
+        let menuItem = tardigradeEngine.buildNodeHtml("Application", "menuItems", { _root: name });
+        this.template.menu().appendChild(createElement(menuItem));
     }
 
     main(): HTMLDivElement {

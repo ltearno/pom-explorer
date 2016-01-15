@@ -1,34 +1,42 @@
 "use strict";
 
-import { initMaterialElement } from "../Utils";
-
-import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
+import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
-interface CardTemplateDto {
+
+
+export interface CardTemplateDto {
     _root?: string;
-    title?: string;
-    content?: string;
-    details?: string;
-    actions?: string;
-    actionDetails?: string;
-    actionBuild?: string;
+    title?: any;
+content?: any;
+details?: any;
+actions?: any;
+actionDetails?: any;
+actionBuild?: any;
+
 }
 
-interface CardTemplateElement {
-    _root(): HTMLDivElement;
+export interface CardTemplateElement {
+    _root(): HTMLElement;
     title(): HTMLElement;
-    content(): HTMLDivElement;
-    details(): HTMLDivElement;
-    actions(): HTMLDivElement;
-    actionDetails(): HTMLDivElement;
-    actionBuild(): HTMLDivElement;
+content(): HTMLElement;
+details(): HTMLElement;
+actions(): HTMLElement;
+actionDetails(): HTMLElement;
+actionBuild(): HTMLElement;
+
 }
 
 class CardTemplate {
+    ensureLoaded() {
+    }
+    
     constructor() {
-        tardigradeEngine.addTemplate("Card", tardigradeParser.parseTemplate(`
+        
+        
+        tardigradeEngine.addTemplate("Card", tardigradeParser.parseTemplate(`<html>
+<body>
 <div class="project-card mdl-card mdl-shadow--2dp">
   <div class="mdl-card__title mdl-card--expand">
     <h2 x-id="title" class="mdl-card__title-text"/>
@@ -40,7 +48,8 @@ class CardTemplate {
     <a x-id="actionBuild" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Build</a>
   </div>
 </div>
-`));
+</body>
+</html>`));
     }
 
     buildHtml(dto: CardTemplateDto) {
@@ -52,29 +61,37 @@ class CardTemplate {
     }
 
     of(rootElement: HTMLElement): CardTemplateElement {
-        return {
-            _root(): HTMLDivElement {
-                return <HTMLDivElement>rootElement;
-            },
-            title(): HTMLElement {
-                return tardigradeEngine.getPoint(rootElement, "Card", { "title": 0 });
-            },
-            content(): HTMLDivElement {
-                return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "content": 0 });
-            },
-            details(): HTMLDivElement {
-                return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "details": 0 });
-            },
-            actions(): HTMLDivElement {
-                return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "actions": 0 });
-            },
-            actionDetails(): HTMLDivElement {
-                return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "actionDetails": 0 });
-            },
-            actionBuild(): HTMLDivElement {
-                return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "actionBuild": 0 });
-            }
+        let domlet = {
+            _root() { return rootElement; },
+            
+            title(): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Card", { "title": 0 });
+},
+
+content(): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Card", { "content": 0 });
+},
+
+details(): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Card", { "details": 0 });
+},
+
+actions(): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Card", { "actions": 0 });
+},
+
+actionDetails(): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Card", { "actionDetails": 0 });
+},
+
+actionBuild(): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Card", { "actionBuild": 0 });
+},
+
+
         };
+        
+        return domlet;
     }
 }
 

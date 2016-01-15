@@ -24,7 +24,7 @@ export class ConsolePanel implements IWorkPanel {
     }
 
     input(): HTMLInputElement {
-        return this.domlet.input();
+        return <HTMLInputElement>this.domlet.input();
     }
 
     focus() {

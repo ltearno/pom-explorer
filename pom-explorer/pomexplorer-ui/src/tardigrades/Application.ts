@@ -4,26 +4,25 @@ import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/en
 import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
-export interface MenuItemsDto {
-    _root?: string;
-}
+
 
 export interface ApplicationTemplateDto {
     _root?: string;
-    Drawer?: string;
-    Menu?: string;
-    MenuItems?: string | string[] | MenuItemsDto | MenuItemsDto[] | any;
-    Content?: string;
+    drawer?: any;
+menu?: any;
+menuItems?: any;
+content?: any;
+
 }
 
 export interface ApplicationTemplateElement {
     _root(): HTMLElement;
-    content(): HTMLElement;
-    menu(): HTMLElement;
-    menuItems(menuItemsIndex: number): HTMLElement;
     drawer(): HTMLElement;
-    menuItemsIndex(hitTest: HTMLElement): number;
-    addMenuItem(dto: MenuItemsDto);
+menu(): HTMLElement;
+menuItems(menuItemsIndex: number): HTMLElement;
+menuItemsIndex(hitTest:HTMLElement):number;
+content(): HTMLElement;
+
 }
 
 class ApplicationTemplate {
@@ -31,23 +30,26 @@ class ApplicationTemplate {
     }
     
     constructor() {
-        // pour toutes les templates dont celle-ci dépend, appeler ensureLoaded dessus
-        tardigradeEngine.addTemplate("Application", tardigradeParser.parseTemplate(`
+        
+        
+        tardigradeEngine.addTemplate("Application", tardigradeParser.parseTemplate(`<html>
+<body>
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
             <span class="mdl-layout-title">Pom Explorer</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="mdl-badge" data-badge="!">beta</span>
         </div>
     </header>
-    <div x-id="Drawer" class="mdl-layout__drawer">
+    <div x-id="drawer" class="mdl-layout__drawer">
         <span class="mdl-layout-title">Pom Explorer</span>
-        <nav x-id="Menu" class="mdl-navigation">
-            <a x-id="MenuItems" x-cardinal="*" class="mdl-navigation__link" href="#"/>
+        <nav x-id="menu" class="mdl-navigation">
+            <a x-id="menuItems" x-cardinal="*" class="mdl-navigation__link" href="#"/>
         </nav>
     </div>
-    <main x-id="Content" class="mdl-layout__content content-repositionning"/>
+    <main x-id="content" class="mdl-layout__content content-repositionning"/>
 </div>
-`));
+</body>
+</html>`));
     }
 
     buildHtml(dto: ApplicationTemplateDto) {
@@ -59,40 +61,36 @@ class ApplicationTemplate {
     }
 
     of(rootElement: HTMLElement): ApplicationTemplateElement {
-        let me = {
+        let domlet = {
             _root() { return rootElement; },
+            
+            drawer(): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Application", { "drawer": 0 });
+},
 
-            content(): HTMLDivElement {
-                return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Application", { "Content": 0 });
-            },
+menu(): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Application", { "menu": 0 });
+},
 
-            menu() {
-                return tardigradeEngine.getPoint(rootElement, "Application", { "Menu": 0 });
-            },
+menuItems(menuItemsIndex: number): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Application", { "menuItems": menuItemsIndex });
+},
 
-            menuItems(menuItemsIndex: number) {
-                return tardigradeEngine.getPoint(rootElement, "Application", { "Menu": 0, "MenuItems": menuItemsIndex });
-            },
+menuItemsIndex(hitTest:HTMLElement): number {
 
-            drawer() {
-                return tardigradeEngine.getPoint(rootElement, "Application", { "Drawer": 0 });
-            },
-
-            menuItemsIndex(hitTest: HTMLElement) {
                 let location = tardigradeEngine.getLocation(rootElement, "Application", hitTest);
-                if (location != null && ("MenuItems" in location))
-                    return location["MenuItems"];
+                if (location != null && ("menuItems" in location))
+                    return location["menuItems"];
                 return -1;
             },
+content(): HTMLElement{
+return tardigradeEngine.getPoint(rootElement, "Application", { "content": 0 });
+},
 
-            // TODO not sure
-            addMenuItem(dto: MenuItemsDto) {
-                let menuItem = tardigradeEngine.buildNodeHtml("Application", "MenuItems", dto);
-                me.menu().appendChild(createElement(menuItem));
-            }
+
         };
-
-        return me;
+        
+        return domlet;
     }
 }
 

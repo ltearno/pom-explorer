@@ -5222,12 +5222,14 @@ function hasOwnProperty(obj, prop) {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./Utils", "./tardigrades/Application"], factory);
+        define(["require", "exports", "./Utils", "./tardigrades/Application", "../node_modules/tardigrade/target/engine/engine", "../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
     var Utils_1 = require("./Utils");
     var Application_1 = require("./tardigrades/Application");
+    var engine_1 = require("../node_modules/tardigrade/target/engine/engine");
+    var runtime_1 = require("../node_modules/tardigrade/target/engine/runtime");
     class ApplicationPanel {
         constructor() {
             this.template = Application_1.applicationTemplate.of(Application_1.applicationTemplate.buildElement({}));
@@ -5247,7 +5249,9 @@ function hasOwnProperty(obj, prop) {
             });
         }
         addMenuItem(name) {
-            this.template.addMenuItem({ _root: name });
+            // TODO template should provide this !
+            let menuItem = engine_1.tardigradeEngine.buildNodeHtml("Application", "menuItems", { _root: name });
+            this.template.menu().appendChild(runtime_1.createElement(menuItem));
         }
         main() {
             return this.template._root();
@@ -5267,7 +5271,7 @@ function hasOwnProperty(obj, prop) {
     exports.ApplicationPanel = ApplicationPanel;
 });
 
-},{"./Utils":32,"./tardigrades/Application":34}],29:[function(require,module,exports){
+},{"../node_modules/tardigrade/target/engine/engine":73,"../node_modules/tardigrade/target/engine/runtime":76,"./Utils":32,"./tardigrades/Application":34}],29:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -5698,22 +5702,24 @@ function hasOwnProperty(obj, prop) {
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class ApplicationTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("Application", parser_1.tardigradeParser.parseTemplate(`
+            engine_1.tardigradeEngine.addTemplate("Application", parser_1.tardigradeParser.parseTemplate(`<html>
+<body>
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
             <span class="mdl-layout-title">Pom Explorer</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="mdl-badge" data-badge="!">beta</span>
         </div>
     </header>
-    <div x-id="Drawer" class="mdl-layout__drawer">
+    <div x-id="drawer" class="mdl-layout__drawer">
         <span class="mdl-layout-title">Pom Explorer</span>
-        <nav x-id="Menu" class="mdl-navigation">
-            <a x-id="MenuItems" x-cardinal="*" class="mdl-navigation__link" href="#"/>
+        <nav x-id="menu" class="mdl-navigation">
+            <a x-id="menuItems" x-cardinal="*" class="mdl-navigation__link" href="#"/>
         </nav>
     </div>
-    <main x-id="Content" class="mdl-layout__content content-repositionning"/>
+    <main x-id="content" class="mdl-layout__content content-repositionning"/>
 </div>
-`));
+</body>
+</html>`));
         }
         ensureLoaded() {
         }
@@ -5724,33 +5730,28 @@ function hasOwnProperty(obj, prop) {
             return runtime_1.createElement(this.buildHtml(dto));
         }
         of(rootElement) {
-            let me = {
+            let domlet = {
                 _root() { return rootElement; },
-                content() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "Content": 0 });
+                drawer() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "drawer": 0 });
                 },
                 menu() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "Menu": 0 });
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "menu": 0 });
                 },
                 menuItems(menuItemsIndex) {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "Menu": 0, "MenuItems": menuItemsIndex });
-                },
-                drawer() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "Drawer": 0 });
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "menuItems": menuItemsIndex });
                 },
                 menuItemsIndex(hitTest) {
                     let location = engine_1.tardigradeEngine.getLocation(rootElement, "Application", hitTest);
-                    if (location != null && ("MenuItems" in location))
-                        return location["MenuItems"];
+                    if (location != null && ("menuItems" in location))
+                        return location["menuItems"];
                     return -1;
                 },
-                // TODO not sure
-                addMenuItem(dto) {
-                    let menuItem = engine_1.tardigradeEngine.buildNodeHtml("Application", "MenuItems", dto);
-                    me.menu().appendChild(runtime_1.createElement(menuItem));
-                }
+                content() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "content": 0 });
+                },
             };
-            return me;
+            return domlet;
         }
     }
     exports.applicationTemplate = new ApplicationTemplate();
@@ -5762,16 +5763,17 @@ function hasOwnProperty(obj, prop) {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
+    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class CardTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("Card", parser_1.tardigradeParser.parseTemplate(`
+            engine_1.tardigradeEngine.addTemplate("Card", parser_1.tardigradeParser.parseTemplate(`<html>
+<body>
 <div class="project-card mdl-card mdl-shadow--2dp">
   <div class="mdl-card__title mdl-card--expand">
     <h2 x-id="title" class="mdl-card__title-text"/>
@@ -5783,7 +5785,10 @@ function hasOwnProperty(obj, prop) {
     <a x-id="actionBuild" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Build</a>
   </div>
 </div>
-`));
+</body>
+</html>`));
+        }
+        ensureLoaded() {
         }
         buildHtml(dto) {
             return engine_1.tardigradeEngine.buildHtml("Card", dto);
@@ -5792,10 +5797,8 @@ function hasOwnProperty(obj, prop) {
             return runtime_1.createElement(this.buildHtml(dto));
         }
         of(rootElement) {
-            return {
-                _root() {
-                    return rootElement;
-                },
+            let domlet = {
+                _root() { return rootElement; },
                 title() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "title": 0 });
                 },
@@ -5813,8 +5816,9 @@ function hasOwnProperty(obj, prop) {
                 },
                 actionBuild() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "actionBuild": 0 });
-                }
+                },
             };
+            return domlet;
         }
     }
     exports.cardTemplate = new CardTemplate();
@@ -5826,16 +5830,17 @@ function hasOwnProperty(obj, prop) {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
+    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class ConsolePanelTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("ConsolePanel", parser_1.tardigradeParser.parseTemplate(`
+            engine_1.tardigradeEngine.addTemplate("ConsolePanel", parser_1.tardigradeParser.parseTemplate(`<html>
+<body>
 <div class="console-panel">
     <div x-id="output" class='console-output'></div>
     <form action="#" class='console-input'>
@@ -5845,7 +5850,10 @@ function hasOwnProperty(obj, prop) {
         </div>
     </form>
 </div>
-`));
+</body>
+</html>`));
+        }
+        ensureLoaded() {
         }
         buildHtml(dto) {
             return engine_1.tardigradeEngine.buildHtml("ConsolePanel", dto);
@@ -5854,20 +5862,18 @@ function hasOwnProperty(obj, prop) {
             return runtime_1.createElement(this.buildHtml(dto));
         }
         of(rootElement) {
-            return {
-                _root() {
-                    return rootElement;
+            let domlet = {
+                _root() { return rootElement; },
+                output() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
                 },
                 input() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
                 },
-                output() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
-                }
             };
+            return domlet;
         }
     }
-    exports.ConsolePanelTemplate = ConsolePanelTemplate;
     exports.consolePanelTemplate = new ConsolePanelTemplate();
 });
 
@@ -5877,25 +5883,29 @@ function hasOwnProperty(obj, prop) {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime", "./SearchPanel"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/runtime", "./SearchPanel"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
+    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     var SearchPanel_1 = require("./SearchPanel");
     class ProjectPanelTemplate {
         constructor() {
             SearchPanel_1.searchPanelTemplate.ensureLoaded();
-            engine_1.tardigradeEngine.addTemplate("ProjectPanel", parser_1.tardigradeParser.parseTemplate(`
+            engine_1.tardigradeEngine.addTemplate("ProjectPanel", parser_1.tardigradeParser.parseTemplate(`<html>
+<body>
 <div>
     <SearchPanel>
         <input x-id="searchInput"/>
     </SearchPanel>
     <div x-id="projectList" class='projects-list'></div>
 </div>
-`));
+</body>
+</html>`));
+        }
+        ensureLoaded() {
         }
         buildHtml(dto) {
             return engine_1.tardigradeEngine.buildHtml("ProjectPanel", dto);
@@ -5904,17 +5914,16 @@ function hasOwnProperty(obj, prop) {
             return runtime_1.createElement(this.buildHtml(dto));
         }
         of(rootElement) {
-            return {
-                _root() {
-                    return rootElement;
-                },
+            let domlet = {
+                _root() { return rootElement; },
                 searchInput() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "searchInput": 0 });
                 },
                 projectList() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
-                }
+                },
             };
+            return domlet;
         }
     }
     exports.projectPanelTemplate = new ProjectPanelTemplate();
@@ -5926,16 +5935,17 @@ function hasOwnProperty(obj, prop) {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
+    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class SearchPanelTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("SearchPanel", parser_1.tardigradeParser.parseTemplate(`
+            engine_1.tardigradeEngine.addTemplate("SearchPanel", parser_1.tardigradeParser.parseTemplate(`<html>
+<body>
 <form action="#">
   <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
     <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox">
@@ -5944,7 +5954,9 @@ function hasOwnProperty(obj, prop) {
 <div class="mdl-button mdl-button--icon">
   <i class="material-icons">search</i>
 </div>
-</form>`));
+</form>
+</body>
+</html>`));
         }
         ensureLoaded() {
         }
@@ -5955,14 +5967,13 @@ function hasOwnProperty(obj, prop) {
             return runtime_1.createElement(this.buildHtml(dto));
         }
         of(rootElement) {
-            return {
-                _root() {
-                    return rootElement;
-                },
+            let domlet = {
+                _root() { return rootElement; },
                 input() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
-                }
+                },
             };
+            return domlet;
         }
     }
     exports.searchPanelTemplate = new SearchPanelTemplate();
@@ -8722,39 +8733,46 @@ arguments[4][67][0].apply(exports,arguments)
             this.templates = {};
         }
         addTemplate(name, template) {
-            //template.log(name + ": ");
-            this.templates[name] = template;
+            this.templates[name] = {
+                name: name,
+                rootNode: template,
+                points: this.getPoints(template),
+                dependentTemplates: template.getTemplateNodes()
+            };
+        }
+        getTemplateDescriptor(name) {
+            return this.templates[name];
         }
         buildHtml(templateName, dto) {
-            var templateNode = this.templates[templateName];
-            if (templateNode == null)
+            var templateDescriptor = this.templates[templateName];
+            if (templateDescriptor == null)
                 return null;
-            return this.buildNode(templateNode, templateNode, [dto]);
+            return this.buildNode(templateDescriptor.rootNode, templateDescriptor.rootNode, [dto]);
         }
         buildNodeHtml(templateName, nodeId, dto) {
-            var templateNode = this.templates[templateName];
-            if (templateNode == null)
+            var templateDescriptor = this.templates[templateName];
+            if (templateDescriptor == null)
                 return null;
-            var nodeToBuild = this.findNode(templateNode, nodeId);
+            var nodeToBuild = this.findNode(templateDescriptor.rootNode, nodeId);
             return this.buildNode(nodeToBuild, nodeToBuild, [dto]);
         }
         getPoint(templateElement, templateName, intermediates) {
-            var templateRootNode = this.templates[templateName];
-            if (templateRootNode == null)
+            var templateDescriptor = this.templates[templateName];
+            if (templateDescriptor == null)
                 return null;
-            var templatePoints = this.getPoints(templateRootNode);
+            var templatePoints = templateDescriptor.points;
             let longestPath = -1;
             let pointName = null;
             for (let test in intermediates) {
-                if (templatePoints[test].length > longestPath) {
-                    longestPath = templatePoints[test].length;
+                if (templatePoints[test].path.length > longestPath) {
+                    longestPath = templatePoints[test].path.length;
                     pointName = test;
                 }
             }
             var targetPath = templatePoints[pointName];
             var element = templateElement;
-            for (let i = 0; i < targetPath.length; i++) {
-                let index = targetPath[i];
+            for (let i = 0; i < targetPath.path.length; i++) {
+                let index = targetPath.path[i];
                 if (typeof index === "string")
                     index = intermediates[index];
                 let children = element.children;
@@ -8765,17 +8783,17 @@ arguments[4][67][0].apply(exports,arguments)
             return element;
         }
         getLocation(templateElement, templateName, element) {
-            var templateRootNode = this.templates[templateName];
-            if (templateRootNode == null)
+            var templateDescriptor = this.templates[templateName];
+            if (templateDescriptor == null)
                 return null;
-            var templatePoints = this.getPoints(templateRootNode);
+            var templatePoints = templateDescriptor.points;
             var chain = runtime_1.domChain(templateElement, element);
             var indices = [];
             for (var i = 1; i < chain.length; i++)
                 indices.push([].indexOf.call(chain[i - 1].children, chain[i]));
             var res = {};
             for (var pointName in templatePoints) {
-                var path = templatePoints[pointName];
+                var path = templatePoints[pointName].path;
                 if (indices.length < path.length)
                     continue;
                 let i = 0;
@@ -8931,8 +8949,12 @@ arguments[4][67][0].apply(exports,arguments)
         }
         getPoints(node) {
             var res = {};
-            this.visitNode(node, [], (xId, path) => {
-                res[xId] = path.slice();
+            this.visitNode(node, [], (xId, nodeInstance, path) => {
+                res[xId] = {
+                    id: xId,
+                    node: nodeInstance,
+                    path: path.slice()
+                };
             });
             return res;
         }
@@ -8948,7 +8970,7 @@ arguments[4][67][0].apply(exports,arguments)
                     currentPath.pop();
                     currentPath.push(node.xId);
                 }
-                visitor(node.xId, currentPath);
+                visitor(node.xId, node, currentPath);
             }
             if (node.children != null) {
                 for (var i = 0; i < node.children.length; i++) {
@@ -8965,15 +8987,15 @@ arguments[4][67][0].apply(exports,arguments)
                     currentPath.pop();
                     currentPath.push(node.xId);
                 }
-                visitor(node.xId, currentPath);
+                visitor(node.xId, node, currentPath);
             }
-            let subTemplatePoints = this.getPoints(this.templates[node.name]);
+            let subTemplatePoints = this.templates[node.name].points;
             if (node.children != null) {
                 for (var pointName in node.children) {
                     var pointInfo = node.children[pointName];
-                    let pointPath = currentPath.concat(subTemplatePoints[pointName]);
+                    let pointPath = currentPath.concat(subTemplatePoints[pointName].path);
                     if (pointInfo.xId != null)
-                        visitor(pointInfo.xId, pointPath);
+                        visitor(pointInfo.xId, pointInfo, pointPath);
                     if (pointInfo.children != null) {
                         for (var i = 0; i < pointInfo.children.length; i++) {
                             let child = pointInfo.children[i];
@@ -8986,10 +9008,10 @@ arguments[4][67][0].apply(exports,arguments)
             }
         }
         buildTemplateNode(templateRoot, node, dtos) {
-            var templateNode = this.templates[node.name];
-            if (templateNode == null)
+            var templateDescriptor = this.templates[node.name];
+            if (templateDescriptor == null)
                 return `<ERROR Template ${node.name} not found !/>`;
-            var templatePoints = this.getPoints(templateNode);
+            var templatePoints = templateDescriptor.points;
             var res = "";
             let attrs = null;
             let dto = null;
@@ -9024,7 +9046,7 @@ arguments[4][67][0].apply(exports,arguments)
             for (var i = 0; i < templateDtos.length; i++) {
                 var templateDto = templateDtos[i];
                 if (typeof templateDto == 'string') {
-                    res += this.buildNode(templateNode, templateNode, [{ "_root": templateDto }]);
+                    res += this.buildNode(templateDescriptor.rootNode, templateDescriptor.rootNode, [{ "_root": templateDto }]);
                 }
                 else {
                     for (var pointName in templatePoints) {
@@ -9058,7 +9080,7 @@ arguments[4][67][0].apply(exports,arguments)
                             }
                         }
                     }
-                    res += this.buildNode(templateNode, templateNode, [templateDto]);
+                    res += this.buildNode(templateDescriptor.rootNode, templateDescriptor.rootNode, [templateDto]);
                 }
             }
             return res;
@@ -9103,6 +9125,34 @@ arguments[4][67][0].apply(exports,arguments)
                     a.push(`${an}=${this.attributes[an]}`);
             }
             return `${this.name} id:${this.xId}, cardinal:${this.xCardinal}, options:${this.xOptions.length > 0 ? this.xOptions.join(", ") : "-"}, attrs: ${a.length > 0 ? a.join(", ") : "-"}`;
+        }
+        getTemplateNodes() {
+            let names = {};
+            this.fetchTemplateNodes(this, names);
+            let res = [];
+            for (let name in names)
+                res.push(name);
+            return res;
+        }
+        fetchTemplateNodes(node, templateNames) {
+            if (node instanceof ElementNode) {
+                if (node.children != null) {
+                    for (let child of node.children)
+                        this.fetchTemplateNodes(child, templateNames);
+                }
+            }
+            else if (node instanceof TemplateNode) {
+                templateNames[node.name] = 1;
+                if (node.children != null) {
+                    for (var pointName in node.children) {
+                        var pointInfo = node.children[pointName];
+                        if (pointInfo.children != null) {
+                            for (let child of pointInfo.children)
+                                this.fetchTemplateNodes(child, templateNames);
+                        }
+                    }
+                }
+            }
         }
     }
     exports.ParentNode = ParentNode;
