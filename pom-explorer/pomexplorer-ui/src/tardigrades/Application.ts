@@ -31,6 +31,7 @@ class ApplicationTemplate {
     }
     
     constructor() {
+        // pour toutes les templates dont celle-ci dépend, appeler ensureLoaded dessus
         tardigradeEngine.addTemplate("Application", tardigradeParser.parseTemplate(`
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
