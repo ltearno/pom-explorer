@@ -1,5 +1,6 @@
 "use strict";
 
+import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
@@ -14,7 +15,7 @@ export interface ConsolePanelTemplateElement {
 
 export class ConsolePanelTemplate {
     constructor() {
-        tardigradeEngine.addTemplate("ConsolePanel", `
+        tardigradeEngine.addTemplate("ConsolePanel", tardigradeParser.parseTemplate(`
 <div class="console-panel">
     <div x-id="output" class='console-output'></div>
     <form action="#" class='console-input'>
@@ -24,7 +25,7 @@ export class ConsolePanelTemplate {
         </div>
     </form>
 </div>
-`);
+`));
     }
 
     buildHtml(dto: ConsolePanelTemplateDto) {

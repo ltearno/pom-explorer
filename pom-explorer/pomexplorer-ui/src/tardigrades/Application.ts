@@ -1,6 +1,7 @@
 "use strict";
 
 import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
+import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
 export interface MenuItemsDto {
@@ -26,8 +27,11 @@ export interface ApplicationTemplateElement {
 }
 
 class ApplicationTemplate {
+    ensureLoaded() {
+    }
+    
     constructor() {
-        tardigradeEngine.addTemplate("Application", `
+        tardigradeEngine.addTemplate("Application", tardigradeParser.parseTemplate(`
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
@@ -42,7 +46,7 @@ class ApplicationTemplate {
     </div>
     <main x-id="Content" class="mdl-layout__content content-repositionning"/>
 </div>
-`);
+`));
     }
 
     buildHtml(dto: ApplicationTemplateDto) {

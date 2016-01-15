@@ -5689,15 +5689,16 @@ function hasOwnProperty(obj, prop) {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
+    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class ApplicationTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("Application", `
+            engine_1.tardigradeEngine.addTemplate("Application", parser_1.tardigradeParser.parseTemplate(`
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
@@ -5712,7 +5713,9 @@ function hasOwnProperty(obj, prop) {
     </div>
     <main x-id="Content" class="mdl-layout__content content-repositionning"/>
 </div>
-`);
+`));
+        }
+        ensureLoaded() {
         }
         buildHtml(dto) {
             return engine_1.tardigradeEngine.buildHtml("Application", dto);
@@ -5753,21 +5756,22 @@ function hasOwnProperty(obj, prop) {
     exports.applicationTemplate = new ApplicationTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/runtime":76}],35:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/parser":75,"../../node_modules/tardigrade/target/engine/runtime":76}],35:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
+    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class CardTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("Card", `
+            engine_1.tardigradeEngine.addTemplate("Card", parser_1.tardigradeParser.parseTemplate(`
 <div class="project-card mdl-card mdl-shadow--2dp">
   <div class="mdl-card__title mdl-card--expand">
     <h2 x-id="title" class="mdl-card__title-text"/>
@@ -5779,7 +5783,7 @@ function hasOwnProperty(obj, prop) {
     <a x-id="actionBuild" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Build</a>
   </div>
 </div>
-`);
+`));
         }
         buildHtml(dto) {
             return engine_1.tardigradeEngine.buildHtml("Card", dto);
@@ -5816,21 +5820,22 @@ function hasOwnProperty(obj, prop) {
     exports.cardTemplate = new CardTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/runtime":76}],36:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/parser":75,"../../node_modules/tardigrade/target/engine/runtime":76}],36:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
+    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class ConsolePanelTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("ConsolePanel", `
+            engine_1.tardigradeEngine.addTemplate("ConsolePanel", parser_1.tardigradeParser.parseTemplate(`
 <div class="console-panel">
     <div x-id="output" class='console-output'></div>
     <form action="#" class='console-input'>
@@ -5840,7 +5845,7 @@ function hasOwnProperty(obj, prop) {
         </div>
     </form>
 </div>
-`);
+`));
         }
         buildHtml(dto) {
             return engine_1.tardigradeEngine.buildHtml("ConsolePanel", dto);
@@ -5866,30 +5871,31 @@ function hasOwnProperty(obj, prop) {
     exports.consolePanelTemplate = new ConsolePanelTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/runtime":76}],37:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/parser":75,"../../node_modules/tardigrade/target/engine/runtime":76}],37:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime", "./SearchPanel"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime", "./SearchPanel"], factory);
     }
 })(function (require, exports) {
     "use strict";
+    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     var SearchPanel_1 = require("./SearchPanel");
     class ProjectPanelTemplate {
         constructor() {
             SearchPanel_1.searchPanelTemplate.ensureLoaded();
-            engine_1.tardigradeEngine.addTemplate("ProjectPanel", `
+            engine_1.tardigradeEngine.addTemplate("ProjectPanel", parser_1.tardigradeParser.parseTemplate(`
 <div>
     <SearchPanel>
         <input x-id="searchInput"/>
     </SearchPanel>
     <div x-id="projectList" class='projects-list'></div>
 </div>
-`);
+`));
         }
         buildHtml(dto) {
             return engine_1.tardigradeEngine.buildHtml("ProjectPanel", dto);
@@ -5914,21 +5920,22 @@ function hasOwnProperty(obj, prop) {
     exports.projectPanelTemplate = new ProjectPanelTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/runtime":76,"./SearchPanel":38}],38:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/parser":75,"../../node_modules/tardigrade/target/engine/runtime":76,"./SearchPanel":38}],38:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/parser", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
+    var parser_1 = require("../../node_modules/tardigrade/target/engine/parser");
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class SearchPanelTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("SearchPanel", `
+            engine_1.tardigradeEngine.addTemplate("SearchPanel", parser_1.tardigradeParser.parseTemplate(`
 <form action="#">
   <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
     <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox">
@@ -5937,7 +5944,7 @@ function hasOwnProperty(obj, prop) {
 <div class="mdl-button mdl-button--icon">
   <i class="material-icons">search</i>
 </div>
-</form>`);
+</form>`));
         }
         ensureLoaded() {
         }
@@ -5961,7 +5968,7 @@ function hasOwnProperty(obj, prop) {
     exports.searchPanelTemplate = new SearchPanelTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/runtime":76}],39:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":73,"../../node_modules/tardigrade/target/engine/parser":75,"../../node_modules/tardigrade/target/engine/runtime":76}],39:[function(require,module,exports){
 module.exports = CollectingHandler;
 
 function CollectingHandler(cbs){
@@ -8704,22 +8711,19 @@ arguments[4][67][0].apply(exports,arguments)
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./parser", "./runtime", "./model"], factory);
+        define(["require", "exports", "./runtime", "./model"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var parser_1 = require("./parser");
     var runtime_1 = require("./runtime");
     var model_1 = require("./model");
     class TardigradeEngine {
         constructor() {
-            this.parser = new parser_1.Parser();
             this.templates = {};
         }
         addTemplate(name, template) {
-            var node = this.parser.parseTardigradeTemplate(template);
-            node.log(name + ": ");
-            this.templates[name] = node;
+            //template.log(name + ": ");
+            this.templates[name] = template;
         }
         buildHtml(templateName, dto) {
             var templateNode = this.templates[templateName];
@@ -9067,7 +9071,7 @@ arguments[4][67][0].apply(exports,arguments)
     exports.tardigradeEngine = new TardigradeEngine();
 });
 
-},{"./model":74,"./parser":75,"./runtime":76}],74:[function(require,module,exports){
+},{"./model":74,"./runtime":76}],74:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -9154,8 +9158,8 @@ arguments[4][67][0].apply(exports,arguments)
     "use strict";
     var htmlparser = require("htmlparser2");
     var model_1 = require("./model");
-    class Parser {
-        parseTardigradeTemplate(html) {
+    class TardigradeParser {
+        parseTemplate(html) {
             var htmlTree = this.parseHtml(html);
             //htmlTree.log("> ");
             return this.buildNode(htmlTree);
@@ -9280,7 +9284,7 @@ arguments[4][67][0].apply(exports,arguments)
             return tree;
         }
     }
-    exports.Parser = Parser;
+    exports.TardigradeParser = TardigradeParser;
     class DomNode {
     }
     class DomElementNode extends DomNode {
@@ -9297,6 +9301,7 @@ arguments[4][67][0].apply(exports,arguments)
             console.log(prefix + "TEXT " + this.text);
         }
     }
+    exports.tardigradeParser = new TardigradeParser();
 });
 
 },{"./model":74,"htmlparser2":46}],76:[function(require,module,exports){

@@ -1,5 +1,6 @@
 "use strict";
 
+import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
@@ -19,14 +20,14 @@ class ProjectPanelTemplate {
     constructor() {
         searchPanelTemplate.ensureLoaded();
         
-        tardigradeEngine.addTemplate("ProjectPanel", `
+        tardigradeEngine.addTemplate("ProjectPanel", tardigradeParser.parseTemplate(`
 <div>
     <SearchPanel>
         <input x-id="searchInput"/>
     </SearchPanel>
     <div x-id="projectList" class='projects-list'></div>
 </div>
-`);
+`));
     }
 
     buildHtml(dto: ProjectPanelTemplateDto) {

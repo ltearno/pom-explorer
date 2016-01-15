@@ -2,6 +2,7 @@
 
 import { initMaterialElement } from "../Utils";
 
+import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
@@ -27,7 +28,7 @@ interface CardTemplateElement {
 
 class CardTemplate {
     constructor() {
-        tardigradeEngine.addTemplate("Card", `
+        tardigradeEngine.addTemplate("Card", tardigradeParser.parseTemplate(`
 <div class="project-card mdl-card mdl-shadow--2dp">
   <div class="mdl-card__title mdl-card--expand">
     <h2 x-id="title" class="mdl-card__title-text"/>
@@ -39,7 +40,7 @@ class CardTemplate {
     <a x-id="actionBuild" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Build</a>
   </div>
 </div>
-`);
+`));
     }
 
     buildHtml(dto: CardTemplateDto) {

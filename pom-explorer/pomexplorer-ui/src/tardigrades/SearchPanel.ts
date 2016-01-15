@@ -1,5 +1,6 @@
 "use strict";
 
+import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
@@ -17,7 +18,7 @@ class SearchPanelTemplate {
     }
     
     constructor() {
-        tardigradeEngine.addTemplate("SearchPanel", `
+        tardigradeEngine.addTemplate("SearchPanel", tardigradeParser.parseTemplate(`
 <form action="#">
   <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
     <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox">
@@ -26,7 +27,7 @@ class SearchPanelTemplate {
 <div class="mdl-button mdl-button--icon">
   <i class="material-icons">search</i>
 </div>
-</form>`);
+</form>`));
     }
 
     buildHtml(dto: SearchPanelTemplateDto) {
