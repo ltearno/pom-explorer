@@ -9,9 +9,13 @@ import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/
 export interface ApplicationTemplateDto {
     _root?: string;
     drawer?: any;
+"@drawer"?: any;
 menu?: any;
+"@menu"?: any;
 menuItems?: any;
+"@menuItems"?: any;
 content?: any;
+"@content"?: any;
 
 }
 
@@ -20,7 +24,10 @@ export interface ApplicationTemplateElement {
     drawer(): HTMLElement;
 menu(): HTMLElement;
 menuItems(menuItemsIndex: number): HTMLElement;
-menuItemsIndex(hitTest:HTMLElement):number;
+menuItemsIndex(hitTest:HTMLElement): number;
+buildMenuItems(dto: any): string;
+addMenuItems(dto: any): HTMLElement;
+countMenuItems(): number;
 content(): HTMLElement;
 
 }
@@ -67,15 +74,12 @@ class ApplicationTemplate {
             drawer(): HTMLElement{
 return tardigradeEngine.getPoint(rootElement, "Application", { "drawer": 0 });
 },
-
 menu(): HTMLElement{
 return tardigradeEngine.getPoint(rootElement, "Application", { "menu": 0 });
 },
-
 menuItems(menuItemsIndex: number): HTMLElement{
 return tardigradeEngine.getPoint(rootElement, "Application", { "menuItems": menuItemsIndex });
 },
-
 menuItemsIndex(hitTest:HTMLElement): number {
 
                 let location = tardigradeEngine.getLocation(rootElement, "Application", hitTest);
@@ -83,10 +87,21 @@ menuItemsIndex(hitTest:HTMLElement): number {
                     return location["menuItems"];
                 return -1;
             },
+buildMenuItems(dto: any): string {
+return tardigradeEngine.buildNodeHtml("Application", "menuItems", dto);
+},
+addMenuItems(dto: any): HTMLElement {
+let newItem = domlet.buildMenuItems(dto);
+let newElement = createElement(newItem);
+domlet.menu().appendChild(newElement);
+return newElement;
+},
+countMenuItems(): number {
+return domlet.menu().children.length;
+},
 content(): HTMLElement{
 return tardigradeEngine.getPoint(rootElement, "Application", { "content": 0 });
 },
-
 
         };
         

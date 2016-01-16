@@ -30,9 +30,7 @@ export class ApplicationPanel {
     }
 
     addMenuItem(name: string) {
-        // TODO template should provide this !
-        let menuItem = tardigradeEngine.buildNodeHtml("Application", "menuItems", { _root: name });
-        this.template.menu().appendChild(createElement(menuItem));
+        this.template.addMenuItems({ _root: name });
     }
 
     main(): HTMLDivElement {

@@ -5222,14 +5222,12 @@ function hasOwnProperty(obj, prop) {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./Utils", "./tardigrades/Application", "../node_modules/tardigrade/target/engine/engine", "../node_modules/tardigrade/target/engine/runtime"], factory);
+        define(["require", "exports", "./Utils", "./tardigrades/Application"], factory);
     }
 })(function (require, exports) {
     "use strict";
     var Utils_1 = require("./Utils");
     var Application_1 = require("./tardigrades/Application");
-    var engine_1 = require("../node_modules/tardigrade/target/engine/engine");
-    var runtime_1 = require("../node_modules/tardigrade/target/engine/runtime");
     class ApplicationPanel {
         constructor() {
             this.template = Application_1.applicationTemplate.of(Application_1.applicationTemplate.buildElement({}));
@@ -5249,9 +5247,8 @@ function hasOwnProperty(obj, prop) {
             });
         }
         addMenuItem(name) {
-            // TODO template should provide this !
-            let menuItem = engine_1.tardigradeEngine.buildNodeHtml("Application", "menuItems", { _root: name });
-            this.template.menu().appendChild(runtime_1.createElement(menuItem));
+            let t = this.template.countMenuItems();
+            this.template.addMenuItems({ _root: name + " - " + t });
         }
         main() {
             return this.template._root();
@@ -5271,7 +5268,7 @@ function hasOwnProperty(obj, prop) {
     exports.ApplicationPanel = ApplicationPanel;
 });
 
-},{"../node_modules/tardigrade/target/engine/engine":73,"../node_modules/tardigrade/target/engine/runtime":76,"./Utils":32,"./tardigrades/Application":34}],29:[function(require,module,exports){
+},{"./Utils":32,"./tardigrades/Application":34}],29:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -5746,6 +5743,18 @@ function hasOwnProperty(obj, prop) {
                     if (location != null && ("menuItems" in location))
                         return location["menuItems"];
                     return -1;
+                },
+                buildMenuItems(dto) {
+                    return engine_1.tardigradeEngine.buildNodeHtml("Application", "menuItems", dto);
+                },
+                addMenuItems(dto) {
+                    let newItem = domlet.buildMenuItems(dto);
+                    let newElement = runtime_1.createElement(newItem);
+                    domlet.menu().appendChild(newElement);
+                    return newElement;
+                },
+                countMenuItems() {
+                    return domlet.menu().children.length;
                 },
                 content() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "content": 0 });
@@ -9103,12 +9112,40 @@ arguments[4][67][0].apply(exports,arguments)
     }
 })(function (require, exports) {
     "use strict";
+    function visitDeep(node, visitor) {
+        if (node instanceof ElementNode) {
+            visitor.visitElementNode(node);
+            if (node.children != null) {
+                for (let child of node.children)
+                    visitDeep(child, visitor);
+            }
+        }
+        else if (node instanceof TemplateNode) {
+            visitor.visitTemplateNode(node);
+            if (node.children != null) {
+                for (var pointName in node.children) {
+                    var pointInfo = node.children[pointName];
+                    visitor.visitPointInfo(pointInfo);
+                    if (pointInfo.children != null) {
+                        for (let child of pointInfo.children)
+                            visitDeep(child, visitor);
+                    }
+                }
+            }
+        }
+        else if (node instanceof TextNode) {
+            visitor.visitTextNode(node);
+        }
+    }
     (function (Cardinal) {
         Cardinal[Cardinal["Single"] = 0] = "Single";
         Cardinal[Cardinal["Multiple"] = 1] = "Multiple";
     })(exports.Cardinal || (exports.Cardinal = {}));
     var Cardinal = exports.Cardinal;
     class Node {
+        visitDeep(visitor) {
+            return visitDeep(this, visitor);
+        }
     }
     exports.Node = Node;
     class TextNode extends Node {
@@ -9195,6 +9232,8 @@ arguments[4][67][0].apply(exports,arguments)
     }
     exports.PointInfo = PointInfo;
 });
+// parent d'un Node peut être soit un ElementNode soit un PointInfo
+// un PointInfo doit aussi pointer vers son noeud TemplateNode 
 
 },{}],75:[function(require,module,exports){
 (function (factory) {
@@ -9212,7 +9251,7 @@ arguments[4][67][0].apply(exports,arguments)
         parseTemplate(html) {
             var htmlTree = this.parseHtml(html);
             //htmlTree.log("> ");
-            return this.buildNode(htmlTree);
+            return this.buildNode(htmlTree, null);
         }
         fillParentNode(node, html) {
             node.name = html.name;
@@ -9226,21 +9265,23 @@ arguments[4][67][0].apply(exports,arguments)
             if (node.xCardinal == model_1.Cardinal.Multiple && node.xId == null)
                 console.log("ERROR ! Nodes with cardinal * should have an id !");
         }
-        buildNode(html) {
+        buildNode(html, parentObject) {
             var firstLetter = html.name[0];
             if (firstLetter !== firstLetter.toUpperCase()) {
                 var elementNode = new model_1.ElementNode();
+                elementNode.parent = parentObject;
                 this.fillParentNode(elementNode, html);
                 elementNode.children = [];
                 if (html.children != null) {
                     for (var child of html.children) {
                         if (child instanceof DomTextNode) {
                             var textNode = new model_1.TextNode();
+                            textNode.parent = elementNode;
                             textNode.text = child.text;
                             elementNode.children.push(textNode);
                         }
                         else if (child instanceof DomElementNode) {
-                            elementNode.children.push(this.buildNode(child));
+                            elementNode.children.push(this.buildNode(child, elementNode));
                         }
                     }
                 }
@@ -9248,6 +9289,7 @@ arguments[4][67][0].apply(exports,arguments)
             }
             else {
                 var templateNode = new model_1.TemplateNode();
+                templateNode.parent = parentObject;
                 this.fillParentNode(templateNode, html);
                 templateNode.children = {};
                 if (html.children != null) {
@@ -9255,6 +9297,7 @@ arguments[4][67][0].apply(exports,arguments)
                         if (child instanceof DomElementNode) {
                             var pointName = child.name;
                             var pointInformation = new model_1.PointInfo();
+                            pointInformation.parent = templateNode;
                             pointInformation.xId = child.attributes['x-id'] || null;
                             pointInformation.attributes = child.attributes;
                             delete child.attributes['x-id'];
@@ -9263,10 +9306,11 @@ arguments[4][67][0].apply(exports,arguments)
                                 continue;
                             for (var pointContentElement of child.children) {
                                 if (pointContentElement instanceof DomElementNode) {
-                                    pointInformation.addChild(this.buildNode(pointContentElement));
+                                    pointInformation.addChild(this.buildNode(pointContentElement, pointInformation));
                                 }
                                 else if (pointContentElement instanceof DomTextNode) {
                                     var textNode = new model_1.TextNode();
+                                    textNode.parent = pointInformation;
                                     textNode.text = pointContentElement.text;
                                     pointInformation.addChild(textNode);
                                 }
