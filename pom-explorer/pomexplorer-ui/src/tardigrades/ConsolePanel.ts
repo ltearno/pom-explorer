@@ -8,6 +8,11 @@ import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/
 
 export interface ConsolePanelTemplateDto {
     _root?: string;
+    output?: any;
+"@output"?: any;
+input?: any;
+"@input"?: any;
+
 }
 
 export interface ConsolePanelTemplateElement {
@@ -28,12 +33,10 @@ class ConsolePanelTemplate {
 <body>
 <div class="console-panel">
     <div x-id="output" class='console-output'></div>
-    <form action="#" class='console-input'>
-        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <input x-id="input" class="mdl-textfield__input" type="text" id="sample3">
-            <label class="mdl-textfield__label" for="sample3">enter a command, or just "?" to get help</label>
-        </div>
-    </form>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input x-id="input" class="mdl-textfield__input" type="text" id="sample3">
+        <label class="mdl-textfield__label" for="sample3">enter a command, or just "?" to get help</label>
+    </div>
 </div>
 </body>
 </html>`));
@@ -54,11 +57,9 @@ class ConsolePanelTemplate {
             output(): HTMLElement{
 return tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
 },
-
 input(): HTMLElement{
 return tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
 },
-
 
         };
         

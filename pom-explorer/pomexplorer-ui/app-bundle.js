@@ -5247,8 +5247,7 @@ function hasOwnProperty(obj, prop) {
             });
         }
         addMenuItem(name) {
-            let t = this.template.countMenuItems();
-            this.template.addMenuItems({ _root: name + " - " + t });
+            this.template.addMenuItems({ _root: name });
         }
         main() {
             return this.template._root();
@@ -5852,12 +5851,10 @@ function hasOwnProperty(obj, prop) {
 <body>
 <div class="console-panel">
     <div x-id="output" class='console-output'></div>
-    <form action="#" class='console-input'>
-        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <input x-id="input" class="mdl-textfield__input" type="text" id="sample3">
-            <label class="mdl-textfield__label" for="sample3">enter a command, or just "?" to get help</label>
-        </div>
-    </form>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input x-id="input" class="mdl-textfield__input" type="text" id="sample3">
+        <label class="mdl-textfield__label" for="sample3">enter a command, or just "?" to get help</label>
+    </div>
 </div>
 </body>
 </html>`));
@@ -5955,15 +5952,15 @@ function hasOwnProperty(obj, prop) {
         constructor() {
             engine_1.tardigradeEngine.addTemplate("SearchPanel", parser_1.tardigradeParser.parseTemplate(`<html>
 <body>
-<form action="#">
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-    <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox">
-    <label class="mdl-textfield__label" for="searchBox">Project search...</label>
-  </div>
-<div class="mdl-button mdl-button--icon">
-  <i class="material-icons">search</i>
+<div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox"/>
+        <label class="mdl-textfield__label" for="searchBox">Project search...</label>
+    </div>
+    <div class="mdl-button mdl-button--icon">
+    <i class="material-icons">search</i>
+    </div>
 </div>
-</form>
 </body>
 </html>`));
         }

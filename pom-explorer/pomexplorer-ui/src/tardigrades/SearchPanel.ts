@@ -8,6 +8,9 @@ import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/
 
 export interface SearchPanelTemplateDto {
     _root?: string;
+    input?: any;
+"@input"?: any;
+
 }
 
 export interface SearchPanelTemplateElement {
@@ -25,15 +28,15 @@ class SearchPanelTemplate {
         
         tardigradeEngine.addTemplate("SearchPanel", tardigradeParser.parseTemplate(`<html>
 <body>
-<form action="#">
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-    <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox">
-    <label class="mdl-textfield__label" for="searchBox">Project search...</label>
-  </div>
-<div class="mdl-button mdl-button--icon">
-  <i class="material-icons">search</i>
+<div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input x-id="input" class="mdl-textfield__input" type="text" id="searchBox"/>
+        <label class="mdl-textfield__label" for="searchBox">Project search...</label>
+    </div>
+    <div class="mdl-button mdl-button--icon">
+    <i class="material-icons">search</i>
+    </div>
 </div>
-</form>
 </body>
 </html>`));
     }
@@ -53,7 +56,6 @@ class SearchPanelTemplate {
             input(): HTMLElement{
 return tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
 },
-
 
         };
         
