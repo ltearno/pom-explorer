@@ -21,7 +21,7 @@ content?: any;
 
 export interface ApplicationTemplateElement {
     _root(): HTMLElement;
-    drawer(): HTMLElement;
+    drawer(): HTMLDivElement;
 menu(): HTMLElement;
 menuItems(menuItemsIndex: number): HTMLElement;
 menuItemsIndex(hitTest:HTMLElement): number;
@@ -29,16 +29,15 @@ buildMenuItems(dto: any): string;
 addMenuItems(dto: any): HTMLElement;
 countMenuItems(): number;
 content(): HTMLElement;
-
 }
 
 class ApplicationTemplate {
     ensureLoaded() {
     }
-    
+
     constructor() {
         
-        
+
         tardigradeEngine.addTemplate("Application", tardigradeParser.parseTemplate(`<html>
 <body>
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
@@ -70,23 +69,22 @@ class ApplicationTemplate {
     of(rootElement: HTMLElement): ApplicationTemplateElement {
         let domlet = {
             _root() { return rootElement; },
-            
-            drawer(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Application", { "drawer": 0 });
+
+            drawer(): HTMLDivElement{
+return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Application", { "drawer": 0 });
 },
 menu(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Application", { "menu": 0 });
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Application", { "menu": 0 });
 },
 menuItems(menuItemsIndex: number): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Application", { "menuItems": menuItemsIndex });
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Application", { "menuItems": menuItemsIndex });
 },
 menuItemsIndex(hitTest:HTMLElement): number {
-
-                let location = tardigradeEngine.getLocation(rootElement, "Application", hitTest);
-                if (location != null && ("menuItems" in location))
-                    return location["menuItems"];
-                return -1;
-            },
+                    let location = tardigradeEngine.getLocation(rootElement, "Application", hitTest);
+                    if (location != null && ("menuItems" in location))
+                        return location["menuItems"];
+                    return -1;
+                    },
 buildMenuItems(dto: any): string {
 return tardigradeEngine.buildNodeHtml("Application", "menuItems", dto);
 },
@@ -100,11 +98,10 @@ countMenuItems(): number {
 return domlet.menu().children.length;
 },
 content(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Application", { "content": 0 });
-},
-
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Application", { "content": 0 });
+}
         };
-        
+
         return domlet;
     }
 }

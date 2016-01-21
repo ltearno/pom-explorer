@@ -3,9 +3,6 @@
 import { initMaterialElement } from "./Utils";
 import { applicationTemplate, ApplicationTemplateElement } from "./tardigrades/Application";
 
-import { tardigradeEngine } from "../node_modules/tardigrade/target/engine/engine";
-import { createElement, domChain, indexOf } from "../node_modules/tardigrade/target/engine/runtime";
-
 export class ApplicationPanel {
     template: ApplicationTemplateElement;
 

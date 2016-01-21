@@ -15,17 +15,16 @@ export interface SearchPanelTemplateDto {
 
 export interface SearchPanelTemplateElement {
     _root(): HTMLElement;
-    input(): HTMLElement;
-
+    input(): HTMLInputElement;
 }
 
 class SearchPanelTemplate {
     ensureLoaded() {
     }
-    
+
     constructor() {
         
-        
+
         tardigradeEngine.addTemplate("SearchPanel", tardigradeParser.parseTemplate(`<html>
 <body>
 <div>
@@ -52,13 +51,12 @@ class SearchPanelTemplate {
     of(rootElement: HTMLElement): SearchPanelTemplateElement {
         let domlet = {
             _root() { return rootElement; },
-            
-            input(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
-},
 
+            input(): HTMLInputElement{
+return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
+}
         };
-        
+
         return domlet;
     }
 }

@@ -17,18 +17,17 @@ input?: any;
 
 export interface ConsolePanelTemplateElement {
     _root(): HTMLElement;
-    output(): HTMLElement;
-input(): HTMLElement;
-
+    output(): HTMLDivElement;
+input(): HTMLInputElement;
 }
 
 class ConsolePanelTemplate {
     ensureLoaded() {
     }
-    
+
     constructor() {
         
-        
+
         tardigradeEngine.addTemplate("ConsolePanel", tardigradeParser.parseTemplate(`<html>
 <body>
 <div class="console-panel">
@@ -53,16 +52,15 @@ class ConsolePanelTemplate {
     of(rootElement: HTMLElement): ConsolePanelTemplateElement {
         let domlet = {
             _root() { return rootElement; },
-            
-            output(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
-},
-input(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
-},
 
+            output(): HTMLDivElement{
+return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
+},
+input(): HTMLInputElement{
+return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
+}
         };
-        
+
         return domlet;
     }
 }

@@ -9,32 +9,37 @@ import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/
 export interface CardTemplateDto {
     _root?: string;
     title?: any;
+"@title"?: any;
 content?: any;
+"@content"?: any;
 details?: any;
+"@details"?: any;
 actions?: any;
+"@actions"?: any;
 actionDetails?: any;
+"@actionDetails"?: any;
 actionBuild?: any;
+"@actionBuild"?: any;
 
 }
 
 export interface CardTemplateElement {
     _root(): HTMLElement;
     title(): HTMLElement;
-content(): HTMLElement;
-details(): HTMLElement;
-actions(): HTMLElement;
+content(): HTMLDivElement;
+details(): HTMLDivElement;
+actions(): HTMLDivElement;
 actionDetails(): HTMLElement;
 actionBuild(): HTMLElement;
-
 }
 
 class CardTemplate {
     ensureLoaded() {
     }
-    
+
     constructor() {
         
-        
+
         tardigradeEngine.addTemplate("Card", tardigradeParser.parseTemplate(`<html>
 <body>
 <div class="project-card mdl-card mdl-shadow--2dp">
@@ -63,34 +68,27 @@ class CardTemplate {
     of(rootElement: HTMLElement): CardTemplateElement {
         let domlet = {
             _root() { return rootElement; },
-            
+
             title(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Card", { "title": 0 });
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "title": 0 });
 },
-
-content(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Card", { "content": 0 });
+content(): HTMLDivElement{
+return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "content": 0 });
 },
-
-details(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Card", { "details": 0 });
+details(): HTMLDivElement{
+return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "details": 0 });
 },
-
-actions(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Card", { "actions": 0 });
+actions(): HTMLDivElement{
+return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "actions": 0 });
 },
-
 actionDetails(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Card", { "actionDetails": 0 });
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "actionDetails": 0 });
 },
-
 actionBuild(): HTMLElement{
-return tardigradeEngine.getPoint(rootElement, "Card", { "actionBuild": 0 });
-},
-
-
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "actionBuild": 0 });
+}
         };
-        
+
         return domlet;
     }
 }
