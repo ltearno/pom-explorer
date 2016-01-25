@@ -167,10 +167,8 @@ public class AppFactory
 			else if( "application/rpc".equals( message.getPayloadFormat() ) )
 			{
 				// project filter, just a POC !
-				List<ProjectDto> result = client.getCurrentSession().projects().values().stream()
-						.filter( ( p ) -> p.getGav().toString().contains( message.getPayload() ) ).limit( 200 )
-						.sorted( Project.alphabeticalComparator )
-						.map( ( p ) -> ProjectDto.fromProject( client.getCurrentSession(), p ) ).collect( Collectors.toList() );
+				List<ProjectDto> result = client.getCurrentSession().projects().values().stream().filter( ( p ) -> p.getGav().toString().contains( message.getPayload() ) ).limit( 200 ).sorted( Project.alphabeticalComparator )
+						.map( ( p ) -> ProjectDto.fromProject( client.getCurrentSession(), p ) ).filter( ( p ) -> p != null ).collect( Collectors.toList() );
 				client.send( new Message( MessageFactory.newGuid(), message.getTalkGuid(), null, true, "application/rpc", gson.toJson( result ) ) );
 			}
 			else

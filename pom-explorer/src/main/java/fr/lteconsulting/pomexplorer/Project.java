@@ -250,7 +250,10 @@ public class Project
 		PropertyLocation propertyDefinition = getPropertyDefinition( log, propertyName, true );
 		if( propertyDefinition == null )
 		{
-			log.html( Tools.warningMessage( "cannot resolve property '" + propertyName + "' in project " + toString() ) );
+			if( log != null )
+				log.html( Tools.warningMessage( "cannot resolve property '" + propertyName + "' in project " + toString() ) );
+			else
+				System.out.println( "cannot resolve property '" + propertyName + "' in project " + toString() );
 			return null;
 		}
 
@@ -376,7 +379,7 @@ public class Project
 				if( parentProject == null || !parentProject.fetchMissingGavsForResolution( online, log ) )
 				{
 					ok = false;
-					log.html( Tools.errorMessage( "cannot fetch missing project for resolution of " + gav + ": parent project " + parentGav ) );
+					log.html( Tools.errorMessage( "cannot resolve project " + toString() + " due to:<br/>&nbsp;&nbsp;&nbsp;missing parent project " + parentGav ) );
 				}
 			}
 		}
@@ -394,7 +397,7 @@ public class Project
 						if( bomProject == null || !bomProject.fetchMissingGavsForResolution( online, log ) )
 						{
 							ok = false;
-							log.html( Tools.errorMessage( "cannot fetch missing project for resolution of " + gav + ": bom import " + bomGav ) );
+							log.html( Tools.errorMessage( "cannot resolve project " + toString() + " due to:<br/>&nbsp;&nbsp;&nbsp;missing bom import " + bomGav ) );
 						}
 					}
 				}
