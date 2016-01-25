@@ -128,12 +128,12 @@ public class Project
 	{
 		return parentGav;
 	}
-	
+
 	public Project getParentProject()
 	{
-		if( parentGav == null)
+		if( parentGav == null )
 			return null;
-		
+
 		return session.projects().forGav( parentGav );
 	}
 
@@ -366,14 +366,19 @@ public class Project
 
 	public boolean fetchMissingGavsForResolution( boolean online, Log log )
 	{
+		boolean ok = true;
+
 		if( parentGav != null )
 		{
-			Project parentProject = session.projects().fetchProject( parentGav, online, log );
-			if( parentProject == null )
-				return false;
-
-			if( !parentProject.fetchMissingGavsForResolution( online, log ) )
-				return false;
+			if( !session.projects().contains( parentGav ) )
+			{
+				Project parentProject = session.projects().fetchProject( parentGav, online, log );
+				if( parentProject == null || !parentProject.fetchMissingGavsForResolution( online, log ) )
+				{
+					ok = false;
+					log.html( Tools.errorMessage( "cannot fetch missing project for resolution of " + gav + ": parent project " + parentGav ) );
+				}
+			}
 		}
 
 		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
@@ -383,18 +388,20 @@ public class Project
 				if( "import".equals( d.getScope() ) && "pom".equals( d.getType() ) )
 				{
 					Gav bomGav = resolveGav( new Gav( d.getGroupId(), d.getArtifactId(), d.getVersion() ), log );
-
-					Project bomProject = session.projects().fetchProject( bomGav, online, log );
-					if( bomProject == null )
-						return false;
-
-					if( !bomProject.fetchMissingGavsForResolution( online, log ) )
-						return false;
+					if( !session.projects().contains( bomGav ) )
+					{
+						Project bomProject = session.projects().fetchProject( bomGav, online, log );
+						if( bomProject == null || !bomProject.fetchMissingGavsForResolution( online, log ) )
+						{
+							ok = false;
+							log.html( Tools.errorMessage( "cannot fetch missing project for resolution of " + gav + ": bom import " + bomGav ) );
+						}
+					}
 				}
 			}
 		}
 
-		return true;
+		return ok;
 	}
 
 	private Map<DependencyKey, DependencyManagement> cachedLocalDependencyManagement;
@@ -695,7 +702,7 @@ public class Project
 		{
 			DependencyNode node = nodeQueue.poll();
 
-			if( neededLevels >= 0 && node.getLevel() > neededLevels )
+			if( neededLevels >= 0 && node.getLevel() >= neededLevels )
 				continue;
 
 			node.collectDependencyManagement( online, log );
@@ -775,15 +782,21 @@ public class Project
 				List<Repository> additionalRepos = node.getProject().getProjectRepositories( log );
 
 				Gav dependencyGav = new Gav( dependencyKey.getGroupId(), dependencyKey.getArtifactId(), version );
-				Project childProject = session.projects().fetchProject( dependencyGav, online, additionalRepos, log );
-				if( childProject == null )
+
+				Project childProject = null;
+
+				if( neededLevels < 0 || node.getLevel() >= neededLevels )
 				{
-					// TODO : use specified repositories if needed !
-					if( dependency.isOptional() )
-						log.html( Tools.warningMessage( "cannot fetch project " + dependencyGav + " referenced in " + node.getProject() + " (this is an optional dependency)" ) );
-					else
-						log.html( Tools.errorMessage( "cannot fetch project " + dependencyGav + " referenced in " + node.getProject() ) );
-					continue;
+					childProject = session.projects().fetchProject( dependencyGav, online, additionalRepos, log );
+					if( childProject == null )
+					{
+						// TODO : use specified repositories if needed !
+						if( dependency.isOptional() )
+							log.html( Tools.warningMessage( "cannot fetch project " + dependencyGav + " referenced in " + node.getProject() + " (this is an optional dependency)" ) );
+						else
+							log.html( Tools.errorMessage( "cannot fetch project " + dependencyGav + " referenced in " + node.getProject() ) );
+						continue;
+					}
 				}
 
 				DependencyNode child = new DependencyNode( childProject, dependencyKey, new VersionScope( version, scope ) );

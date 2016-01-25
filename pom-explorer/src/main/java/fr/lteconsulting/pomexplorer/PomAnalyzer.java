@@ -33,9 +33,8 @@ public class PomAnalyzer
 		Set<File> pomFiles = new HashSet<>();
 		File file = new File( directory );
 		if( !file.exists() )
-		{
 			log.html( Tools.errorMessage( "'" + directory + "' does not exist !" ) );
-		}
+
 		scanPomFiles( file, session, log, pomFiles );
 
 		Set<Project> unresolvableProjects = new HashSet<>();
@@ -48,9 +47,7 @@ public class PomAnalyzer
 				loadedProjects.add( project );
 		}
 
-		log.html( "fetching additional projects (parents and boms)<br/>" );
-
-		PomGraphWriteTransaction tx = session.graph().write();
+		log.html( "loaded " + loadedProjects.size() + " projects, fetching missing parents and boms<br/>" );
 
 		Set<Project> toGraphProjects = new HashSet<>();
 		for( Project project : loadedProjects )
@@ -61,6 +58,10 @@ public class PomAnalyzer
 				unresolvableProjects.add( project );
 		}
 
+		log.html( "fetched missing projects, " + toGraphProjects.size() + " resolved projects and " + unresolvableProjects.size() + " unresolved projects<br/>" );
+
+		log.html( "adding projects to graph" );
+		PomGraphWriteTransaction tx = session.graph().write();
 		for( Project project : toGraphProjects )
 		{
 			addProjectToGraph( project, tx, fetchMissingProjects, online, session, log );
@@ -75,20 +76,17 @@ public class PomAnalyzer
 
 		if( verbose )
 		{
-			log.html( "<br/>Loaded projects:<br/>" );
+			log.html( "<br/>loaded projects:<br/>" );
 			loadedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
 		}
 
-		log.html( "<br/>analysis report:<br/>" + loadedProjects.size() + " projects loaded and added to the pom graph,<br/>" + toGraphProjects.size()
-				+ " projects added to graph,<br/>in " + duration + " ms.<br/>" );
+		log.html( "<br/>analysis report:<br/>" + loadedProjects.size() + " projects loaded and added to the pom graph,<br/>" + toGraphProjects.size() + " projects added to graph,<br/>in " + duration + " ms.<br/>" );
 
 		if( !unresolvableProjects.isEmpty() )
 		{
 			StringBuilder sb = new StringBuilder();
-			sb.append( unresolvableProjects.size() + " unresolvable projects:<br/>" );
-			sb.append( "<ul>" );
-			unresolvableProjects.stream().sorted( Project.alphabeticalComparator ).forEach( g -> sb.append( "<li>" + g + "</li>" ) );
-			sb.append( "</ul>" );
+			sb.append( "<br/>" + unresolvableProjects.size() + " unresolvable projects:<br/>" );
+			unresolvableProjects.stream().sorted( Project.alphabeticalComparator ).forEach( g -> sb.append( "- " + g + "<br/>" ) );
 			log.html( sb.toString() );
 		}
 	}

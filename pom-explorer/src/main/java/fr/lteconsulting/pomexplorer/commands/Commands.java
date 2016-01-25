@@ -105,11 +105,11 @@ public class Commands
 	private static <T> T getAnnotation( Annotation[] annotations, Class<?> clazz )
 	{
 		if( annotations == null || annotations.length == 0 )
-			return null;
+			return (T) null;
 		for( Annotation a : annotations )
 			if( clazz.isAssignableFrom( a.getClass() ) )
 				return (T) a;
-		return null;
+		return (T) null;
 	}
 
 	/**

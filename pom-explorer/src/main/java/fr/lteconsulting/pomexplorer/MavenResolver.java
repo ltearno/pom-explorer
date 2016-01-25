@@ -77,7 +77,7 @@ public class MavenResolver
 
 		if( "pom".equals( extension ) && localRepositoryPath != null )
 		{
-			log.html( "<i>look-up in repo for artifact " + gav + "...</i><br/>" );
+			// log.html( "<i>look-up in repo for artifact " + gav + "...</i><br/>" );
 			Path path = Paths.get( localRepositoryPath );
 			String[] parts = gav.getGroupId().split( "\\." );
 			if( parts != null )
@@ -96,7 +96,7 @@ public class MavenResolver
 
 		if( pomFile == null && online )
 		{
-			log.html( "<i>downloading artifact " + gav + "...</i><br/>" );
+			// log.html( "<i>downloading artifact " + gav + "...</i><br/>" );
 			Artifact pomArtifact = new DefaultArtifact( gav.getGroupId(), gav.getArtifactId(), null, extension, gav.getVersion() );
 			try
 			{
