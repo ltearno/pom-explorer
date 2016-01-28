@@ -48,22 +48,4 @@ public class StatsCommand
 			}
 		}
 	}
-
-	@Help( "gives the details of the strongly connected components of the pom graph" )
-	public void strongComponents( Session session, Log log )
-	{
-		PomGraphReadTransaction tx = session.graph().read();
-
-		StrongConnectivityInspector<Gav, Relation> ccon = new StrongConnectivityInspector<>( tx.internalGraph() );
-		log.html( "There are " + ccon.stronglyConnectedSets().size() + " weakly connected components<br/>" );
-
-		for( Set<Gav> gavs : ccon.stronglyConnectedSets() )
-		{
-			log.html( "<br/>Set of connected GAVs :<br/>" );
-			for( Gav gav : gavs )
-			{
-				log.html( "- " + gav + "<br/>" );
-			}
-		}
-	}
 }
