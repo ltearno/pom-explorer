@@ -47,8 +47,14 @@ public class PomAnalyzer
 				loadedProjects.add( project );
 		}
 
-		log.html( "loaded " + loadedProjects.size() + " projects, fetching missing parents and boms<br/>" );
+		log.html( "loaded " + loadedProjects.size() + " projects<br/><br/>" );
+		if( verbose )
+		{
+			log.html( "<br/>loaded projects:<br/>" );
+			loadedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
+		}
 
+		log.html( "fetching missing parents and boms...<br/>" );
 		Set<Project> toGraphProjects = new HashSet<>();
 		for( Project project : loadedProjects )
 		{
@@ -73,12 +79,6 @@ public class PomAnalyzer
 		tx.commit();
 
 		duration = System.currentTimeMillis() - duration;
-
-		if( verbose )
-		{
-			log.html( "<br/>loaded projects:<br/>" );
-			loadedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
-		}
 
 		log.html( "<br/>analysis report:<br/>" + loadedProjects.size() + " projects loaded and added to the pom graph,<br/>" + toGraphProjects.size() + " projects added to graph,<br/>in " + duration + " ms.<br/>" );
 
