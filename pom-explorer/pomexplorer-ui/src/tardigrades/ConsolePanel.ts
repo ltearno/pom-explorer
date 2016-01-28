@@ -1,6 +1,7 @@
 "use strict";
 
 import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
+import { ElementNode, TemplateNode, TextNode, Cardinal, PointInfo } from "../../node_modules/tardigrade/target/engine/model";
 import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
@@ -28,17 +29,7 @@ class ConsolePanelTemplate {
     constructor() {
         
 
-        tardigradeEngine.addTemplate("ConsolePanel", tardigradeParser.parseTemplate(`<html>
-<body>
-<div class="console-panel">
-    <div x-id="output" class='console-output'></div>
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <input x-id="input" class="mdl-textfield__input" type="text" id="sample3">
-        <label class="mdl-textfield__label" for="sample3">enter a command, or just "?" to get help</label>
-    </div>
-</div>
-</body>
-</html>`));
+        tardigradeEngine.addTemplate("ConsolePanel", new ElementNode(null, <Cardinal>0, [""], "div", {"class": "console-panel"}, [new ElementNode("output", <Cardinal>0, [""], "div", {"class": "console-output"}, []), new ElementNode(null, <Cardinal>0, [""], "div", {"class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"}, [new ElementNode("input", <Cardinal>0, [""], "input", {"class": "mdl-textfield__input", "type": "text", "id": "sample3"}, []), new ElementNode(null, <Cardinal>0, [""], "label", {"class": "mdl-textfield__label", "for": "sample3"}, [new TextNode("enter a command, or just \"?\" to get help")])])]));
     }
 
     buildHtml(dto: ConsolePanelTemplateDto) {
@@ -47,6 +38,10 @@ class ConsolePanelTemplate {
 
     buildElement(dto: ConsolePanelTemplateDto) {
         return createElement(this.buildHtml(dto));
+    }
+
+    createElement(dto: ConsolePanelTemplateDto): ConsolePanelTemplateElement {
+        return this.of(this.buildElement(dto));
     }
 
     of(rootElement: HTMLElement): ConsolePanelTemplateElement {

@@ -1,6 +1,7 @@
 "use strict";
 
 import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
+import { ElementNode, TemplateNode, TextNode, Cardinal, PointInfo } from "../../node_modules/tardigrade/target/engine/model";
 import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
@@ -28,16 +29,7 @@ class ProjectPanelTemplate {
     constructor() {
         searchPanelTemplate.ensureLoaded();
 
-        tardigradeEngine.addTemplate("ProjectPanel", tardigradeParser.parseTemplate(`<html>
-<body>
-<div>
-    <SearchPanel>
-        <input x-id="searchInput"/>
-    </SearchPanel>
-    <div x-id="projectList" class='projects-list'></div>
-</div>
-</body>
-</html>`));
+        tardigradeEngine.addTemplate("ProjectPanel", new ElementNode(null, <Cardinal>0, [""], "div", {}, [new TemplateNode(null, <Cardinal>0, [""], "SearchPanel", {}, {"input": new PointInfo("searchInput", {}, [])}), new ElementNode("projectList", <Cardinal>0, [""], "div", {"class": "projects-list"}, [])]));
     }
 
     buildHtml(dto: ProjectPanelTemplateDto) {
@@ -46,6 +38,10 @@ class ProjectPanelTemplate {
 
     buildElement(dto: ProjectPanelTemplateDto) {
         return createElement(this.buildHtml(dto));
+    }
+
+    createElement(dto: ProjectPanelTemplateDto): ProjectPanelTemplateElement {
+        return this.of(this.buildElement(dto));
     }
 
     of(rootElement: HTMLElement): ProjectPanelTemplateElement {

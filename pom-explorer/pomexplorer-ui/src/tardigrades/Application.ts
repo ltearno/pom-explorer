@@ -1,6 +1,7 @@
 "use strict";
 
 import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
+import { ElementNode, TemplateNode, TextNode, Cardinal, PointInfo } from "../../node_modules/tardigrade/target/engine/model";
 import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
@@ -38,24 +39,7 @@ class ApplicationTemplate {
     constructor() {
         
 
-        tardigradeEngine.addTemplate("Application", tardigradeParser.parseTemplate(`<html>
-<body>
-<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-    <header class="mdl-layout__header">
-        <div class="mdl-layout__header-row">
-            <span class="mdl-layout-title">Pom Explorer</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="mdl-badge" data-badge="!">beta</span>
-        </div>
-    </header>
-    <div x-id="drawer" class="mdl-layout__drawer">
-        <span class="mdl-layout-title">Pom Explorer</span>
-        <nav x-id="menu" class="mdl-navigation">
-            <a x-id="menuItems" x-cardinal="*" class="mdl-navigation__link" href="#"/>
-        </nav>
-    </div>
-    <main x-id="content" class="mdl-layout__content content-repositionning"/>
-</div>
-</body>
-</html>`));
+        tardigradeEngine.addTemplate("Application", new ElementNode(null, <Cardinal>0, [""], "div", {"class": "mdl-layout mdl-js-layout mdl-layout--fixed-header"}, [new ElementNode(null, <Cardinal>0, [""], "header", {"class": "mdl-layout__header"}, [new ElementNode(null, <Cardinal>0, [""], "div", {"class": "mdl-layout__header-row"}, [new ElementNode(null, <Cardinal>0, [""], "span", {"class": "mdl-layout-title"}, [new TextNode("Pom Explorer")]), new TextNode("&nbsp;&nbsp;&nbsp;&nbsp;"), new ElementNode(null, <Cardinal>0, [""], "span", {"class": "mdl-badge", "data-badge": "!"}, [new TextNode("beta")])])]), new ElementNode("drawer", <Cardinal>0, [""], "div", {"class": "mdl-layout__drawer"}, [new ElementNode(null, <Cardinal>0, [""], "span", {"class": "mdl-layout-title"}, [new TextNode("Pom Explorer")]), new ElementNode("menu", <Cardinal>0, [""], "nav", {"class": "mdl-navigation"}, [new ElementNode("menuItems", <Cardinal>1, [""], "a", {"class": "mdl-navigation__link", "href": "#"}, [])])]), new ElementNode("content", <Cardinal>0, [""], "main", {"class": "mdl-layout__content content-repositionning"}, [])]));
     }
 
     buildHtml(dto: ApplicationTemplateDto) {
@@ -64,6 +48,10 @@ class ApplicationTemplate {
 
     buildElement(dto: ApplicationTemplateDto) {
         return createElement(this.buildHtml(dto));
+    }
+
+    createElement(dto: ApplicationTemplateDto): ApplicationTemplateElement {
+        return this.of(this.buildElement(dto));
     }
 
     of(rootElement: HTMLElement): ApplicationTemplateElement {

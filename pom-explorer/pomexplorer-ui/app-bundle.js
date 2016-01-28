@@ -5757,7 +5757,7 @@ function hasOwnProperty(obj, prop) {
                 },
                 content() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "content": 0 });
-                },
+                }
             };
             return domlet;
         }
@@ -5824,7 +5824,7 @@ function hasOwnProperty(obj, prop) {
                 },
                 actionBuild() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "actionBuild": 0 });
-                },
+                }
             };
             return domlet;
         }
@@ -5875,7 +5875,7 @@ function hasOwnProperty(obj, prop) {
                 },
                 input() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
-                },
+                }
             };
             return domlet;
         }
@@ -5927,7 +5927,7 @@ function hasOwnProperty(obj, prop) {
                 },
                 projectList() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
-                },
+                }
             };
             return domlet;
         }
@@ -5977,7 +5977,7 @@ function hasOwnProperty(obj, prop) {
                 _root() { return rootElement; },
                 input() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
-                },
+                }
             };
             return domlet;
         }
@@ -8831,10 +8831,15 @@ arguments[4][67][0].apply(exports,arguments)
             else if (node instanceof model_1.TemplateNode) {
                 for (let childPointName in node.children) {
                     let childPoint = node.children[childPointName];
-                    for (let childNode of childPoint.children) {
-                        let hit = this.findNode(childNode, nodeId);
-                        if (hit != null)
-                            return hit;
+                    if (!childPoint.children) {
+                        console.log('point ' + childPointName + ' has no child in template ' + node.name);
+                    }
+                    else {
+                        for (let childNode of childPoint.children) {
+                            let hit = this.findNode(childNode, nodeId);
+                            if (hit != null)
+                                return hit;
+                        }
                     }
                 }
             }
@@ -9140,18 +9145,38 @@ arguments[4][67][0].apply(exports,arguments)
     })(exports.Cardinal || (exports.Cardinal = {}));
     var Cardinal = exports.Cardinal;
     class Node {
+        constructor(parent) {
+            this.parent = parent;
+        }
         visitDeep(visitor) {
             return visitDeep(this, visitor);
         }
     }
     exports.Node = Node;
     class TextNode extends Node {
+        constructor(parent, text) {
+            super(parent);
+            this.parent = parent;
+            this.text = text;
+        }
         log(prefix) {
             console.log(`${prefix}TEXT ${this.text}`);
+        }
+        quine() {
+            return this.text.replace('"', '\\\"');
         }
     }
     exports.TextNode = TextNode;
     class ParentNode extends Node {
+        constructor(parent, xId, xCardinal, xOptions, name, attributes) {
+            super(parent);
+            this.parent = parent;
+            this.xId = xId;
+            this.xCardinal = xCardinal;
+            this.xOptions = xOptions;
+            this.name = name;
+            this.attributes = attributes;
+        }
         logBase() {
             var a = [];
             if (this.attributes != null) {
@@ -9191,14 +9216,37 @@ arguments[4][67][0].apply(exports,arguments)
     }
     exports.ParentNode = ParentNode;
     class ElementNode extends ParentNode {
+        constructor(parent, xId, xCardinal, xOptions, name, attributes, children = []) {
+            super(parent, xId, xCardinal, xOptions, name, attributes);
+            this.parent = parent;
+            this.xId = xId;
+            this.xCardinal = xCardinal;
+            this.xOptions = xOptions;
+            this.name = name;
+            this.attributes = attributes;
+            this.children = children;
+        }
         log(prefix) {
             console.log(`${prefix}${this.logBase()}`);
             for (var c of this.children)
                 c.log(prefix + "  ");
         }
+        quine() {
+            return "ELEMENTNODE";
+        }
     }
     exports.ElementNode = ElementNode;
     class TemplateNode extends ParentNode {
+        constructor(parent, xId, xCardinal, xOptions, name, attributes, children = {}) {
+            super(parent, xId, xCardinal, xOptions, name, attributes);
+            this.parent = parent;
+            this.xId = xId;
+            this.xCardinal = xCardinal;
+            this.xOptions = xOptions;
+            this.name = name;
+            this.attributes = attributes;
+            this.children = children;
+        }
         log(prefix) {
             console.log(`${prefix}template ${this.logBase()}`);
             for (var point in this.children) {
@@ -9208,6 +9256,9 @@ arguments[4][67][0].apply(exports,arguments)
                         child.log(prefix + "    ");
                 }
             }
+        }
+        quine() {
+            return "TEMPLATENODE";
         }
     }
     exports.TemplateNode = TemplateNode;
@@ -9250,31 +9301,18 @@ arguments[4][67][0].apply(exports,arguments)
             //htmlTree.log("> ");
             return this.buildNode(htmlTree, null);
         }
-        fillParentNode(node, html) {
-            node.name = html.name;
-            node.xId = html.attributes['x-id'] || null;
-            node.xCardinal = (html.attributes['x-cardinal'] || null) === "*" ? model_1.Cardinal.Multiple : model_1.Cardinal.Single;
-            node.xOptions = (html.attributes['x-options'] || "").split(",");
-            node.attributes = html.attributes;
-            delete node.attributes['x-id'];
-            delete node.attributes['x-cardinal'];
-            delete node.attributes['x-options'];
-            if (node.xCardinal == model_1.Cardinal.Multiple && node.xId == null)
-                console.log("ERROR ! Nodes with cardinal * should have an id !");
-        }
         buildNode(html, parentObject) {
             var firstLetter = html.name[0];
+            let realAttributes = JSON.parse(JSON.stringify(html.attributes));
+            delete realAttributes.attributes['x-id'];
+            delete realAttributes.attributes['x-cardinal'];
+            delete realAttributes.attributes['x-options'];
             if (firstLetter !== firstLetter.toUpperCase()) {
-                var elementNode = new model_1.ElementNode();
-                elementNode.parent = parentObject;
-                this.fillParentNode(elementNode, html);
-                elementNode.children = [];
+                var elementNode = new model_1.ElementNode(parentObject, html.attributes['x-id'] || null, (html.attributes['x-cardinal'] || null) === "*" ? model_1.Cardinal.Multiple : model_1.Cardinal.Single, (html.attributes['x-options'] || "").split(","), html.name, realAttributes);
                 if (html.children != null) {
                     for (var child of html.children) {
                         if (child instanceof DomTextNode) {
-                            var textNode = new model_1.TextNode();
-                            textNode.parent = elementNode;
-                            textNode.text = child.text;
+                            var textNode = new model_1.TextNode(elementNode, child.text);
                             elementNode.children.push(textNode);
                         }
                         else if (child instanceof DomElementNode) {
@@ -9285,10 +9323,7 @@ arguments[4][67][0].apply(exports,arguments)
                 return elementNode;
             }
             else {
-                var templateNode = new model_1.TemplateNode();
-                templateNode.parent = parentObject;
-                this.fillParentNode(templateNode, html);
-                templateNode.children = {};
+                var templateNode = new model_1.TemplateNode(parentObject, html.attributes['x-id'] || null, (html.attributes['x-cardinal'] || null) === "*" ? model_1.Cardinal.Multiple : model_1.Cardinal.Single, (html.attributes['x-options'] || "").split(","), html.name, realAttributes);
                 if (html.children != null) {
                     for (var child of html.children) {
                         if (child instanceof DomElementNode) {
@@ -9306,9 +9341,7 @@ arguments[4][67][0].apply(exports,arguments)
                                     pointInformation.addChild(this.buildNode(pointContentElement, pointInformation));
                                 }
                                 else if (pointContentElement instanceof DomTextNode) {
-                                    var textNode = new model_1.TextNode();
-                                    textNode.parent = pointInformation;
-                                    textNode.text = pointContentElement.text;
+                                    var textNode = new model_1.TextNode(pointInformation, pointContentElement.text);
                                     pointInformation.addChild(textNode);
                                 }
                             }
@@ -9423,10 +9456,6 @@ arguments[4][67][0].apply(exports,arguments)
         return null;
     }
     exports.domChain = domChain;
-    function insertHtml(element, html) {
-        element.innerHTML = html;
-        return element.children[0];
-    }
     function createElement(html) {
         var element = document.createElement("div");
         if (html.indexOf("<tr") === 0) {
@@ -9439,7 +9468,8 @@ arguments[4][67][0].apply(exports,arguments)
             element.innerHTML = html;
             return element.children[0].children[0].children[0].children[0];
         }
-        return insertHtml(element, html);
+        element.innerHTML = html;
+        return element.children[0];
     }
     exports.createElement = createElement;
 });
