@@ -20,9 +20,9 @@ version?: any;
 
 export interface GavTemplateElement {
     _root(): HTMLElement;
-    groupId(): HTMLElement;
-artifactId(): HTMLElement;
-version(): HTMLElement;
+    groupId(): HTMLDivElement;
+artifactId(): HTMLDivElement;
+version(): HTMLDivElement;
 }
 
 class GavTemplate {
@@ -32,7 +32,7 @@ class GavTemplate {
     constructor() {
         
 
-        tardigradeEngine.addTemplate("Gav", new ElementNode(null, <Cardinal>0, [""], "h2", {}, [new ElementNode("groupId", <Cardinal>0, [""], "span", {}, []), new TextNode(":"), new ElementNode("artifactId", <Cardinal>0, [""], "span", {}, []), new TextNode(":"), new ElementNode("version", <Cardinal>0, [""], "span", {}, [])]));
+        tardigradeEngine.addTemplate("Gav", new ElementNode(null, <Cardinal>0, [""], "h2", {"class": "mdl-card__title-text"}, [new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode("groupId", <Cardinal>0, [""], "div", {}, []), new ElementNode("artifactId", <Cardinal>0, [""], "div", {}, []), new ElementNode("version", <Cardinal>0, [""], "div", {}, [])])]));
     }
 
     buildHtml(dto: GavTemplateDto) {
@@ -51,14 +51,14 @@ class GavTemplate {
         let domlet = {
             _root() { return rootElement; },
 
-            groupId(): HTMLElement{
-return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Gav", { "groupId": 0 });
+            groupId(): HTMLDivElement{
+return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Gav", { "groupId": 0 });
 },
-artifactId(): HTMLElement{
-return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Gav", { "artifactId": 0 });
+artifactId(): HTMLDivElement{
+return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Gav", { "artifactId": 0 });
 },
-version(): HTMLElement{
-return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Gav", { "version": 0 });
+version(): HTMLDivElement{
+return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Gav", { "version": 0 });
 }
         };
 

@@ -47,8 +47,10 @@ export class ProjectPanel implements IWorkPanel {
                     for (var pi in list) {
                         var project = list[pi];
 
-                        var title = "";
-                        title += project.gav.split(":").join("<br/>");
+                        let parts = project.gav.split(":");
+                        let groupId = parts[0];
+                        let artifactId = parts[1];
+                        let version = parts[2];
 
                         var content = "";
                         if (project.buildable)
@@ -100,7 +102,7 @@ export class ProjectPanel implements IWorkPanel {
                         }
 
                         htmlString += cardTemplate.buildHtml({
-                            title: title,
+                            gav: { groupId: groupId, artifactId: artifactId, version: version },
                             content: content,
                             details: details
                         });
