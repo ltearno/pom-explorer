@@ -27,8 +27,8 @@
 .project-card.mdl-card {
     flex-grow: 1;
     flex-shrink: 1;
-    width: 25%;
-    min-width: 250px;
+    min-width: 30em;
+    max-width: 95%;
 }
 
 .project-card > .mdl-card__title {
@@ -48,6 +48,7 @@ span { font-style: italic; }
     flex-flow: row wrap;
     align-items: flex-start;
     align-content: space-around;
+    justify-content: space-around;
 }
 
 .projects-list > div { margin: 1em; }

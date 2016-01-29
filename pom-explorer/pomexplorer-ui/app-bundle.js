@@ -190,19 +190,27 @@
                     return;
                 let card = this.domlet.cardsDomlet(cardIndex);
                 var dc = runtime_1.domChain(card._root(), event.target);
-                if (Array.prototype.indexOf.call(dc, card.gav()) >= 0) {
-                    let popup = Popup_1.popupTemplate.createElement({
-                        content: ChangeGavCard_1.changeGavCardTemplate.buildHtml({
-                            groupId: "yo",
-                            artifactId: "yi",
-                            version: "yyy",
-                            "@groupIdInput": { "value": "gid" },
-                            "@versionInput": { "value": "v" },
-                            "@artifactIdInput": { "value": "aid" }
-                        })
+                let project = card._root().project;
+                let parts = project.gav.split(":");
+                let groupId = parts[0];
+                let artifactId = parts[1];
+                let version = parts[2];
+                if ((Array.prototype.indexOf.call(dc, card.gav()) >= 0) || (Array.prototype.indexOf.call(dc, card.edit()) >= 0)) {
+                    let changeCard = ChangeGavCard_1.changeGavCardTemplate.createElement({
+                        groupId: groupId,
+                        artifactId: artifactId,
+                        version: version,
+                        "@groupIdInput": { "value": groupId },
+                        "@artifactIdInput": { "value": artifactId },
+                        "@versionInput": { "value": version }
                     });
-                    Utils_1.initMaterialElement(popup.content());
+                    Utils_1.initMaterialElement(changeCard._root());
+                    let popup = Popup_1.popupTemplate.createElement({});
+                    popup.content().appendChild(changeCard._root());
                     document.getElementsByTagName('body')[0].appendChild(popup._root());
+                    changeCard.actionCancel().addEventListener("click", event => {
+                        popup._root().remove();
+                    });
                 }
             });
             Utils_1.rx.Observable.fromEvent(this.domlet.searchInput(), "input")
@@ -276,6 +284,11 @@
                     }
                     this.domlet.projectList().innerHTML = htmlString;
                     Utils_1.initMaterialElement(this.domlet.projectList());
+                    let elements = this.domlet.projectList().children;
+                    for (var pi in list) {
+                        var project = list[pi];
+                        elements.item(pi).project = project;
+                    }
                 });
             });
         }
@@ -630,7 +643,7 @@
         constructor() {
             BaseCard_1.baseCardTemplate.ensureLoaded();
             Gav_1.gavTemplate.ensureLoaded();
-            engine_1.tardigradeEngine.addTemplate("Card", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TemplateNode("gav", 0, ["export"], "Gav", { "class": "mdl-card__title-text" }, { "groupId": new model_1.PointInfo("gavGroupId", {}, []), "artifactId": new model_1.PointInfo("gavArtifactId", {}, []), "version": new model_1.PointInfo("gavVersion", {}, []) })]), "content": new model_1.PointInfo("content", {}, []), "details": new model_1.PointInfo("details", {}, []), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionDetails", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Details")]), new model_1.ElementNode("actionBuild", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Build")])]) }));
+            engine_1.tardigradeEngine.addTemplate("Card", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TemplateNode("gav", 0, ["export"], "Gav", { "class": "mdl-card__title-text" }, { "groupId": new model_1.PointInfo("gavGroupId", {}, []), "artifactId": new model_1.PointInfo("gavArtifactId", {}, []), "version": new model_1.PointInfo("gavVersion", {}, []) }), new model_1.ElementNode("edit", 0, [""], "i", { "class": "material-icons" }, [new model_1.TextNode("mode_edit")])]), "content": new model_1.PointInfo("content", {}, []), "details": new model_1.PointInfo("details", {}, []), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionDetails", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Details")]), new model_1.ElementNode("actionBuild", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Build")])]) }));
         }
         ensureLoaded() {
         }
@@ -661,6 +674,9 @@
                 },
                 gavVersion() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "gavVersion": 0 });
+                },
+                edit() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "edit": 0 });
                 },
                 content() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "content": 0 });
@@ -701,7 +717,7 @@
     class ChangeGavCardTemplate {
         constructor() {
             BaseCard_1.baseCardTemplate.ensureLoaded();
-            engine_1.tardigradeEngine.addTemplate("ChangeGavCard", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TextNode("Changing GAV of"), new model_1.ElementNode("groupId", 0, [""], "span", {}, []), new model_1.TextNode(":"), new model_1.ElementNode("artifactId", 0, [""], "span", {}, []), new model_1.TextNode(":"), new model_1.ElementNode("version", 0, [""], "span", {}, [])]), "content": new model_1.PointInfo(null, {}, [new model_1.TextNode("You can change this GAV and all projects linked to it will be updated. By now,"), new model_1.ElementNode(null, 0, [""], "b", {}, [new model_1.TextNode("NO CHANGE IS APPLIED")]), new model_1.TextNode("until            you go in the Change tab and validate."), new model_1.ElementNode(null, 0, [""], "br", {}, []), new model_1.TextNode("Enter the new coordinates for this GAV :"), new model_1.ElementNode(null, 0, [""], "br", {}, []), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("groupIdInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "groupId" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "groupId" }, [new model_1.TextNode("groupId")])]), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("artifactIdInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "artifactId" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "artifactId" }, [new model_1.TextNode("artifactId")])]), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("versionInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "version" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "version" }, [new model_1.TextNode("version")])])]), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionCancel", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Cancel")]), new model_1.ElementNode("actionValidate", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Ok, store the change")])]) }));
+            engine_1.tardigradeEngine.addTemplate("ChangeGavCard", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TextNode("Changing&nbsp;"), new model_1.ElementNode("groupId", 0, [""], "span", {}, []), new model_1.TextNode(":"), new model_1.ElementNode("artifactId", 0, [""], "span", {}, []), new model_1.TextNode(":"), new model_1.ElementNode("version", 0, [""], "span", {}, [])]), "content": new model_1.PointInfo(null, {}, [new model_1.TextNode("You can change this GAV and all projects linked to it will be updated. By now,"), new model_1.ElementNode(null, 0, [""], "b", {}, [new model_1.TextNode("NO CHANGE IS APPLIED")]), new model_1.TextNode("until            you go in the Change tab and validate."), new model_1.ElementNode(null, 0, [""], "br", {}, []), new model_1.TextNode("Enter the new coordinates for this GAV :"), new model_1.ElementNode(null, 0, [""], "br", {}, []), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("groupIdInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "groupId" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "groupId" }, [new model_1.TextNode("groupId")])]), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("artifactIdInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "artifactId" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "artifactId" }, [new model_1.TextNode("artifactId")])]), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("versionInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "version" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "version" }, [new model_1.TextNode("version")])])]), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionCancel", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Cancel")]), new model_1.ElementNode("actionValidate", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Ok, store the change")])]) }));
         }
         ensureLoaded() {
         }

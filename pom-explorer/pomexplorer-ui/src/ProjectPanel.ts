@@ -47,21 +47,31 @@ export class ProjectPanel implements IWorkPanel {
             let card = this.domlet.cardsDomlet(cardIndex);
             var dc = domChain(card._root(), event.target as HTMLElement);
 
-            if (Array.prototype.indexOf.call(dc, card.gav()) >= 0) {
-                let popup = popupTemplate.createElement({
-                    content: changeGavCardTemplate.buildHtml({
-                        groupId: "yo",
-                        artifactId: "yi",
-                        version: "yyy",
-                        "@groupIdInput": { "value": "gid" },
-                        "@versionInput": { "value": "v" },
-                        "@artifactIdInput": { "value": "aid" }
-                    })
-                });
+            let project = (card._root() as any).project;
+            let parts = project.gav.split(":");
+            let groupId = parts[0];
+            let artifactId = parts[1];
+            let version = parts[2];
 
-                initMaterialElement(popup.content());
+            if ((Array.prototype.indexOf.call(dc, card.gav()) >= 0) || (Array.prototype.indexOf.call(dc, card.edit()) >= 0)) {
+                let changeCard = changeGavCardTemplate.createElement({
+                    groupId: groupId,
+                    artifactId: artifactId,
+                    version: version,
+                    "@groupIdInput": { "value": groupId },
+                    "@artifactIdInput": { "value": artifactId },
+                    "@versionInput": { "value": version }
+                });
+                initMaterialElement(changeCard._root());
+
+                let popup = popupTemplate.createElement({});
+                popup.content().appendChild(changeCard._root());
 
                 document.getElementsByTagName('body')[0].appendChild(popup._root());
+
+                changeCard.actionCancel().addEventListener("click", event => {
+                    popup._root().remove();
+                });
             }
         });
 
@@ -144,6 +154,13 @@ export class ProjectPanel implements IWorkPanel {
 
                     this.domlet.projectList().innerHTML = htmlString;
                     initMaterialElement(this.domlet.projectList());
+
+                    let elements = this.domlet.projectList().children;
+                    for (var pi in list) {
+                        var project = list[pi];
+
+                        (elements.item(pi) as any).project = project;
+                    }
                 });
             });
     }

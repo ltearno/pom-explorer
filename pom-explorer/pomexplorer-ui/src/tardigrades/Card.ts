@@ -18,6 +18,8 @@ gavArtifactId?: any;
 "@gavArtifactId"?: any;
 gavVersion?: any;
 "@gavVersion"?: any;
+edit?: any;
+"@edit"?: any;
 content?: any;
 "@content"?: any;
 details?: any;
@@ -38,6 +40,7 @@ gavDomlet(): GavTemplateElement;
 gavGroupId(): HTMLElement;
 gavArtifactId(): HTMLElement;
 gavVersion(): HTMLElement;
+edit(): HTMLElement;
 content(): HTMLElement;
 details(): HTMLElement;
 actions(): HTMLElement;
@@ -53,7 +56,7 @@ class CardTemplate {
         baseCardTemplate.ensureLoaded();
 gavTemplate.ensureLoaded();
 
-        tardigradeEngine.addTemplate("Card", new TemplateNode(null, <Cardinal>0, [""], "BaseCard", {}, {"title": new PointInfo(null, {}, [new TemplateNode("gav", <Cardinal>0, ["export"], "Gav", {"class": "mdl-card__title-text"}, {"groupId": new PointInfo("gavGroupId", {}, []), "artifactId": new PointInfo("gavArtifactId", {}, []), "version": new PointInfo("gavVersion", {}, [])})]), "content": new PointInfo("content", {}, []), "details": new PointInfo("details", {}, []), "actions": new PointInfo("actions", {}, [new ElementNode("actionDetails", <Cardinal>0, [""], "a", {"class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"}, [new TextNode("Details")]), new ElementNode("actionBuild", <Cardinal>0, [""], "a", {"class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"}, [new TextNode("Build")])])}));
+        tardigradeEngine.addTemplate("Card", new TemplateNode(null, <Cardinal>0, [""], "BaseCard", {}, {"title": new PointInfo(null, {}, [new TemplateNode("gav", <Cardinal>0, ["export"], "Gav", {"class": "mdl-card__title-text"}, {"groupId": new PointInfo("gavGroupId", {}, []), "artifactId": new PointInfo("gavArtifactId", {}, []), "version": new PointInfo("gavVersion", {}, [])}), new ElementNode("edit", <Cardinal>0, [""], "i", {"class": "material-icons"}, [new TextNode("mode_edit")])]), "content": new PointInfo("content", {}, []), "details": new PointInfo("details", {}, []), "actions": new PointInfo("actions", {}, [new ElementNode("actionDetails", <Cardinal>0, [""], "a", {"class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"}, [new TextNode("Details")]), new ElementNode("actionBuild", <Cardinal>0, [""], "a", {"class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"}, [new TextNode("Build")])])}));
     }
 
     buildHtml(dto: CardTemplateDto) {
@@ -87,6 +90,9 @@ return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "gavArtifac
 },
 gavVersion(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "gavVersion": 0 });
+},
+edit(): HTMLElement{
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "edit": 0 });
 },
 content(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "content": 0 });
