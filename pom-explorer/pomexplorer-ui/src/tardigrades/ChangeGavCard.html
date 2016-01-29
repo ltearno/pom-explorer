@@ -1,0 +1,36 @@
+<html>
+
+<body>
+    <BaseCard>
+        <title>
+            Changing GAV of <span x-id="groupId" />:<span x-id="artifactId" />:<span x-id="version" />
+        </title>
+        <content>
+            You can change this GAV and all projects linked to it will be updated. By now, <b>NO CHANGE IS APPLIED</b> until
+            you go in the Change tab and validate.
+            <br/> Enter the new coordinates for this GAV :
+            <br/>
+
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="display:block;">
+                <input x-id="groupIdInput" class="mdl-textfield__input" type="text" id="groupId" />
+                <label class="mdl-textfield__label" for="groupId">groupId</label>
+            </div>
+
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="display:block;">
+                <input x-id="artifactIdInput" class="mdl-textfield__input" type="text" id="artifactId" />
+                <label class="mdl-textfield__label" for="artifactId">artifactId</label>
+            </div>
+
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="display:block;">
+                <input x-id="versionInput" class="mdl-textfield__input" type="text" id="version" />
+                <label class="mdl-textfield__label" for="version">version</label>
+            </div>
+        </content>
+        <actions x-id="actions">
+            <a x-id="actionCancel" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Cancel</a>
+            <a x-id="actionValidate" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Ok, store the change</a>
+        </actions>
+    </BaseCard>
+</body>
+
+</html>

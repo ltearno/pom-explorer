@@ -1,11 +1,14 @@
 "use strict";
 
 import { cardTemplate } from "./tardigrades/Card";
+import { baseCardTemplate } from "./tardigrades/BaseCard";
+import { changeGavCardTemplate } from "./tardigrades/ChangeGavCard";
 import { initMaterialElement, rx } from "./Utils";
 import { Service, Status, Message, ServiceCallback } from "./Service";
 import { createElement, domChain, indexOf } from "../node_modules/tardigrade/target/engine/runtime";
 import { IWorkPanel } from "./IWorkPanel";
 import { projectPanelTemplate, ProjectPanelTemplateElement } from "./tardigrades/ProjectPanel";
+import { popupTemplate, PopupTemplateElement } from "./tardigrades/Popup";
 
 
 export class ProjectPanel implements IWorkPanel {
@@ -20,14 +23,45 @@ export class ProjectPanel implements IWorkPanel {
         this.service = service;
 
         this.domlet.projectList().addEventListener("click", event => {
-            var dc = domChain(this.domlet.projectList(), event.target as HTMLElement);
-            var card = cardTemplate.of(dc[1]);
-            var cardDetailsButton = card.actionDetails();
-            if (Array.prototype.indexOf.call(dc, cardDetailsButton) >= 0) {
+            let cardIndex = this.domlet.cardsIndex(event.target as HTMLElement);
+            if (cardIndex < 0)
+                return;
+
+            let card = this.domlet.cardsDomlet(cardIndex);
+            var dc = domChain(card._root(), event.target as HTMLElement);
+
+            // details button
+            if (Array.prototype.indexOf.call(dc, card.actionDetails()) >= 0) {
                 if (card.details().style.display === "none")
                     card.details().style.display = null;
                 else
                     card.details().style.display = "none";
+            }
+        });
+
+        this.domlet.projectList().addEventListener("dblclick", event => {
+            let cardIndex = this.domlet.cardsIndex(event.target as HTMLElement);
+            if (cardIndex < 0)
+                return;
+
+            let card = this.domlet.cardsDomlet(cardIndex);
+            var dc = domChain(card._root(), event.target as HTMLElement);
+
+            if (Array.prototype.indexOf.call(dc, card.gav()) >= 0) {
+                let popup = popupTemplate.createElement({
+                    content: changeGavCardTemplate.buildHtml({
+                        groupId: "yo",
+                        artifactId: "yi",
+                        version: "yyy",
+                        "@groupIdInput": { "value": "gid" },
+                        "@versionInput": { "value": "v" },
+                        "@artifactIdInput": { "value": "aid" }
+                    })
+                });
+
+                initMaterialElement(popup.content());
+
+                document.getElementsByTagName('body')[0].appendChild(popup._root());
             }
         });
 

@@ -149,34 +149,60 @@
     exports.ConsolePanel = ConsolePanel;
 });
 
-},{"./Utils":5,"./tardigrades/ConsolePanel":9}],3:[function(require,module,exports){
+},{"./Utils":5,"./tardigrades/ConsolePanel":11}],3:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./tardigrades/Card", "./Utils", "../node_modules/tardigrade/target/engine/runtime", "./tardigrades/ProjectPanel"], factory);
+        define(["require", "exports", "./tardigrades/Card", "./tardigrades/ChangeGavCard", "./Utils", "../node_modules/tardigrade/target/engine/runtime", "./tardigrades/ProjectPanel", "./tardigrades/Popup"], factory);
     }
 })(function (require, exports) {
     "use strict";
     var Card_1 = require("./tardigrades/Card");
+    var ChangeGavCard_1 = require("./tardigrades/ChangeGavCard");
     var Utils_1 = require("./Utils");
     var runtime_1 = require("../node_modules/tardigrade/target/engine/runtime");
     var ProjectPanel_1 = require("./tardigrades/ProjectPanel");
+    var Popup_1 = require("./tardigrades/Popup");
     class ProjectPanel {
         constructor(service) {
             this.domlet = ProjectPanel_1.projectPanelTemplate.of(ProjectPanel_1.projectPanelTemplate.buildElement({}));
             Utils_1.initMaterialElement(this.domlet._root());
             this.service = service;
             this.domlet.projectList().addEventListener("click", event => {
-                var dc = runtime_1.domChain(this.domlet.projectList(), event.target);
-                var card = Card_1.cardTemplate.of(dc[1]);
-                var cardDetailsButton = card.actionDetails();
-                if (Array.prototype.indexOf.call(dc, cardDetailsButton) >= 0) {
+                let cardIndex = this.domlet.cardsIndex(event.target);
+                if (cardIndex < 0)
+                    return;
+                let card = this.domlet.cardsDomlet(cardIndex);
+                var dc = runtime_1.domChain(card._root(), event.target);
+                // details button
+                if (Array.prototype.indexOf.call(dc, card.actionDetails()) >= 0) {
                     if (card.details().style.display === "none")
                         card.details().style.display = null;
                     else
                         card.details().style.display = "none";
+                }
+            });
+            this.domlet.projectList().addEventListener("dblclick", event => {
+                let cardIndex = this.domlet.cardsIndex(event.target);
+                if (cardIndex < 0)
+                    return;
+                let card = this.domlet.cardsDomlet(cardIndex);
+                var dc = runtime_1.domChain(card._root(), event.target);
+                if (Array.prototype.indexOf.call(dc, card.gav()) >= 0) {
+                    let popup = Popup_1.popupTemplate.createElement({
+                        content: ChangeGavCard_1.changeGavCardTemplate.buildHtml({
+                            groupId: "yo",
+                            artifactId: "yi",
+                            version: "yyy",
+                            "@groupIdInput": { "value": "gid" },
+                            "@versionInput": { "value": "v" },
+                            "@artifactIdInput": { "value": "aid" }
+                        })
+                    });
+                    Utils_1.initMaterialElement(popup.content());
+                    document.getElementsByTagName('body')[0].appendChild(popup._root());
                 }
             });
             Utils_1.rx.Observable.fromEvent(this.domlet.searchInput(), "input")
@@ -263,7 +289,7 @@
     exports.ProjectPanel = ProjectPanel;
 });
 
-},{"../node_modules/tardigrade/target/engine/runtime":15,"./Utils":5,"./tardigrades/Card":8,"./tardigrades/ProjectPanel":11}],4:[function(require,module,exports){
+},{"../node_modules/tardigrade/target/engine/runtime":18,"./Utils":5,"./tardigrades/Card":9,"./tardigrades/ChangeGavCard":10,"./tardigrades/Popup":13,"./tardigrades/ProjectPanel":14}],4:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -535,24 +561,76 @@
     exports.applicationTemplate = new ApplicationTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":13,"../../node_modules/tardigrade/target/engine/model":14,"../../node_modules/tardigrade/target/engine/runtime":15}],8:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],8:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/model", "../../node_modules/tardigrade/target/engine/runtime", "./Gav"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/model", "../../node_modules/tardigrade/target/engine/runtime"], factory);
     }
 })(function (require, exports) {
     "use strict";
     var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
     var model_1 = require("../../node_modules/tardigrade/target/engine/model");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
+    class BaseCardTemplate {
+        constructor() {
+            engine_1.tardigradeEngine.addTemplate("BaseCard", new model_1.ElementNode(null, 0, [""], "div", { "class": "project-card mdl-card mdl-shadow--2dp" }, [new model_1.ElementNode("title", 0, [""], "div", { "class": "mdl-card__title mdl-card--expand" }, []), new model_1.ElementNode("content", 0, [""], "div", { "class": "mdl-card__supporting-text" }, []), new model_1.ElementNode("details", 0, [""], "div", { "class": "mdl-card__supporting-text", "style": "display:none;" }, []), new model_1.ElementNode("actions", 0, [""], "div", { "class": "mdl-card__actions mdl-card--border" }, [])]));
+        }
+        ensureLoaded() {
+        }
+        buildHtml(dto) {
+            return engine_1.tardigradeEngine.buildHtml("BaseCard", dto);
+        }
+        buildElement(dto) {
+            return runtime_1.createElement(this.buildHtml(dto));
+        }
+        createElement(dto) {
+            return this.of(this.buildElement(dto));
+        }
+        of(rootElement) {
+            let domlet = {
+                _root() { return rootElement; },
+                title() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "BaseCard", { "title": 0 });
+                },
+                content() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "BaseCard", { "content": 0 });
+                },
+                details() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "BaseCard", { "details": 0 });
+                },
+                actions() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "BaseCard", { "actions": 0 });
+                }
+            };
+            return domlet;
+        }
+    }
+    exports.baseCardTemplate = new BaseCardTemplate();
+});
+
+},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],9:[function(require,module,exports){
+(function (factory) {
+    if (typeof module === 'object' && typeof module.exports === 'object') {
+        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === 'function' && define.amd) {
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/model", "../../node_modules/tardigrade/target/engine/runtime", "./BaseCard", "./Gav"], factory);
+    }
+})(function (require, exports) {
+    "use strict";
+    var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
+    var model_1 = require("../../node_modules/tardigrade/target/engine/model");
+    var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
+    var BaseCard_1 = require("./BaseCard");
     var Gav_1 = require("./Gav");
     class CardTemplate {
         constructor() {
+            BaseCard_1.baseCardTemplate.ensureLoaded();
             Gav_1.gavTemplate.ensureLoaded();
-            engine_1.tardigradeEngine.addTemplate("Card", new model_1.ElementNode(null, 0, [""], "div", { "class": "project-card mdl-card mdl-shadow--2dp" }, [new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-card__title mdl-card--expand" }, [new model_1.TemplateNode("gav", 0, ["export"], "Gav", { "class": "mdl-card__title-text" }, { "groupId": new model_1.PointInfo("gavGroupId", {}, []), "artifactId": new model_1.PointInfo("gavArtifactId", {}, []), "version": new model_1.PointInfo("gavVersion", {}, []) })]), new model_1.ElementNode("content", 0, [""], "div", { "class": "mdl-card__supporting-text" }, []), new model_1.ElementNode("details", 0, [""], "div", { "class": "mdl-card__supporting-text", "style": "display:none;" }, []), new model_1.ElementNode("actions", 0, [""], "div", { "class": "mdl-card__actions mdl-card--border" }, [new model_1.ElementNode("actionDetails", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Details")]), new model_1.ElementNode("actionBuild", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Build")])])]));
+            engine_1.tardigradeEngine.addTemplate("Card", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TemplateNode("gav", 0, ["export"], "Gav", { "class": "mdl-card__title-text" }, { "groupId": new model_1.PointInfo("gavGroupId", {}, []), "artifactId": new model_1.PointInfo("gavArtifactId", {}, []), "version": new model_1.PointInfo("gavVersion", {}, []) })]), "content": new model_1.PointInfo("content", {}, []), "details": new model_1.PointInfo("details", {}, []), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionDetails", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Details")]), new model_1.ElementNode("actionBuild", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Build")])]) }));
         }
         ensureLoaded() {
         }
@@ -606,7 +684,74 @@
     exports.cardTemplate = new CardTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":13,"../../node_modules/tardigrade/target/engine/model":14,"../../node_modules/tardigrade/target/engine/runtime":15,"./Gav":10}],9:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18,"./BaseCard":8,"./Gav":12}],10:[function(require,module,exports){
+(function (factory) {
+    if (typeof module === 'object' && typeof module.exports === 'object') {
+        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === 'function' && define.amd) {
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/model", "../../node_modules/tardigrade/target/engine/runtime", "./BaseCard"], factory);
+    }
+})(function (require, exports) {
+    "use strict";
+    var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
+    var model_1 = require("../../node_modules/tardigrade/target/engine/model");
+    var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
+    var BaseCard_1 = require("./BaseCard");
+    class ChangeGavCardTemplate {
+        constructor() {
+            BaseCard_1.baseCardTemplate.ensureLoaded();
+            engine_1.tardigradeEngine.addTemplate("ChangeGavCard", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TextNode("Changing GAV of"), new model_1.ElementNode("groupId", 0, [""], "span", {}, []), new model_1.TextNode(":"), new model_1.ElementNode("artifactId", 0, [""], "span", {}, []), new model_1.TextNode(":"), new model_1.ElementNode("version", 0, [""], "span", {}, [])]), "content": new model_1.PointInfo(null, {}, [new model_1.TextNode("You can change this GAV and all projects linked to it will be updated. By now,"), new model_1.ElementNode(null, 0, [""], "b", {}, [new model_1.TextNode("NO CHANGE IS APPLIED")]), new model_1.TextNode("until            you go in the Change tab and validate."), new model_1.ElementNode(null, 0, [""], "br", {}, []), new model_1.TextNode("Enter the new coordinates for this GAV :"), new model_1.ElementNode(null, 0, [""], "br", {}, []), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("groupIdInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "groupId" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "groupId" }, [new model_1.TextNode("groupId")])]), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("artifactIdInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "artifactId" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "artifactId" }, [new model_1.TextNode("artifactId")])]), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("versionInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "version" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "version" }, [new model_1.TextNode("version")])])]), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionCancel", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Cancel")]), new model_1.ElementNode("actionValidate", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Ok, store the change")])]) }));
+        }
+        ensureLoaded() {
+        }
+        buildHtml(dto) {
+            return engine_1.tardigradeEngine.buildHtml("ChangeGavCard", dto);
+        }
+        buildElement(dto) {
+            return runtime_1.createElement(this.buildHtml(dto));
+        }
+        createElement(dto) {
+            return this.of(this.buildElement(dto));
+        }
+        of(rootElement) {
+            let domlet = {
+                _root() { return rootElement; },
+                groupId() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "groupId": 0 });
+                },
+                artifactId() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "artifactId": 0 });
+                },
+                version() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "version": 0 });
+                },
+                groupIdInput() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "groupIdInput": 0 });
+                },
+                artifactIdInput() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "artifactIdInput": 0 });
+                },
+                versionInput() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "versionInput": 0 });
+                },
+                actions() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "actions": 0 });
+                },
+                actionCancel() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "actionCancel": 0 });
+                },
+                actionValidate() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "actionValidate": 0 });
+                }
+            };
+            return domlet;
+        }
+    }
+    exports.changeGavCardTemplate = new ChangeGavCardTemplate();
+});
+
+},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18,"./BaseCard":8}],11:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -650,7 +795,7 @@
     exports.consolePanelTemplate = new ConsolePanelTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":13,"../../node_modules/tardigrade/target/engine/model":14,"../../node_modules/tardigrade/target/engine/runtime":15}],10:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],12:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -697,13 +842,54 @@
     exports.gavTemplate = new GavTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":13,"../../node_modules/tardigrade/target/engine/model":14,"../../node_modules/tardigrade/target/engine/runtime":15}],11:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],13:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/model", "../../node_modules/tardigrade/target/engine/runtime", "./SearchPanel"], factory);
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/model", "../../node_modules/tardigrade/target/engine/runtime"], factory);
+    }
+})(function (require, exports) {
+    "use strict";
+    var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
+    var model_1 = require("../../node_modules/tardigrade/target/engine/model");
+    var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
+    class PopupTemplate {
+        constructor() {
+            engine_1.tardigradeEngine.addTemplate("Popup", new model_1.ElementNode("content", 0, [""], "div", { "class": "Popup" }, []));
+        }
+        ensureLoaded() {
+        }
+        buildHtml(dto) {
+            return engine_1.tardigradeEngine.buildHtml("Popup", dto);
+        }
+        buildElement(dto) {
+            return runtime_1.createElement(this.buildHtml(dto));
+        }
+        createElement(dto) {
+            return this.of(this.buildElement(dto));
+        }
+        of(rootElement) {
+            let domlet = {
+                _root() { return rootElement; },
+                content() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Popup", { "content": 0 });
+                }
+            };
+            return domlet;
+        }
+    }
+    exports.popupTemplate = new PopupTemplate();
+});
+
+},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],14:[function(require,module,exports){
+(function (factory) {
+    if (typeof module === 'object' && typeof module.exports === 'object') {
+        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === 'function' && define.amd) {
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/model", "../../node_modules/tardigrade/target/engine/runtime", "./SearchPanel", "./Card"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -711,10 +897,12 @@
     var model_1 = require("../../node_modules/tardigrade/target/engine/model");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     var SearchPanel_1 = require("./SearchPanel");
+    var Card_1 = require("./Card");
     class ProjectPanelTemplate {
         constructor() {
             SearchPanel_1.searchPanelTemplate.ensureLoaded();
-            engine_1.tardigradeEngine.addTemplate("ProjectPanel", new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.TemplateNode(null, 0, [""], "SearchPanel", {}, { "input": new model_1.PointInfo("searchInput", {}, []) }), new model_1.ElementNode("projectList", 0, [""], "div", { "class": "projects-list" }, [])]));
+            Card_1.cardTemplate.ensureLoaded();
+            engine_1.tardigradeEngine.addTemplate("ProjectPanel", new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.TemplateNode(null, 0, [""], "SearchPanel", {}, { "input": new model_1.PointInfo("searchInput", {}, []) }), new model_1.ElementNode("projectList", 0, [""], "div", { "class": "projects-list" }, [new model_1.TemplateNode("cards", 1, [""], "Card", {}, {})])]));
         }
         ensureLoaded() {
         }
@@ -735,6 +923,31 @@
                 },
                 projectList() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
+                },
+                cards(cardsIndex) {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "cards": cardsIndex });
+                },
+                cardsDomlet(cardsIndex) {
+                    let element = domlet.cards(cardsIndex);
+                    return Card_1.cardTemplate.of(element);
+                },
+                cardsIndex(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                    if (location != null && ("cards" in location))
+                        return location["cards"];
+                    return -1;
+                },
+                buildCards(dto) {
+                    return engine_1.tardigradeEngine.buildNodeHtml("ProjectPanel", "cards", dto);
+                },
+                addCards(dto) {
+                    let newItem = domlet.buildCards(dto);
+                    let newElement = runtime_1.createElement(newItem);
+                    domlet.projectList().appendChild(newElement);
+                    return newElement;
+                },
+                countCards() {
+                    return domlet.projectList().children.length;
                 }
             };
             return domlet;
@@ -743,7 +956,7 @@
     exports.projectPanelTemplate = new ProjectPanelTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":13,"../../node_modules/tardigrade/target/engine/model":14,"../../node_modules/tardigrade/target/engine/runtime":15,"./SearchPanel":12}],12:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18,"./Card":9,"./SearchPanel":15}],15:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -784,7 +997,7 @@
     exports.searchPanelTemplate = new SearchPanelTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":13,"../../node_modules/tardigrade/target/engine/model":14,"../../node_modules/tardigrade/target/engine/runtime":15}],13:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],16:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -1167,7 +1380,7 @@
     exports.tardigradeEngine = new TardigradeEngine();
 });
 
-},{"./model":14,"./runtime":15}],14:[function(require,module,exports){
+},{"./model":17,"./runtime":18}],17:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -1396,7 +1609,7 @@
     exports.PointInfo = PointInfo;
 });
 
-},{}],15:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;

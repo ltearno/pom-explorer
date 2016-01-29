@@ -5,6 +5,7 @@ import { ElementNode, TemplateNode, TextNode, Cardinal, PointInfo } from "../../
 import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
+import { baseCardTemplate, BaseCardTemplateElement } from "./BaseCard";
 import { gavTemplate, GavTemplateElement } from "./Gav";
 
 export interface CardTemplateDto {
@@ -37,9 +38,9 @@ gavDomlet(): GavTemplateElement;
 gavGroupId(): HTMLElement;
 gavArtifactId(): HTMLElement;
 gavVersion(): HTMLElement;
-content(): HTMLDivElement;
-details(): HTMLDivElement;
-actions(): HTMLDivElement;
+content(): HTMLElement;
+details(): HTMLElement;
+actions(): HTMLElement;
 actionDetails(): HTMLElement;
 actionBuild(): HTMLElement;
 }
@@ -49,9 +50,10 @@ class CardTemplate {
     }
 
     constructor() {
-        gavTemplate.ensureLoaded();
+        baseCardTemplate.ensureLoaded();
+gavTemplate.ensureLoaded();
 
-        tardigradeEngine.addTemplate("Card", new ElementNode(null, <Cardinal>0, [""], "div", {"class": "project-card mdl-card mdl-shadow--2dp"}, [new ElementNode(null, <Cardinal>0, [""], "div", {"class": "mdl-card__title mdl-card--expand"}, [new TemplateNode("gav", <Cardinal>0, ["export"], "Gav", {"class": "mdl-card__title-text"}, {"groupId": new PointInfo("gavGroupId", {}, []), "artifactId": new PointInfo("gavArtifactId", {}, []), "version": new PointInfo("gavVersion", {}, [])})]), new ElementNode("content", <Cardinal>0, [""], "div", {"class": "mdl-card__supporting-text"}, []), new ElementNode("details", <Cardinal>0, [""], "div", {"class": "mdl-card__supporting-text", "style": "display:none;"}, []), new ElementNode("actions", <Cardinal>0, [""], "div", {"class": "mdl-card__actions mdl-card--border"}, [new ElementNode("actionDetails", <Cardinal>0, [""], "a", {"class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"}, [new TextNode("Details")]), new ElementNode("actionBuild", <Cardinal>0, [""], "a", {"class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"}, [new TextNode("Build")])])]));
+        tardigradeEngine.addTemplate("Card", new TemplateNode(null, <Cardinal>0, [""], "BaseCard", {}, {"title": new PointInfo(null, {}, [new TemplateNode("gav", <Cardinal>0, ["export"], "Gav", {"class": "mdl-card__title-text"}, {"groupId": new PointInfo("gavGroupId", {}, []), "artifactId": new PointInfo("gavArtifactId", {}, []), "version": new PointInfo("gavVersion", {}, [])})]), "content": new PointInfo("content", {}, []), "details": new PointInfo("details", {}, []), "actions": new PointInfo("actions", {}, [new ElementNode("actionDetails", <Cardinal>0, [""], "a", {"class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"}, [new TextNode("Details")]), new ElementNode("actionBuild", <Cardinal>0, [""], "a", {"class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"}, [new TextNode("Build")])])}));
     }
 
     buildHtml(dto: CardTemplateDto) {
@@ -86,14 +88,14 @@ return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "gavArtifac
 gavVersion(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "gavVersion": 0 });
 },
-content(): HTMLDivElement{
-return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "content": 0 });
+content(): HTMLElement{
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "content": 0 });
 },
-details(): HTMLDivElement{
-return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "details": 0 });
+details(): HTMLElement{
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "details": 0 });
 },
-actions(): HTMLDivElement{
-return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Card", { "actions": 0 });
+actions(): HTMLElement{
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "actions": 0 });
 },
 actionDetails(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "actionDetails": 0 });

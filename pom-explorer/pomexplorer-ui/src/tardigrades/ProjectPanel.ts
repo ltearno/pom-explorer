@@ -6,6 +6,7 @@ import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/pa
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
 import { searchPanelTemplate, SearchPanelTemplateElement } from "./SearchPanel";
+import { cardTemplate, CardTemplateElement } from "./Card";
 
 export interface ProjectPanelTemplateDto {
     _root?: string;
@@ -13,6 +14,8 @@ export interface ProjectPanelTemplateDto {
 "@searchInput"?: any;
 projectList?: any;
 "@projectList"?: any;
+cards?: any;
+"@cards"?: any;
 
 }
 
@@ -20,6 +23,12 @@ export interface ProjectPanelTemplateElement {
     _root(): HTMLElement;
     searchInput(): HTMLElement;
 projectList(): HTMLDivElement;
+cards(cardsIndex: number): HTMLElement;
+cardsDomlet(cardsIndex: number): CardTemplateElement;
+cardsIndex(hitTest:HTMLElement): number;
+buildCards(dto: any): string;
+addCards(dto: any): HTMLElement;
+countCards(): number;
 }
 
 class ProjectPanelTemplate {
@@ -28,8 +37,9 @@ class ProjectPanelTemplate {
 
     constructor() {
         searchPanelTemplate.ensureLoaded();
+cardTemplate.ensureLoaded();
 
-        tardigradeEngine.addTemplate("ProjectPanel", new ElementNode(null, <Cardinal>0, [""], "div", {}, [new TemplateNode(null, <Cardinal>0, [""], "SearchPanel", {}, {"input": new PointInfo("searchInput", {}, [])}), new ElementNode("projectList", <Cardinal>0, [""], "div", {"class": "projects-list"}, [])]));
+        tardigradeEngine.addTemplate("ProjectPanel", new ElementNode(null, <Cardinal>0, [""], "div", {}, [new TemplateNode(null, <Cardinal>0, [""], "SearchPanel", {}, {"input": new PointInfo("searchInput", {}, [])}), new ElementNode("projectList", <Cardinal>0, [""], "div", {"class": "projects-list"}, [new TemplateNode("cards", <Cardinal>1, [""], "Card", {}, {})])]));
     }
 
     buildHtml(dto: ProjectPanelTemplateDto) {
@@ -53,6 +63,31 @@ return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "se
 },
 projectList(): HTMLDivElement{
 return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
+},
+cards(cardsIndex: number): HTMLElement{
+return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "cards": cardsIndex });
+},
+cardsDomlet(cardsIndex: number): CardTemplateElement {
+let element = domlet.cards(cardsIndex);
+return cardTemplate.of(element);
+},
+cardsIndex(hitTest:HTMLElement): number {
+                    let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                    if (location != null && ("cards" in location))
+                        return location["cards"];
+                    return -1;
+                    },
+buildCards(dto: any): string {
+return tardigradeEngine.buildNodeHtml("ProjectPanel", "cards", dto);
+},
+addCards(dto: any): HTMLElement {
+let newItem = domlet.buildCards(dto);
+let newElement = createElement(newItem);
+domlet.projectList().appendChild(newElement);
+return newElement;
+},
+countCards(): number {
+return domlet.projectList().children.length;
 }
         };
 

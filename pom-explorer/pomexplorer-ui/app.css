@@ -5,6 +5,25 @@
     height: 100%;
 }
 
+.Popup {
+    z-index: 10;
+    position:fixed;
+    top:0px;
+    left:0px;
+    right:0px;
+    bottom:0px;
+
+    background-color:rgba(12, 11, 11, 0.48);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.Popup>div {
+    max-width: 50%;
+}
+
 .project-card.mdl-card {
     flex-grow: 1;
     flex-shrink: 1;
