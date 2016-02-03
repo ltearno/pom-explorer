@@ -16,7 +16,11 @@ export interface PopupTemplateDto {
 
 export interface PopupTemplateElement {
     _root(): HTMLElement;
+    // returns the previous data
+    setUserData(data:any):any;
+    getUserData():any;
     content(): HTMLDivElement;
+contentHit(hitTest:HTMLElement): boolean;
 }
 
 class PopupTemplate {
@@ -45,9 +49,23 @@ class PopupTemplate {
         let domlet = {
             _root() { return rootElement; },
 
+            setUserData(data:any):any {
+                let old = (rootElement as any)._tardigradeUserData || null;
+                (rootElement as any)._tardigradeUserData = data;
+                return old;
+            },
+
+            getUserData():any {
+                return (rootElement as any)._tardigradeUserData || null;
+            },
+
             content(): HTMLDivElement{
 return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Popup", { "content": 0 });
-}
+},
+contentHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "Popup", hitTest);
+                        return (location != null && ("content" in location));
+                        }
         };
 
         return domlet;

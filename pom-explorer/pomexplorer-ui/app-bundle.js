@@ -155,14 +155,13 @@
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./tardigrades/Card", "./tardigrades/ChangeGavCard", "./Utils", "../node_modules/tardigrade/target/engine/runtime", "./tardigrades/ProjectPanel", "./tardigrades/Popup"], factory);
+        define(["require", "exports", "./tardigrades/Card", "./tardigrades/ChangeGavCard", "./Utils", "./tardigrades/ProjectPanel", "./tardigrades/Popup"], factory);
     }
 })(function (require, exports) {
     "use strict";
     var Card_1 = require("./tardigrades/Card");
     var ChangeGavCard_1 = require("./tardigrades/ChangeGavCard");
     var Utils_1 = require("./Utils");
-    var runtime_1 = require("../node_modules/tardigrade/target/engine/runtime");
     var ProjectPanel_1 = require("./tardigrades/ProjectPanel");
     var Popup_1 = require("./tardigrades/Popup");
     class ProjectPanel {
@@ -171,48 +170,10 @@
             Utils_1.initMaterialElement(this.domlet._root());
             this.service = service;
             this.domlet.projectList().addEventListener("click", event => {
-                let cardIndex = this.domlet.cardsIndex(event.target);
-                if (cardIndex < 0)
-                    return;
-                let card = this.domlet.cardsDomlet(cardIndex);
-                var dc = runtime_1.domChain(card._root(), event.target);
-                // details button
-                if (Array.prototype.indexOf.call(dc, card.actionDetails()) >= 0) {
-                    if (card.details().style.display === "none")
-                        card.details().style.display = null;
-                    else
-                        card.details().style.display = "none";
-                }
+                this.forDetailsToggle(event.target);
+                this.forChangeGav(event.target);
             });
-            this.domlet.projectList().addEventListener("dblclick", event => {
-                let cardIndex = this.domlet.cardsIndex(event.target);
-                if (cardIndex < 0)
-                    return;
-                let card = this.domlet.cardsDomlet(cardIndex);
-                var dc = runtime_1.domChain(card._root(), event.target);
-                let project = card._root().project;
-                let parts = project.gav.split(":");
-                let groupId = parts[0];
-                let artifactId = parts[1];
-                let version = parts[2];
-                if ((Array.prototype.indexOf.call(dc, card.gav()) >= 0) || (Array.prototype.indexOf.call(dc, card.edit()) >= 0)) {
-                    let changeCard = ChangeGavCard_1.changeGavCardTemplate.createElement({
-                        groupId: groupId,
-                        artifactId: artifactId,
-                        version: version,
-                        "@groupIdInput": { "value": groupId },
-                        "@artifactIdInput": { "value": artifactId },
-                        "@versionInput": { "value": version }
-                    });
-                    Utils_1.initMaterialElement(changeCard._root());
-                    let popup = Popup_1.popupTemplate.createElement({});
-                    popup.content().appendChild(changeCard._root());
-                    document.getElementsByTagName('body')[0].appendChild(popup._root());
-                    changeCard.actionCancel().addEventListener("click", event => {
-                        popup._root().remove();
-                    });
-                }
-            });
+            this.domlet.projectList().addEventListener("dblclick", event => this.forChangeGav(event.target));
             Utils_1.rx.Observable.fromEvent(this.domlet.searchInput(), "input")
                 .pluck("target", "value")
                 .debounce(100)
@@ -238,7 +199,7 @@
                         if (project.parentChain && project.parentChain.length > 0)
                             content += `<i>parent${project.parentChain.length > 1 ? "s" : ""}</i><br/>${project.parentChain.join("<br/>")}<br/><br/>`;
                         if (project.file)
-                            content += `<i>file</i> ${project.file}<br/><br/>`;
+                            content += `<i>file</i><br/>${project.file}<br/><br/>`;
                         if (project.properties) {
                             var a = true;
                             for (var name in project.properties) {
@@ -287,7 +248,7 @@
                     let elements = this.domlet.projectList().children;
                     for (var pi in list) {
                         var project = list[pi];
-                        elements.item(pi).project = project;
+                        Card_1.cardTemplate.of(elements.item(pi)).setUserData(project);
                     }
                 });
             });
@@ -298,11 +259,52 @@
         element() {
             return this.domlet._root();
         }
+        forDetailsToggle(hitElement) {
+            let cardIndex = this.domlet.cardsIndex(hitElement);
+            if (cardIndex < 0)
+                return;
+            let card = this.domlet.cardsDomlet(cardIndex);
+            // details button
+            if (card.actionDetailsHit(hitElement)) {
+                if (card.details().style.display === "none")
+                    card.details().style.display = null;
+                else
+                    card.details().style.display = "none";
+            }
+        }
+        forChangeGav(hitElement) {
+            let cardIndex = this.domlet.cardsIndex(hitElement);
+            if (cardIndex < 0)
+                return;
+            let card = this.domlet.cardsDomlet(cardIndex);
+            let project = card.getUserData();
+            let parts = project.gav.split(":");
+            let groupId = parts[0];
+            let artifactId = parts[1];
+            let version = parts[2];
+            if (card.editHit(hitElement) || card.gavHit(hitElement)) {
+                let changeCard = ChangeGavCard_1.changeGavCardTemplate.createElement({
+                    groupId: groupId,
+                    artifactId: artifactId,
+                    version: version,
+                    "@groupIdInput": { "value": groupId },
+                    "@artifactIdInput": { "value": artifactId },
+                    "@versionInput": { "value": version }
+                });
+                Utils_1.initMaterialElement(changeCard._root());
+                let popup = Popup_1.popupTemplate.createElement({});
+                popup.content().appendChild(changeCard._root());
+                document.getElementsByTagName('body')[0].appendChild(popup._root());
+                changeCard.actionCancel().addEventListener("click", event => {
+                    popup._root().remove();
+                });
+            }
+        }
     }
     exports.ProjectPanel = ProjectPanel;
 });
 
-},{"../node_modules/tardigrade/target/engine/runtime":18,"./Utils":5,"./tardigrades/Card":9,"./tardigrades/ChangeGavCard":10,"./tardigrades/Popup":13,"./tardigrades/ProjectPanel":14}],4:[function(require,module,exports){
+},{"./Utils":5,"./tardigrades/Card":9,"./tardigrades/ChangeGavCard":10,"./tardigrades/Popup":13,"./tardigrades/ProjectPanel":14}],4:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -537,11 +539,27 @@
         of(rootElement) {
             let domlet = {
                 _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
                 drawer() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "drawer": 0 });
                 },
+                drawerHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Application", hitTest);
+                    return (location != null && ("drawer" in location));
+                },
                 menu() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "menu": 0 });
+                },
+                menuHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Application", hitTest);
+                    return (location != null && ("menu" in location));
                 },
                 menuItems(menuItemsIndex) {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "menuItems": menuItemsIndex });
@@ -566,6 +584,10 @@
                 },
                 content() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Application", { "content": 0 });
+                },
+                contentHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Application", hitTest);
+                    return (location != null && ("content" in location));
                 }
             };
             return domlet;
@@ -589,7 +611,7 @@
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class BaseCardTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("BaseCard", new model_1.ElementNode(null, 0, [""], "div", { "class": "project-card mdl-card mdl-shadow--2dp" }, [new model_1.ElementNode("title", 0, [""], "div", { "class": "mdl-card__title mdl-card--expand" }, []), new model_1.ElementNode("content", 0, [""], "div", { "class": "mdl-card__supporting-text" }, []), new model_1.ElementNode("details", 0, [""], "div", { "class": "mdl-card__supporting-text", "style": "display:none;" }, []), new model_1.ElementNode("actions", 0, [""], "div", { "class": "mdl-card__actions mdl-card--border" }, [])]));
+            engine_1.tardigradeEngine.addTemplate("BaseCard", new model_1.ElementNode(null, 0, [""], "div", { "class": "project-card mdl-card mdl-shadow--2dp" }, [new model_1.ElementNode("title", 0, [""], "div", { "class": "mdl-card__title mdl-card--expand" }, []), new model_1.ElementNode("content", 0, [""], "div", { "class": "mdl-card__supporting-text" }, []), new model_1.ElementNode("details", 0, [""], "div", { "class": "mdl-card__supporting-text", "style": "display:none;" }, []), new model_1.ElementNode("actions", 0, [""], "div", { "class": "mdl-card__actions mdl-card--border" }, []), new model_1.ElementNode("menu", 0, [""], "div", { "class": "mdl-card__menu" }, [])]));
         }
         ensureLoaded() {
         }
@@ -605,17 +627,48 @@
         of(rootElement) {
             let domlet = {
                 _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
                 title() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "BaseCard", { "title": 0 });
+                },
+                titleHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "BaseCard", hitTest);
+                    return (location != null && ("title" in location));
                 },
                 content() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "BaseCard", { "content": 0 });
                 },
+                contentHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "BaseCard", hitTest);
+                    return (location != null && ("content" in location));
+                },
                 details() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "BaseCard", { "details": 0 });
                 },
+                detailsHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "BaseCard", hitTest);
+                    return (location != null && ("details" in location));
+                },
                 actions() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "BaseCard", { "actions": 0 });
+                },
+                actionsHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "BaseCard", hitTest);
+                    return (location != null && ("actions" in location));
+                },
+                menu() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "BaseCard", { "menu": 0 });
+                },
+                menuHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "BaseCard", hitTest);
+                    return (location != null && ("menu" in location));
                 }
             };
             return domlet;
@@ -643,7 +696,7 @@
         constructor() {
             BaseCard_1.baseCardTemplate.ensureLoaded();
             Gav_1.gavTemplate.ensureLoaded();
-            engine_1.tardigradeEngine.addTemplate("Card", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TemplateNode("gav", 0, ["export"], "Gav", { "class": "mdl-card__title-text" }, { "groupId": new model_1.PointInfo("gavGroupId", {}, []), "artifactId": new model_1.PointInfo("gavArtifactId", {}, []), "version": new model_1.PointInfo("gavVersion", {}, []) }), new model_1.ElementNode("edit", 0, [""], "i", { "class": "material-icons" }, [new model_1.TextNode("mode_edit")])]), "content": new model_1.PointInfo("content", {}, []), "details": new model_1.PointInfo("details", {}, []), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionDetails", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Details")]), new model_1.ElementNode("actionBuild", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Build")])]) }));
+            engine_1.tardigradeEngine.addTemplate("Card", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TemplateNode("gav", 0, ["export"], "Gav", { "class": "mdl-card__title-text" }, { "groupId": new model_1.PointInfo("gavGroupId", {}, []), "artifactId": new model_1.PointInfo("gavArtifactId", {}, []), "version": new model_1.PointInfo("gavVersion", {}, []) })]), "content": new model_1.PointInfo("content", {}, []), "details": new model_1.PointInfo("details", {}, []), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionDetails", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Details")])]), "menu": new model_1.PointInfo(null, {}, [new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-card__menu", "style": "color:white;" }, [new model_1.ElementNode("edit", 0, [""], "button", { "class": "mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" }, [new model_1.ElementNode(null, 0, [""], "i", { "class": "material-icons" }, [new model_1.TextNode("mode_edit")])])])]) }));
         }
         ensureLoaded() {
         }
@@ -659,6 +712,14 @@
         of(rootElement) {
             let domlet = {
                 _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
                 gav() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "gav": 0 });
                 },
@@ -666,32 +727,65 @@
                     let element = domlet.gav();
                     return Gav_1.gavTemplate.of(element);
                 },
+                gavHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Card", hitTest);
+                    return (location != null && ("gav" in location));
+                },
                 gavGroupId() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "gavGroupId": 0 });
+                },
+                gavGroupIdHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Card", hitTest);
+                    return (location != null && ("gavGroupId" in location));
                 },
                 gavArtifactId() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "gavArtifactId": 0 });
                 },
+                gavArtifactIdHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Card", hitTest);
+                    return (location != null && ("gavArtifactId" in location));
+                },
                 gavVersion() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "gavVersion": 0 });
                 },
-                edit() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "edit": 0 });
+                gavVersionHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Card", hitTest);
+                    return (location != null && ("gavVersion" in location));
                 },
                 content() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "content": 0 });
                 },
+                contentHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Card", hitTest);
+                    return (location != null && ("content" in location));
+                },
                 details() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "details": 0 });
+                },
+                detailsHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Card", hitTest);
+                    return (location != null && ("details" in location));
                 },
                 actions() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "actions": 0 });
                 },
+                actionsHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Card", hitTest);
+                    return (location != null && ("actions" in location));
+                },
                 actionDetails() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "actionDetails": 0 });
                 },
-                actionBuild() {
-                    return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "actionBuild": 0 });
+                actionDetailsHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Card", hitTest);
+                    return (location != null && ("actionDetails" in location));
+                },
+                edit() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "Card", { "edit": 0 });
+                },
+                editHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Card", hitTest);
+                    return (location != null && ("edit" in location));
                 }
             };
             return domlet;
@@ -733,32 +827,76 @@
         of(rootElement) {
             let domlet = {
                 _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
                 groupId() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "groupId": 0 });
+                },
+                groupIdHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                    return (location != null && ("groupId" in location));
                 },
                 artifactId() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "artifactId": 0 });
                 },
+                artifactIdHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                    return (location != null && ("artifactId" in location));
+                },
                 version() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "version": 0 });
+                },
+                versionHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                    return (location != null && ("version" in location));
                 },
                 groupIdInput() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "groupIdInput": 0 });
                 },
+                groupIdInputHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                    return (location != null && ("groupIdInput" in location));
+                },
                 artifactIdInput() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "artifactIdInput": 0 });
+                },
+                artifactIdInputHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                    return (location != null && ("artifactIdInput" in location));
                 },
                 versionInput() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "versionInput": 0 });
                 },
+                versionInputHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                    return (location != null && ("versionInput" in location));
+                },
                 actions() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "actions": 0 });
+                },
+                actionsHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                    return (location != null && ("actions" in location));
                 },
                 actionCancel() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "actionCancel": 0 });
                 },
+                actionCancelHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                    return (location != null && ("actionCancel" in location));
+                },
                 actionValidate() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "actionValidate": 0 });
+                },
+                actionValidateHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                    return (location != null && ("actionValidate" in location));
                 }
             };
             return domlet;
@@ -798,11 +936,27 @@
         of(rootElement) {
             let domlet = {
                 _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
                 output() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
                 },
+                outputHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ConsolePanel", hitTest);
+                    return (location != null && ("output" in location));
+                },
                 input() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
+                },
+                inputHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ConsolePanel", hitTest);
+                    return (location != null && ("input" in location));
                 }
             };
             return domlet;
@@ -842,14 +996,34 @@
         of(rootElement) {
             let domlet = {
                 _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
                 groupId() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Gav", { "groupId": 0 });
+                },
+                groupIdHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Gav", hitTest);
+                    return (location != null && ("groupId" in location));
                 },
                 artifactId() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Gav", { "artifactId": 0 });
                 },
+                artifactIdHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Gav", hitTest);
+                    return (location != null && ("artifactId" in location));
+                },
                 version() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Gav", { "version": 0 });
+                },
+                versionHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Gav", hitTest);
+                    return (location != null && ("version" in location));
                 }
             };
             return domlet;
@@ -889,8 +1063,20 @@
         of(rootElement) {
             let domlet = {
                 _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
                 content() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "Popup", { "content": 0 });
+                },
+                contentHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "Popup", hitTest);
+                    return (location != null && ("content" in location));
                 }
             };
             return domlet;
@@ -934,11 +1120,27 @@
         of(rootElement) {
             let domlet = {
                 _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
                 searchInput() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "searchInput": 0 });
                 },
+                searchInputHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                    return (location != null && ("searchInput" in location));
+                },
                 projectList() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
+                },
+                projectListHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                    return (location != null && ("projectList" in location));
                 },
                 cards(cardsIndex) {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "cards": cardsIndex });
@@ -1003,8 +1205,20 @@
         of(rootElement) {
             let domlet = {
                 _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
                 input() {
                     return engine_1.tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
+                },
+                inputHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "SearchPanel", hitTest);
+                    return (location != null && ("input" in location));
                 }
             };
             return domlet;

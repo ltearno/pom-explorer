@@ -16,7 +16,11 @@ export interface SearchPanelTemplateDto {
 
 export interface SearchPanelTemplateElement {
     _root(): HTMLElement;
+    // returns the previous data
+    setUserData(data:any):any;
+    getUserData():any;
     input(): HTMLInputElement;
+inputHit(hitTest:HTMLElement): boolean;
 }
 
 class SearchPanelTemplate {
@@ -45,9 +49,23 @@ class SearchPanelTemplate {
         let domlet = {
             _root() { return rootElement; },
 
+            setUserData(data:any):any {
+                let old = (rootElement as any)._tardigradeUserData || null;
+                (rootElement as any)._tardigradeUserData = data;
+                return old;
+            },
+
+            getUserData():any {
+                return (rootElement as any)._tardigradeUserData || null;
+            },
+
             input(): HTMLInputElement{
 return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
-}
+},
+inputHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "SearchPanel", hitTest);
+                        return (location != null && ("input" in location));
+                        }
         };
 
         return domlet;

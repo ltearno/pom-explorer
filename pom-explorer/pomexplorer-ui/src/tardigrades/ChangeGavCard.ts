@@ -32,15 +32,27 @@ actionValidate?: any;
 
 export interface ChangeGavCardTemplateElement {
     _root(): HTMLElement;
+    // returns the previous data
+    setUserData(data:any):any;
+    getUserData():any;
     groupId(): HTMLElement;
+groupIdHit(hitTest:HTMLElement): boolean;
 artifactId(): HTMLElement;
+artifactIdHit(hitTest:HTMLElement): boolean;
 version(): HTMLElement;
+versionHit(hitTest:HTMLElement): boolean;
 groupIdInput(): HTMLInputElement;
+groupIdInputHit(hitTest:HTMLElement): boolean;
 artifactIdInput(): HTMLInputElement;
+artifactIdInputHit(hitTest:HTMLElement): boolean;
 versionInput(): HTMLInputElement;
+versionInputHit(hitTest:HTMLElement): boolean;
 actions(): HTMLElement;
+actionsHit(hitTest:HTMLElement): boolean;
 actionCancel(): HTMLElement;
+actionCancelHit(hitTest:HTMLElement): boolean;
 actionValidate(): HTMLElement;
+actionValidateHit(hitTest:HTMLElement): boolean;
 }
 
 class ChangeGavCardTemplate {
@@ -69,33 +81,79 @@ class ChangeGavCardTemplate {
         let domlet = {
             _root() { return rootElement; },
 
+            setUserData(data:any):any {
+                let old = (rootElement as any)._tardigradeUserData || null;
+                (rootElement as any)._tardigradeUserData = data;
+                return old;
+            },
+
+            getUserData():any {
+                return (rootElement as any)._tardigradeUserData || null;
+            },
+
             groupId(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "groupId": 0 });
 },
+groupIdHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                        return (location != null && ("groupId" in location));
+                        },
 artifactId(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "artifactId": 0 });
 },
+artifactIdHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                        return (location != null && ("artifactId" in location));
+                        },
 version(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "version": 0 });
 },
+versionHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                        return (location != null && ("version" in location));
+                        },
 groupIdInput(): HTMLInputElement{
 return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "groupIdInput": 0 });
 },
+groupIdInputHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                        return (location != null && ("groupIdInput" in location));
+                        },
 artifactIdInput(): HTMLInputElement{
 return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "artifactIdInput": 0 });
 },
+artifactIdInputHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                        return (location != null && ("artifactIdInput" in location));
+                        },
 versionInput(): HTMLInputElement{
 return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "versionInput": 0 });
 },
+versionInputHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                        return (location != null && ("versionInput" in location));
+                        },
 actions(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "actions": 0 });
 },
+actionsHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                        return (location != null && ("actions" in location));
+                        },
 actionCancel(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "actionCancel": 0 });
 },
+actionCancelHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                        return (location != null && ("actionCancel" in location));
+                        },
 actionValidate(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ChangeGavCard", { "actionValidate": 0 });
-}
+},
+actionValidateHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ChangeGavCard", hitTest);
+                        return (location != null && ("actionValidate" in location));
+                        }
         };
 
         return domlet;

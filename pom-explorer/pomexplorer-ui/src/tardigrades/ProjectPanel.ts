@@ -21,8 +21,13 @@ cards?: any;
 
 export interface ProjectPanelTemplateElement {
     _root(): HTMLElement;
+    // returns the previous data
+    setUserData(data:any):any;
+    getUserData():any;
     searchInput(): HTMLElement;
+searchInputHit(hitTest:HTMLElement): boolean;
 projectList(): HTMLDivElement;
+projectListHit(hitTest:HTMLElement): boolean;
 cards(cardsIndex: number): HTMLElement;
 cardsDomlet(cardsIndex: number): CardTemplateElement;
 cardsIndex(hitTest:HTMLElement): number;
@@ -58,12 +63,30 @@ cardTemplate.ensureLoaded();
         let domlet = {
             _root() { return rootElement; },
 
+            setUserData(data:any):any {
+                let old = (rootElement as any)._tardigradeUserData || null;
+                (rootElement as any)._tardigradeUserData = data;
+                return old;
+            },
+
+            getUserData():any {
+                return (rootElement as any)._tardigradeUserData || null;
+            },
+
             searchInput(): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "searchInput": 0 });
 },
+searchInputHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                        return (location != null && ("searchInput" in location));
+                        },
 projectList(): HTMLDivElement{
 return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
 },
+projectListHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                        return (location != null && ("projectList" in location));
+                        },
 cards(cardsIndex: number): HTMLElement{
 return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "cards": cardsIndex });
 },
@@ -72,11 +95,11 @@ let element = domlet.cards(cardsIndex);
 return cardTemplate.of(element);
 },
 cardsIndex(hitTest:HTMLElement): number {
-                    let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
-                    if (location != null && ("cards" in location))
-                        return location["cards"];
-                    return -1;
-                    },
+                        let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                        if (location != null && ("cards" in location))
+                            return location["cards"];
+                        return -1;
+                        },
 buildCards(dto: any): string {
 return tardigradeEngine.buildNodeHtml("ProjectPanel", "cards", dto);
 },

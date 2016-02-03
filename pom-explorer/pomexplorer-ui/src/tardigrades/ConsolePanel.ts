@@ -18,8 +18,13 @@ input?: any;
 
 export interface ConsolePanelTemplateElement {
     _root(): HTMLElement;
+    // returns the previous data
+    setUserData(data:any):any;
+    getUserData():any;
     output(): HTMLDivElement;
+outputHit(hitTest:HTMLElement): boolean;
 input(): HTMLInputElement;
+inputHit(hitTest:HTMLElement): boolean;
 }
 
 class ConsolePanelTemplate {
@@ -48,12 +53,30 @@ class ConsolePanelTemplate {
         let domlet = {
             _root() { return rootElement; },
 
+            setUserData(data:any):any {
+                let old = (rootElement as any)._tardigradeUserData || null;
+                (rootElement as any)._tardigradeUserData = data;
+                return old;
+            },
+
+            getUserData():any {
+                return (rootElement as any)._tardigradeUserData || null;
+            },
+
             output(): HTMLDivElement{
 return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
 },
+outputHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ConsolePanel", hitTest);
+                        return (location != null && ("output" in location));
+                        },
 input(): HTMLInputElement{
 return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
-}
+},
+inputHit(hitTest:HTMLElement): boolean {
+                        let location = tardigradeEngine.getLocation(rootElement, "ConsolePanel", hitTest);
+                        return (location != null && ("input" in location));
+                        }
         };
 
         return domlet;

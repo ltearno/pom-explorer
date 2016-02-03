@@ -5,11 +5,9 @@ import { baseCardTemplate } from "./tardigrades/BaseCard";
 import { changeGavCardTemplate } from "./tardigrades/ChangeGavCard";
 import { initMaterialElement, rx } from "./Utils";
 import { Service, Status, Message, ServiceCallback } from "./Service";
-import { createElement, domChain, indexOf } from "../node_modules/tardigrade/target/engine/runtime";
 import { IWorkPanel } from "./IWorkPanel";
 import { projectPanelTemplate, ProjectPanelTemplateElement } from "./tardigrades/ProjectPanel";
 import { popupTemplate, PopupTemplateElement } from "./tardigrades/Popup";
-
 
 export class ProjectPanel implements IWorkPanel {
     private domlet: ProjectPanelTemplateElement;
@@ -23,57 +21,10 @@ export class ProjectPanel implements IWorkPanel {
         this.service = service;
 
         this.domlet.projectList().addEventListener("click", event => {
-            let cardIndex = this.domlet.cardsIndex(event.target as HTMLElement);
-            if (cardIndex < 0)
-                return;
-
-            let card = this.domlet.cardsDomlet(cardIndex);
-            var dc = domChain(card._root(), event.target as HTMLElement);
-
-            // details button
-            if (Array.prototype.indexOf.call(dc, card.actionDetails()) >= 0) {
-                if (card.details().style.display === "none")
-                    card.details().style.display = null;
-                else
-                    card.details().style.display = "none";
-            }
+            this.forDetailsToggle(event.target as HTMLElement);
+            this.forChangeGav(event.target as HTMLElement);
         });
-
-        this.domlet.projectList().addEventListener("dblclick", event => {
-            let cardIndex = this.domlet.cardsIndex(event.target as HTMLElement);
-            if (cardIndex < 0)
-                return;
-
-            let card = this.domlet.cardsDomlet(cardIndex);
-            var dc = domChain(card._root(), event.target as HTMLElement);
-
-            let project = (card._root() as any).project;
-            let parts = project.gav.split(":");
-            let groupId = parts[0];
-            let artifactId = parts[1];
-            let version = parts[2];
-
-            if ((Array.prototype.indexOf.call(dc, card.gav()) >= 0) || (Array.prototype.indexOf.call(dc, card.edit()) >= 0)) {
-                let changeCard = changeGavCardTemplate.createElement({
-                    groupId: groupId,
-                    artifactId: artifactId,
-                    version: version,
-                    "@groupIdInput": { "value": groupId },
-                    "@artifactIdInput": { "value": artifactId },
-                    "@versionInput": { "value": version }
-                });
-                initMaterialElement(changeCard._root());
-
-                let popup = popupTemplate.createElement({});
-                popup.content().appendChild(changeCard._root());
-
-                document.getElementsByTagName('body')[0].appendChild(popup._root());
-
-                changeCard.actionCancel().addEventListener("click", event => {
-                    popup._root().remove();
-                });
-            }
-        });
+        this.domlet.projectList().addEventListener("dblclick", event => this.forChangeGav(event.target as HTMLElement));
 
         rx.Observable.fromEvent(this.domlet.searchInput(), "input")
             .pluck("target", "value")
@@ -105,7 +56,7 @@ export class ProjectPanel implements IWorkPanel {
                         if (project.parentChain && project.parentChain.length > 0)
                             content += `<i>parent${project.parentChain.length > 1 ? "s" : ""}</i><br/>${project.parentChain.join("<br/>")}<br/><br/>`;
                         if (project.file)
-                            content += `<i>file</i> ${project.file}<br/><br/>`;
+                            content += `<i>file</i><br/>${project.file}<br/><br/>`;
                         if (project.properties) {
                             var a = true;
                             for (var name in project.properties) {
@@ -159,7 +110,7 @@ export class ProjectPanel implements IWorkPanel {
                     for (var pi in list) {
                         var project = list[pi];
 
-                        (elements.item(pi) as any).project = project;
+                        cardTemplate.of(<HTMLElement>elements.item(pi)).setUserData(project);
                     }
                 });
             });
@@ -171,5 +122,56 @@ export class ProjectPanel implements IWorkPanel {
 
     element() {
         return this.domlet._root();
+    }
+
+    private forDetailsToggle(hitElement: HTMLElement) {
+        let cardIndex = this.domlet.cardsIndex(hitElement);
+        if (cardIndex < 0)
+            return;
+
+        let card = this.domlet.cardsDomlet(cardIndex);
+
+        // details button
+        if (card.actionDetailsHit(hitElement)) {
+            if (card.details().style.display === "none")
+                card.details().style.display = null;
+            else
+                card.details().style.display = "none";
+        }
+    }
+
+    private forChangeGav(hitElement: HTMLElement) {
+        let cardIndex = this.domlet.cardsIndex(hitElement);
+        if (cardIndex < 0)
+            return;
+
+        let card = this.domlet.cardsDomlet(cardIndex);
+
+        let project = card.getUserData();
+        let parts = project.gav.split(":");
+        let groupId = parts[0];
+        let artifactId = parts[1];
+        let version = parts[2];
+
+        if (card.editHit(hitElement) || card.gavHit(hitElement)) {
+            let changeCard = changeGavCardTemplate.createElement({
+                groupId: groupId,
+                artifactId: artifactId,
+                version: version,
+                "@groupIdInput": { "value": groupId },
+                "@artifactIdInput": { "value": artifactId },
+                "@versionInput": { "value": version }
+            });
+            initMaterialElement(changeCard._root());
+
+            let popup = popupTemplate.createElement({});
+            popup.content().appendChild(changeCard._root());
+
+            document.getElementsByTagName('body')[0].appendChild(popup._root());
+
+            changeCard.actionCancel().addEventListener("click", event => {
+                popup._root().remove();
+            });
+        }
     }
 }

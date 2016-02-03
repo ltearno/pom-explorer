@@ -4,14 +4,19 @@
     <BaseCard>
         <title>
             <Gav x-id="gav" x-options="export" class="mdl-card__title-text" />
-            <i x-id="edit" class="material-icons">mode_edit</i>
         </title>
         <content x-id="content" />
         <details x-id="details" />
         <actions x-id="actions">
             <a x-id="actionDetails" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Details</a>
-            <a x-id="actionBuild" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">Build</a>
         </actions>
+        <menu>
+            <div class="mdl-card__menu" style="color:white;">
+                <button x-id="edit" class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                    <i class="material-icons">mode_edit</i>
+                </button>
+            </div>
+        </menu>
     </BaseCard>
 </body>
 
