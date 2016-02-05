@@ -8,10 +8,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.CatchClause;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonArray;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
 import com.google.gson.Gson;
 
 import fr.lteconsulting.pomexplorer.commands.AnalyzeCommand;
