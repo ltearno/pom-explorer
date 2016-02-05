@@ -6,6 +6,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.core.dom.CatchClause;
+
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import com.google.gson.Gson;
 
 import fr.lteconsulting.pomexplorer.commands.AnalyzeCommand;
@@ -26,9 +32,12 @@ import fr.lteconsulting.pomexplorer.commands.StatsCommand;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.rpccommands.ProjectsService;
+import fr.lteconsulting.pomexplorer.rpccommands.RpcServices;
 import fr.lteconsulting.pomexplorer.uirpc.ProjectDto;
 import fr.lteconsulting.pomexplorer.webserver.Message;
 import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
+import fr.lteconsulting.pomexplorer.webserver.RpcMessage;
 import fr.lteconsulting.pomexplorer.webserver.WebServer;
 import fr.lteconsulting.pomexplorer.webserver.XWebServer;
 
@@ -48,6 +57,8 @@ public class AppFactory
 	private final List<Session> sessions = new ArrayList<>();
 
 	private Commands commands;
+
+	private RpcServices rpcServices;
 
 	private ApplicationSettings settings;
 
@@ -82,6 +93,18 @@ public class AppFactory
 		}
 
 		return commands;
+	}
+
+	public RpcServices rpcServices()
+	{
+		if( rpcServices == null )
+		{
+			rpcServices = new RpcServices();
+
+			rpcServices.addService( new ProjectsService() );
+		}
+
+		return rpcServices;
 	}
 
 	public ApplicationSettings getSettings()
@@ -146,7 +169,7 @@ public class AppFactory
 
 			if( "text/command".equals( message.getPayloadFormat() ) )
 			{
-				AppFactory.get().commands().takeCommand( client, createLogger( client, message.getTalkGuid() ), message.getPayload() );
+				commands().takeCommand( client, createLogger( client, message.getTalkGuid() ), message.getPayload() );
 			}
 			else if( "hangout/reply".equals( message.getPayloadFormat() ) )
 			{
@@ -166,10 +189,17 @@ public class AppFactory
 			}
 			else if( "application/rpc".equals( message.getPayloadFormat() ) )
 			{
-				// project filter, just a POC !
-				List<ProjectDto> result = client.getCurrentSession().projects().values().stream().filter( ( p ) -> p.getGav().toString().contains( message.getPayload() ) ).limit( 200 ).sorted( Project.alphabeticalComparator )
-						.map( ( p ) -> ProjectDto.fromProject( client.getCurrentSession(), p ) ).filter( ( p ) -> p != null ).collect( Collectors.toList() );
-				client.send( new Message( MessageFactory.newGuid(), message.getTalkGuid(), null, true, "application/rpc", gson.toJson( result ) ) );
+				try
+				{
+					RpcMessage rpcMessage = gson.fromJson( message.getPayload(), RpcMessage.class );
+					Object result = rpcServices().takeCall( client, createLogger( client, message.getTalkGuid() ), rpcMessage );
+					client.send( new Message( MessageFactory.newGuid(), message.getTalkGuid(), null, true, "application/rpc", gson.toJson( result ) ) );
+				}
+				catch( Exception o )
+				{
+					System.out.println( "BIG ERROR RPC ... TODO " + o );
+					o.printStackTrace();
+				}
 			}
 			else
 			{

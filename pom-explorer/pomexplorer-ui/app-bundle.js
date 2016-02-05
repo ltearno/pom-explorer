@@ -295,8 +295,16 @@
                 let popup = Popup_1.popupTemplate.createElement({});
                 popup.content().appendChild(changeCard._root());
                 document.getElementsByTagName('body')[0].appendChild(popup._root());
-                changeCard.actionCancel().addEventListener("click", event => {
-                    popup._root().remove();
+                changeCard._root().addEventListener("click", event => {
+                    let hit = event.target;
+                    if (changeCard.actionCancelHit(hit)) {
+                        popup._root().remove();
+                    }
+                    else if (changeCard.actionValidateHit(hit)) {
+                        // TODO : call service and manage results...
+                        // this.service.
+                        popup._root().remove();
+                    }
                 });
             }
         }
@@ -335,7 +343,13 @@
                 responseTo: null,
                 isClosing: false,
                 payloadFormat: "application/rpc",
-                payload: command
+                payload: JSON.stringify({
+                    service: "projects",
+                    method: "list",
+                    parameters: {
+                        query: command
+                    }
+                })
             };
             this.waitingCallbacks[message.talkGuid] = callback;
             this.socket.send(JSON.stringify(message));

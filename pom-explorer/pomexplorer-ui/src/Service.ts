@@ -3,13 +3,13 @@
 export class Service {
     onStatus: (status: Status) => void;
 
-    onUnknownMessage: ( message: Message) => void;
+    onUnknownMessage: (message: Message) => void;
 
     private socket: WebSocket;
 
-    private waitingCallbacks: {[key:string]:ServiceCallback} = {};
+    private waitingCallbacks: { [key: string]: ServiceCallback } = {};
 
-    public connect():void {
+    public connect(): void {
         this.socket = new WebSocket(`ws://${window.location.hostname}:${window.location.port}/ws`);
 
         this.socket.onopen = () => this.onStatus(Status.Connected);
@@ -31,7 +31,13 @@ export class Service {
             responseTo: null,
             isClosing: false,
             payloadFormat: "application/rpc",
-            payload: command
+            payload: JSON.stringify({
+                service: "projects",
+                method: "list",
+                parameters: {
+                    query: command
+                }
+            })
         };
 
         this.waitingCallbacks[message.talkGuid] = callback;
@@ -39,7 +45,7 @@ export class Service {
         this.socket.send(JSON.stringify(message));
     }
 
-    public sendTextCommand(talkId:string, command:string, callback:ServiceCallback) {
+    public sendTextCommand(talkId: string, command: string, callback: ServiceCallback) {
         var message = {
             guid: `message-${Math.random()}`,
             talkGuid: talkId,
@@ -54,7 +60,7 @@ export class Service {
         this.socket.send(JSON.stringify(message));
     }
 
-    public sendHangoutReply(guid: string, talkGuid:string, content:string) {
+    public sendHangoutReply(guid: string, talkGuid: string, content: string) {
         var message = {
             guid: `message-${Math.random()}`,
             talkGuid: talkGuid,
@@ -71,7 +77,7 @@ export class Service {
         var talkId = msg.talkGuid;
 
         var callback = this.waitingCallbacks[talkId];
-        if(callback)
+        if (callback)
             callback(msg);
         else
             this.onUnknownMessage(msg);
@@ -89,7 +95,7 @@ export enum Status {
 }
 
 export interface ServiceCallback {
-    (message:Message) : void;
+    (message: Message): void;
 }
 
 export interface Message {

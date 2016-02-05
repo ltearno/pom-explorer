@@ -169,8 +169,16 @@ export class ProjectPanel implements IWorkPanel {
 
             document.getElementsByTagName('body')[0].appendChild(popup._root());
 
-            changeCard.actionCancel().addEventListener("click", event => {
-                popup._root().remove();
+            changeCard._root().addEventListener("click", event => {
+                let hit = event.target as HTMLElement;
+                if (changeCard.actionCancelHit(hit)) {
+                    popup._root().remove();
+                }
+                else if (changeCard.actionValidateHit(hit)) {
+                    // TODO : call service and manage results...
+                    // this.service.
+                    popup._root().remove();
+                }
             });
         }
     }
