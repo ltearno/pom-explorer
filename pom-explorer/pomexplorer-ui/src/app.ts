@@ -3,6 +3,7 @@
 import {ApplicationPanel} from "./ApplicationPanel";
 import {ProjectPanel} from "./ProjectPanel";
 import {ConsolePanel} from "./ConsolePanel";
+import {ChangePanel} from "./ChangePanel";
 import {Service, Status, Message, ServiceCallback} from "./Service";
 import { IWorkPanel } from "./IWorkPanel";
 
@@ -15,6 +16,7 @@ window.onload = () => {
 
     var projectPanel = new ProjectPanel(service);
     var consolePanel = new ConsolePanel();
+    let changesPanel = new ChangePanel(service);
 
     panel.addMenuItem("Projects");
     panel.addMenuItem("Changes");
@@ -39,6 +41,9 @@ window.onload = () => {
                 break;
             case "Console":
                 setPanel(consolePanel);
+                break;
+            case "Changes":
+                setPanel(changesPanel);
                 break;
             default:
                 setPanel(null);

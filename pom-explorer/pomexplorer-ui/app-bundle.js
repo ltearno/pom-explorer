@@ -49,7 +49,42 @@
     exports.ApplicationPanel = ApplicationPanel;
 });
 
-},{"./Utils":5,"./tardigrades/Application":7}],2:[function(require,module,exports){
+},{"./Utils":6,"./tardigrades/Application":8}],2:[function(require,module,exports){
+(function (factory) {
+    if (typeof module === 'object' && typeof module.exports === 'object') {
+        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === 'function' && define.amd) {
+        define(["require", "exports", "./tardigrades/ChangePanel"], factory);
+    }
+})(function (require, exports) {
+    "use strict";
+    var ChangePanel_1 = require("./tardigrades/ChangePanel");
+    class ChangePanel {
+        constructor(service) {
+            this.service = service;
+            this.domlet = ChangePanel_1.changePanelTemplate.createElement({});
+        }
+        focus() {
+            let rpcCall = {
+                "service": "change",
+                "method": "list",
+                "parameters": {}
+            };
+            this.service.sendRpc(rpcCall, (message) => {
+                var changes = JSON.parse(message.payload);
+                this.domlet.graphChanges().innerHTML = JSON.stringify(changes.graphChanges);
+                this.domlet.projectChanges().innerHTML = JSON.stringify(changes.projectChanges);
+            });
+        }
+        element() {
+            return this.domlet._root();
+        }
+    }
+    exports.ChangePanel = ChangePanel;
+});
+
+},{"./tardigrades/ChangePanel":12}],3:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -149,7 +184,7 @@
     exports.ConsolePanel = ConsolePanel;
 });
 
-},{"./Utils":5,"./tardigrades/ConsolePanel":11}],3:[function(require,module,exports){
+},{"./Utils":6,"./tardigrades/ConsolePanel":13}],4:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -166,9 +201,9 @@
     var Popup_1 = require("./tardigrades/Popup");
     class ProjectPanel {
         constructor(service) {
+            this.service = service;
             this.domlet = ProjectPanel_1.projectPanelTemplate.of(ProjectPanel_1.projectPanelTemplate.buildElement({}));
             Utils_1.initMaterialElement(this.domlet._root());
-            this.service = service;
             this.domlet.projectList().addEventListener("click", event => {
                 this.forDetailsToggle(event.target);
                 this.forChangeGav(event.target);
@@ -181,7 +216,14 @@
                 .subscribe(value => {
                 this.domlet.projectList().innerHTML = `<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>`;
                 Utils_1.initMaterialElement(this.domlet.projectList().children[0]);
-                this.service.sendRpc(value, (message) => {
+                let rpcCall = {
+                    "service": "projects",
+                    "method": "list",
+                    "parameters": {
+                        "query": value
+                    }
+                };
+                this.service.sendRpc(rpcCall, (message) => {
                     var list = JSON.parse(message.payload);
                     var htmlString = "";
                     for (var pi in list) {
@@ -301,9 +343,22 @@
                         popup._root().remove();
                     }
                     else if (changeCard.actionValidateHit(hit)) {
-                        // TODO : call service and manage results...
-                        // this.service.
-                        popup._root().remove();
+                        let rpcCall = {
+                            "service": "gav",
+                            "method": "change",
+                            "parameters": {
+                                "oldGav": project.gav,
+                                "newGav": `${changeCard.groupIdInput().value}:${changeCard.artifactIdInput().value}:${changeCard.artifactIdInput().value}`
+                            }
+                        };
+                        popup._root().style.opacity = "0.5";
+                        this.service.sendRpc(rpcCall, (message) => {
+                            var result = JSON.parse(message.payload);
+                            alert(message.payload);
+                            // TODO : call service and manage results...
+                            // this.service.
+                            popup._root().remove();
+                        });
                     }
                 });
             }
@@ -312,7 +367,7 @@
     exports.ProjectPanel = ProjectPanel;
 });
 
-},{"./Utils":5,"./tardigrades/Card":9,"./tardigrades/ChangeGavCard":10,"./tardigrades/Popup":13,"./tardigrades/ProjectPanel":14}],4:[function(require,module,exports){
+},{"./Utils":6,"./tardigrades/Card":10,"./tardigrades/ChangeGavCard":11,"./tardigrades/Popup":15,"./tardigrades/ProjectPanel":16}],5:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -336,20 +391,14 @@
                 this.handleMessage(msg);
             };
         }
-        sendRpc(command, callback) {
+        sendRpc(rpcCall, callback) {
             var message = {
                 guid: `message-${Math.random()}`,
                 talkGuid: `talkGuid-${Math.random()}`,
                 responseTo: null,
                 isClosing: false,
                 payloadFormat: "application/rpc",
-                payload: JSON.stringify({
-                    service: "projects",
-                    method: "list",
-                    parameters: {
-                        query: command
-                    }
-                })
+                payload: JSON.stringify(rpcCall)
             };
             this.waitingCallbacks[message.talkGuid] = callback;
             this.socket.send(JSON.stringify(message));
@@ -399,7 +448,7 @@
     var Status = exports.Status;
 });
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -429,19 +478,20 @@
     exports.initMaterialElement = initMaterialElement;
 });
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./ApplicationPanel", "./ProjectPanel", "./ConsolePanel", "./Service"], factory);
+        define(["require", "exports", "./ApplicationPanel", "./ProjectPanel", "./ConsolePanel", "./ChangePanel", "./Service"], factory);
     }
 })(function (require, exports) {
     "use strict";
     var ApplicationPanel_1 = require("./ApplicationPanel");
     var ProjectPanel_1 = require("./ProjectPanel");
     var ConsolePanel_1 = require("./ConsolePanel");
+    var ChangePanel_1 = require("./ChangePanel");
     var Service_1 = require("./Service");
     window.onload = () => {
         var panel = new ApplicationPanel_1.ApplicationPanel();
@@ -450,6 +500,7 @@
         var service = new Service_1.Service();
         var projectPanel = new ProjectPanel_1.ProjectPanel(service);
         var consolePanel = new ConsolePanel_1.ConsolePanel();
+        let changesPanel = new ChangePanel_1.ChangePanel(service);
         panel.addMenuItem("Projects");
         panel.addMenuItem("Changes");
         panel.addMenuItem("Graph");
@@ -471,6 +522,9 @@
                     break;
                 case "Console":
                     setPanel(consolePanel);
+                    break;
+                case "Changes":
+                    setPanel(changesPanel);
                     break;
                 default:
                     setPanel(null);
@@ -522,7 +576,7 @@
     };
 });
 
-},{"./ApplicationPanel":1,"./ConsolePanel":2,"./ProjectPanel":3,"./Service":4}],7:[function(require,module,exports){
+},{"./ApplicationPanel":1,"./ChangePanel":2,"./ConsolePanel":3,"./ProjectPanel":4,"./Service":5}],8:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -610,7 +664,7 @@
     exports.applicationTemplate = new ApplicationTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],8:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20}],9:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -691,7 +745,7 @@
     exports.baseCardTemplate = new BaseCardTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],9:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20}],10:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -808,7 +862,7 @@
     exports.cardTemplate = new CardTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18,"./BaseCard":8,"./Gav":12}],10:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20,"./BaseCard":9,"./Gav":14}],11:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -919,7 +973,67 @@
     exports.changeGavCardTemplate = new ChangeGavCardTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18,"./BaseCard":8}],11:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20,"./BaseCard":9}],12:[function(require,module,exports){
+(function (factory) {
+    if (typeof module === 'object' && typeof module.exports === 'object') {
+        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === 'function' && define.amd) {
+        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "../../node_modules/tardigrade/target/engine/model", "../../node_modules/tardigrade/target/engine/runtime"], factory);
+    }
+})(function (require, exports) {
+    "use strict";
+    var engine_1 = require("../../node_modules/tardigrade/target/engine/engine");
+    var model_1 = require("../../node_modules/tardigrade/target/engine/model");
+    var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
+    class ChangePanelTemplate {
+        constructor() {
+            engine_1.tardigradeEngine.addTemplate("ChangePanel", new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "h1", {}, [new model_1.TextNode("Graph changes")]), new model_1.ElementNode("graphChanges", 0, [""], "div", {}, [])]), new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "h2", {}, [new model_1.TextNode("Project changes")]), new model_1.ElementNode("projectChanges", 0, [""], "div", {}, [])])]));
+        }
+        ensureLoaded() {
+        }
+        buildHtml(dto) {
+            return engine_1.tardigradeEngine.buildHtml("ChangePanel", dto);
+        }
+        buildElement(dto) {
+            return runtime_1.createElement(this.buildHtml(dto));
+        }
+        createElement(dto) {
+            return this.of(this.buildElement(dto));
+        }
+        of(rootElement) {
+            let domlet = {
+                _root() { return rootElement; },
+                setUserData(data) {
+                    let old = rootElement._tardigradeUserData || null;
+                    rootElement._tardigradeUserData = data;
+                    return old;
+                },
+                getUserData() {
+                    return rootElement._tardigradeUserData || null;
+                },
+                graphChanges() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangePanel", { "graphChanges": 0 });
+                },
+                graphChangesHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangePanel", hitTest);
+                    return (location != null && ("graphChanges" in location));
+                },
+                projectChanges() {
+                    return engine_1.tardigradeEngine.getPoint(rootElement, "ChangePanel", { "projectChanges": 0 });
+                },
+                projectChangesHit(hitTest) {
+                    let location = engine_1.tardigradeEngine.getLocation(rootElement, "ChangePanel", hitTest);
+                    return (location != null && ("projectChanges" in location));
+                }
+            };
+            return domlet;
+        }
+    }
+    exports.changePanelTemplate = new ChangePanelTemplate();
+});
+
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20}],13:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -979,7 +1093,7 @@
     exports.consolePanelTemplate = new ConsolePanelTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],12:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20}],14:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -1046,7 +1160,7 @@
     exports.gavTemplate = new GavTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],13:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20}],15:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -1099,7 +1213,7 @@
     exports.popupTemplate = new PopupTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],14:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20}],16:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -1188,7 +1302,7 @@
     exports.projectPanelTemplate = new ProjectPanelTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18,"./Card":9,"./SearchPanel":15}],15:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20,"./Card":10,"./SearchPanel":17}],17:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -1241,7 +1355,7 @@
     exports.searchPanelTemplate = new SearchPanelTemplate();
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":16,"../../node_modules/tardigrade/target/engine/model":17,"../../node_modules/tardigrade/target/engine/runtime":18}],16:[function(require,module,exports){
+},{"../../node_modules/tardigrade/target/engine/engine":18,"../../node_modules/tardigrade/target/engine/model":19,"../../node_modules/tardigrade/target/engine/runtime":20}],18:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -1624,7 +1738,7 @@
     exports.tardigradeEngine = new TardigradeEngine();
 });
 
-},{"./model":17,"./runtime":18}],17:[function(require,module,exports){
+},{"./model":19,"./runtime":20}],19:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -1853,7 +1967,7 @@
     exports.PointInfo = PointInfo;
 });
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
@@ -1899,4 +2013,4 @@
     exports.createElement = createElement;
 });
 
-},{}]},{},[6]);
+},{}]},{},[7]);

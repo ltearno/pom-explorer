@@ -7,6 +7,8 @@ import java.util.Map;
 
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Log;
+import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.webserver.RpcMessage;
 
 public class RpcServices
@@ -37,7 +39,7 @@ public class RpcServices
 	{
 		Object service = services.get( rpcMessage.getService() );
 		if( service == null )
-			throw new RuntimeException( "service not specified" );
+			throw new RuntimeException( "service " + rpcMessage.getService() + " not found" );
 
 		Method methods[] = service.getClass().getMethods();
 		Method method = null;
@@ -62,8 +64,12 @@ public class RpcServices
 
 			if( paramType == Client.class )
 				param = client;
+			else if( paramType == Session.class )
+				param = client.getCurrentSession();
 			else if( paramType == Log.class )
 				param = log;
+			else if( paramType == Gav.class )
+				param = Gav.parse( (String) (rpcMessage.getParameters().get( method.getParameters()[i].getName() )) );
 			else
 				param = rpcMessage.getParameters().get( method.getParameters()[i].getName() );
 

@@ -1,6 +1,6 @@
 "use strict";
 
-﻿export interface IWorkPanel {
+export interface IWorkPanel {
     focus(): void;
     element(): HTMLElement;
 }

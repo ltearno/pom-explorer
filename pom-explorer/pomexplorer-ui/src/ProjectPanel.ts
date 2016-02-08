@@ -12,13 +12,9 @@ import { popupTemplate, PopupTemplateElement } from "./tardigrades/Popup";
 export class ProjectPanel implements IWorkPanel {
     private domlet: ProjectPanelTemplateElement;
 
-    private service: Service;
-
-    constructor(service: Service) {
+    constructor(private service: Service) {
         this.domlet = projectPanelTemplate.of(projectPanelTemplate.buildElement({}));
         initMaterialElement(this.domlet._root());
-
-        this.service = service;
 
         this.domlet.projectList().addEventListener("click", event => {
             this.forDetailsToggle(event.target as HTMLElement);
@@ -34,7 +30,15 @@ export class ProjectPanel implements IWorkPanel {
                 this.domlet.projectList().innerHTML = `<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>`;
                 initMaterialElement(<HTMLElement>this.domlet.projectList().children[0]);
 
-                this.service.sendRpc(value, (message) => {
+                let rpcCall = {
+                    "service": "projects",
+                    "method": "list",
+                    "parameters": {
+                        "query": value
+                    }
+                };
+
+                this.service.sendRpc(rpcCall, (message) => {
                     var list: Project[] = JSON.parse(message.payload);
 
                     var htmlString = "";
@@ -175,9 +179,23 @@ export class ProjectPanel implements IWorkPanel {
                     popup._root().remove();
                 }
                 else if (changeCard.actionValidateHit(hit)) {
-                    // TODO : call service and manage results...
-                    // this.service.
-                    popup._root().remove();
+                    let rpcCall = {
+                        "service": "gav",
+                        "method": "change",
+                        "parameters": {
+                            "oldGav": project.gav,
+                            "newGav": `${changeCard.groupIdInput().value}:${changeCard.artifactIdInput().value}:${changeCard.artifactIdInput().value}`
+                        }
+                    };
+
+                    popup._root().style.opacity = "0.5";
+                    this.service.sendRpc(rpcCall, (message) => {
+                        var result = JSON.parse(message.payload);
+                        alert(message.payload);
+                        // TODO : call service and manage results...
+                        // this.service.
+                        popup._root().remove();
+                    });
                 }
             });
         }

@@ -10,7 +10,7 @@ import fr.lteconsulting.pomexplorer.uirpc.ProjectDto;
 
 public class ProjectsService
 {
-	public Object list( Client client, Log createLogger, String query )
+	public Object list( Client client, Log log, String query )
 	{
 		// project filter, just a POC !
 		List<ProjectDto> result = client.getCurrentSession().projects().values().stream().filter( ( p ) -> p.getGav().toString().contains( query ) )

@@ -24,20 +24,14 @@ export class Service {
         };
     }
 
-    public sendRpc(command: string, callback: ServiceCallback) {
+    public sendRpc(rpcCall: RpcCall, callback: ServiceCallback) {
         var message = {
             guid: `message-${Math.random()}`,
             talkGuid: `talkGuid-${Math.random()}`,
             responseTo: null,
             isClosing: false,
             payloadFormat: "application/rpc",
-            payload: JSON.stringify({
-                service: "projects",
-                method: "list",
-                parameters: {
-                    query: command
-                }
-            })
+            payload: JSON.stringify(rpcCall)
         };
 
         this.waitingCallbacks[message.talkGuid] = callback;
@@ -96,6 +90,14 @@ export enum Status {
 
 export interface ServiceCallback {
     (message: Message): void;
+}
+
+export interface RpcCall {
+    service: string,
+    method: string,
+    parameters: {
+        [name: string]: any;
+    }
 }
 
 export interface Message {

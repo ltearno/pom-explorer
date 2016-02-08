@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.eclipse.jdt.core.dom.CatchClause;
 
 import com.google.gson.Gson;
+import com.owlike.genson.Genson;
+import com.owlike.genson.GensonBuilder;
+import com.owlike.genson.reflect.VisibilityFilter;
 
 import fr.lteconsulting.pomexplorer.commands.AnalyzeCommand;
 import fr.lteconsulting.pomexplorer.commands.BuildCommand;
@@ -28,9 +28,10 @@ import fr.lteconsulting.pomexplorer.commands.StatsCommand;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.rpccommands.ChangeService;
+import fr.lteconsulting.pomexplorer.rpccommands.GavService;
 import fr.lteconsulting.pomexplorer.rpccommands.ProjectsService;
 import fr.lteconsulting.pomexplorer.rpccommands.RpcServices;
-import fr.lteconsulting.pomexplorer.uirpc.ProjectDto;
 import fr.lteconsulting.pomexplorer.webserver.Message;
 import fr.lteconsulting.pomexplorer.webserver.MessageFactory;
 import fr.lteconsulting.pomexplorer.webserver.RpcMessage;
@@ -98,6 +99,8 @@ public class AppFactory
 			rpcServices = new RpcServices();
 
 			rpcServices.addService( new ProjectsService() );
+			rpcServices.addService( new GavService() );
+			rpcServices.addService( new ChangeService() );
 		}
 
 		return rpcServices;
@@ -156,6 +159,8 @@ public class AppFactory
 		public void onWebsocketMessage( Client client, String messageText )
 		{
 			Gson gson = new Gson();
+			Genson genson = new GensonBuilder().useFields( true, new VisibilityFilter() ).useClassMetadata( true ).create();
+
 			Message message = gson.fromJson( messageText, Message.class );
 			if( message == null )
 			{
@@ -189,7 +194,9 @@ public class AppFactory
 				{
 					RpcMessage rpcMessage = gson.fromJson( message.getPayload(), RpcMessage.class );
 					Object result = rpcServices().takeCall( client, createLogger( client, message.getTalkGuid() ), rpcMessage );
-					client.send( new Message( MessageFactory.newGuid(), message.getTalkGuid(), null, true, "application/rpc", gson.toJson( result ) ) );
+
+					String payload = genson.serialize( result );
+					client.send( new Message( MessageFactory.newGuid(), message.getTalkGuid(), null, true, "application/rpc", payload ) );
 				}
 				catch( Exception o )
 				{
