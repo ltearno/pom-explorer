@@ -34,7 +34,7 @@ class ChangePanelTemplate {
     constructor() {
         
 
-        tardigradeEngine.addTemplate("ChangePanel", new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "h1", {}, [new TextNode("Graph changes")]), new ElementNode("graphChanges", <Cardinal>0, [""], "div", {}, [])]), new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "h2", {}, [new TextNode("Project changes")]), new ElementNode("projectChanges", <Cardinal>0, [""], "div", {}, [])])]));
+        tardigradeEngine.addTemplate("ChangePanel", new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "h2", {}, [new TextNode("Graph changes")]), new ElementNode("graphChanges", <Cardinal>0, [""], "div", {}, [])]), new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "h2", {}, [new TextNode("Project changes")]), new ElementNode("projectChanges", <Cardinal>0, [""], "div", {}, [])])]));
     }
 
     buildHtml(dto: ChangePanelTemplateDto) {

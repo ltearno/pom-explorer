@@ -73,8 +73,8 @@
             };
             this.service.sendRpc(rpcCall, (message) => {
                 var changes = JSON.parse(message.payload);
-                this.domlet.graphChanges().innerHTML = JSON.stringify(changes.graphChanges);
-                this.domlet.projectChanges().innerHTML = JSON.stringify(changes.projectChanges);
+                this.domlet.graphChanges().innerHTML = "coucou"; //JSON.stringify(changes.graphChanges);
+                this.domlet.projectChanges().innerHTML = "kiki"; //JSON.stringify(changes.projectChanges);
             });
         }
         element() {
@@ -338,6 +338,7 @@
                 popup.content().appendChild(changeCard._root());
                 document.getElementsByTagName('body')[0].appendChild(popup._root());
                 changeCard._root().addEventListener("click", event => {
+                    let test = changeCard.groupIdInput();
                     let hit = event.target;
                     if (changeCard.actionCancelHit(hit)) {
                         popup._root().remove();
@@ -764,7 +765,7 @@
         constructor() {
             BaseCard_1.baseCardTemplate.ensureLoaded();
             Gav_1.gavTemplate.ensureLoaded();
-            engine_1.tardigradeEngine.addTemplate("Card", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TemplateNode("gav", 0, ["export"], "Gav", { "class": "mdl-card__title-text" }, { "groupId": new model_1.PointInfo("gavGroupId", {}, []), "artifactId": new model_1.PointInfo("gavArtifactId", {}, []), "version": new model_1.PointInfo("gavVersion", {}, []) })]), "content": new model_1.PointInfo("content", {}, []), "details": new model_1.PointInfo("details", {}, []), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionDetails", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Details")])]), "menu": new model_1.PointInfo(null, {}, [new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-card__menu", "style": "color:white;" }, [new model_1.ElementNode("edit", 0, [""], "button", { "class": "mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" }, [new model_1.ElementNode(null, 0, [""], "i", { "class": "material-icons" }, [new model_1.TextNode("mode_edit")])])])]) }));
+            engine_1.tardigradeEngine.addTemplate("Card", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TemplateNode("gav", 0, ["export"], "Gav", { "class": "mdl-card__title-text" }, { "groupId": new model_1.PointInfo("gavGroupId", {}, []), "artifactId": new model_1.PointInfo("gavArtifactId", {}, []), "version": new model_1.PointInfo("gavVersion", {}, []) })]), "content": new model_1.PointInfo("content", {}, []), "details": new model_1.PointInfo("details", {}, []), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionDetails", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Details")]), new model_1.ElementNode("edit", 0, [""], "button", { "class": "mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" }, [new model_1.ElementNode(null, 0, [""], "i", { "class": "material-icons" }, [new model_1.TextNode("mode_edit")])])]) }));
         }
         ensureLoaded() {
         }
@@ -988,7 +989,7 @@
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class ChangePanelTemplate {
         constructor() {
-            engine_1.tardigradeEngine.addTemplate("ChangePanel", new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "h1", {}, [new model_1.TextNode("Graph changes")]), new model_1.ElementNode("graphChanges", 0, [""], "div", {}, [])]), new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "h2", {}, [new model_1.TextNode("Project changes")]), new model_1.ElementNode("projectChanges", 0, [""], "div", {}, [])])]));
+            engine_1.tardigradeEngine.addTemplate("ChangePanel", new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "h2", {}, [new model_1.TextNode("Graph changes")]), new model_1.ElementNode("graphChanges", 0, [""], "div", {}, [])]), new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "h2", {}, [new model_1.TextNode("Project changes")]), new model_1.ElementNode("projectChanges", 0, [""], "div", {}, [])])]));
         }
         ensureLoaded() {
         }
@@ -1513,6 +1514,8 @@
             return Object.assign({}, attrs1, attrs2);
         }
         buildElementOverride(node, attrs, text) {
+            if (node.name.toLowerCase() == "br")
+                return "<br/>";
             var res = "";
             res += this.buildTagBegin(node.name, attrs);
             res += text;
@@ -1520,6 +1523,8 @@
             return res;
         }
         buildElementSpecimen(templateRoot, node, attrs, dtos) {
+            if (node.name.toLowerCase() == "br")
+                return "<br/>";
             var res = "";
             res += this.buildTagBegin(node.name, attrs);
             if (node.getChildren() != null) {

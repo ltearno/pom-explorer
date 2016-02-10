@@ -28,7 +28,6 @@
     flex-grow: 1;
     flex-shrink: 1;
     min-width: 30em;
-    /*max-width: 95%;*/
 }
 
 .project-card > .mdl-card__title {

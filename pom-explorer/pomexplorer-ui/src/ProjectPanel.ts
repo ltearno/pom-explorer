@@ -174,6 +174,9 @@ export class ProjectPanel implements IWorkPanel {
             document.getElementsByTagName('body')[0].appendChild(popup._root());
 
             changeCard._root().addEventListener("click", event => {
+                
+                let test = changeCard.groupIdInput();
+                
                 let hit = event.target as HTMLElement;
                 if (changeCard.actionCancelHit(hit)) {
                     popup._root().remove();
