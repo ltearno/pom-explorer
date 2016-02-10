@@ -73,8 +73,8 @@
             };
             this.service.sendRpc(rpcCall, (message) => {
                 var changes = JSON.parse(message.payload);
-                this.domlet.graphChanges().innerHTML = "coucou"; //JSON.stringify(changes.graphChanges);
-                this.domlet.projectChanges().innerHTML = "kiki"; //JSON.stringify(changes.projectChanges);
+                this.domlet.graphChanges().innerHTML = changes.graphChanges.map(f => JSON.stringify(f)).join('<br/>');
+                this.domlet.projectChanges().innerHTML = changes.projectChanges.map(f => JSON.stringify(f)).join('<br/>');
             });
         }
         element() {
@@ -211,7 +211,7 @@
             this.domlet.projectList().addEventListener("dblclick", event => this.forChangeGav(event.target));
             Utils_1.rx.Observable.fromEvent(this.domlet.searchInput(), "input")
                 .pluck("target", "value")
-                .debounce(100)
+                .debounce(300)
                 .distinctUntilChanged()
                 .subscribe(value => {
                 this.domlet.projectList().innerHTML = `<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>`;
@@ -430,10 +430,13 @@
         handleMessage(msg) {
             var talkId = msg.talkGuid;
             var callback = this.waitingCallbacks[talkId];
-            if (callback)
+            if (callback) {
+                console.log(`received msg : ${JSON.stringify(msg)}`);
                 callback(msg);
-            else
+            }
+            else {
                 this.onUnknownMessage(msg);
+            }
             if (msg.isClosing) {
                 delete this.waitingCallbacks[talkId];
             }

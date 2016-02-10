@@ -1,8 +1,8 @@
 package fr.lteconsulting.pomexplorer.change.graph.processor;
 
 import fr.lteconsulting.pomexplorer.Log;
-import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.change.ChangeProcessor;
 import fr.lteconsulting.pomexplorer.change.ChangeSet;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange;
@@ -11,13 +11,12 @@ import fr.lteconsulting.pomexplorer.change.graph.GraphChange.RelationChange;
 import fr.lteconsulting.pomexplorer.model.Gav;
 
 /**
- * When a gav dependency if changed, careful is taken to reopen the relation source in snapshot if needed
+ * When a gav dependency if changed, care is taken to reopen the relation source in snapshot if needed
  * 
  * @author Arnaud
  */
 public class OpeningProcessor implements ChangeProcessor<GraphChange>
 {
-
 	@Override
 	public void processChange( Session session, Log log, GraphChange change, ChangeSet<GraphChange> changeSet )
 	{

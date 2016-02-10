@@ -21,8 +21,8 @@ export class ChangePanel implements IWorkPanel {
         this.service.sendRpc(rpcCall, (message) => {
             var changes: any = JSON.parse(message.payload);
 
-            this.domlet.graphChanges().innerHTML = "coucou";//JSON.stringify(changes.graphChanges);
-            this.domlet.projectChanges().innerHTML = "kiki";//JSON.stringify(changes.projectChanges);
+            this.domlet.graphChanges().innerHTML = changes.graphChanges.map(f=> JSON.stringify(f)).join('<br/>');
+            this.domlet.projectChanges().innerHTML = changes.projectChanges.map(f=> JSON.stringify(f)).join('<br/>');
         });
     }
 

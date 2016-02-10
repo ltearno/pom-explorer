@@ -367,7 +367,7 @@ public class Project
 		return !isExternal && pomFile.getParentFile().toPath().resolve( "src" ).toFile().exists();
 	}
 
-	public boolean fetchMissingGavsForResolution( boolean online, Log log )
+	public boolean fetchMissingGavsForResolution( boolean online, Log log, Set<Project> fetchedProjects )
 	{
 		boolean ok = true;
 
@@ -376,7 +376,9 @@ public class Project
 			if( !session.projects().contains( parentGav ) )
 			{
 				Project parentProject = session.projects().fetchProject( parentGav, online, log );
-				if( parentProject == null || !parentProject.fetchMissingGavsForResolution( online, log ) )
+				if( parentProject != null )
+					fetchedProjects.add( parentProject );
+				if( parentProject == null || !parentProject.fetchMissingGavsForResolution( online, log, fetchedProjects ) )
 				{
 					ok = false;
 					log.html( Tools.errorMessage( "cannot resolve project " + toString() + " due to:<br/>&nbsp;&nbsp;&nbsp;missing parent project " + parentGav ) );
@@ -394,7 +396,9 @@ public class Project
 					if( !session.projects().contains( bomGav ) )
 					{
 						Project bomProject = session.projects().fetchProject( bomGav, online, log );
-						if( bomProject == null || !bomProject.fetchMissingGavsForResolution( online, log ) )
+						if( bomProject != null )
+							fetchedProjects.add( bomProject );
+						if( bomProject == null || !bomProject.fetchMissingGavsForResolution( online, log, fetchedProjects ) )
 						{
 							ok = false;
 							log.html( Tools.errorMessage( "cannot resolve project " + toString() + " due to:<br/>&nbsp;&nbsp;&nbsp;missing bom import " + bomGav ) );

@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.gson.Gson;
-import com.owlike.genson.Genson;
-import com.owlike.genson.GensonBuilder;
-import com.owlike.genson.reflect.VisibilityFilter;
 
 import fr.lteconsulting.pomexplorer.commands.AnalyzeCommand;
 import fr.lteconsulting.pomexplorer.commands.BuildCommand;
@@ -159,7 +156,6 @@ public class AppFactory
 		public void onWebsocketMessage( Client client, String messageText )
 		{
 			Gson gson = new Gson();
-			Genson genson = new GensonBuilder().useFields( true, new VisibilityFilter() ).useClassMetadata( true ).create();
 
 			Message message = gson.fromJson( messageText, Message.class );
 			if( message == null )
@@ -195,7 +191,7 @@ public class AppFactory
 					RpcMessage rpcMessage = gson.fromJson( message.getPayload(), RpcMessage.class );
 					Object result = rpcServices().takeCall( client, createLogger( client, message.getTalkGuid() ), rpcMessage );
 
-					String payload = genson.serialize( result );
+					String payload = gson.toJson( result );
 					client.send( new Message( MessageFactory.newGuid(), message.getTalkGuid(), null, true, "application/rpc", payload ) );
 				}
 				catch( Exception o )

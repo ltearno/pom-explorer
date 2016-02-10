@@ -58,7 +58,7 @@ public class PomAnalyzer
 		Set<Project> toGraphProjects = new HashSet<>();
 		for( Project project : loadedProjects )
 		{
-			if( project.fetchMissingGavsForResolution( online, log ) )
+			if( project.fetchMissingGavsForResolution( online, log, toGraphProjects ) )
 				toGraphProjects.add( project );
 			else
 				unresolvableProjects.add( project );

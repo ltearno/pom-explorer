@@ -24,7 +24,7 @@ export class ProjectPanel implements IWorkPanel {
 
         rx.Observable.fromEvent(this.domlet.searchInput(), "input")
             .pluck("target", "value")
-            .debounce(100)
+            .debounce(300)
             .distinctUntilChanged()
             .subscribe(value => {
                 this.domlet.projectList().innerHTML = `<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>`;
