@@ -1617,11 +1617,14 @@
                 visitor(node.xId, node, currentPath);
             }
             if (node.getChildren() != null) {
+                let childIdx = 0;
                 for (var i = 0; i < node.getChildren().length; i++) {
                     let child = node.getChildren()[i];
-                    currentPath.push(i);
+                    currentPath.push(childIdx);
                     this.visitNode(child, currentPath, visitor);
                     currentPath.pop();
+                    if (!(child instanceof model_1.TextNode))
+                        childIdx++;
                 }
             }
         }
@@ -1641,11 +1644,14 @@
                     if (pointInfo.xId != null)
                         visitor(pointInfo.xId, pointInfo, pointPath);
                     if (pointInfo.getChildren() != null) {
+                        let childIdx = 0;
                         for (var i = 0; i < pointInfo.getChildren().length; i++) {
                             let child = pointInfo.getChildren()[i];
-                            pointPath.push(i);
+                            pointPath.push(childIdx);
                             this.visitNode(child, pointPath, visitor);
                             pointPath.pop();
+                            if (!(child instanceof model_1.TextNode))
+                                childIdx++;
                         }
                     }
                 }
