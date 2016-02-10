@@ -202,7 +202,7 @@
     class ProjectPanel {
         constructor(service) {
             this.service = service;
-            this.domlet = ProjectPanel_1.projectPanelTemplate.of(ProjectPanel_1.projectPanelTemplate.buildElement({}));
+            this.domlet = ProjectPanel_1.projectPanelTemplate.createElement({});
             Utils_1.initMaterialElement(this.domlet._root());
             this.domlet.projectList().addEventListener("click", event => {
                 this.forDetailsToggle(event.target);

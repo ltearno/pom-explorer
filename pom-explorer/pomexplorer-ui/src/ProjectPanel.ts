@@ -13,7 +13,7 @@ export class ProjectPanel implements IWorkPanel {
     private domlet: ProjectPanelTemplateElement;
 
     constructor(private service: Service) {
-        this.domlet = projectPanelTemplate.of(projectPanelTemplate.buildElement({}));
+        this.domlet = projectPanelTemplate.createElement({});
         initMaterialElement(this.domlet._root());
 
         this.domlet.projectList().addEventListener("click", event => {
