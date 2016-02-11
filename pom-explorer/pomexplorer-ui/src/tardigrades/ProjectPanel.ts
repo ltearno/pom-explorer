@@ -30,6 +30,7 @@ projectList(): HTMLDivElement;
 projectListHit(hitTest:HTMLElement): boolean;
 cards(cardsIndex: number): HTMLElement;
 cardsDomlet(cardsIndex: number): CardTemplateElement;
+cardsHitDomlet(hitElement: HTMLElement): CardTemplateElement;
 cardsIndex(hitTest:HTMLElement): number;
 buildCards(dto: any): string;
 addCards(dto: any): HTMLElement;
@@ -93,6 +94,12 @@ return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "ca
 cardsDomlet(cardsIndex: number): CardTemplateElement {
 let element = domlet.cards(cardsIndex);
 return cardTemplate.of(element);
+},
+cardsHitDomlet(hitElement: HTMLElement): CardTemplateElement {
+let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitElement);
+if(location==null) return null;
+if(!("cards" in location) return null;
+return domlet.cardsDomlet(location["cards"]);
 },
 cardsIndex(hitTest:HTMLElement): number {
                         let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);

@@ -38,6 +38,7 @@ export interface CardTemplateElement {
     getUserData():any;
     gav(): HTMLElement;
 gavDomlet(): GavTemplateElement;
+gavHitDomlet(hitElement: HTMLElement): GavTemplateElement;
 gavHit(hitTest:HTMLElement): boolean;
 gavGroupId(): HTMLElement;
 gavGroupIdHit(hitTest:HTMLElement): boolean;
@@ -100,6 +101,11 @@ return <HTMLElement>tardigradeEngine.getPoint(rootElement, "Card", { "gav": 0 })
 gavDomlet(): GavTemplateElement {
 let element = domlet.gav();
 return gavTemplate.of(element);
+},
+gavHitDomlet(hitElement: HTMLElement): GavTemplateElement {
+let location = tardigradeEngine.getLocation(rootElement, "Card", hitElement);
+if(location==null) return null;
+return domlet.gavDomlet();
 },
 gavHit(hitTest:HTMLElement): boolean {
                         let location = tardigradeEngine.getLocation(rootElement, "Card", hitTest);

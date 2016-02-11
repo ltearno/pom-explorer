@@ -129,13 +129,10 @@ export class ProjectPanel implements IWorkPanel {
     }
 
     private forDetailsToggle(hitElement: HTMLElement) {
-        let cardIndex = this.domlet.cardsIndex(hitElement);
-        if (cardIndex < 0)
+        let card = this.domlet.cardsHitDomlet(hitElement);
+        if (card == null)
             return;
 
-        let card = this.domlet.cardsDomlet(cardIndex);
-
-        // details button
         if (card.actionDetailsHit(hitElement)) {
             if (card.details().style.display === "none")
                 card.details().style.display = null;
@@ -145,11 +142,9 @@ export class ProjectPanel implements IWorkPanel {
     }
 
     private forChangeGav(hitElement: HTMLElement) {
-        let cardIndex = this.domlet.cardsIndex(hitElement);
-        if (cardIndex < 0)
+        let card = this.domlet.cardsHitDomlet(hitElement);
+        if (card == null)
             return;
-
-        let card = this.domlet.cardsDomlet(cardIndex);
 
         let project = card.getUserData();
         let parts = project.gav.split(":");
@@ -174,9 +169,9 @@ export class ProjectPanel implements IWorkPanel {
             document.getElementsByTagName('body')[0].appendChild(popup._root());
 
             changeCard._root().addEventListener("click", event => {
-                
+
                 let test = changeCard.groupIdInput();
-                
+
                 let hit = event.target as HTMLElement;
                 if (changeCard.actionCancelHit(hit)) {
                     popup._root().remove();
