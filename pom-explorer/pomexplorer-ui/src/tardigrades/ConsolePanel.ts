@@ -7,7 +7,7 @@ import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/
 
 
 
-export interface ConsolePanelTemplateDto {
+export interface ConsolePanelDto {
     _root?: string;
     output?: any;
 "@output"?: any;
@@ -16,71 +16,64 @@ input?: any;
 
 }
 
-export interface ConsolePanelTemplateElement {
-    _root(): HTMLElement;
-    // returns the previous data
-    setUserData(data:any):any;
-    getUserData():any;
-    output(): HTMLDivElement;
-outputHit(hitTest:HTMLElement): boolean;
-input(): HTMLInputElement;
-inputHit(hitTest:HTMLElement): boolean;
-}
+export class ConsolePanel {
+    private static loaded = false;
 
-class ConsolePanelTemplate {
-    ensureLoaded() {
-    }
+    static ensureLoaded() {
+        if(ConsolePanel.loaded)
+            return;
+        ConsolePanel.loaded = true;
 
-    constructor() {
         
 
         tardigradeEngine.addTemplate("ConsolePanel", new ElementNode(null, <Cardinal>0, [""], "div", {"class": "console-panel"}, [new ElementNode("output", <Cardinal>0, [""], "div", {"class": "console-output"}, []), new ElementNode(null, <Cardinal>0, [""], "div", {"class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"}, [new ElementNode("input", <Cardinal>0, [""], "input", {"class": "mdl-textfield__input", "type": "text", "id": "sample3"}, []), new ElementNode(null, <Cardinal>0, [""], "label", {"class": "mdl-textfield__label", "for": "sample3"}, [new TextNode("enter a command, or just \"?\" to get help")])])]));
     }
 
-    buildHtml(dto: ConsolePanelTemplateDto) {
+    static html(dto: ConsolePanelDto): string {
+        ConsolePanel.ensureLoaded();
+
         return tardigradeEngine.buildHtml("ConsolePanel", dto);
     }
 
-    buildElement(dto: ConsolePanelTemplateDto) {
-        return createElement(this.buildHtml(dto));
+    static element(dto:ConsolePanelDto): HTMLElement {
+        return createElement(ConsolePanel.html(dto));
     }
 
-    createElement(dto: ConsolePanelTemplateDto): ConsolePanelTemplateElement {
-        return this.of(this.buildElement(dto));
+    static create(dto:ConsolePanelDto): ConsolePanel {
+        let element = ConsolePanel.element(dto);
+        return new ConsolePanel(element);
     }
 
-    of(rootElement: HTMLElement): ConsolePanelTemplateElement {
-        let domlet = {
-            _root() { return rootElement; },
+    static of(element: HTMLElement): ConsolePanel {
+        return new ConsolePanel(element);
+    }
 
-            setUserData(data:any):any {
-                let old = (rootElement as any)._tardigradeUserData || null;
-                (rootElement as any)._tardigradeUserData = data;
-                return old;
-            },
+    constructor(private rootElement: HTMLElement) {}
 
-            getUserData():any {
-                return (rootElement as any)._tardigradeUserData || null;
-            },
+    rootHtmlElement(): HTMLElement { return this.rootElement; }
 
-            output(): HTMLDivElement{
-return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "output": 0 });
-},
+    setUserData(data:any): any {
+        let old = (this.rootElement as any)._tardigradeUserData || undefined;
+        (this.rootElement as any)._tardigradeUserData = data;
+        return old;
+    }
+
+    getUserData():any {
+        return (this.rootElement as any)._tardigradeUserData || undefined;
+    }
+
+    output(): HTMLDivElement {
+return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "ConsolePanel", { "output": 0 });
+}
 outputHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(rootElement, "ConsolePanel", hitTest);
+                        let location = tardigradeEngine.getLocation(this.rootElement, "ConsolePanel", hitTest);
                         return (location != null && ("output" in location));
-                        },
-input(): HTMLInputElement{
-return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "ConsolePanel", { "input": 0 });
-},
+                        }
+input(): HTMLInputElement {
+return <HTMLInputElement>tardigradeEngine.getPoint(this.rootElement, "ConsolePanel", { "input": 0 });
+}
 inputHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(rootElement, "ConsolePanel", hitTest);
+                        let location = tardigradeEngine.getLocation(this.rootElement, "ConsolePanel", hitTest);
                         return (location != null && ("input" in location));
                         }
-        };
-
-        return domlet;
-    }
 }
-
-export var consolePanelTemplate = new ConsolePanelTemplate();

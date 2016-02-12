@@ -4,14 +4,14 @@ import { IWorkPanel } from "./IWorkPanel";
 import { initMaterialElement, rx } from "./Utils";
 import { createElement, domChain, indexOf } from "../node_modules/tardigrade/target/engine/runtime";
 
-import { consolePanelTemplate, ConsolePanelTemplateElement } from "./tardigrades/ConsolePanel";
+import { ConsolePanel as ConsolePanelTemplate } from "./tardigrades/ConsolePanel";
 
 export class ConsolePanel implements IWorkPanel {
-    private domlet: ConsolePanelTemplateElement;
+    private domlet: ConsolePanelTemplate;
 
     constructor() {
-        this.domlet = consolePanelTemplate.of(consolePanelTemplate.buildElement({}));
-        initMaterialElement(this.domlet._root());
+        this.domlet = ConsolePanelTemplate.create({});
+        initMaterialElement(this.domlet.rootHtmlElement());
         this.initInput();
     }
 
@@ -33,7 +33,7 @@ export class ConsolePanel implements IWorkPanel {
     }
 
     element() {
-        return this.domlet._root();
+        return this.domlet.rootHtmlElement();
     }
 
     private initInput() {

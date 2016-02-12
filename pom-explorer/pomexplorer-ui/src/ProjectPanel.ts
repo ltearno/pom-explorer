@@ -1,20 +1,20 @@
 "use strict";
 
-import { cardTemplate } from "./tardigrades/Card";
-import { baseCardTemplate } from "./tardigrades/BaseCard";
-import { changeGavCardTemplate } from "./tardigrades/ChangeGavCard";
+import { Card } from "./tardigrades/Card";
+import { BaseCard } from "./tardigrades/BaseCard";
+import { ChangeGavCard } from "./tardigrades/ChangeGavCard";
 import { initMaterialElement, rx } from "./Utils";
 import { Service, Status, Message, ServiceCallback } from "./Service";
 import { IWorkPanel } from "./IWorkPanel";
-import { projectPanelTemplate, ProjectPanelTemplateElement } from "./tardigrades/ProjectPanel";
-import { popupTemplate, PopupTemplateElement } from "./tardigrades/Popup";
+import { ProjectPanel as ProjectPanelTemplate } from "./tardigrades/ProjectPanel";
+import { Popup } from "./tardigrades/Popup";
 
 export class ProjectPanel implements IWorkPanel {
-    private domlet: ProjectPanelTemplateElement;
+    private domlet: ProjectPanelTemplate;
 
     constructor(private service: Service) {
-        this.domlet = projectPanelTemplate.createElement({});
-        initMaterialElement(this.domlet._root());
+        this.domlet = ProjectPanelTemplate.create({});
+        initMaterialElement(this.domlet.rootHtmlElement());
 
         this.domlet.projectList().addEventListener("click", event => {
             this.forDetailsToggle(event.target as HTMLElement);
@@ -100,7 +100,7 @@ export class ProjectPanel implements IWorkPanel {
                             details += "<br/>";
                         }
 
-                        htmlString += cardTemplate.buildHtml({
+                        htmlString += Card.html({
                             gav: { groupId: groupId, artifactId: artifactId, version: version },
                             content: content,
                             details: details
@@ -114,7 +114,7 @@ export class ProjectPanel implements IWorkPanel {
                     for (var pi in list) {
                         var project = list[pi];
 
-                        cardTemplate.of(<HTMLElement>elements.item(pi)).setUserData(project);
+                        Card.of(<HTMLElement>elements.item(pi)).setUserData(project);
                     }
                 });
             });
@@ -125,7 +125,7 @@ export class ProjectPanel implements IWorkPanel {
     }
 
     element() {
-        return this.domlet._root();
+        return this.domlet.rootHtmlElement();
     }
 
     private forDetailsToggle(hitElement: HTMLElement) {
@@ -153,7 +153,7 @@ export class ProjectPanel implements IWorkPanel {
         let version = parts[2];
 
         if (card.editHit(hitElement) || card.gavHit(hitElement)) {
-            let changeCard = changeGavCardTemplate.createElement({
+            let changeCard = ChangeGavCard.create({
                 groupId: groupId,
                 artifactId: artifactId,
                 version: version,
@@ -161,20 +161,20 @@ export class ProjectPanel implements IWorkPanel {
                 "@artifactIdInput": { "value": artifactId },
                 "@versionInput": { "value": version }
             });
-            initMaterialElement(changeCard._root());
+            initMaterialElement(changeCard.rootHtmlElement());
 
-            let popup = popupTemplate.createElement({});
-            popup.content().appendChild(changeCard._root());
+            let popup = Popup.create({});
+            popup.content().appendChild(changeCard.rootHtmlElement());
 
-            document.getElementsByTagName('body')[0].appendChild(popup._root());
+            document.getElementsByTagName('body')[0].appendChild(popup.rootHtmlElement());
 
-            changeCard._root().addEventListener("click", event => {
+            changeCard.rootHtmlElement().addEventListener("click", event => {
 
                 let test = changeCard.groupIdInput();
 
                 let hit = event.target as HTMLElement;
                 if (changeCard.actionCancelHit(hit)) {
-                    popup._root().remove();
+                    popup.rootHtmlElement().remove();
                 }
                 else if (changeCard.actionValidateHit(hit)) {
                     let rpcCall = {
@@ -186,13 +186,13 @@ export class ProjectPanel implements IWorkPanel {
                         }
                     };
 
-                    popup._root().style.opacity = "0.5";
+                    popup.rootHtmlElement().style.opacity = "0.5";
                     this.service.sendRpc(rpcCall, (message) => {
                         var result = JSON.parse(message.payload);
                         alert(message.payload);
                         // TODO : call service and manage results...
                         // this.service.
-                        popup._root().remove();
+                        popup.rootHtmlElement().remove();
                     });
                 }
             });

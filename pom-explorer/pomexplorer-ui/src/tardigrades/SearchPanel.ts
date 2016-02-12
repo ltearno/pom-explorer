@@ -7,69 +7,64 @@ import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/
 
 
 
-export interface SearchPanelTemplateDto {
+export interface SearchPanelDto {
     _root?: string;
     input?: any;
 "@input"?: any;
 
 }
 
-export interface SearchPanelTemplateElement {
-    _root(): HTMLElement;
-    // returns the previous data
-    setUserData(data:any):any;
-    getUserData():any;
-    input(): HTMLInputElement;
-inputHit(hitTest:HTMLElement): boolean;
-}
+export class SearchPanel {
+    private static loaded = false;
 
-class SearchPanelTemplate {
-    ensureLoaded() {
-    }
+    static ensureLoaded() {
+        if(SearchPanel.loaded)
+            return;
+        SearchPanel.loaded = true;
 
-    constructor() {
         
 
         tardigradeEngine.addTemplate("SearchPanel", new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "div", {"class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"}, [new ElementNode("input", <Cardinal>0, [""], "input", {"class": "mdl-textfield__input", "type": "text", "id": "searchBox"}, []), new ElementNode(null, <Cardinal>0, [""], "label", {"class": "mdl-textfield__label", "for": "searchBox"}, [new TextNode("Project search...")])]), new ElementNode(null, <Cardinal>0, [""], "div", {"class": "mdl-button mdl-button--icon"}, [new ElementNode(null, <Cardinal>0, [""], "i", {"class": "material-icons"}, [new TextNode("search")])])]));
     }
 
-    buildHtml(dto: SearchPanelTemplateDto) {
+    static html(dto: SearchPanelDto): string {
+        SearchPanel.ensureLoaded();
+
         return tardigradeEngine.buildHtml("SearchPanel", dto);
     }
 
-    buildElement(dto: SearchPanelTemplateDto) {
-        return createElement(this.buildHtml(dto));
+    static element(dto:SearchPanelDto): HTMLElement {
+        return createElement(SearchPanel.html(dto));
     }
 
-    createElement(dto: SearchPanelTemplateDto): SearchPanelTemplateElement {
-        return this.of(this.buildElement(dto));
+    static create(dto:SearchPanelDto): SearchPanel {
+        let element = SearchPanel.element(dto);
+        return new SearchPanel(element);
     }
 
-    of(rootElement: HTMLElement): SearchPanelTemplateElement {
-        let domlet = {
-            _root() { return rootElement; },
+    static of(element: HTMLElement): SearchPanel {
+        return new SearchPanel(element);
+    }
 
-            setUserData(data:any):any {
-                let old = (rootElement as any)._tardigradeUserData || null;
-                (rootElement as any)._tardigradeUserData = data;
-                return old;
-            },
+    constructor(private rootElement: HTMLElement) {}
 
-            getUserData():any {
-                return (rootElement as any)._tardigradeUserData || null;
-            },
+    rootHtmlElement(): HTMLElement { return this.rootElement; }
 
-            input(): HTMLInputElement{
-return <HTMLInputElement>tardigradeEngine.getPoint(rootElement, "SearchPanel", { "input": 0 });
-},
+    setUserData(data:any): any {
+        let old = (this.rootElement as any)._tardigradeUserData || undefined;
+        (this.rootElement as any)._tardigradeUserData = data;
+        return old;
+    }
+
+    getUserData():any {
+        return (this.rootElement as any)._tardigradeUserData || undefined;
+    }
+
+    input(): HTMLInputElement {
+return <HTMLInputElement>tardigradeEngine.getPoint(this.rootElement, "SearchPanel", { "input": 0 });
+}
 inputHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(rootElement, "SearchPanel", hitTest);
+                        let location = tardigradeEngine.getLocation(this.rootElement, "SearchPanel", hitTest);
                         return (location != null && ("input" in location));
                         }
-        };
-
-        return domlet;
-    }
 }
-
-export var searchPanelTemplate = new SearchPanelTemplate();

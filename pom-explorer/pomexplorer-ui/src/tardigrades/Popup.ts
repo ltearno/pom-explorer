@@ -7,69 +7,64 @@ import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/
 
 
 
-export interface PopupTemplateDto {
+export interface PopupDto {
     _root?: string;
     content?: any;
 "@content"?: any;
 
 }
 
-export interface PopupTemplateElement {
-    _root(): HTMLElement;
-    // returns the previous data
-    setUserData(data:any):any;
-    getUserData():any;
-    content(): HTMLDivElement;
-contentHit(hitTest:HTMLElement): boolean;
-}
+export class Popup {
+    private static loaded = false;
 
-class PopupTemplate {
-    ensureLoaded() {
-    }
+    static ensureLoaded() {
+        if(Popup.loaded)
+            return;
+        Popup.loaded = true;
 
-    constructor() {
         
 
         tardigradeEngine.addTemplate("Popup", new ElementNode("content", <Cardinal>0, [""], "div", {"class": "Popup"}, []));
     }
 
-    buildHtml(dto: PopupTemplateDto) {
+    static html(dto: PopupDto): string {
+        Popup.ensureLoaded();
+
         return tardigradeEngine.buildHtml("Popup", dto);
     }
 
-    buildElement(dto: PopupTemplateDto) {
-        return createElement(this.buildHtml(dto));
+    static element(dto:PopupDto): HTMLElement {
+        return createElement(Popup.html(dto));
     }
 
-    createElement(dto: PopupTemplateDto): PopupTemplateElement {
-        return this.of(this.buildElement(dto));
+    static create(dto:PopupDto): Popup {
+        let element = Popup.element(dto);
+        return new Popup(element);
     }
 
-    of(rootElement: HTMLElement): PopupTemplateElement {
-        let domlet = {
-            _root() { return rootElement; },
+    static of(element: HTMLElement): Popup {
+        return new Popup(element);
+    }
 
-            setUserData(data:any):any {
-                let old = (rootElement as any)._tardigradeUserData || null;
-                (rootElement as any)._tardigradeUserData = data;
-                return old;
-            },
+    constructor(private rootElement: HTMLElement) {}
 
-            getUserData():any {
-                return (rootElement as any)._tardigradeUserData || null;
-            },
+    rootHtmlElement(): HTMLElement { return this.rootElement; }
 
-            content(): HTMLDivElement{
-return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "Popup", { "content": 0 });
-},
+    setUserData(data:any): any {
+        let old = (this.rootElement as any)._tardigradeUserData || undefined;
+        (this.rootElement as any)._tardigradeUserData = data;
+        return old;
+    }
+
+    getUserData():any {
+        return (this.rootElement as any)._tardigradeUserData || undefined;
+    }
+
+    content(): HTMLDivElement {
+return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "Popup", { "content": 0 });
+}
 contentHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(rootElement, "Popup", hitTest);
+                        let location = tardigradeEngine.getLocation(this.rootElement, "Popup", hitTest);
                         return (location != null && ("content" in location));
                         }
-        };
-
-        return domlet;
-    }
 }
-
-export var popupTemplate = new PopupTemplate();

@@ -5,10 +5,10 @@ import { ElementNode, TemplateNode, TextNode, Cardinal, PointInfo } from "../../
 import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
 import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
 
-import { searchPanelTemplate, SearchPanelTemplateElement } from "./SearchPanel";
-import { cardTemplate, CardTemplateElement } from "./Card";
+import { SearchPanel } from "./SearchPanel";
+import { Card } from "./Card";
 
-export interface ProjectPanelTemplateDto {
+export interface ProjectPanelDto {
     _root?: string;
     searchInput?: any;
 "@searchInput"?: any;
@@ -19,110 +19,96 @@ cards?: any;
 
 }
 
-export interface ProjectPanelTemplateElement {
-    _root(): HTMLElement;
-    // returns the previous data
-    setUserData(data:any):any;
-    getUserData():any;
-    searchInput(): HTMLElement;
-searchInputHit(hitTest:HTMLElement): boolean;
-projectList(): HTMLDivElement;
-projectListHit(hitTest:HTMLElement): boolean;
-cards(cardsIndex: number): HTMLElement;
-cardsDomlet(cardsIndex: number): CardTemplateElement;
-cardsHitDomlet(hitElement: HTMLElement): CardTemplateElement;
-cardsIndex(hitTest:HTMLElement): number;
-buildCards(dto: any): string;
-addCards(dto: any): HTMLElement;
-countCards(): number;
-}
+export class ProjectPanel {
+    private static loaded = false;
 
-class ProjectPanelTemplate {
-    ensureLoaded() {
-    }
+    static ensureLoaded() {
+        if(ProjectPanel.loaded)
+            return;
+        ProjectPanel.loaded = true;
 
-    constructor() {
-        searchPanelTemplate.ensureLoaded();
-cardTemplate.ensureLoaded();
+        SearchPanel.ensureLoaded();
+Card.ensureLoaded();
 
         tardigradeEngine.addTemplate("ProjectPanel", new ElementNode(null, <Cardinal>0, [""], "div", {}, [new TemplateNode(null, <Cardinal>0, [""], "SearchPanel", {}, {"input": new PointInfo("searchInput", {}, [])}), new ElementNode("projectList", <Cardinal>0, [""], "div", {"class": "projects-list"}, [new TemplateNode("cards", <Cardinal>1, [""], "Card", {}, {})])]));
     }
 
-    buildHtml(dto: ProjectPanelTemplateDto) {
+    static html(dto: ProjectPanelDto): string {
+        ProjectPanel.ensureLoaded();
+
         return tardigradeEngine.buildHtml("ProjectPanel", dto);
     }
 
-    buildElement(dto: ProjectPanelTemplateDto) {
-        return createElement(this.buildHtml(dto));
+    static element(dto:ProjectPanelDto): HTMLElement {
+        return createElement(ProjectPanel.html(dto));
     }
 
-    createElement(dto: ProjectPanelTemplateDto): ProjectPanelTemplateElement {
-        return this.of(this.buildElement(dto));
+    static create(dto:ProjectPanelDto): ProjectPanel {
+        let element = ProjectPanel.element(dto);
+        return new ProjectPanel(element);
     }
 
-    of(rootElement: HTMLElement): ProjectPanelTemplateElement {
-        let domlet = {
-            _root() { return rootElement; },
+    static of(element: HTMLElement): ProjectPanel {
+        return new ProjectPanel(element);
+    }
 
-            setUserData(data:any):any {
-                let old = (rootElement as any)._tardigradeUserData || null;
-                (rootElement as any)._tardigradeUserData = data;
-                return old;
-            },
+    constructor(private rootElement: HTMLElement) {}
 
-            getUserData():any {
-                return (rootElement as any)._tardigradeUserData || null;
-            },
+    rootHtmlElement(): HTMLElement { return this.rootElement; }
 
-            searchInput(): HTMLElement{
-return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "searchInput": 0 });
-},
+    setUserData(data:any): any {
+        let old = (this.rootElement as any)._tardigradeUserData || undefined;
+        (this.rootElement as any)._tardigradeUserData = data;
+        return old;
+    }
+
+    getUserData():any {
+        return (this.rootElement as any)._tardigradeUserData || undefined;
+    }
+
+    searchInput(): HTMLElement {
+return <HTMLElement>tardigradeEngine.getPoint(this.rootElement, "ProjectPanel", { "searchInput": 0 });
+}
 searchInputHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                        let location = tardigradeEngine.getLocation(this.rootElement, "ProjectPanel", hitTest);
                         return (location != null && ("searchInput" in location));
-                        },
-projectList(): HTMLDivElement{
-return <HTMLDivElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "projectList": 0 });
-},
+                        }
+projectList(): HTMLDivElement {
+return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "ProjectPanel", { "projectList": 0 });
+}
 projectListHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                        let location = tardigradeEngine.getLocation(this.rootElement, "ProjectPanel", hitTest);
                         return (location != null && ("projectList" in location));
-                        },
-cards(cardsIndex: number): HTMLElement{
-return <HTMLElement>tardigradeEngine.getPoint(rootElement, "ProjectPanel", { "cards": cardsIndex });
-},
-cardsDomlet(cardsIndex: number): CardTemplateElement {
-let element = domlet.cards(cardsIndex);
-return cardTemplate.of(element);
-},
-cardsHitDomlet(hitElement: HTMLElement): CardTemplateElement {
-let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitElement);
+                        }
+cards(cardsIndex: number): HTMLElement {
+return <HTMLElement>tardigradeEngine.getPoint(this.rootElement, "ProjectPanel", { "cards": cardsIndex });
+}
+cardsDomlet(cardsIndex: number): Card {
+let element = this.cards(cardsIndex);
+return Card.of(element);
+}
+cardsHitDomlet(hitElement: HTMLElement): Card {
+let location = tardigradeEngine.getLocation(this.rootElement, "ProjectPanel", hitElement);
 if(location==null) return null;
-if(!("cards" in location) return null;
-return domlet.cardsDomlet(location["cards"]);
-},
+if(!("cards" in location)) return null;
+return this.cardsDomlet(location["cards"]);
+}
 cardsIndex(hitTest:HTMLElement): number {
-                        let location = tardigradeEngine.getLocation(rootElement, "ProjectPanel", hitTest);
+                        let location = tardigradeEngine.getLocation(this.rootElement, "ProjectPanel", hitTest);
                         if (location != null && ("cards" in location))
                             return location["cards"];
                         return -1;
-                        },
+                        }
 buildCards(dto: any): string {
 return tardigradeEngine.buildNodeHtml("ProjectPanel", "cards", dto);
-},
+}
 addCards(dto: any): HTMLElement {
-let newItem = domlet.buildCards(dto);
+let newItem = this.buildCards(dto);
 let newElement = createElement(newItem);
-domlet.projectList().appendChild(newElement);
+this.projectList().appendChild(newElement);
 return newElement;
-},
+}
 countCards(): number {
-return domlet.projectList().children.length;
+return this.projectList().children.length;
 }
-        };
-
-        return domlet;
-    }
 }
-
-export var projectPanelTemplate = new ProjectPanelTemplate();

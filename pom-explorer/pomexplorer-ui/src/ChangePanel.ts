@@ -1,14 +1,14 @@
 "use strict";
 
-import {changePanelTemplate, ChangePanelTemplateElement} from "./tardigrades/ChangePanel";
+import { ChangePanel as ChangePanelTemplate } from "./tardigrades/ChangePanel";
 import { IWorkPanel } from "./IWorkPanel";
 import { Service, Status, Message, ServiceCallback } from "./Service";
 
 export class ChangePanel implements IWorkPanel {
-    private domlet: ChangePanelTemplateElement;
+    private domlet: ChangePanelTemplate;
 
     constructor(private service: Service) {
-        this.domlet = changePanelTemplate.createElement({});
+        this.domlet = ChangePanelTemplate.create({});
     }
 
     focus() {
@@ -27,6 +27,6 @@ export class ChangePanel implements IWorkPanel {
     }
 
     element() {
-        return this.domlet._root();
+        return this.domlet.rootHtmlElement();
     }
 }

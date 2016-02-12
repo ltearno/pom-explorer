@@ -1,14 +1,14 @@
 "use strict";
 
 import { initMaterialElement } from "./Utils";
-import { applicationTemplate, ApplicationTemplateElement } from "./tardigrades/Application";
+import { Application as ApplicationTemplate } from "./tardigrades/Application";
 
 export class ApplicationPanel {
-    template: ApplicationTemplateElement;
+    template: ApplicationTemplate;
 
     constructor() {
-        this.template = applicationTemplate.of(applicationTemplate.buildElement({}));
-        initMaterialElement(this.template._root());
+        this.template = ApplicationTemplate.create({});
+        initMaterialElement(this.template.rootHtmlElement());
         this.template.menu().innerHTML = "";
     }
 
@@ -31,7 +31,7 @@ export class ApplicationPanel {
     }
 
     main(): HTMLDivElement {
-        return <HTMLDivElement>this.template._root();
+        return <HTMLDivElement>this.template.rootHtmlElement();
     }
 
     setContent(contentElement: HTMLElement) {
