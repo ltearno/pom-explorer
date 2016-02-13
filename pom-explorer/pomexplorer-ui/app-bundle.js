@@ -591,76 +591,104 @@
     var model_1 = require("../../node_modules/tardigrade/target/engine/model");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class Application {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (Application.loaded)
                 return;
             Application.loaded = true;
             engine_1.tardigradeEngine.addTemplate("Application", new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-layout mdl-js-layout mdl-layout--fixed-header" }, [new model_1.ElementNode(null, 0, [""], "header", { "class": "mdl-layout__header" }, [new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-layout__header-row" }, [new model_1.ElementNode(null, 0, [""], "span", { "class": "mdl-layout-title" }, [new model_1.TextNode("Pom Explorer")]), new model_1.TextNode("&nbsp;&nbsp;&nbsp;&nbsp;"), new model_1.ElementNode(null, 0, [""], "span", { "class": "mdl-badge", "data-badge": "!" }, [new model_1.TextNode("beta")])])]), new model_1.ElementNode("drawer", 0, [""], "div", { "class": "mdl-layout__drawer" }, [new model_1.ElementNode(null, 0, [""], "span", { "class": "mdl-layout-title" }, [new model_1.TextNode("Pom Explorer")]), new model_1.ElementNode("menu", 0, [""], "nav", { "class": "mdl-navigation" }, [new model_1.ElementNode("menuItems", 1, [""], "a", { "class": "mdl-navigation__link", "href": "#" }, [])])]), new model_1.ElementNode("content", 0, [""], "main", { "class": "mdl-layout__content content-repositionning" }, [])]));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             Application.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("Application", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(Application.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = Application.element(dto);
             return new Application(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new Application(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'drawer' point */
         drawer() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Application", { "drawer": 0 });
         }
+        /** Returns true if the part named 'drawer' with id 'drawer' was hit */
         drawerHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Application", hitTest);
             return (location != null && ("drawer" in location));
         }
+        /** Returns the html element corresponding to the 'menu' point */
         menu() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Application", { "menu": 0 });
         }
+        /** Returns true if the part named 'menu' with id 'menu' was hit */
         menuHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Application", hitTest);
             return (location != null && ("menu" in location));
         }
+        /** Returns the html element corresponding to the 'menuItems' point */
         menuItems(menuItemsIndex) {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Application", { "menuItems": menuItemsIndex });
         }
+        /** Returns the index of the hit part named 'menuItems' with id 'menuItems', -1 if none */
         menuItemsIndex(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Application", hitTest);
             if (location != null && ("menuItems" in location))
                 return location["menuItems"];
             return -1;
         }
+        /** Builds an HTML string for the 'menuItems' with id 'menuItems' */
         buildMenuItems(dto) {
             return engine_1.tardigradeEngine.buildNodeHtml("Application", "menuItems", dto);
         }
+        /** Adds an instance of the 'menuItems' with id 'menuItems' in the collection */
         addMenuItems(dto) {
             let newItem = this.buildMenuItems(dto);
             let newElement = runtime_1.createElement(newItem);
             this.menu().appendChild(newElement);
             return newElement;
         }
+        /** Returns the number of 'menuItems' with id 'menuItems' instances */
         countMenuItems() {
             return this.menu().children.length;
         }
+        /** Returns the html element corresponding to the 'content' point */
         content() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Application", { "content": 0 });
         }
+        /** Returns true if the part named 'content' with id 'content' was hit */
         contentHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Application", hitTest);
             return (location != null && ("content" in location));
@@ -684,69 +712,96 @@
     var model_1 = require("../../node_modules/tardigrade/target/engine/model");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class BaseCard {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (BaseCard.loaded)
                 return;
             BaseCard.loaded = true;
             engine_1.tardigradeEngine.addTemplate("BaseCard", new model_1.ElementNode(null, 0, [""], "div", { "class": "project-card mdl-card mdl-shadow--2dp" }, [new model_1.ElementNode("title", 0, [""], "div", { "class": "mdl-card__title mdl-card--expand" }, []), new model_1.ElementNode("content", 0, [""], "div", { "class": "mdl-card__supporting-text" }, []), new model_1.ElementNode("details", 0, [""], "div", { "class": "mdl-card__supporting-text", "style": "display:none;" }, []), new model_1.ElementNode("actions", 0, [""], "div", { "class": "mdl-card__actions mdl-card--border" }, []), new model_1.ElementNode("menu", 0, [""], "div", { "class": "mdl-card__menu" }, [])]));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             BaseCard.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("BaseCard", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(BaseCard.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = BaseCard.element(dto);
             return new BaseCard(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new BaseCard(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'title' point */
         title() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "title": 0 });
         }
+        /** Returns true if the part named 'title' with id 'title' was hit */
         titleHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
             return (location != null && ("title" in location));
         }
+        /** Returns the html element corresponding to the 'content' point */
         content() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "content": 0 });
         }
+        /** Returns true if the part named 'content' with id 'content' was hit */
         contentHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
             return (location != null && ("content" in location));
         }
+        /** Returns the html element corresponding to the 'details' point */
         details() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "details": 0 });
         }
+        /** Returns true if the part named 'details' with id 'details' was hit */
         detailsHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
             return (location != null && ("details" in location));
         }
+        /** Returns the html element corresponding to the 'actions' point */
         actions() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "actions": 0 });
         }
+        /** Returns true if the part named 'actions' with id 'actions' was hit */
         actionsHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
             return (location != null && ("actions" in location));
         }
+        /** Returns the html element corresponding to the 'menu' point */
         menu() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "menu": 0 });
         }
+        /** Returns true if the part named 'menu' with id 'menu' was hit */
         menuHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
             return (location != null && ("menu" in location));
@@ -772,9 +827,11 @@
     var BaseCard_1 = require("./BaseCard");
     var Gav_1 = require("./Gav");
     class Card {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (Card.loaded)
                 return;
@@ -783,98 +840,133 @@
             Gav_1.Gav.ensureLoaded();
             engine_1.tardigradeEngine.addTemplate("Card", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TemplateNode("gav", 0, ["export"], "Gav", { "class": "mdl-card__title-text" }, { "groupId": new model_1.PointInfo("gavGroupId", {}, []), "artifactId": new model_1.PointInfo("gavArtifactId", {}, []), "version": new model_1.PointInfo("gavVersion", {}, []) })]), "content": new model_1.PointInfo("content", {}, []), "details": new model_1.PointInfo("details", {}, []), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionDetails", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Details")]), new model_1.ElementNode("edit", 0, [""], "button", { "class": "mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" }, [new model_1.ElementNode(null, 0, [""], "i", { "class": "material-icons" }, [new model_1.TextNode("mode_edit")])])]) }));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             Card.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("Card", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(Card.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = Card.element(dto);
             return new Card(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new Card(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'gav' point */
         gav() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Card", { "gav": 0 });
         }
+        /** Returns the template instance for the point 'gav' with id 'gav' */
         gavDomlet() {
             let element = this.gav();
             return Gav_1.Gav.of(element);
         }
+        /** Returns the 'gav' with id 'gav' template instance that is hit by the hitElement */
         gavHitDomlet(hitElement) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitElement);
             if (location == null)
                 return null;
             return this.gavDomlet();
         }
+        /** Returns true if the part named 'gav' with id 'gav' was hit */
         gavHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitTest);
             return (location != null && ("gav" in location));
         }
+        /** Returns the html element corresponding to the 'gavGroupId' point */
         gavGroupId() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Card", { "gavGroupId": 0 });
         }
+        /** Returns true if the part named 'gavGroupId' with id 'gavGroupId' was hit */
         gavGroupIdHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitTest);
             return (location != null && ("gavGroupId" in location));
         }
+        /** Returns the html element corresponding to the 'gavArtifactId' point */
         gavArtifactId() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Card", { "gavArtifactId": 0 });
         }
+        /** Returns true if the part named 'gavArtifactId' with id 'gavArtifactId' was hit */
         gavArtifactIdHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitTest);
             return (location != null && ("gavArtifactId" in location));
         }
+        /** Returns the html element corresponding to the 'gavVersion' point */
         gavVersion() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Card", { "gavVersion": 0 });
         }
+        /** Returns true if the part named 'gavVersion' with id 'gavVersion' was hit */
         gavVersionHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitTest);
             return (location != null && ("gavVersion" in location));
         }
+        /** Returns the html element corresponding to the 'content' point */
         content() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Card", { "content": 0 });
         }
+        /** Returns true if the part named 'content' with id 'content' was hit */
         contentHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitTest);
             return (location != null && ("content" in location));
         }
+        /** Returns the html element corresponding to the 'details' point */
         details() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Card", { "details": 0 });
         }
+        /** Returns true if the part named 'details' with id 'details' was hit */
         detailsHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitTest);
             return (location != null && ("details" in location));
         }
+        /** Returns the html element corresponding to the 'actions' point */
         actions() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Card", { "actions": 0 });
         }
+        /** Returns true if the part named 'actions' with id 'actions' was hit */
         actionsHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitTest);
             return (location != null && ("actions" in location));
         }
+        /** Returns the html element corresponding to the 'actionDetails' point */
         actionDetails() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Card", { "actionDetails": 0 });
         }
+        /** Returns true if the part named 'actionDetails' with id 'actionDetails' was hit */
         actionDetailsHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitTest);
             return (location != null && ("actionDetails" in location));
         }
+        /** Returns the html element corresponding to the 'edit' point */
         edit() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Card", { "edit": 0 });
         }
+        /** Returns true if the part named 'edit' with id 'edit' was hit */
         editHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Card", hitTest);
             return (location != null && ("edit" in location));
@@ -899,9 +991,11 @@
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     var BaseCard_1 = require("./BaseCard");
     class ChangeGavCard {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (ChangeGavCard.loaded)
                 return;
@@ -909,88 +1003,121 @@
             BaseCard_1.BaseCard.ensureLoaded();
             engine_1.tardigradeEngine.addTemplate("ChangeGavCard", new model_1.TemplateNode(null, 0, [""], "BaseCard", {}, { "title": new model_1.PointInfo(null, {}, [new model_1.TextNode("Changing&nbsp;"), new model_1.ElementNode("groupId", 0, [""], "span", {}, []), new model_1.TextNode(":"), new model_1.ElementNode("artifactId", 0, [""], "span", {}, []), new model_1.TextNode(":"), new model_1.ElementNode("version", 0, [""], "span", {}, [])]), "content": new model_1.PointInfo(null, {}, [new model_1.TextNode("You can change this GAV and all projects linked to it will be updated. By now,"), new model_1.ElementNode(null, 0, [""], "b", {}, [new model_1.TextNode("NO CHANGE IS APPLIED")]), new model_1.TextNode("until            you go in the Change tab and validate."), new model_1.ElementNode(null, 0, [""], "br", {}, []), new model_1.TextNode("Enter the new coordinates for this GAV :"), new model_1.ElementNode(null, 0, [""], "br", {}, []), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("groupIdInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "groupId" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "groupId" }, [new model_1.TextNode("groupId")])]), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("artifactIdInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "artifactId" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "artifactId" }, [new model_1.TextNode("artifactId")])]), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label", "style": "display:block;" }, [new model_1.ElementNode("versionInput", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "version" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "version" }, [new model_1.TextNode("version")])])]), "actions": new model_1.PointInfo("actions", {}, [new model_1.ElementNode("actionCancel", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Cancel")]), new model_1.ElementNode("actionValidate", 0, [""], "a", { "class": "mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" }, [new model_1.TextNode("Ok, store the change")])]) }));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             ChangeGavCard.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("ChangeGavCard", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(ChangeGavCard.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = ChangeGavCard.element(dto);
             return new ChangeGavCard(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new ChangeGavCard(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'groupId' point */
         groupId() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangeGavCard", { "groupId": 0 });
         }
+        /** Returns true if the part named 'groupId' with id 'groupId' was hit */
         groupIdHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangeGavCard", hitTest);
             return (location != null && ("groupId" in location));
         }
+        /** Returns the html element corresponding to the 'artifactId' point */
         artifactId() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangeGavCard", { "artifactId": 0 });
         }
+        /** Returns true if the part named 'artifactId' with id 'artifactId' was hit */
         artifactIdHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangeGavCard", hitTest);
             return (location != null && ("artifactId" in location));
         }
+        /** Returns the html element corresponding to the 'version' point */
         version() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangeGavCard", { "version": 0 });
         }
+        /** Returns true if the part named 'version' with id 'version' was hit */
         versionHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangeGavCard", hitTest);
             return (location != null && ("version" in location));
         }
+        /** Returns the html element corresponding to the 'groupIdInput' point */
         groupIdInput() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangeGavCard", { "groupIdInput": 0 });
         }
+        /** Returns true if the part named 'groupIdInput' with id 'groupIdInput' was hit */
         groupIdInputHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangeGavCard", hitTest);
             return (location != null && ("groupIdInput" in location));
         }
+        /** Returns the html element corresponding to the 'artifactIdInput' point */
         artifactIdInput() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangeGavCard", { "artifactIdInput": 0 });
         }
+        /** Returns true if the part named 'artifactIdInput' with id 'artifactIdInput' was hit */
         artifactIdInputHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangeGavCard", hitTest);
             return (location != null && ("artifactIdInput" in location));
         }
+        /** Returns the html element corresponding to the 'versionInput' point */
         versionInput() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangeGavCard", { "versionInput": 0 });
         }
+        /** Returns true if the part named 'versionInput' with id 'versionInput' was hit */
         versionInputHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangeGavCard", hitTest);
             return (location != null && ("versionInput" in location));
         }
+        /** Returns the html element corresponding to the 'actions' point */
         actions() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangeGavCard", { "actions": 0 });
         }
+        /** Returns true if the part named 'actions' with id 'actions' was hit */
         actionsHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangeGavCard", hitTest);
             return (location != null && ("actions" in location));
         }
+        /** Returns the html element corresponding to the 'actionCancel' point */
         actionCancel() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangeGavCard", { "actionCancel": 0 });
         }
+        /** Returns true if the part named 'actionCancel' with id 'actionCancel' was hit */
         actionCancelHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangeGavCard", hitTest);
             return (location != null && ("actionCancel" in location));
         }
+        /** Returns the html element corresponding to the 'actionValidate' point */
         actionValidate() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangeGavCard", { "actionValidate": 0 });
         }
+        /** Returns true if the part named 'actionValidate' with id 'actionValidate' was hit */
         actionValidateHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangeGavCard", hitTest);
             return (location != null && ("actionValidate" in location));
@@ -1014,48 +1141,69 @@
     var model_1 = require("../../node_modules/tardigrade/target/engine/model");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class ChangePanel {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (ChangePanel.loaded)
                 return;
             ChangePanel.loaded = true;
             engine_1.tardigradeEngine.addTemplate("ChangePanel", new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "h2", {}, [new model_1.TextNode("Graph changes")]), new model_1.ElementNode("graphChanges", 0, [""], "div", {}, [])]), new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "h2", {}, [new model_1.TextNode("Project changes")]), new model_1.ElementNode("projectChanges", 0, [""], "div", {}, [])])]));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             ChangePanel.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("ChangePanel", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(ChangePanel.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = ChangePanel.element(dto);
             return new ChangePanel(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new ChangePanel(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'graphChanges' point */
         graphChanges() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangePanel", { "graphChanges": 0 });
         }
+        /** Returns true if the part named 'graphChanges' with id 'graphChanges' was hit */
         graphChangesHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangePanel", hitTest);
             return (location != null && ("graphChanges" in location));
         }
+        /** Returns the html element corresponding to the 'projectChanges' point */
         projectChanges() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ChangePanel", { "projectChanges": 0 });
         }
+        /** Returns true if the part named 'projectChanges' with id 'projectChanges' was hit */
         projectChangesHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ChangePanel", hitTest);
             return (location != null && ("projectChanges" in location));
@@ -1079,48 +1227,69 @@
     var model_1 = require("../../node_modules/tardigrade/target/engine/model");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class ConsolePanel {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (ConsolePanel.loaded)
                 return;
             ConsolePanel.loaded = true;
             engine_1.tardigradeEngine.addTemplate("ConsolePanel", new model_1.ElementNode(null, 0, [""], "div", { "class": "console-panel" }, [new model_1.ElementNode("output", 0, [""], "div", { "class": "console-output" }, []), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label" }, [new model_1.ElementNode("input", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "sample3" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "sample3" }, [new model_1.TextNode("enter a command, or just \"?\" to get help")])])]));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             ConsolePanel.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("ConsolePanel", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(ConsolePanel.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = ConsolePanel.element(dto);
             return new ConsolePanel(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new ConsolePanel(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'output' point */
         output() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ConsolePanel", { "output": 0 });
         }
+        /** Returns true if the part named 'output' with id 'output' was hit */
         outputHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ConsolePanel", hitTest);
             return (location != null && ("output" in location));
         }
+        /** Returns the html element corresponding to the 'input' point */
         input() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ConsolePanel", { "input": 0 });
         }
+        /** Returns true if the part named 'input' with id 'input' was hit */
         inputHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ConsolePanel", hitTest);
             return (location != null && ("input" in location));
@@ -1144,55 +1313,78 @@
     var model_1 = require("../../node_modules/tardigrade/target/engine/model");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class Gav {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (Gav.loaded)
                 return;
             Gav.loaded = true;
             engine_1.tardigradeEngine.addTemplate("Gav", new model_1.ElementNode(null, 0, [""], "h2", { "class": "mdl-card__title-text" }, [new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode("groupId", 0, [""], "div", {}, []), new model_1.ElementNode("artifactId", 0, [""], "div", {}, []), new model_1.ElementNode("version", 0, [""], "div", {}, [])])]));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             Gav.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("Gav", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(Gav.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = Gav.element(dto);
             return new Gav(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new Gav(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'groupId' point */
         groupId() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Gav", { "groupId": 0 });
         }
+        /** Returns true if the part named 'groupId' with id 'groupId' was hit */
         groupIdHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Gav", hitTest);
             return (location != null && ("groupId" in location));
         }
+        /** Returns the html element corresponding to the 'artifactId' point */
         artifactId() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Gav", { "artifactId": 0 });
         }
+        /** Returns true if the part named 'artifactId' with id 'artifactId' was hit */
         artifactIdHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Gav", hitTest);
             return (location != null && ("artifactId" in location));
         }
+        /** Returns the html element corresponding to the 'version' point */
         version() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Gav", { "version": 0 });
         }
+        /** Returns true if the part named 'version' with id 'version' was hit */
         versionHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Gav", hitTest);
             return (location != null && ("version" in location));
@@ -1216,41 +1408,60 @@
     var model_1 = require("../../node_modules/tardigrade/target/engine/model");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class Popup {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (Popup.loaded)
                 return;
             Popup.loaded = true;
             engine_1.tardigradeEngine.addTemplate("Popup", new model_1.ElementNode("content", 0, [""], "div", { "class": "Popup" }, []));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             Popup.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("Popup", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(Popup.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = Popup.element(dto);
             return new Popup(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new Popup(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'content' point */
         content() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "Popup", { "content": 0 });
         }
+        /** Returns true if the part named 'content' with id 'content' was hit */
         contentHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "Popup", hitTest);
             return (location != null && ("content" in location));
@@ -1276,9 +1487,11 @@
     var SearchPanel_1 = require("./SearchPanel");
     var Card_1 = require("./Card");
     class ProjectPanel {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (ProjectPanel.loaded)
                 return;
@@ -1287,50 +1500,72 @@
             Card_1.Card.ensureLoaded();
             engine_1.tardigradeEngine.addTemplate("ProjectPanel", new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.TemplateNode(null, 0, [""], "SearchPanel", {}, { "input": new model_1.PointInfo("searchInput", {}, []) }), new model_1.ElementNode("projectList", 0, [""], "div", { "class": "projects-list" }, [new model_1.TemplateNode("cards", 1, [""], "Card", {}, {})])]));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             ProjectPanel.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("ProjectPanel", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(ProjectPanel.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = ProjectPanel.element(dto);
             return new ProjectPanel(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new ProjectPanel(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'searchInput' point */
         searchInput() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ProjectPanel", { "searchInput": 0 });
         }
+        /** Returns true if the part named 'searchInput' with id 'searchInput' was hit */
         searchInputHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ProjectPanel", hitTest);
             return (location != null && ("searchInput" in location));
         }
+        /** Returns the html element corresponding to the 'projectList' point */
         projectList() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ProjectPanel", { "projectList": 0 });
         }
+        /** Returns true if the part named 'projectList' with id 'projectList' was hit */
         projectListHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ProjectPanel", hitTest);
             return (location != null && ("projectList" in location));
         }
+        /** Returns the html element corresponding to the 'cards' point */
         cards(cardsIndex) {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "ProjectPanel", { "cards": cardsIndex });
         }
+        /** Returns the template instance for the point 'cards' with id 'cards' */
         cardsDomlet(cardsIndex) {
             let element = this.cards(cardsIndex);
             return Card_1.Card.of(element);
         }
+        /** Returns the 'cards' with id 'cards' template instance that is hit by the hitElement */
         cardsHitDomlet(hitElement) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ProjectPanel", hitElement);
             if (location == null)
@@ -1339,21 +1574,25 @@
                 return null;
             return this.cardsDomlet(location["cards"]);
         }
+        /** Returns the index of the hit part named 'cards' with id 'cards', -1 if none */
         cardsIndex(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "ProjectPanel", hitTest);
             if (location != null && ("cards" in location))
                 return location["cards"];
             return -1;
         }
+        /** Builds an HTML string for the 'cards' with id 'cards' */
         buildCards(dto) {
             return engine_1.tardigradeEngine.buildNodeHtml("ProjectPanel", "cards", dto);
         }
+        /** Adds an instance of the 'cards' with id 'cards' in the collection */
         addCards(dto) {
             let newItem = this.buildCards(dto);
             let newElement = runtime_1.createElement(newItem);
             this.projectList().appendChild(newElement);
             return newElement;
         }
+        /** Returns the number of 'cards' with id 'cards' instances */
         countCards() {
             return this.projectList().children.length;
         }
@@ -1376,41 +1615,60 @@
     var model_1 = require("../../node_modules/tardigrade/target/engine/model");
     var runtime_1 = require("../../node_modules/tardigrade/target/engine/runtime");
     class SearchPanel {
+        /** This constructor should not be called by your application ! */
         constructor(rootElement) {
             this.rootElement = rootElement;
         }
+        /** This method should not be called by your application ! */
         static ensureLoaded() {
             if (SearchPanel.loaded)
                 return;
             SearchPanel.loaded = true;
             engine_1.tardigradeEngine.addTemplate("SearchPanel", new model_1.ElementNode(null, 0, [""], "div", {}, [new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label" }, [new model_1.ElementNode("input", 0, [""], "input", { "class": "mdl-textfield__input", "type": "text", "id": "searchBox" }, []), new model_1.ElementNode(null, 0, [""], "label", { "class": "mdl-textfield__label", "for": "searchBox" }, [new model_1.TextNode("Project search...")])]), new model_1.ElementNode(null, 0, [""], "div", { "class": "mdl-button mdl-button--icon" }, [new model_1.ElementNode(null, 0, [""], "i", { "class": "material-icons" }, [new model_1.TextNode("search")])])]));
         }
+        /** Builds an HTML string according to the dto you provide
+         * @return The built HTML string */
         static html(dto) {
             SearchPanel.ensureLoaded();
             return engine_1.tardigradeEngine.buildHtml("SearchPanel", dto);
         }
+        /** Builds an HTMLElement according to the dto you provide
+         * @return The built HTMLElement */
         static element(dto) {
             return runtime_1.createElement(SearchPanel.html(dto));
         }
+        /** Builds a template instance according to the dto you provide.
+         * This instance holds its root HTMLElement for you.
+         * @return The built template instance */
         static create(dto) {
             let element = SearchPanel.element(dto);
             return new SearchPanel(element);
         }
+        /** Builds a template instance from the HTMLElement you provide.
+         * @param {HTMLElement} The HTML element that corresponds to this template
+         * @return The built template instance */
         static of(element) {
             return new SearchPanel(element);
         }
+        /** Returns the root element of this template */
         rootHtmlElement() { return this.rootElement; }
+        /** Sets the user data associated with the root element of the template
+         * @return The previous data that was associated, or undefined
+         */
         setUserData(data) {
             let old = this.rootElement._tardigradeUserData || undefined;
             this.rootElement._tardigradeUserData = data;
             return old;
         }
+        /** Returns the user data associated with the root element of the template */
         getUserData() {
             return this.rootElement._tardigradeUserData || undefined;
         }
+        /** Returns the html element corresponding to the 'input' point */
         input() {
             return engine_1.tardigradeEngine.getPoint(this.rootElement, "SearchPanel", { "input": 0 });
         }
+        /** Returns true if the part named 'input' with id 'input' was hit */
         inputHit(hitTest) {
             let location = engine_1.tardigradeEngine.getLocation(this.rootElement, "SearchPanel", hitTest);
             return (location != null && ("input" in location));
