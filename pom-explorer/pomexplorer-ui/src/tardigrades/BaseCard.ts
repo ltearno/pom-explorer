@@ -1,12 +1,13 @@
 "use strict";
 
-import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
-import { ElementNode, TemplateNode, TextNode, Cardinal, PointInfo } from "../../node_modules/tardigrade/target/engine/model";
-import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
-import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
+import * as tardigrade from "../../node_modules/tardigrade/target/engine/engine";
 
 
 
+
+/**
+ * Template's DTO interface.
+ * Used to create new template instances */
 export interface BaseCardDto {
     _root?: string;
     title?: any;
@@ -23,31 +24,18 @@ menu?: any;
 }
 
 export class BaseCard {
-    private static loaded = false;
-
-    /** This method should not be called by your application ! */
-    static ensureLoaded() {
-        if(BaseCard.loaded)
-            return;
-        BaseCard.loaded = true;
-
-        
-
-        tardigradeEngine.addTemplate("BaseCard", new ElementNode(null, <Cardinal>0, [""], "div", {"class": "project-card mdl-card mdl-shadow--2dp"}, [new ElementNode("title", <Cardinal>0, [""], "div", {"class": "mdl-card__title mdl-card--expand"}, []), new ElementNode("content", <Cardinal>0, [""], "div", {"class": "mdl-card__supporting-text"}, []), new ElementNode("details", <Cardinal>0, [""], "div", {"class": "mdl-card__supporting-text", "style": "display:none;"}, []), new ElementNode("actions", <Cardinal>0, [""], "div", {"class": "mdl-card__actions mdl-card--border"}, []), new ElementNode("menu", <Cardinal>0, [""], "div", {"class": "mdl-card__menu"}, [])]));
-    }
-
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
     static html(dto: BaseCardDto): string {
         BaseCard.ensureLoaded();
 
-        return tardigradeEngine.buildHtml("BaseCard", dto);
+        return tardigrade.tardigradeEngine.buildHtml("BaseCard", dto);
     }
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
     static element(dto:BaseCardDto): HTMLElement {
-        return createElement(BaseCard.html(dto));
+        return tardigrade.createElement(BaseCard.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
@@ -87,47 +75,60 @@ export class BaseCard {
 
     /** Returns the html element corresponding to the 'title' point */
 title(): HTMLDivElement {
-return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "title": 0 });
+return <HTMLDivElement>tardigrade.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "title": 0 });
 }
 /** Returns true if the part named 'title' with id 'title' was hit */
                 titleHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
+                        let location = tardigrade.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
                         return (location != null && ("title" in location));
                         }
 /** Returns the html element corresponding to the 'content' point */
 content(): HTMLDivElement {
-return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "content": 0 });
+return <HTMLDivElement>tardigrade.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "content": 0 });
 }
 /** Returns true if the part named 'content' with id 'content' was hit */
                 contentHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
+                        let location = tardigrade.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
                         return (location != null && ("content" in location));
                         }
 /** Returns the html element corresponding to the 'details' point */
 details(): HTMLDivElement {
-return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "details": 0 });
+return <HTMLDivElement>tardigrade.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "details": 0 });
 }
 /** Returns true if the part named 'details' with id 'details' was hit */
                 detailsHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
+                        let location = tardigrade.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
                         return (location != null && ("details" in location));
                         }
 /** Returns the html element corresponding to the 'actions' point */
 actions(): HTMLDivElement {
-return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "actions": 0 });
+return <HTMLDivElement>tardigrade.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "actions": 0 });
 }
 /** Returns true if the part named 'actions' with id 'actions' was hit */
                 actionsHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
+                        let location = tardigrade.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
                         return (location != null && ("actions" in location));
                         }
 /** Returns the html element corresponding to the 'menu' point */
 menu(): HTMLDivElement {
-return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "menu": 0 });
+return <HTMLDivElement>tardigrade.tardigradeEngine.getPoint(this.rootElement, "BaseCard", { "menu": 0 });
 }
 /** Returns true if the part named 'menu' with id 'menu' was hit */
                 menuHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
+                        let location = tardigrade.tardigradeEngine.getLocation(this.rootElement, "BaseCard", hitTest);
                         return (location != null && ("menu" in location));
                         }
+
+    private static loaded = false;
+
+    /** This method should not be called by your application ! */
+    static ensureLoaded() {
+        if(BaseCard.loaded)
+            return;
+        BaseCard.loaded = true;
+
+        
+
+        tardigrade.tardigradeEngine.addTemplate("BaseCard", {e:[null, 0, [""], "div", {"class": "project-card mdl-card mdl-shadow--2dp"}, [{e:["title", 0, [""], "div", {"class": "mdl-card__title mdl-card--expand"}, []]}, {e:["content", 0, [""], "div", {"class": "mdl-card__supporting-text"}, []]}, {e:["details", 0, [""], "div", {"class": "mdl-card__supporting-text", "style": "display:none;"}, []]}, {e:["actions", 0, [""], "div", {"class": "mdl-card__actions mdl-card--border"}, []]}, {e:["menu", 0, [""], "div", {"class": "mdl-card__menu"}, []]}]]});
+    }
 }

@@ -1,12 +1,13 @@
 "use strict";
 
-import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
-import { ElementNode, TemplateNode, TextNode, Cardinal, PointInfo } from "../../node_modules/tardigrade/target/engine/model";
-import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
-import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
+import * as tardigrade from "../../node_modules/tardigrade/target/engine/engine";
 
 
 
+
+/**
+ * Template's DTO interface.
+ * Used to create new template instances */
 export interface SearchPanelDto {
     _root?: string;
     input?: any;
@@ -15,31 +16,18 @@ export interface SearchPanelDto {
 }
 
 export class SearchPanel {
-    private static loaded = false;
-
-    /** This method should not be called by your application ! */
-    static ensureLoaded() {
-        if(SearchPanel.loaded)
-            return;
-        SearchPanel.loaded = true;
-
-        
-
-        tardigradeEngine.addTemplate("SearchPanel", new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "div", {"class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"}, [new ElementNode("input", <Cardinal>0, [""], "input", {"class": "mdl-textfield__input", "type": "text", "id": "searchBox"}, []), new ElementNode(null, <Cardinal>0, [""], "label", {"class": "mdl-textfield__label", "for": "searchBox"}, [new TextNode("Project search...")])]), new ElementNode(null, <Cardinal>0, [""], "div", {"class": "mdl-button mdl-button--icon"}, [new ElementNode(null, <Cardinal>0, [""], "i", {"class": "material-icons"}, [new TextNode("search")])])]));
-    }
-
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
     static html(dto: SearchPanelDto): string {
         SearchPanel.ensureLoaded();
 
-        return tardigradeEngine.buildHtml("SearchPanel", dto);
+        return tardigrade.tardigradeEngine.buildHtml("SearchPanel", dto);
     }
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
     static element(dto:SearchPanelDto): HTMLElement {
-        return createElement(SearchPanel.html(dto));
+        return tardigrade.createElement(SearchPanel.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
@@ -79,11 +67,24 @@ export class SearchPanel {
 
     /** Returns the html element corresponding to the 'input' point */
 input(): HTMLInputElement {
-return <HTMLInputElement>tardigradeEngine.getPoint(this.rootElement, "SearchPanel", { "input": 0 });
+return <HTMLInputElement>tardigrade.tardigradeEngine.getPoint(this.rootElement, "SearchPanel", { "input": 0 });
 }
 /** Returns true if the part named 'input' with id 'input' was hit */
                 inputHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(this.rootElement, "SearchPanel", hitTest);
+                        let location = tardigrade.tardigradeEngine.getLocation(this.rootElement, "SearchPanel", hitTest);
                         return (location != null && ("input" in location));
                         }
+
+    private static loaded = false;
+
+    /** This method should not be called by your application ! */
+    static ensureLoaded() {
+        if(SearchPanel.loaded)
+            return;
+        SearchPanel.loaded = true;
+
+        
+
+        tardigrade.tardigradeEngine.addTemplate("SearchPanel", {e:[null, 0, [""], "div", {}, [{e:[null, 0, [""], "div", {"class": "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"}, [{e:["input", 0, [""], "input", {"class": "mdl-textfield__input", "type": "text", "id": "searchBox"}, []]}, {e:[null, 0, [""], "label", {"class": "mdl-textfield__label", "for": "searchBox"}, ["Project search..."]]}]]}, {e:[null, 0, [""], "div", {"class": "mdl-button mdl-button--icon"}, [{e:[null, 0, [""], "i", {"class": "material-icons"}, ["search"]]}]]}]]});
+    }
 }

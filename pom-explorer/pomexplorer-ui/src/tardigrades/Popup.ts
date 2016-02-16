@@ -1,12 +1,13 @@
 "use strict";
 
-import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
-import { ElementNode, TemplateNode, TextNode, Cardinal, PointInfo } from "../../node_modules/tardigrade/target/engine/model";
-import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
-import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
+import * as tardigrade from "../../node_modules/tardigrade/target/engine/engine";
 
 
 
+
+/**
+ * Template's DTO interface.
+ * Used to create new template instances */
 export interface PopupDto {
     _root?: string;
     content?: any;
@@ -15,31 +16,18 @@ export interface PopupDto {
 }
 
 export class Popup {
-    private static loaded = false;
-
-    /** This method should not be called by your application ! */
-    static ensureLoaded() {
-        if(Popup.loaded)
-            return;
-        Popup.loaded = true;
-
-        
-
-        tardigradeEngine.addTemplate("Popup", new ElementNode("content", <Cardinal>0, [""], "div", {"class": "Popup"}, []));
-    }
-
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
     static html(dto: PopupDto): string {
         Popup.ensureLoaded();
 
-        return tardigradeEngine.buildHtml("Popup", dto);
+        return tardigrade.tardigradeEngine.buildHtml("Popup", dto);
     }
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
     static element(dto:PopupDto): HTMLElement {
-        return createElement(Popup.html(dto));
+        return tardigrade.createElement(Popup.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
@@ -79,11 +67,24 @@ export class Popup {
 
     /** Returns the html element corresponding to the 'content' point */
 content(): HTMLDivElement {
-return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "Popup", { "content": 0 });
+return <HTMLDivElement>tardigrade.tardigradeEngine.getPoint(this.rootElement, "Popup", { "content": 0 });
 }
 /** Returns true if the part named 'content' with id 'content' was hit */
                 contentHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(this.rootElement, "Popup", hitTest);
+                        let location = tardigrade.tardigradeEngine.getLocation(this.rootElement, "Popup", hitTest);
                         return (location != null && ("content" in location));
                         }
+
+    private static loaded = false;
+
+    /** This method should not be called by your application ! */
+    static ensureLoaded() {
+        if(Popup.loaded)
+            return;
+        Popup.loaded = true;
+
+        
+
+        tardigrade.tardigradeEngine.addTemplate("Popup", {e:["content", 0, [""], "div", {"class": "Popup"}, []]});
+    }
 }

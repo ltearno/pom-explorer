@@ -1,12 +1,13 @@
 "use strict";
 
-import { tardigradeEngine } from "../../node_modules/tardigrade/target/engine/engine";
-import { ElementNode, TemplateNode, TextNode, Cardinal, PointInfo } from "../../node_modules/tardigrade/target/engine/model";
-import { tardigradeParser } from "../../node_modules/tardigrade/target/engine/parser";
-import { createElement, domChain, indexOf } from "../../node_modules/tardigrade/target/engine/runtime";
+import * as tardigrade from "../../node_modules/tardigrade/target/engine/engine";
 
 
 
+
+/**
+ * Template's DTO interface.
+ * Used to create new template instances */
 export interface ChangePanelDto {
     _root?: string;
     graphChanges?: any;
@@ -17,31 +18,18 @@ projectChanges?: any;
 }
 
 export class ChangePanel {
-    private static loaded = false;
-
-    /** This method should not be called by your application ! */
-    static ensureLoaded() {
-        if(ChangePanel.loaded)
-            return;
-        ChangePanel.loaded = true;
-
-        
-
-        tardigradeEngine.addTemplate("ChangePanel", new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "h2", {}, [new TextNode("Graph changes")]), new ElementNode("graphChanges", <Cardinal>0, [""], "div", {}, [])]), new ElementNode(null, <Cardinal>0, [""], "div", {}, [new ElementNode(null, <Cardinal>0, [""], "h2", {}, [new TextNode("Project changes")]), new ElementNode("projectChanges", <Cardinal>0, [""], "div", {}, [])])]));
-    }
-
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
     static html(dto: ChangePanelDto): string {
         ChangePanel.ensureLoaded();
 
-        return tardigradeEngine.buildHtml("ChangePanel", dto);
+        return tardigrade.tardigradeEngine.buildHtml("ChangePanel", dto);
     }
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
     static element(dto:ChangePanelDto): HTMLElement {
-        return createElement(ChangePanel.html(dto));
+        return tardigrade.createElement(ChangePanel.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
@@ -81,20 +69,33 @@ export class ChangePanel {
 
     /** Returns the html element corresponding to the 'graphChanges' point */
 graphChanges(): HTMLDivElement {
-return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "ChangePanel", { "graphChanges": 0 });
+return <HTMLDivElement>tardigrade.tardigradeEngine.getPoint(this.rootElement, "ChangePanel", { "graphChanges": 0 });
 }
 /** Returns true if the part named 'graphChanges' with id 'graphChanges' was hit */
                 graphChangesHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(this.rootElement, "ChangePanel", hitTest);
+                        let location = tardigrade.tardigradeEngine.getLocation(this.rootElement, "ChangePanel", hitTest);
                         return (location != null && ("graphChanges" in location));
                         }
 /** Returns the html element corresponding to the 'projectChanges' point */
 projectChanges(): HTMLDivElement {
-return <HTMLDivElement>tardigradeEngine.getPoint(this.rootElement, "ChangePanel", { "projectChanges": 0 });
+return <HTMLDivElement>tardigrade.tardigradeEngine.getPoint(this.rootElement, "ChangePanel", { "projectChanges": 0 });
 }
 /** Returns true if the part named 'projectChanges' with id 'projectChanges' was hit */
                 projectChangesHit(hitTest:HTMLElement): boolean {
-                        let location = tardigradeEngine.getLocation(this.rootElement, "ChangePanel", hitTest);
+                        let location = tardigrade.tardigradeEngine.getLocation(this.rootElement, "ChangePanel", hitTest);
                         return (location != null && ("projectChanges" in location));
                         }
+
+    private static loaded = false;
+
+    /** This method should not be called by your application ! */
+    static ensureLoaded() {
+        if(ChangePanel.loaded)
+            return;
+        ChangePanel.loaded = true;
+
+        
+
+        tardigrade.tardigradeEngine.addTemplate("ChangePanel", {e:[null, 0, [""], "div", {}, [{e:[null, 0, [""], "div", {}, [{e:[null, 0, [""], "h2", {}, ["Graph changes"]]}, {e:["graphChanges", 0, [""], "div", {}, []]}]]}, {e:[null, 0, [""], "div", {}, [{e:[null, 0, [""], "h2", {}, ["Project changes"]]}, {e:["projectChanges", 0, [""], "div", {}, []]}]]}]]});
+    }
 }
