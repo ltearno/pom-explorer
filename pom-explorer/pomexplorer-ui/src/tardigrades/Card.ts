@@ -1,7 +1,6 @@
 "use strict";
 
-import * as tardigrade from "../../node_modules/tardigrade/target/engine/engine";
-
+declare var tardigrade;
 
 import { BaseCard } from "./BaseCard";
 import { Gav } from "./Gav";

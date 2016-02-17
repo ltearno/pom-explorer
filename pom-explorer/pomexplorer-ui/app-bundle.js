@@ -583,11 +583,10 @@
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine"], factory);
+        define(["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     class Application {
         /** This constructor should not be called by your application ! */
         constructor(rootElement) {
@@ -696,17 +695,16 @@
     exports.Application = Application;
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":18}],9:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine"], factory);
+        define(["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     class BaseCard {
         /** This constructor should not be called by your application ! */
         constructor(rootElement) {
@@ -807,17 +805,16 @@
     exports.BaseCard = BaseCard;
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":18}],10:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "./BaseCard", "./Gav"], factory);
+        define(["require", "exports", "./BaseCard", "./Gav"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     var BaseCard_1 = require("./BaseCard");
     var Gav_1 = require("./Gav");
     class Card {
@@ -970,17 +967,16 @@
     exports.Card = Card;
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":18,"./BaseCard":9,"./Gav":14}],11:[function(require,module,exports){
+},{"./BaseCard":9,"./Gav":14}],11:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "./BaseCard"], factory);
+        define(["require", "exports", "./BaseCard"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     var BaseCard_1 = require("./BaseCard");
     class ChangeGavCard {
         /** This constructor should not be called by your application ! */
@@ -1119,17 +1115,16 @@
     exports.ChangeGavCard = ChangeGavCard;
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":18,"./BaseCard":9}],12:[function(require,module,exports){
+},{"./BaseCard":9}],12:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine"], factory);
+        define(["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     class ChangePanel {
         /** This constructor should not be called by your application ! */
         constructor(rootElement) {
@@ -1203,17 +1198,16 @@
     exports.ChangePanel = ChangePanel;
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":18}],13:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine"], factory);
+        define(["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     class ConsolePanel {
         /** This constructor should not be called by your application ! */
         constructor(rootElement) {
@@ -1287,17 +1281,16 @@
     exports.ConsolePanel = ConsolePanel;
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":18}],14:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine"], factory);
+        define(["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     class Gav {
         /** This constructor should not be called by your application ! */
         constructor(rootElement) {
@@ -1380,17 +1373,16 @@
     exports.Gav = Gav;
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":18}],15:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine"], factory);
+        define(["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     class Popup {
         /** This constructor should not be called by your application ! */
         constructor(rootElement) {
@@ -1455,17 +1447,16 @@
     exports.Popup = Popup;
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":18}],16:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine", "./SearchPanel", "./Card"], factory);
+        define(["require", "exports", "./SearchPanel", "./Card"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     var SearchPanel_1 = require("./SearchPanel");
     var Card_1 = require("./Card");
     class ProjectPanel {
@@ -1583,17 +1574,16 @@
     exports.ProjectPanel = ProjectPanel;
 });
 
-},{"../../node_modules/tardigrade/target/engine/engine":18,"./Card":10,"./SearchPanel":17}],17:[function(require,module,exports){
+},{"./Card":10,"./SearchPanel":17}],17:[function(require,module,exports){
 (function (factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "../../node_modules/tardigrade/target/engine/engine"], factory);
+        define(["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var tardigrade = require("../../node_modules/tardigrade/target/engine/engine");
     class SearchPanel {
         /** This constructor should not be called by your application ! */
         constructor(rootElement) {
@@ -1656,711 +1646,6 @@
     }
     SearchPanel.loaded = false;
     exports.SearchPanel = SearchPanel;
-});
-
-},{"../../node_modules/tardigrade/target/engine/engine":18}],18:[function(require,module,exports){
-(function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
-    }
-    else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./runtime", "./runtime", "./model", "./model"], factory);
-    }
-})(function (require, exports) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    var runtime_1 = require("./runtime");
-    var runtime_2 = require("./runtime");
-    exports.domChain = runtime_2.domChain;
-    exports.createElement = runtime_2.createElement;
-    var model_1 = require("./model");
-    __export(require("./model"));
-    class TardigradeEngine {
-        constructor() {
-            this.templates = {};
-        }
-        addTemplate(name, spec) {
-            let template = model_1.buildNode(spec);
-            this.templates[name] = {
-                name: name,
-                rootNode: template,
-                points: this.getPoints(template),
-                dependentTemplates: template.getTemplateNodes()
-            };
-        }
-        getTemplateDescriptor(name) {
-            return this.templates[name];
-        }
-        buildHtml(templateName, dto) {
-            var templateDescriptor = this.templates[templateName];
-            if (templateDescriptor == null)
-                return null;
-            return this.buildNode(templateDescriptor.rootNode, templateDescriptor.rootNode, [dto]);
-        }
-        buildNodeHtml(templateName, nodeId, dto) {
-            var templateDescriptor = this.templates[templateName];
-            if (templateDescriptor == null)
-                return null;
-            var nodeToBuild = this.findNode(templateDescriptor.rootNode, nodeId);
-            return this.buildNode(nodeToBuild, nodeToBuild, [dto]);
-        }
-        getPoint(templateElement, templateName, intermediates) {
-            var templateDescriptor = this.templates[templateName];
-            if (templateDescriptor == null)
-                return null;
-            var templatePoints = templateDescriptor.points;
-            let longestPath = -1;
-            let pointName = null;
-            for (let test in intermediates) {
-                if (templatePoints[test].path.length > longestPath) {
-                    longestPath = templatePoints[test].path.length;
-                    pointName = test;
-                }
-            }
-            var targetPath = templatePoints[pointName];
-            var element = templateElement;
-            for (let i = 0; i < targetPath.path.length; i++) {
-                let index = targetPath.path[i];
-                if (typeof index === "string")
-                    index = intermediates[index];
-                let children = element.children;
-                if (children == null || children.length <= index)
-                    return null;
-                element = element.children[index];
-            }
-            return element;
-        }
-        getLocation(templateElement, templateName, element) {
-            var templateDescriptor = this.templates[templateName];
-            if (templateDescriptor == null)
-                return null;
-            var templatePoints = templateDescriptor.points;
-            var chain = runtime_1.domChain(templateElement, element);
-            var indices = [];
-            for (var i = 1; i < chain.length; i++)
-                indices.push([].indexOf.call(chain[i - 1].children, chain[i]));
-            var res = {};
-            for (var pointName in templatePoints) {
-                var path = templatePoints[pointName].path;
-                if (indices.length < path.length)
-                    continue;
-                let i = 0;
-                for (i = 0; i < path.length; i++) {
-                    if ((typeof path[i] != "string") && path[i] !== indices[i])
-                        break;
-                }
-                if (i == path.length) {
-                    if (typeof path[i - 1] === "string")
-                        res[pointName] = indices[i - 1];
-                    else
-                        res[pointName] = 0;
-                }
-            }
-            return res;
-        }
-        findNode(node, nodeId) {
-            if (node == null)
-                return null;
-            if (node instanceof model_1.ParentNode && node.xId === nodeId)
-                return node;
-            if (node instanceof model_1.ElementNode) {
-                for (let child of node.getChildren()) {
-                    let hit = this.findNode(child, nodeId);
-                    if (hit != null)
-                        return hit;
-                }
-            }
-            else if (node instanceof model_1.TemplateNode) {
-                for (let childPointName in node.getChildren()) {
-                    let childPoint = node.getChildren()[childPointName];
-                    if (!childPoint.getChildren()) {
-                        console.log('point ' + childPointName + ' has no child in template ' + node.name);
-                    }
-                    else {
-                        for (let childNode of childPoint.getChildren()) {
-                            let hit = this.findNode(childNode, nodeId);
-                            if (hit != null)
-                                return hit;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-        buildNode(templateRoot, node, dtos) {
-            if (node instanceof model_1.ElementNode)
-                return this.buildElementNode(templateRoot, node, dtos);
-            else if (node instanceof model_1.TemplateNode)
-                return this.buildTemplateNode(templateRoot, node, dtos);
-            else if (node instanceof model_1.TextNode)
-                return this.buildTextNode(node);
-            else
-                return null;
-        }
-        getDto(field, dtos) {
-            if (dtos == null || field == null)
-                return null;
-            for (var i = dtos.length - 1; i >= 0; i--) {
-                var dto = dtos[i];
-                if (field in dto)
-                    return dto[field];
-            }
-            return null;
-        }
-        buildTagBegin(tagName, attrs) {
-            var res = "<";
-            res += tagName;
-            for (var key in attrs)
-                res += ` ${key}='${attrs[key]}'`;
-            res += ">";
-            return res;
-        }
-        buildTagEnd(tagName) {
-            return `</${tagName}>`;
-        }
-        mergeAttributes(attrs1, attrs2) {
-            return Object.assign({}, attrs1, attrs2);
-        }
-        buildElementOverride(node, attrs, text) {
-            if (node.name.toLowerCase() == "br")
-                return "<br/>";
-            var res = "";
-            res += this.buildTagBegin(node.name, attrs);
-            res += text;
-            res += this.buildTagEnd(node.name);
-            return res;
-        }
-        buildElementSpecimen(templateRoot, node, attrs, dtos) {
-            if (node.name.toLowerCase() == "br")
-                return "<br/>";
-            var res = "";
-            res += this.buildTagBegin(node.name, attrs);
-            if (node.getChildren() != null) {
-                for (var child of node.getChildren()) {
-                    res += this.buildNode(templateRoot, child, dtos);
-                }
-            }
-            res += this.buildTagEnd(node.name);
-            return res;
-        }
-        buildElementNode(templateRoot, node, dtos) {
-            var dto = this.getDto(node.xId, dtos);
-            if (node == templateRoot) {
-                var dtoRootContent = this.getDto("_root", dtos);
-                if (dtoRootContent != null)
-                    dto = dtoRootContent;
-            }
-            var dtoAttrs = node.xId != null ? this.getDto("@" + node.xId, dtos) : null;
-            if (node == templateRoot) {
-                var dtoRootAttrs = this.getDto("@_root", dtos);
-                if (dtoRootAttrs != null)
-                    dtoAttrs = dtoRootAttrs;
-            }
-            var res = "";
-            if (node.xCardinal == model_1.Cardinal.Single) {
-                var attrs = this.mergeAttributes(node.attributes, dtoAttrs);
-                if (dto == null) {
-                    res += this.buildElementSpecimen(templateRoot, node, attrs, dtos);
-                }
-                else if (typeof dto == 'string') {
-                    res += this.buildElementOverride(node, attrs, dto);
-                }
-                else if (dto instanceof Array) {
-                    res += "<ERROR DTO HAD AN ARRAY, NOT EXPECTED!!!/>";
-                }
-                else if (dto instanceof Object) {
-                    dtos.push(dto);
-                    res += this.buildElementSpecimen(templateRoot, node, attrs, dtos);
-                    dtos.pop();
-                }
-            }
-            else if (node.xCardinal == model_1.Cardinal.Multiple) {
-                if (dto == null) {
-                }
-                else if (typeof dto == 'string') {
-                    let attrs = this.mergeAttributes(node.attributes, dtoAttrs);
-                    res += this.buildElementOverride(node, attrs, dto);
-                }
-                else if (dto instanceof Array) {
-                    for (var i = 0; i < dto.length; i++) {
-                        var item = dto[i];
-                        let attrs = this.mergeAttributes(node.attributes, dtoAttrs instanceof Array ? dtoAttrs[i] : dtoAttrs);
-                        if (typeof item == 'string') {
-                            res += this.buildElementOverride(node, attrs, item);
-                        }
-                        else {
-                            dtos.push(item);
-                            res += this.buildElementSpecimen(templateRoot, node, dtoAttrs, dtos);
-                            dtos.pop();
-                        }
-                    }
-                }
-                else if (dto instanceof Object) {
-                    let attrs = this.mergeAttributes(node.attributes, dtoAttrs);
-                    dtos.push(dto);
-                    res += this.buildElementSpecimen(templateRoot, node, dtoAttrs, dtos);
-                    dtos.pop();
-                }
-            }
-            return res;
-        }
-        getPoints(node) {
-            var res = {};
-            this.visitNode(node, [], (xId, nodeInstance, path) => {
-                res[xId] = {
-                    id: xId,
-                    node: nodeInstance,
-                    path: path.slice()
-                };
-            });
-            return res;
-        }
-        visitNode(node, currentPath, visitor) {
-            if (node instanceof model_1.ElementNode)
-                this.visitElementNode(node, currentPath, visitor);
-            else if (node instanceof model_1.TemplateNode)
-                this.visitTemplateNode(node, currentPath, visitor);
-        }
-        visitElementNode(node, currentPath, visitor) {
-            if (node.xId != null) {
-                if (node.xCardinal == model_1.Cardinal.Multiple) {
-                    currentPath.pop();
-                    currentPath.push(node.xId);
-                }
-                visitor(node.xId, node, currentPath);
-            }
-            if (node.getChildren() != null) {
-                let childIdx = 0;
-                for (var i = 0; i < node.getChildren().length; i++) {
-                    let child = node.getChildren()[i];
-                    currentPath.push(childIdx);
-                    this.visitNode(child, currentPath, visitor);
-                    currentPath.pop();
-                    if (!(child instanceof model_1.TextNode))
-                        childIdx++;
-                }
-            }
-        }
-        visitTemplateNode(node, currentPath, visitor) {
-            if (node.xId != null) {
-                if (node.xCardinal == model_1.Cardinal.Multiple) {
-                    currentPath.pop();
-                    currentPath.push(node.xId);
-                }
-                visitor(node.xId, node, currentPath);
-            }
-            let subTemplatePoints = this.templates[node.name].points;
-            if (node.getChildren() != null) {
-                for (var pointName in node.getChildren()) {
-                    var pointInfo = node.getChildren()[pointName];
-                    let pointPath = currentPath.concat(subTemplatePoints[pointName].path);
-                    if (pointInfo.xId != null)
-                        visitor(pointInfo.xId, pointInfo, pointPath);
-                    if (pointInfo.getChildren() != null) {
-                        let childIdx = 0;
-                        for (var i = 0; i < pointInfo.getChildren().length; i++) {
-                            let child = pointInfo.getChildren()[i];
-                            pointPath.push(childIdx);
-                            this.visitNode(child, pointPath, visitor);
-                            pointPath.pop();
-                            if (!(child instanceof model_1.TextNode))
-                                childIdx++;
-                        }
-                    }
-                }
-            }
-        }
-        buildTemplateNode(templateRoot, node, dtos) {
-            var templateDescriptor = this.templates[node.name];
-            if (templateDescriptor == null)
-                return `<ERROR Template ${node.name} not found !/>`;
-            var templatePoints = templateDescriptor.points;
-            var res = "";
-            let attrs = null;
-            let dto = null;
-            if (node.xId != null) {
-                attrs = this.getDto("@" + node.xId, dtos);
-                dto = this.getDto(node.xId, dtos);
-            }
-            var templateDtos = [];
-            if (node.xCardinal == model_1.Cardinal.Single) {
-                let templateDto = {};
-                if (attrs != null)
-                    templateDto["@_root"] = attrs;
-                if (dto != null)
-                    templateDto["_root"] = dto;
-                templateDtos = [templateDto];
-            }
-            else if (node.xCardinal == model_1.Cardinal.Multiple && dto != null) {
-                for (var i = 0; i < dto.length; i++) {
-                    let oneDto = dto[i];
-                    let templateDto = {};
-                    if (attrs != null) {
-                        if (attrs instanceof Array)
-                            templateDto["@_root"] = attrs[i];
-                        else
-                            templateDto["@_root"] = attrs;
-                    }
-                    if (oneDto != null)
-                        templateDto["_root"] = oneDto;
-                    templateDtos.push(oneDto);
-                }
-            }
-            for (var i = 0; i < templateDtos.length; i++) {
-                var templateDto = templateDtos[i];
-                if (typeof templateDto == 'string') {
-                    res += this.buildNode(templateDescriptor.rootNode, templateDescriptor.rootNode, [{ "_root": templateDto }]);
-                }
-                else {
-                    for (var pointName in templatePoints) {
-                        let nodeChildren = node.getChildren();
-                        var pointInfo = ((nodeChildren != null) && (pointName in nodeChildren)) ? nodeChildren[pointName] : null;
-                        var pointDto = null;
-                        var pointAttrs = null;
-                        if (node.xCardinal == model_1.Cardinal.Single && pointInfo != null && pointInfo.xId != null) {
-                            pointDto = this.getDto(pointInfo.xId, dtos);
-                            pointAttrs = this.getDto("@" + pointInfo.xId, dtos);
-                        }
-                        if (pointDto != null)
-                            templateDto[pointName] = pointDto;
-                        if (pointAttrs != null)
-                            templateDto["@" + pointName] = pointAttrs;
-                        if (pointInfo != null && (pointDto == null || (typeof pointDto != 'string'))) {
-                            if (pointInfo.attributes != null)
-                                templateDto["@" + pointName] = pointInfo.attributes;
-                            if (pointInfo.getChildren() != null) {
-                                var pointContent = "";
-                                let pushedDto = false;
-                                if (dto != null && (dto instanceof Array) && node.xCardinal == model_1.Cardinal.Multiple) {
-                                    dtos.push(dto[i]);
-                                    pushedDto = true;
-                                }
-                                for (var pointChild of pointInfo.getChildren()) {
-                                    pointContent += this.buildNode(templateRoot, pointChild, dtos);
-                                }
-                                templateDto[pointName] = pointContent;
-                                if (pushedDto)
-                                    dtos.pop();
-                            }
-                        }
-                    }
-                    res += this.buildNode(templateDescriptor.rootNode, templateDescriptor.rootNode, [templateDto]);
-                }
-            }
-            return res;
-        }
-        buildTextNode(node) {
-            return node.text;
-        }
-    }
-    exports.TardigradeEngine = TardigradeEngine;
-    exports.tardigradeEngine = new TardigradeEngine();
-});
-
-},{"./model":19,"./runtime":20}],19:[function(require,module,exports){
-(function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
-    }
-    else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports"], factory);
-    }
-})(function (require, exports) {
-    "use strict";
-    let mapObject = function (object) {
-        let res = {};
-        for (var key in object) {
-            if (object[key] instanceof PointInfo)
-                res[key] = object[key];
-            else
-                res[key] = new PointInfo(object[key][0], object[key][1], object[key][2].map(n => buildNode(n)));
-        }
-        return res;
-    };
-    function buildNode(spec) {
-        if ((spec instanceof ElementNode) || (spec instanceof TemplateNode) || (spec instanceof TextNode))
-            return spec;
-        if (spec instanceof Object) {
-            if ("e" in spec) {
-                let params = spec["e"];
-                return new ElementNode(params[0], params[1], params[2], params[3], params[4], params[5].map(n => buildNode(n)));
-            }
-            else if ("t" in spec) {
-                let params = spec["t"];
-                return new TemplateNode(params[0], params[1], params[2], params[3], params[4], mapObject(params[5]));
-            }
-        }
-        else if (typeof spec === "string") {
-            return new TextNode(spec);
-        }
-        return null;
-    }
-    exports.buildNode = buildNode;
-    function escapeText(text) {
-        return text.replace(/"/g, '\\\"');
-    }
-    function visitDeep(node, visitor) {
-        if (node instanceof ElementNode) {
-            visitor.visitElementNode(node);
-            if (node.getChildren() != null) {
-                for (let child of node.getChildren())
-                    visitDeep(child, visitor);
-            }
-        }
-        else if (node instanceof TemplateNode) {
-            visitor.visitTemplateNode(node);
-            if (node.getChildren() != null) {
-                for (var pointName in node.getChildren()) {
-                    var pointInfo = node.getChildren()[pointName];
-                    visitor.visitPointInfo(pointInfo);
-                    if (pointInfo.getChildren() != null) {
-                        for (let child of pointInfo.getChildren())
-                            visitDeep(child, visitor);
-                    }
-                }
-            }
-        }
-        else if (node instanceof TextNode) {
-            visitor.visitTextNode(node);
-        }
-    }
-    (function (Cardinal) {
-        Cardinal[Cardinal["Single"] = 0] = "Single";
-        Cardinal[Cardinal["Multiple"] = 1] = "Multiple";
-    })(exports.Cardinal || (exports.Cardinal = {}));
-    var Cardinal = exports.Cardinal;
-    class Node {
-        visitDeep(visitor) {
-            return visitDeep(this, visitor);
-        }
-    }
-    exports.Node = Node;
-    class TextNode extends Node {
-        constructor(text) {
-            super();
-            this.text = text;
-        }
-        log(prefix) {
-            console.log(`${prefix}TEXT ${this.text}`);
-        }
-        quine() {
-            return `"${escapeText(this.text)}"`;
-        }
-    }
-    exports.TextNode = TextNode;
-    class ParentNode extends Node {
-        constructor(xId, xCardinal, xOptions, name, attributes) {
-            super();
-            this.xId = xId;
-            this.xCardinal = xCardinal;
-            this.xOptions = xOptions;
-            this.name = name;
-            this.attributes = attributes;
-        }
-        logBase() {
-            var a = [];
-            if (this.attributes != null) {
-                for (var an in this.attributes)
-                    a.push(`${an}=${this.attributes[an]}`);
-            }
-            return `${this.name} id:${this.xId}, cardinal:${this.xCardinal}, options:${this.xOptions.length > 0 ? this.xOptions.join(", ") : "-"}, attrs: ${a.length > 0 ? a.join(", ") : "-"}`;
-        }
-        getTemplateNodes() {
-            let names = {};
-            this.fetchTemplateNodes(this, names);
-            let res = [];
-            for (let name in names)
-                res.push(name);
-            return res;
-        }
-        fetchTemplateNodes(node, templateNames) {
-            if (node instanceof ElementNode) {
-                if (node.getChildren() != null) {
-                    for (let child of node.getChildren())
-                        this.fetchTemplateNodes(child, templateNames);
-                }
-            }
-            else if (node instanceof TemplateNode) {
-                templateNames[node.name] = 1;
-                if (node.getChildren() != null) {
-                    for (var pointName in node.getChildren()) {
-                        var pointInfo = node.getChildren()[pointName];
-                        if (pointInfo.getChildren() != null) {
-                            for (let child of pointInfo.getChildren())
-                                this.fetchTemplateNodes(child, templateNames);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    exports.ParentNode = ParentNode;
-    class ElementNode extends ParentNode {
-        constructor(xId, xCardinal, xOptions, name, attributes, children) {
-            super(xId, xCardinal, xOptions, name, attributes);
-            this.xId = xId;
-            this.xCardinal = xCardinal;
-            this.xOptions = xOptions;
-            this.name = name;
-            this.attributes = attributes;
-            this.children = children;
-            for (let child of this.children)
-                child.parent = this;
-        }
-        log(prefix) {
-            console.log(`${prefix}${this.logBase()}`);
-            for (var c of this.children)
-                c.log(prefix + "  ");
-        }
-        quine() {
-            let xIdString = this.xId == null ? "null" : (`"${this.xId}"`);
-            let optionsString = (this.xOptions == null || this.xOptions.length == 0) ? "null" : ("[" + this.xOptions.map(o => `"${o}"`).join(",") + "]");
-            let attributesString = [];
-            for (let name in this.attributes)
-                attributesString.push(`"${name}": "${escapeText(this.attributes[name])}"`);
-            let childrenString = this.children == null ? "null" : ("[" + this.children.map(c => c.quine()).join(', ') + "]");
-            return `{e:[${xIdString}, ${this.xCardinal}, ${optionsString}, "${this.name}", {${attributesString.join(', ')}}, ${childrenString}]}`;
-        }
-        getChildren() {
-            return this.children;
-        }
-        addChild(child) {
-            child.parent = this;
-            if (this.children == null)
-                this.children = [child];
-            else
-                this.children.push(child);
-        }
-    }
-    exports.ElementNode = ElementNode;
-    class TemplateNode extends ParentNode {
-        constructor(xId, xCardinal, xOptions, name, attributes, children) {
-            super(xId, xCardinal, xOptions, name, attributes);
-            this.xId = xId;
-            this.xCardinal = xCardinal;
-            this.xOptions = xOptions;
-            this.name = name;
-            this.attributes = attributes;
-            this.children = children;
-            for (let i in this.children)
-                this.children[i].parent = this;
-        }
-        log(prefix) {
-            console.log(`${prefix}template ${this.logBase()}`);
-            for (var point in this.children) {
-                console.log(`${prefix}  POINT ${point} ${this.children[point].logBase()}`);
-                if (this.children[point].getChildren() != null) {
-                    for (var child of this.children[point].getChildren())
-                        child.log(prefix + "    ");
-                }
-            }
-        }
-        quine() {
-            let xIdString = this.xId == null ? "null" : (`"${this.xId}"`);
-            let optionsString = (this.xOptions == null || this.xOptions.length == 0) ? "null" : ("[" + this.xOptions.map(o => `"${o}"`).join(",") + "]");
-            let attributesString = [];
-            for (let name in this.attributes)
-                attributesString.push(`"${name}": "${escapeText(this.attributes[name])}"`);
-            let childrenString = [];
-            for (let name in this.children) {
-                let child = this.children[name];
-                childrenString.push(`"${name}": ${child.quine()}`);
-            }
-            return `{t:[${xIdString}, ${this.xCardinal}, ${optionsString}, "${this.name}", {${attributesString.join(', ')}}, {${childrenString.join(', ')}}]}`;
-        }
-        getChildren() {
-            return this.children;
-        }
-        addChildren(key, child) {
-            child.parent = this;
-            if (this.children == null)
-                this.children = {};
-            this.children[key] = child;
-        }
-    }
-    exports.TemplateNode = TemplateNode;
-    class PointInfo {
-        constructor(xId, attributes, children) {
-            this.xId = xId;
-            this.attributes = attributes;
-            this.children = children;
-        }
-        logBase() {
-            var a = [];
-            if (this.attributes != null) {
-                for (var an in this.attributes)
-                    a.push(`${an}=${this.attributes[an]}`);
-            }
-            return `id: ${this.xId}, attrs: ${a.length > 0 ? a.join(", ") : "-"}`;
-        }
-        quine() {
-            let xIdString = this.xId == null ? "null" : (`"${this.xId}"`);
-            let attributesString = [];
-            for (let name in this.attributes)
-                attributesString.push(`"${name}": "${escapeText(this.attributes[name])}"`);
-            let childrenString = this.children.map(c => c.quine());
-            return `[${xIdString}, {${attributesString.join(', ')}}, [${childrenString.join(', ')}]]`;
-        }
-        addChild(child) {
-            child.parent = this;
-            if (this.children == null)
-                this.children = [child];
-            else
-                this.children.push(child);
-        }
-        getChildren() {
-            return this.children;
-        }
-    }
-    exports.PointInfo = PointInfo;
-});
-
-},{}],20:[function(require,module,exports){
-(function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
-    }
-    else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports"], factory);
-    }
-})(function (require, exports) {
-    "use strict";
-    function indexOf(parent, child) {
-        var index = [].indexOf.call(parent.children, child);
-        return index;
-    }
-    exports.indexOf = indexOf;
-    function domChain(parent, child) {
-        var res = [];
-        while (child != null) {
-            res.push(child);
-            if (child === parent) {
-                res = res.reverse();
-                return res;
-            }
-            child = child.parentElement;
-        }
-        return null;
-    }
-    exports.domChain = domChain;
-    function createElement(html) {
-        var element = document.createElement("div");
-        if (html.indexOf("<tr") === 0) {
-            html = "<table><tbody>" + html + "</tbody></table>";
-            element.innerHTML = html;
-            return element.children[0].children[0].children[0];
-        }
-        if (html.indexOf("<td") === 0) {
-            html = "<table><tbody><tr>" + html + "</tr></tbody></table>";
-            element.innerHTML = html;
-            return element.children[0].children[0].children[0].children[0];
-        }
-        element.innerHTML = html;
-        return element.children[0];
-    }
-    exports.createElement = createElement;
 });
 
 },{}]},{},[7]);
