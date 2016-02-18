@@ -1,0 +1,32 @@
+<div class='mdl-layout mdl-js-layout mdl-layout--fixed-header'>
+ <header class='mdl-layout__header'>
+  <div class='mdl-layout__header-row'>
+   <span class='mdl-layout-title'>
+    Pom Explorer
+   </span>
+   &nbsp;&nbsp;&nbsp;&nbsp;   <span class='mdl-badge' data-badge='!'>
+    beta
+   </span>
+
+  </div>
+
+ </header>
+ <div class='mdl-layout__drawer'>
+  <span class='mdl-layout-title'>
+   Pom Explorer
+  </span>
+  <nav class='mdl-navigation'>
+   {{#menuItems}}
+   <a class='mdl-navigation__link' href='#'>
+   {{menuItems}}
+   </a>
+   {{/menuItems}}
+  {{menu}}
+  </nav>
+ {{drawer}}
+ </div>
+ <main class='mdl-layout__content content-repositionning'>
+ {{content}}
+ </main>
+
+</div>
