@@ -1,1 +1,63 @@
-<<<template BaseCard>>>
+<div class='project-card mdl-card mdl-shadow--2dp'>
+ <div class='mdl-card__title mdl-card--expand'>
+ Changing&nbsp; <span >
+  {{groupId}}
+ </span>
+ : <span >
+  {{artifactId}}
+ </span>
+ : <span >
+  {{version}}
+ </span>
+
+ </div>
+ <div class='mdl-card__supporting-text'>
+ You can change this GAV and all projects linked to it will be updated. By now, <b >
+  NO CHANGE IS APPLIED
+ </b>
+ until            you go in the Change tab and validate. <br/> Enter the new coordinates for this GAV : <br/> <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label' style='display:block;'>
+  <input class='mdl-textfield__input' type='text' id='groupId'>
+   {{groupIdInput}}
+  </input>
+  <label class='mdl-textfield__label' for='groupId'>
+   groupId
+  </label>
+
+ </div>
+ <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label' style='display:block;'>
+  <input class='mdl-textfield__input' type='text' id='artifactId'>
+   {{artifactIdInput}}
+  </input>
+  <label class='mdl-textfield__label' for='artifactId'>
+   artifactId
+  </label>
+
+ </div>
+ <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label' style='display:block;'>
+  <input class='mdl-textfield__input' type='text' id='version'>
+   {{versionInput}}
+  </input>
+  <label class='mdl-textfield__label' for='version'>
+   version
+  </label>
+
+ </div>
+
+ </div>
+ <div class='mdl-card__supporting-text' style='display:none;'>
+  {{details}}
+ </div>
+ <div class='mdl-card__actions mdl-card--border'>
+ <a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>
+  Cancel
+ </a>
+ <a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect'>
+  Ok, store the change
+ </a>
+
+ </div>
+ <div class='mdl-card__menu'>
+  {{menu}}
+ </div>
+
+</div>
