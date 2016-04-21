@@ -7,7 +7,7 @@ public class PomExporerApp
 {
 	public static void main( String[] args )
 	{
-		int webServerPort = 90;
+		int webServerPort = 8090;
 		if( args != null && args.length > 0 )
 		{
 			try
