@@ -4,22 +4,28 @@ declare var tardigrade;
 
 
 
+export type BaseDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+}
+
 /**
  * Template's DTO interface.
  * Used to create new template instances */
-export interface ChangePanelDto {
-    _root?: string;
-    graphChanges?: any;
-"@graphChanges"?: any;
-projectChanges?: any;
-"@projectChanges"?: any;
 
+export type _RootDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    graphChanges?: BaseDto;
+    projectChanges?: BaseDto;
+    _root?: BaseDto;
 }
+
 
 export class ChangePanel {
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
-    static html(dto: ChangePanelDto): string {
+    static html(dto: _RootDto): string {
         ChangePanel.ensureLoaded();
 
         return tardigrade.tardigradeEngine.buildHtml("ChangePanel", dto);
@@ -27,14 +33,14 @@ export class ChangePanel {
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
-    static element(dto:ChangePanelDto): HTMLElement {
+    static element(dto: _RootDto): HTMLElement {
         return tardigrade.createElement(ChangePanel.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
      * This instance holds its root HTMLElement for you.
      * @return The built template instance */
-    static create(dto:ChangePanelDto): ChangePanel {
+    static create(dto: _RootDto): ChangePanel {
         let element = ChangePanel.element(dto);
         return new ChangePanel(element);
     }
@@ -42,12 +48,16 @@ export class ChangePanel {
     /** Builds a template instance from the HTMLElement you provide.
      * @param {HTMLElement} The HTML element that corresponds to this template
      * @return The built template instance */
-    static of(element: HTMLElement): ChangePanel {
+    static of(element: Element): ChangePanel {
         return new ChangePanel(element);
     }
 
+    private rootElement: HTMLElement;
+
     /** This constructor should not be called by your application ! */
-    constructor(private rootElement: HTMLElement) {}
+    constructor(rootElement: Element) {
+        this.rootElement = <HTMLElement>rootElement;
+    }
 
     /** Returns the root element of this template */
     rootHtmlElement(): HTMLElement { return this.rootElement; }

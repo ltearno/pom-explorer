@@ -4,20 +4,27 @@ declare var tardigrade;
 
 
 
+export type BaseDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+}
+
 /**
  * Template's DTO interface.
  * Used to create new template instances */
-export interface SearchPanelDto {
-    _root?: string;
-    input?: any;
-"@input"?: any;
 
+export type _RootDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    input?: BaseDto;
+    _root?: BaseDto;
 }
+
 
 export class SearchPanel {
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
-    static html(dto: SearchPanelDto): string {
+    static html(dto: _RootDto): string {
         SearchPanel.ensureLoaded();
 
         return tardigrade.tardigradeEngine.buildHtml("SearchPanel", dto);
@@ -25,14 +32,14 @@ export class SearchPanel {
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
-    static element(dto:SearchPanelDto): HTMLElement {
+    static element(dto: _RootDto): HTMLElement {
         return tardigrade.createElement(SearchPanel.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
      * This instance holds its root HTMLElement for you.
      * @return The built template instance */
-    static create(dto:SearchPanelDto): SearchPanel {
+    static create(dto: _RootDto): SearchPanel {
         let element = SearchPanel.element(dto);
         return new SearchPanel(element);
     }
@@ -40,12 +47,16 @@ export class SearchPanel {
     /** Builds a template instance from the HTMLElement you provide.
      * @param {HTMLElement} The HTML element that corresponds to this template
      * @return The built template instance */
-    static of(element: HTMLElement): SearchPanel {
+    static of(element: Element): SearchPanel {
         return new SearchPanel(element);
     }
 
+    private rootElement: HTMLElement;
+
     /** This constructor should not be called by your application ! */
-    constructor(private rootElement: HTMLElement) {}
+    constructor(rootElement: Element) {
+        this.rootElement = <HTMLElement>rootElement;
+    }
 
     /** Returns the root element of this template */
     rootHtmlElement(): HTMLElement { return this.rootElement; }

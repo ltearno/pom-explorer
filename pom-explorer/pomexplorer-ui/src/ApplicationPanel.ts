@@ -27,6 +27,7 @@ export class ApplicationPanel {
     }
 
     addMenuItem(name: string) {
+        //this.template.addMenuItems({ menuItems: name });
         this.template.addMenuItems({ _root: name });
     }
 

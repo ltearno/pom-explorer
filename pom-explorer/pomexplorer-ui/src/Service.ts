@@ -71,17 +71,13 @@ export class Service {
         var talkId = msg.talkGuid;
 
         var callback = this.waitingCallbacks[talkId];
-        if (callback){
-            console.log(`received msg : ${JSON.stringify(msg)}`);
+        if (callback)
             callback(msg);
-        }
-        else{
+        else
             this.onUnknownMessage(msg);
-        }
 
-        if (msg.isClosing) {
+        if (msg.isClosing)
             delete this.waitingCallbacks[talkId];
-        }
     }
 };
 

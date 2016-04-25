@@ -101,7 +101,7 @@ export class ProjectPanel implements IWorkPanel {
                         }
 
                         htmlString += Card.html({
-                            gav: { groupId: groupId, artifactId: artifactId, version: version },
+                            gav: { gavGroupId: groupId, gavArtifactId: artifactId, gavVersion: version },
                             content: content,
                             details: details
                         });

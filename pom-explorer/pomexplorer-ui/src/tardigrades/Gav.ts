@@ -4,24 +4,29 @@ declare var tardigrade;
 
 
 
+export type BaseDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+}
+
 /**
  * Template's DTO interface.
  * Used to create new template instances */
-export interface GavDto {
-    _root?: string;
-    groupId?: any;
-"@groupId"?: any;
-artifactId?: any;
-"@artifactId"?: any;
-version?: any;
-"@version"?: any;
 
+export type _RootDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    groupId?: BaseDto;
+    artifactId?: BaseDto;
+    version?: BaseDto;
+    _root?: BaseDto;
 }
+
 
 export class Gav {
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
-    static html(dto: GavDto): string {
+    static html(dto: _RootDto): string {
         Gav.ensureLoaded();
 
         return tardigrade.tardigradeEngine.buildHtml("Gav", dto);
@@ -29,14 +34,14 @@ export class Gav {
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
-    static element(dto:GavDto): HTMLElement {
+    static element(dto: _RootDto): HTMLElement {
         return tardigrade.createElement(Gav.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
      * This instance holds its root HTMLElement for you.
      * @return The built template instance */
-    static create(dto:GavDto): Gav {
+    static create(dto: _RootDto): Gav {
         let element = Gav.element(dto);
         return new Gav(element);
     }
@@ -44,12 +49,16 @@ export class Gav {
     /** Builds a template instance from the HTMLElement you provide.
      * @param {HTMLElement} The HTML element that corresponds to this template
      * @return The built template instance */
-    static of(element: HTMLElement): Gav {
+    static of(element: Element): Gav {
         return new Gav(element);
     }
 
+    private rootElement: HTMLElement;
+
     /** This constructor should not be called by your application ! */
-    constructor(private rootElement: HTMLElement) {}
+    constructor(rootElement: Element) {
+        this.rootElement = <HTMLElement>rootElement;
+    }
 
     /** Returns the root element of this template */
     rootHtmlElement(): HTMLElement { return this.rootElement; }

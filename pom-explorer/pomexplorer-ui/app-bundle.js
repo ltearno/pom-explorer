@@ -29,6 +29,7 @@
             });
         }
         addMenuItem(name) {
+            //this.template.addMenuItems({ menuItems: name });
             this.template.addMenuItems({ _root: name });
         }
         main() {
@@ -280,7 +281,7 @@
                             details += "<br/>";
                         }
                         htmlString += Card_1.Card.html({
-                            gav: { groupId: groupId, artifactId: artifactId, version: version },
+                            gav: { gavGroupId: groupId, gavArtifactId: artifactId, gavVersion: version },
                             content: content,
                             details: details
                         });
@@ -427,16 +428,12 @@
         handleMessage(msg) {
             var talkId = msg.talkGuid;
             var callback = this.waitingCallbacks[talkId];
-            if (callback) {
-                console.log(`received msg : ${JSON.stringify(msg)}`);
+            if (callback)
                 callback(msg);
-            }
-            else {
+            else
                 this.onUnknownMessage(msg);
-            }
-            if (msg.isClosing) {
+            if (msg.isClosing)
                 delete this.waitingCallbacks[talkId];
-            }
         }
     }
     exports.Service = Service;

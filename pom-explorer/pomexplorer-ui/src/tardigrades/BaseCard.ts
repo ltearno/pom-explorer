@@ -4,28 +4,31 @@ declare var tardigrade;
 
 
 
+export type BaseDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+}
+
 /**
  * Template's DTO interface.
  * Used to create new template instances */
-export interface BaseCardDto {
-    _root?: string;
-    title?: any;
-"@title"?: any;
-content?: any;
-"@content"?: any;
-details?: any;
-"@details"?: any;
-actions?: any;
-"@actions"?: any;
-menu?: any;
-"@menu"?: any;
 
+export type _RootDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    title?: BaseDto;
+    content?: BaseDto;
+    details?: BaseDto;
+    actions?: BaseDto;
+    menu?: BaseDto;
+    _root?: BaseDto;
 }
+
 
 export class BaseCard {
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
-    static html(dto: BaseCardDto): string {
+    static html(dto: _RootDto): string {
         BaseCard.ensureLoaded();
 
         return tardigrade.tardigradeEngine.buildHtml("BaseCard", dto);
@@ -33,14 +36,14 @@ export class BaseCard {
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
-    static element(dto:BaseCardDto): HTMLElement {
+    static element(dto: _RootDto): HTMLElement {
         return tardigrade.createElement(BaseCard.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
      * This instance holds its root HTMLElement for you.
      * @return The built template instance */
-    static create(dto:BaseCardDto): BaseCard {
+    static create(dto: _RootDto): BaseCard {
         let element = BaseCard.element(dto);
         return new BaseCard(element);
     }
@@ -48,12 +51,16 @@ export class BaseCard {
     /** Builds a template instance from the HTMLElement you provide.
      * @param {HTMLElement} The HTML element that corresponds to this template
      * @return The built template instance */
-    static of(element: HTMLElement): BaseCard {
+    static of(element: Element): BaseCard {
         return new BaseCard(element);
     }
 
+    private rootElement: HTMLElement;
+
     /** This constructor should not be called by your application ! */
-    constructor(private rootElement: HTMLElement) {}
+    constructor(rootElement: Element) {
+        this.rootElement = <HTMLElement>rootElement;
+    }
 
     /** Returns the root element of this template */
     rootHtmlElement(): HTMLElement { return this.rootElement; }

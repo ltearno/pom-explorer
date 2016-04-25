@@ -4,26 +4,41 @@ declare var tardigrade;
 
 
 
+export type BaseDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+}
+
 /**
  * Template's DTO interface.
  * Used to create new template instances */
-export interface ApplicationDto {
-    _root?: string;
-    drawer?: any;
-"@drawer"?: any;
-menu?: any;
-"@menu"?: any;
-menuItems?: any;
-"@menuItems"?: any;
-content?: any;
-"@content"?: any;
 
+export type MenuDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    menuItems?: BaseDto[] | BaseDto;
 }
+export type DrawerDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    menuItems?: BaseDto[] | BaseDto;
+    menu?: MenuDto;
+}
+export type _RootDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    menuItems?: BaseDto[] | BaseDto;
+    menu?: MenuDto;
+    drawer?: DrawerDto;
+    content?: BaseDto;
+    _root?: BaseDto;
+}
+
 
 export class Application {
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
-    static html(dto: ApplicationDto): string {
+    static html(dto: _RootDto): string {
         Application.ensureLoaded();
 
         return tardigrade.tardigradeEngine.buildHtml("Application", dto);
@@ -31,14 +46,14 @@ export class Application {
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
-    static element(dto:ApplicationDto): HTMLElement {
+    static element(dto: _RootDto): HTMLElement {
         return tardigrade.createElement(Application.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
      * This instance holds its root HTMLElement for you.
      * @return The built template instance */
-    static create(dto:ApplicationDto): Application {
+    static create(dto: _RootDto): Application {
         let element = Application.element(dto);
         return new Application(element);
     }
@@ -46,12 +61,16 @@ export class Application {
     /** Builds a template instance from the HTMLElement you provide.
      * @param {HTMLElement} The HTML element that corresponds to this template
      * @return The built template instance */
-    static of(element: HTMLElement): Application {
+    static of(element: Element): Application {
         return new Application(element);
     }
 
+    private rootElement: HTMLElement;
+
     /** This constructor should not be called by your application ! */
-    constructor(private rootElement: HTMLElement) {}
+    constructor(rootElement: Element) {
+        this.rootElement = <HTMLElement>rootElement;
+    }
 
     /** Returns the root element of this template */
     rootHtmlElement(): HTMLElement { return this.rootElement; }

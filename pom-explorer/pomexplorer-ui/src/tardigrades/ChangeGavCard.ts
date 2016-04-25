@@ -4,36 +4,41 @@ declare var tardigrade;
 
 import { BaseCard } from "./BaseCard";
 
+export type BaseDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+}
+
 /**
  * Template's DTO interface.
  * Used to create new template instances */
-export interface ChangeGavCardDto {
-    _root?: string;
-    groupId?: any;
-"@groupId"?: any;
-artifactId?: any;
-"@artifactId"?: any;
-version?: any;
-"@version"?: any;
-groupIdInput?: any;
-"@groupIdInput"?: any;
-artifactIdInput?: any;
-"@artifactIdInput"?: any;
-versionInput?: any;
-"@versionInput"?: any;
-actions?: any;
-"@actions"?: any;
-actionCancel?: any;
-"@actionCancel"?: any;
-actionValidate?: any;
-"@actionValidate"?: any;
 
+export type ActionsDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    actionCancel?: BaseDto;
+    actionValidate?: BaseDto;
 }
+export type _RootDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    groupId?: BaseDto;
+    artifactId?: BaseDto;
+    version?: BaseDto;
+    groupIdInput?: BaseDto;
+    artifactIdInput?: BaseDto;
+    versionInput?: BaseDto;
+    actionCancel?: BaseDto;
+    actionValidate?: BaseDto;
+    actions?: ActionsDto;
+    _root?: BaseDto;
+}
+
 
 export class ChangeGavCard {
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
-    static html(dto: ChangeGavCardDto): string {
+    static html(dto: _RootDto): string {
         ChangeGavCard.ensureLoaded();
 
         return tardigrade.tardigradeEngine.buildHtml("ChangeGavCard", dto);
@@ -41,14 +46,14 @@ export class ChangeGavCard {
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
-    static element(dto:ChangeGavCardDto): HTMLElement {
+    static element(dto: _RootDto): HTMLElement {
         return tardigrade.createElement(ChangeGavCard.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
      * This instance holds its root HTMLElement for you.
      * @return The built template instance */
-    static create(dto:ChangeGavCardDto): ChangeGavCard {
+    static create(dto: _RootDto): ChangeGavCard {
         let element = ChangeGavCard.element(dto);
         return new ChangeGavCard(element);
     }
@@ -56,12 +61,16 @@ export class ChangeGavCard {
     /** Builds a template instance from the HTMLElement you provide.
      * @param {HTMLElement} The HTML element that corresponds to this template
      * @return The built template instance */
-    static of(element: HTMLElement): ChangeGavCard {
+    static of(element: Element): ChangeGavCard {
         return new ChangeGavCard(element);
     }
 
+    private rootElement: HTMLElement;
+
     /** This constructor should not be called by your application ! */
-    constructor(private rootElement: HTMLElement) {}
+    constructor(rootElement: Element) {
+        this.rootElement = <HTMLElement>rootElement;
+    }
 
     /** Returns the root element of this template */
     rootHtmlElement(): HTMLElement { return this.rootElement; }

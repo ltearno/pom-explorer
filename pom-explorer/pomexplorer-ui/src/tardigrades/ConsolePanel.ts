@@ -4,22 +4,28 @@ declare var tardigrade;
 
 
 
+export type BaseDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+}
+
 /**
  * Template's DTO interface.
  * Used to create new template instances */
-export interface ConsolePanelDto {
-    _root?: string;
-    output?: any;
-"@output"?: any;
-input?: any;
-"@input"?: any;
 
+export type _RootDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    output?: BaseDto;
+    input?: BaseDto;
+    _root?: BaseDto;
 }
+
 
 export class ConsolePanel {
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
-    static html(dto: ConsolePanelDto): string {
+    static html(dto: _RootDto): string {
         ConsolePanel.ensureLoaded();
 
         return tardigrade.tardigradeEngine.buildHtml("ConsolePanel", dto);
@@ -27,14 +33,14 @@ export class ConsolePanel {
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
-    static element(dto:ConsolePanelDto): HTMLElement {
+    static element(dto: _RootDto): HTMLElement {
         return tardigrade.createElement(ConsolePanel.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
      * This instance holds its root HTMLElement for you.
      * @return The built template instance */
-    static create(dto:ConsolePanelDto): ConsolePanel {
+    static create(dto: _RootDto): ConsolePanel {
         let element = ConsolePanel.element(dto);
         return new ConsolePanel(element);
     }
@@ -42,12 +48,16 @@ export class ConsolePanel {
     /** Builds a template instance from the HTMLElement you provide.
      * @param {HTMLElement} The HTML element that corresponds to this template
      * @return The built template instance */
-    static of(element: HTMLElement): ConsolePanel {
+    static of(element: Element): ConsolePanel {
         return new ConsolePanel(element);
     }
 
+    private rootElement: HTMLElement;
+
     /** This constructor should not be called by your application ! */
-    constructor(private rootElement: HTMLElement) {}
+    constructor(rootElement: Element) {
+        this.rootElement = <HTMLElement>rootElement;
+    }
 
     /** Returns the root element of this template */
     rootHtmlElement(): HTMLElement { return this.rootElement; }

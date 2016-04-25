@@ -5,24 +5,34 @@ declare var tardigrade;
 import { SearchPanel } from "./SearchPanel";
 import { Card } from "./Card";
 
+export type BaseDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+}
+
 /**
  * Template's DTO interface.
  * Used to create new template instances */
-export interface ProjectPanelDto {
-    _root?: string;
-    searchInput?: any;
-"@searchInput"?: any;
-projectList?: any;
-"@projectList"?: any;
-cards?: any;
-"@cards"?: any;
 
+export type ProjectListDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    cards?: BaseDto[] | BaseDto;
 }
+export type _RootDto = string | {
+    _?: string; // node's text content
+    $?: { [attributeName:string]: string | number }; // node's attribute values
+    searchInput?: BaseDto;
+    cards?: BaseDto[] | BaseDto;
+    projectList?: ProjectListDto;
+    _root?: BaseDto;
+}
+
 
 export class ProjectPanel {
     /** Builds an HTML string according to the dto you provide
      * @return The built HTML string */
-    static html(dto: ProjectPanelDto): string {
+    static html(dto: _RootDto): string {
         ProjectPanel.ensureLoaded();
 
         return tardigrade.tardigradeEngine.buildHtml("ProjectPanel", dto);
@@ -30,14 +40,14 @@ export class ProjectPanel {
 
     /** Builds an HTMLElement according to the dto you provide
      * @return The built HTMLElement */
-    static element(dto:ProjectPanelDto): HTMLElement {
+    static element(dto: _RootDto): HTMLElement {
         return tardigrade.createElement(ProjectPanel.html(dto));
     }
 
     /** Builds a template instance according to the dto you provide.
      * This instance holds its root HTMLElement for you.
      * @return The built template instance */
-    static create(dto:ProjectPanelDto): ProjectPanel {
+    static create(dto: _RootDto): ProjectPanel {
         let element = ProjectPanel.element(dto);
         return new ProjectPanel(element);
     }
@@ -45,12 +55,16 @@ export class ProjectPanel {
     /** Builds a template instance from the HTMLElement you provide.
      * @param {HTMLElement} The HTML element that corresponds to this template
      * @return The built template instance */
-    static of(element: HTMLElement): ProjectPanel {
+    static of(element: Element): ProjectPanel {
         return new ProjectPanel(element);
     }
 
+    private rootElement: HTMLElement;
+
     /** This constructor should not be called by your application ! */
-    constructor(private rootElement: HTMLElement) {}
+    constructor(rootElement: Element) {
+        this.rootElement = <HTMLElement>rootElement;
+    }
 
     /** Returns the root element of this template */
     rootHtmlElement(): HTMLElement { return this.rootElement; }
