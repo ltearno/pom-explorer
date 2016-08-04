@@ -22,5 +22,5 @@ session create
 =Analyzing the default directory
 =
 #
-analyze directory C:\Repos
-an di D:\Documents\Repos\hexa.tools
+#analyze directory C:\Repos
+#an di D:\Documents\Repos\hexa.tools

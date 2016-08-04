@@ -145,6 +145,7 @@
 					<include>*.js</include>
 					<include>*.map</include>
 					<include>*.html</include>
+					<include>*.woff2</include>
 				</includes>
 			</resource>
 		</resources>

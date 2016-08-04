@@ -33,7 +33,7 @@ This project is certainly not production ready nor really user-friendly. That's 
 
 To build :
 
-	mvn install
+	mvn clean install
 
 To run :
 
@@ -41,11 +41,11 @@ To run :
 	
 Then go with your browser on this address
 
-	http://localhost:90
+	http://localhost:8090
 
-If your environment does not allow you to use the `90` tcp port, you can specify the listening port like this :
+If you want the application to bind on a different port, you can specify the listening port like this :
 
-	java -jar pom-explorer/target/pom-explorer.jar PORT
+	java -jar pom-explorer/target/pom-explorer.jar PORT_NUMBER
 
 This is the console to the application. You can type commands in the prompt, they will be sent to the server and it will answer.
 
@@ -61,7 +61,7 @@ First, you will want to analyze some projects. Depending on where they are on yo
 
 	analyze directory c:\documents\repos
 
-The program will analyze the directory recursively to find all the `pom.xml` files. They are then processed with the traditionnal `MavenXpp3Reader` and also resolved through the `ShrinkWrap` component. A graph is then constructed in memory representing the dependencies between projects.
+The program will analyze the directory recursively to find all the `pom.xml` files. They are then processed with the traditionnal `MavenXpp3Reader` and also resolved through the internal resolver, handing back to `ShrinkWrap` component if there is a problem. A graph is then constructed in memory representing the dependencies between projects.
 
 If you need, you can add more analyzes by repeating the `analyze directory` command again on another directory.
 
