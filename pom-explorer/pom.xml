@@ -138,12 +138,13 @@
 		</plugins>
 		<resources>
 			<resource>
+				<targetPath>pomexplorer-ui</targetPath>
 				<directory>pomexplorer-ui</directory>
 				<includes>
-					<include>pomexplorer-ui/*.css</include>
-					<include>pomexplorer-ui/*.js</include>
-					<include>pomexplorer-ui/*.map</include>
-					<include>pomexplorer-ui/*.html</include>
+					<include>*.css</include>
+					<include>*.js</include>
+					<include>*.map</include>
+					<include>*.html</include>
 				</includes>
 			</resource>
 		</resources>
