@@ -9,14 +9,18 @@
 =Have fun !
 =
 =The official repository is here : <a href="https://github.com/ltearno/pom-explorer" target="_blank">https://github.com/ltearno/pom-explorer</a>
+#
 =
 =Creating your session
 =
 session create
-session mavenSettingsFilePath C:\pgih\maven\3.2.1\conf\settings.xml
+#
+# Uncomment the following line if you have a non-default maven settings file
+#session mavenSettingsFilePath C:\someDirectory\settings.xml
+#
 =
 =Analyzing the default directory
 =
-analyze directory C:\gr\
-#analyze directory C:\gr\socle.pgih-parent
-analyze directory C:\tmp\pgih-oracle\
+#
+analyze directory C:\Repos
+an di D:\Documents\Repos\hexa.tools
