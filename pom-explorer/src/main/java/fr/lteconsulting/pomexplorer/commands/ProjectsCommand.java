@@ -16,6 +16,7 @@ import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 
 import fr.lteconsulting.pomexplorer.Log;
+import fr.lteconsulting.pomexplorer.Profile;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.ProjectTools;
 import fr.lteconsulting.pomexplorer.Session;
@@ -53,8 +54,23 @@ public class ProjectsCommand
 		assert gavFilter != null;
 
 		logi.html( "projects details filtered by '" + gavFilter.getFilter() + "':<br/>" );
-		logi.html( "<i>possible options: managed, nofetch, offline</i><br/>" );
+		logi.html( "<i>possible options: managed, nofetch, offline, profiles</i><br/>" );
 
+		
+		// Is some profiles passed in option ?
+		logi.html("Read profiles to use in the analyze...<br/>");
+		Object optionP = options.getOption("profiles");
+		Map<String, Profile> profiles = new HashMap<>();
+		if (optionP != null)
+		{
+			String[] profilesTab = ((String) optionP).trim().split(",");
+			for (int i=0; i<profilesTab.length; i++)
+			{
+				profiles.put(profilesTab[i], new Profile(profilesTab[i]));
+			}
+		}
+		
+		
 		StringBuilder log = new StringBuilder();
 		List<Project> list = gavFilter.getGavs( session ).stream().map( gav -> session.projects().forGav( gav ) ).filter( p -> p != null ).sorted( Project.alphabeticalComparator )
 				.collect( toList() );
@@ -99,7 +115,7 @@ public class ProjectsCommand
 			ProjectTools.showPluginManagement( project, log, logi );
 			ProjectTools.showDependencies( project, log, logi );
 			ProjectTools.showPlugins( project, log, logi );
-			showTransitiveDependencies( showManagedDependencies, fetchMissingProjects, online, log, session.graph().read(), project, session, logi );
+			showTransitiveDependencies( showManagedDependencies, fetchMissingProjects, online, log, session.graph().read(), project, profiles, session, logi );
 			log.append( "</div>" );
 
 			log.append( "</div>" );
@@ -201,11 +217,11 @@ public class ProjectsCommand
 	}
 
 	private void showTransitiveDependencies( boolean showManaged, boolean fetchMissingProjects, boolean online, StringBuilder sb, PomGraphReadTransaction tx, Project project,
-			Session session, Log log )
+			Map<String, Profile> profiles, Session session, Log log )
 	{
 		sb.append( "<div><div>transitive dependencies</div><div>" );
 
-		DependencyNode dependencyNode = project.getDependencyTree( true, online, log );
+		DependencyNode dependencyNode = project.getDependencyTree( true, online, profiles, log );
 		Map<DependencyKey, DependencyNode> dependencies = new HashMap<>();
 		dependencyNode.visitDepth( n -> dependencies.put( n.getKey(), n ) );
 
