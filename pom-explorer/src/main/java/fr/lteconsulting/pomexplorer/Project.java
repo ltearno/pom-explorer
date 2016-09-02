@@ -225,20 +225,15 @@ public class Project
 			List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 			if( projectProfiles != null )
 			{
-				// 1. Filtering profiles : just keep profiles passed in
-				// parameter,
-				// and defaults active profiles.
 				projectProfiles.stream()
-						.filter( profile -> ((profiles.keySet().contains( profile.getId() )
-								|| (profile.getActivation() != null && profile.getActivation().isActiveByDefault()))
-								&& profile.getBuild() != null && profile.getBuild().getPlugins() != null) )
-						.forEach( profile -> {
-							profile.getBuild().getPlugins().stream().forEach( plugin -> {
-								Gav unresolvedGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(),
-										plugin.getVersion() );
-								pluginDependencies.add( resolveGav( unresolvedGav, log ) );
-							} );
-						} );
+						.filter( p -> isProfileActivated( profiles, p ) )
+						.filter( p -> p.getBuild() != null )
+						.filter( p -> p.getBuild().getPlugins() != null )
+						.map( p -> p.getBuild().getPlugins() )
+						.forEach( plugins -> plugins.stream().forEach( plugin -> {
+							Gav unresolvedGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
+							pluginDependencies.add( resolveGav( unresolvedGav, log ) );
+						} ) );
 			}
 		}
 
@@ -524,30 +519,27 @@ public class Project
 		return result;
 	}
 
-	public Map<DependencyKey, DependencyManagement> getDeclaredDependencyManagement(
-			Map<DependencyKey, DependencyManagement> result, boolean online, Map<String, Profile> profiles, Log log )
+	public Map<DependencyKey, DependencyManagement> getDeclaredDependencyManagement( Map<DependencyKey, DependencyManagement> dependencyMap, boolean online, Map<String, Profile> profiles, Log log )
 	{
 		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
 		{
-			result.putAll( completeDependencyManagementMap( result, project.getDependencyManagement().getDependencies(),
-					online, profiles, log ) );
+			if( dependencyMap != null )
+				dependencyMap.putAll( completeDependencyManagementMap( dependencyMap, project.getDependencyManagement().getDependencies(), online, profiles, log ) );
 		}
 
 		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 		if( projectProfiles != null )
 		{
-			// 1. Filtering profiles : just keep profiles passed in parameter,
-			// and defaults active profiles.
 			projectProfiles.stream()
-					.filter( p -> ((profiles.keySet().contains( p.getId() )
-							|| (p.getActivation() != null && p.getActivation().isActiveByDefault()))
-							&& p.getDependencyManagement() != null
-							&& p.getDependencyManagement().getDependencies() != null) )
-					.forEach( p -> result.putAll( completeDependencyManagementMap( result,
-							p.getDependencyManagement().getDependencies(), online, profiles, log ) ) );
+					.filter( p -> isProfileActivated( profiles, p ) )
+					.filter( p -> p.getDependencyManagement() != null )
+					.filter( p -> p.getDependencyManagement().getDependencies() != null )
+					.map( p -> p.getDependencyManagement().getDependencies() )
+					.map( dependencies -> completeDependencyManagementMap( dependencyMap, dependencies, online, profiles, log ) )
+					.forEach( dependencyMap::putAll );
 		}
 
-		return result;
+		return dependencyMap;
 	}
 
 	public Map<DependencyKey, RawDependency> getLocalDependencies( Map<DependencyKey, RawDependency> res, boolean online,
@@ -637,8 +629,7 @@ public class Project
 			// 1. Filtering profiles : just keep profiles passed in parameter,
 			// and defaults active profiles.
 			projectProfiles.stream()
-					.filter( p -> profiles.keySet().contains( p.getId() )
-							|| (p.getActivation() != null && p.getActivation().isActiveByDefault()) )
+					.filter( p -> isProfileActivated( profiles, p ) )
 					.forEach( p -> map.putAll( completeDependenciesMap( map, p.getDependencies(), log ) ) );
 		}
 
@@ -964,5 +955,11 @@ public class Project
 			return null;
 
 		return session.projects().fetchProject( parentGav, online, log );
+	}
+
+	private boolean isProfileActivated( Map<String, Profile> profiles, org.apache.maven.model.Profile p )
+	{
+		return profiles.keySet().contains( p.getId() )
+				|| (p.getActivation() != null && p.getActivation().isActiveByDefault());
 	}
 }
