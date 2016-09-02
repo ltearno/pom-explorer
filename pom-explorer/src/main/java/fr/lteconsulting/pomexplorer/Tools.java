@@ -175,9 +175,9 @@ public class Tools
 	 */
 	public static String readFile( File file )
 	{
-		try
+		try( Scanner scanner = new Scanner( file, "UTF-8" ) )
 		{
-			return new Scanner( file, "UTF-8" ).useDelimiter( "\\A" ).next();
+			return scanner.useDelimiter( "\\A" ).next();
 		}
 		catch( FileNotFoundException e )
 		{
