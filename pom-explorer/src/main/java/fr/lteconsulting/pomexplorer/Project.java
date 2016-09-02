@@ -619,21 +619,21 @@ public class Project
 	public Map<DependencyKey, RawDependency> getDeclaredDependencies( Map<DependencyKey, RawDependency> res,
 			Map<String, Profile> profiles, Log log )
 	{
+		if( res == null )
+			res = new HashMap<>();
 
-		Map<DependencyKey, RawDependency> map = new HashMap<>();
-		map.putAll( completeDependenciesMap( res, getMavenProject().getDependencies(), log ) );
+		res = completeDependenciesMap( res, getMavenProject().getDependencies(), log );
+		Map<DependencyKey, RawDependency> fRes = res;
 
 		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 		if( projectProfiles != null )
 		{
-			// 1. Filtering profiles : just keep profiles passed in parameter,
-			// and defaults active profiles.
 			projectProfiles.stream()
 					.filter( p -> isProfileActivated( profiles, p ) )
-					.forEach( p -> map.putAll( completeDependenciesMap( map, p.getDependencies(), log ) ) );
+					.forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), log ) );
 		}
 
-		return map;
+		return res;
 	}
 
 	public DependencyNode getDependencyTree( boolean full, boolean online, Map<String, Profile> profiles, Log log )
@@ -797,8 +797,7 @@ public class Project
 
 			node.collectDependencyManagement( online, profiles, log );
 
-			Map<DependencyKey, RawDependency> localDependencies = node.getProject().getLocalDependencies( null, online,
-					profiles, log );
+			Map<DependencyKey, RawDependency> localDependencies = node.getProject().getLocalDependencies( null, online, profiles, log );
 
 			if( localDependencies == null )
 				continue;

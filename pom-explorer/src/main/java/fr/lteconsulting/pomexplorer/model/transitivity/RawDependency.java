@@ -40,4 +40,10 @@ public class RawDependency
 			exclusions = new HashSet<>();
 		exclusions.add( ga );
 	}
+
+	@Override
+	public String toString()
+	{
+		return "RawDependency [vs=" + vs + ", optional=" + optional + ", exclusions=" + exclusions + "]";
+	}
 }
