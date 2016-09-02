@@ -56,13 +56,13 @@ public class PomAnalyzer
 			loadedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
 		}
 
-		log.html("Read profiles to use in the analyze...<br/>");
+		log.html( "Read profiles to use in the analyze...<br/>" );
 		Map<String, Profile> profiles = new HashMap<>();
-		for (int i=0; i<profilesId.length; i++)
+		for( int i = 0; i < profilesId.length; i++ )
 		{
-			profiles.put(profilesId[i], new Profile(profilesId[i]));
+			profiles.put( profilesId[i], new Profile( profilesId[i] ) );
 		}
-		
+
 		log.html( "fetching missing parents and boms...<br/>" );
 		Set<Project> toGraphProjects = new HashSet<>();
 		for( Project project : loadedProjects )
@@ -125,9 +125,9 @@ public class PomAnalyzer
 	{
 		tx.removeRelations( tx.relations( project.getGav() ) );
 
-		if (profiles == null)
+		if( profiles == null )
 			profiles = new HashMap<>();
-		
+
 		try
 		{
 			Gav gav = project.getGav();

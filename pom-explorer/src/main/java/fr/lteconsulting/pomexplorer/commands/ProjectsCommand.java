@@ -56,21 +56,19 @@ public class ProjectsCommand
 		logi.html( "projects details filtered by '" + gavFilter.getFilter() + "':<br/>" );
 		logi.html( "<i>possible options: managed, nofetch, offline, profiles</i><br/>" );
 
-		
 		// Is some profiles passed in option ?
-		logi.html("Read profiles to use in the analyze...<br/>");
-		Object optionP = options.getOption("profiles");
+		logi.html( "Read profiles to use in the analyze...<br/>" );
+		Object optionP = options.getOption( "profiles" );
 		Map<String, Profile> profiles = new HashMap<>();
-		if (optionP != null)
+		if( optionP != null )
 		{
-			String[] profilesTab = ((String) optionP).trim().split(",");
-			for (int i=0; i<profilesTab.length; i++)
+			String[] profilesTab = ((String) optionP).trim().split( "," );
+			for( int i = 0; i < profilesTab.length; i++ )
 			{
-				profiles.put(profilesTab[i], new Profile(profilesTab[i]));
+				profiles.put( profilesTab[i], new Profile( profilesTab[i] ) );
 			}
 		}
-		
-		
+
 		StringBuilder log = new StringBuilder();
 		List<Project> list = gavFilter.getGavs( session ).stream().map( gav -> session.projects().forGav( gav ) ).filter( p -> p != null ).sorted( Project.alphabeticalComparator )
 				.collect( toList() );
@@ -290,8 +288,8 @@ public class ProjectsCommand
 				sb.append( ", <i>declared level " + n.getLevel() + " in " + n.getProject().getGav() + "</i>" );
 				// if( n.getLevel()>1)
 				// sb.append( ", <i>originated by " + n.d.getOriginatingDependency() + "</i>" );
-					sb.append( "<br/>" );
-				} );
+				sb.append( "<br/>" );
+			} );
 		}
 
 	}

@@ -14,17 +14,17 @@ public class AnalyzeCommand
 		log.html( "<i>possible options: quiet, nofetch, offline, profiles</i>" );
 
 		PomAnalyzer analyzer = new PomAnalyzer();
-		
+
 		// Is some profiles passed in option ?
-		Object optionP = options.getOption("profiles");
+		Object optionP = options.getOption( "profiles" );
 		String[] profiles;
-		if (optionP == null)
-			profiles = new String[]{};
+		if( optionP == null )
+			profiles = new String[] {};
 		else
 		{
-			profiles = ((String) optionP).trim().split(",");
+			profiles = ((String) optionP).trim().split( "," );
 		}
-		
+
 		analyzer.analyze( directory, !options.hasFlag( "quiet" ), !options.hasFlag( "nofetch" ), !options.hasFlag( "offline" ), profiles, session, log );
 
 		log.html( "Analyzis completed.<br/>" );

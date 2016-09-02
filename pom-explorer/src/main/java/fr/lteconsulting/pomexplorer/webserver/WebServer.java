@@ -78,7 +78,7 @@ public class WebServer
 		{
 			File dataDir = new File( DATA_FILE_STORE_DIR );
 			dataDir.mkdirs();
-			
+
 			FileWriter fileWriter = new FileWriter( Paths.get( DATA_FILE_STORE_DIR, fileName ).toString() );
 			return fileWriter;
 		}
@@ -118,7 +118,7 @@ public class WebServer
 			@Override
 			public void handleRequest( HttpServerExchange exchange ) throws Exception
 			{
-				executor.submit( ( ) -> {
+				executor.submit( () -> {
 					String name = exchange.getRelativePath();
 
 					File dataDir = new File( DATA_FILE_STORE_DIR );
@@ -131,11 +131,11 @@ public class WebServer
 						exchange.getResponseHeaders().put( Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"" );
 						exchange.getResponseSender().send( buf );
 					}
-						else
-						{
-							exchange.getResponseSender().send( "not found !" );
-						}
-					} );
+					else
+					{
+						exchange.getResponseSender().send( "not found !" );
+					}
+				} );
 			}
 
 			private ByteBuffer readFile( String path )
@@ -187,7 +187,7 @@ public class WebServer
 					@Override
 					protected void onFullTextMessage( final WebSocketChannel channel, final BufferedTextMessage message )
 					{
-						executor.submit( ( ) -> xWebServer.onWebsocketMessage( getClient( channel ), message.getData() ) );
+						executor.submit( () -> xWebServer.onWebsocketMessage( getClient( channel ), message.getData() ) );
 					}
 
 					@Override
