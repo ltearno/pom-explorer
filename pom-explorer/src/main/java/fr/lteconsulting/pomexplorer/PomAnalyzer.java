@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
@@ -22,7 +24,7 @@ public class PomAnalyzer
 {
 	private final static Set<String> IGNORED_DIRS = new HashSet<>( Arrays.asList( "target", "bin", "src", "node_modules", ".git", "war", "gwt-unitCache", ".idea", ".settings" ) );
 
-	public void analyze( String directory, boolean verbose, boolean fetchMissingProjects, boolean online, Session session, Log log )
+	public void analyze( String directory, boolean verbose, boolean fetchMissingProjects, boolean online, String[] profilesId, Session session, Log log )
 	{
 		log.html( "analyzing '" + directory + "'<br/>" );
 		if( !fetchMissingProjects )
@@ -54,6 +56,13 @@ public class PomAnalyzer
 			loadedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
 		}
 
+		log.html("Read profiles to use in the analyze...<br/>");
+		Map<String, Profile> profiles = new HashMap<>();
+		for (int i=0; i<profilesId.length; i++)
+		{
+			profiles.put(profilesId[i], new Profile(profilesId[i]));
+		}
+		
 		log.html( "fetching missing parents and boms...<br/>" );
 		Set<Project> toGraphProjects = new HashSet<>();
 		for( Project project : loadedProjects )
@@ -70,7 +79,7 @@ public class PomAnalyzer
 		PomGraphWriteTransaction tx = session.graph().write();
 		for( Project project : toGraphProjects )
 		{
-			addProjectToGraph( project, tx, fetchMissingProjects, online, session, log );
+			addProjectToGraph( project, tx, fetchMissingProjects, online, session, profiles, log );
 		}
 
 		for( Project unresolvable : unresolvableProjects )
@@ -112,16 +121,19 @@ public class PomAnalyzer
 		return project;
 	}
 
-	public void addProjectToGraph( Project project, PomGraphWriteTransaction tx, boolean fetchMissingProjects, boolean online, Session session, Log log )
+	public void addProjectToGraph( Project project, PomGraphWriteTransaction tx, boolean fetchMissingProjects, boolean online, Session session, Map<String, Profile> profiles, Log log )
 	{
 		tx.removeRelations( tx.relations( project.getGav() ) );
 
+		if (profiles == null)
+			profiles = new HashMap<>();
+		
 		try
 		{
 			Gav gav = project.getGav();
 			Gav parentGav = project.getParent();
-			DependencyNode dependencyNode = project.getDependencyTree( false, online, log );
-			Set<Gav> pluginDependencies = project.getPluginDependencies( log );
+			DependencyNode dependencyNode = project.getDependencyTree( false, online, profiles, log );
+			Set<Gav> pluginDependencies = project.getPluginDependencies( profiles, log );
 
 			tx.addGav( gav );
 			if( parentGav != null )

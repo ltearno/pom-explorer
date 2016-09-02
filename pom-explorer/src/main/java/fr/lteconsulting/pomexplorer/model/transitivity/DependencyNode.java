@@ -9,6 +9,7 @@ import java.util.Set;
 
 import fr.lteconsulting.hexa.client.tools.Action1;
 import fr.lteconsulting.pomexplorer.Log;
+import fr.lteconsulting.pomexplorer.Profile;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.GroupArtifact;
@@ -33,9 +34,9 @@ public class DependencyNode
 		this.vs = vs;
 	}
 
-	public void collectDependencyManagement( boolean online, Log log )
+	public void collectDependencyManagement( boolean online, Map<String, Profile> profiles, Log log )
 	{
-		dependencyManagement = project.getLocalDependencyManagement( null, online, log );
+		dependencyManagement = project.getLocalDependencyManagement( null, online, profiles, log );
 	}
 
 	public DependencyKey getKey()

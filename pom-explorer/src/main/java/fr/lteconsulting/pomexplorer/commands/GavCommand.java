@@ -58,7 +58,7 @@ public class GavCommand
 		{
 			log.html( "project " + project + " fetched successfully.<br/>" );
 			PomGraphWriteTransaction tx = session.graph().write();
-			analyzer.addProjectToGraph( project, tx, true, true, session, log );
+			analyzer.addProjectToGraph( project, tx, true, true, session, null, log );
 			tx.commit();
 		}
 	}
