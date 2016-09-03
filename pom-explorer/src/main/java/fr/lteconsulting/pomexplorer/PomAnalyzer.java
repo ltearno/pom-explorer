@@ -2,7 +2,10 @@ package fr.lteconsulting.pomexplorer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -175,32 +178,45 @@ public class PomAnalyzer
 		return true;
 	}
 
-	private void scanPomFiles( File file, Session session, Log log, Set<File> pomFiles )
+	private boolean acceptedPath( Path path )
 	{
-		if( file == null )
-			return;
+		String pathName = path.getFileName().toString();
 
-		if( file.isDirectory() )
-		{
-			String name = file.getName();
-			if( !acceptedDir( name ) )
-				return;
+		return (Files.isDirectory( path ) && acceptedDir( pathName ))
+				|| (pathName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( pathName ));
+	}
 
-			try
-			{
-				Files.newDirectoryStream( file.toPath(), ( filtered ) -> {
-					String filteredName = filtered.getFileName().toString();
-					return filteredName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( filteredName ) || Files.isDirectory( filtered ) && acceptedDir( filteredName );
-				} ).forEach( ( path ) -> scanPomFiles( new File( path.toString() ), session, log, pomFiles ) );
-			}
-			catch( IOException e )
-			{
-				e.printStackTrace();
-			}
-		}
-		else if( file.getName().equalsIgnoreCase( "pom.xml" ) || file.getName().endsWith( ".pom" ) )
+	private void scanPomFiles( File startFile, Session session, Log log, Set<File> pomFiles )
+	{
+		assert startFile != null && startFile.exists();
+
+		List<File> queue = new ArrayList<>();
+		queue.add( startFile );
+
+		while( !queue.isEmpty() )
 		{
-			pomFiles.add( file );
+			File file = queue.remove( 0 );
+
+			if( file.isDirectory() )
+			{
+				String name = file.getName();
+				if( !acceptedDir( name ) )
+					return;
+
+				try(
+						DirectoryStream<Path> pathStream = Files.newDirectoryStream( file.toPath(), this::acceptedPath ) )
+				{
+					pathStream.forEach( path -> queue.add( new File( path.toString() ) ) );
+				}
+				catch( IOException e )
+				{
+					e.printStackTrace();
+				}
+			}
+			else if( file.getName().equalsIgnoreCase( "pom.xml" ) || file.getName().endsWith( ".pom" ) )
+			{
+				pomFiles.add( file );
+			}
 		}
 	}
 
