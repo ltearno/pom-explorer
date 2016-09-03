@@ -194,9 +194,10 @@ public class GraphCommand
 			writer.close();
 
 			String url = AppFactory.get().webServer().getFileUrl( graphFileName );
+			String urlRepos = AppFactory.get().webServer().getFileUrl( graphReposFileName );
 
 			log.html( "GraphML file for the whole dependency graph is available here : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
-			log.html( "GraphML file for the git repositories is available here : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
+			log.html( "GraphML file for the git repositories is available here : <a href='" + urlRepos + "' target='_blank'>" + urlRepos + "</a><br/>" );
 		}
 		catch( Exception e )
 		{
