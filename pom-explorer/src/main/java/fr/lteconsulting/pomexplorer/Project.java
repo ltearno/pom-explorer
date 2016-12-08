@@ -462,7 +462,6 @@ public class Project
 			Map<DependencyKey, DependencyManagement> result, List<org.apache.maven.model.Dependency> dependencies,
 			boolean online, Map<String, Profile> profiles, Log log )
 	{
-
 		if( dependencies != null )
 		{
 			for( org.apache.maven.model.Dependency d : dependencies )

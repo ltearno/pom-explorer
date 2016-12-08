@@ -17,6 +17,7 @@ import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.tools.StringSplitter;
 
 public class Commands
 {
@@ -126,7 +127,8 @@ public class Commands
 		if( "?".equals( text ) )
 			text = "help";
 
-		final String parts[] = text.split( " " );
+		StringSplitter splitter = new StringSplitter();
+		final List<String> parts = splitter.split( text );
 		CommandCallInfo info = findMethodForCommand( parts, log );
 		if( info == null )
 			return;
@@ -137,14 +139,14 @@ public class Commands
 		Object[] args = new Object[argTypes.length];
 		int curPart = 2;
 		int curArg = 0;
-		while( curArg < argTypes.length || curPart < parts.length )
+		while( curArg < argTypes.length || curPart < parts.size() )
 		{
-			if( curPart < parts.length )
+			if( curPart < parts.size() )
 			{
-				String val = parts[curPart];
+				String val = parts.get( curPart );
 				if( val.startsWith( "--" ) )
 				{
-					options.setOption( val.substring( 2 ), parts[curPart + 1] );
+					options.setOption( val.substring( 2 ), parts.get( curPart + 1 ) );
 					curPart += 2;
 					continue;
 				}
@@ -195,7 +197,7 @@ public class Commands
 
 				if( argTypes[curArg] == FilteredGAVs.class )
 				{
-					args[curArg] = new FilteredGAVs( parts[curPart] );
+					args[curArg] = new FilteredGAVs( parts.get( curPart ) );
 					curArg++;
 					curPart++;
 					continue;
@@ -203,7 +205,7 @@ public class Commands
 
 				if( argTypes[curArg] == Gav.class )
 				{
-					args[curArg] = parts[curPart] == null ? null : Gav.parse( parts[curPart] );
+					args[curArg] = parts.get( curPart ) == null ? null : Gav.parse( parts.get( curPart ) );
 					if( args[curArg] == null )
 					{
 						log.html( Tools.warningMessage( "Argument " + (curArg + 1) + " should be a GAV specified with the group:artifact:version format please" ) );
@@ -222,7 +224,7 @@ public class Commands
 						return;
 					}
 
-					args[curArg] = parts[curPart] == null ? null : session.projects().forGav( Gav.parse( parts[curPart] ) );
+					args[curArg] = parts.get( curPart ) == null ? null : session.projects().forGav( Gav.parse( parts.get( curPart ) ) );
 					if( args[curArg] == null )
 					{
 						log.html( Tools.warningMessage( "Argument " + (curArg + 1) + " should be a GAV specified with the group:artifact:version format please" ) );
@@ -235,9 +237,9 @@ public class Commands
 			}
 
 			if( argTypes[curArg] == Integer.class )
-				args[curArg] = Integer.parseInt( parts[curPart] );
+				args[curArg] = Integer.parseInt( parts.get( curPart ) );
 			else
-				args[curArg] = parts[curPart];
+				args[curArg] = parts.get( curPart );
 
 			curPart++;
 			curArg++;
@@ -273,45 +275,45 @@ public class Commands
 	}
 
 	// public for testing
-	public CommandCallInfo findMethodForCommand( String[] parts, Log log )
+	public CommandCallInfo findMethodForCommand( List<String> parts, Log log )
 	{
-		if( parts.length < 1 )
+		if( parts.isEmpty() )
 		{
 			log.html( Tools.warningMessage( "syntax error (should be 'command [verb] [parameters]')" ) );
 			return null;
 		}
 
 		List<Entry<String, Object>> potentialCommands = commands.entrySet().stream()
-				.filter( e -> e.getKey().toLowerCase().startsWith( parts[0].toLowerCase() ) )
+				.filter( e -> e.getKey().toLowerCase().startsWith( parts.get( 0 ).toLowerCase() ) )
 				.collect( Collectors.toList() );
 
 		if( potentialCommands == null || potentialCommands.isEmpty() )
 		{
-			log.html( Tools.warningMessage( "command not found: " + parts[0] ) );
+			log.html( Tools.warningMessage( "command not found: " + parts.get( 0 ) ) );
 			return null;
 		}
 		if( potentialCommands.size() != 1 )
 		{
 			List<String> possible = new ArrayList<>();
 			potentialCommands.forEach( ( e ) -> possible.add( e.getKey() ) );
-			log.html( Tools.warningMessage( "ambiguous command: " + parts[0] + " possible are " + possible ) );
+			log.html( Tools.warningMessage( "ambiguous command: " + parts.get( 0 ) + " possible are " + possible ) );
 			return null;
 		}
 
 		Entry<String, Object> commandEntry = potentialCommands.get( 0 );
 		Object command = commandEntry.getValue();
 
-		String verb = parts.length >= 2 ? parts[1] : "main";
+		String verb = parts.size() >= 2 ? parts.get( 1 ) : "main";
 		int nbParamsGiven = 0;
-		for( int i = 2; i < parts.length; i++ )
+		for( int i = 2; i < parts.size(); i++ )
 		{
-			if( parts[i].startsWith( "--" ) )
+			if( parts.get( i ).startsWith( "--" ) )
 			{
 				i++;
 				continue;
 			}
 
-			if( parts[i].startsWith( "-" ) )
+			if( parts.get( i ).startsWith( "-" ) )
 				continue;
 
 			nbParamsGiven++;

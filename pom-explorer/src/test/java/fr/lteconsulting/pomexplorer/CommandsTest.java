@@ -5,6 +5,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import fr.lteconsulting.pomexplorer.commands.Commands;
 import fr.lteconsulting.pomexplorer.commands.GavCommand;
+import fr.lteconsulting.pomexplorer.tools.StringSplitter;
 import fr.lteconsulting.pomexplorer.commands.Commands.CommandCallInfo;
 
 public class CommandsTest extends TestCase
@@ -32,8 +33,10 @@ public class CommandsTest extends TestCase
 			}
 		};
 
-		assertCommand( cmd.findMethodForCommand( "gav li".split( " " ), log ), GavCommand.class.getSimpleName(), "list" );
-		assertCommand( cmd.findMethodForCommand( "gAv List".split( " " ), log ), GavCommand.class.getSimpleName(), "list" );
+		StringSplitter splitter = new StringSplitter();
+
+		assertCommand( cmd.findMethodForCommand( splitter.split( "gav li" ), log ), GavCommand.class.getSimpleName(), "list" );
+		assertCommand( cmd.findMethodForCommand( splitter.split( "gAv List" ), log ), GavCommand.class.getSimpleName(), "list" );
 	}
 
 	private void assertCommand( CommandCallInfo info, String command, String method )
