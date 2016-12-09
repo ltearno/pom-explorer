@@ -323,32 +323,6 @@ public class AppFactory
 			{
 				client.sendHtml( talkId, log );
 			}
-
-			@Override
-			public String prompt( String question )
-			{
-				Message message = client.sendHangOutText( talkId, question );
-				HangOutHandle handle = new HangOutHandle( message );
-				waitingHangouts.add( handle );
-
-				handle.waitingAnswer = true;
-				synchronized( handle )
-				{
-					while( handle.waitingAnswer )
-					{
-						try
-						{
-							handle.wait();
-						}
-						catch( InterruptedException e )
-						{
-							e.printStackTrace();
-						}
-					}
-				}
-
-				return handle.answer;
-			}
 		};
 	}
 

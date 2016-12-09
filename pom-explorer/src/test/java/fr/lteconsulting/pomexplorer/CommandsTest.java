@@ -25,12 +25,6 @@ public class CommandsTest extends TestCase
 			{
 				System.out.println( log );
 			}
-
-			@Override
-			public String prompt( String question )
-			{
-				return "";
-			}
 		};
 
 		StringSplitter splitter = new StringSplitter();

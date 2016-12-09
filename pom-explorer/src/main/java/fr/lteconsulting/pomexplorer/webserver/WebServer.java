@@ -99,20 +99,20 @@ public class WebServer
 		File servedDirectory = new File( localDirectoryName );
 		if( servedDirectory.exists() && servedDirectory.isDirectory() )
 		{
-			pathHandler.addPrefixPath( "/", new ResourceHandler( new FileResourceManager( servedDirectory, 0 ) ) );
-			System.out.println( "serving from local " + localDirectoryName + " directory" );
+			pathHandler.addPrefixPath( "/", new ResourceHandler( new FileResourceManager( servedDirectory, 0 ) ).addWelcomeFiles( "index.html" ) );
+
+			System.out.println( "serving from local directory '" + localDirectoryName + "'" );
 		}
 		else
 		{
 			// web app static files
-			pathHandler.addPrefixPath( "/",
-					new ResourceHandler( new ClassPathResourceManager( getClass().getClassLoader(), "pomexplorer-ui" ) ).addWelcomeFiles( "index.html" ) );
+			pathHandler.addPrefixPath( "/", new ResourceHandler( new ClassPathResourceManager( getClass().getClassLoader(), "pomexplorer-ui" ) ).addWelcomeFiles( "index.html" ) );
 		}
 
 		File dataDir = new File( DATA_FILE_STORE_DIR );
 		dataDir.mkdirs();
 		pathHandler.addPrefixPath( DATA_FILE_PREFIX_URL, new ResourceHandler( new PathResourceManager( dataDir.toPath(), 0 ) ) );
-		
+
 		// http end point
 		pathHandler.addExactPath( "/graph", new HttpHandler()
 		{
