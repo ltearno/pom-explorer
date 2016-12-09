@@ -7,7 +7,7 @@ import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.alg.StrongConnectivityInspector;
 
 import fr.lteconsulting.pomexplorer.Log;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.model.Gav;
@@ -15,7 +15,7 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 public class StatsCommand
 {
 	@Help( "general statistics on the session" )
-	public void main( Session session, Log log )
+	public void main( ApplicationSession session, Log log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 
@@ -32,7 +32,7 @@ public class StatsCommand
 	}
 
 	@Help( "gives the details of the connected components of the pom graph" )
-	public void components( Session session, Log log )
+	public void components( ApplicationSession session, Log log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 

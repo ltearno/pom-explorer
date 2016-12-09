@@ -7,24 +7,24 @@ import java.util.stream.Collectors;
 import fr.lteconsulting.pomexplorer.GitTools;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 
 public class GitCommand
 {
 	@Help( "displays the list of git repos found" )
-	public void main( Session session, Log log, CommandOptions options )
+	public void main( ApplicationSession session, Log log, CommandOptions options )
 	{
 		status( session, log, options );
 	}
 
 	@Help( "displays the list of git repos found" )
-	public void status( Session session, Log log, CommandOptions options )
+	public void status( ApplicationSession session, Log log, CommandOptions options )
 	{
 		status( session, log, options, null );
 	}
 
 	@Help( "displays the list of git repos found. Filtered by repository path or contained projects' gavs." )
-	public void status( Session session, Log log, CommandOptions options, String filter )
+	public void status( ApplicationSession session, Log log, CommandOptions options, String filter )
 	{
 		log.html( "List git repositories :<br/>" );
 		log.html( "<i>Those marked with [*] have not a clean head</i><br/><br/>" );
@@ -41,7 +41,7 @@ public class GitCommand
 	}
 
 	@Help( "displays the list of git repos, together with the projects they contain" )
-	public void projects( Session session, Log log )
+	public void projects( ApplicationSession session, Log log )
 	{
 		log.html( "List git repositories :<br/>" );
 

@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fr.lteconsulting</groupId>
-	<artifactId>pom-explorer</artifactId>
+	<artifactId>pom-explorer-core</artifactId>
 	<version>1.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>pom-explorer</name>
+	<name>pom-explorer-core</name>
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,11 +18,6 @@
 		<version.io.undertow>1.4.0.Final</version.io.undertow>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>fr.lteconsulting</groupId>
-			<artifactId>pom-explorer-core</artifactId>
-			<version>1.1-SNAPSHOT</version>
-		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>

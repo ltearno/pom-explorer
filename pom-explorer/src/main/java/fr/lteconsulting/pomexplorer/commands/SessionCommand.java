@@ -6,12 +6,12 @@ import fr.lteconsulting.pomexplorer.AppFactory;
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 
 public class SessionCommand
 {
 	@Help( "tells about the current working session" )
-	public void main( Client client, Session session, Log log )
+	public void main( Client client, ApplicationSession session, Log log )
 	{
 		log.html( "You are working on session " + session.getDescription() + "<br/>" );
 	}
@@ -20,14 +20,14 @@ public class SessionCommand
 	public void list( Log log )
 	{
 		log.html( "There are " + AppFactory.get().sessions().size() + " opened work sessions:" );
-		for( Session session : AppFactory.get().sessions() )
+		for( ApplicationSession session : AppFactory.get().sessions() )
 			log.html( "<br/>- WorkingSession " + session.hashCode() + ", " + (session.getClients().isEmpty() ? "inactive" : (session.getClients().size() + " connected users")) );
 	}
 
 	@Help( "create and attach a new session" )
 	public void create( Client client, Log log )
 	{
-		Session session = new Session();
+		ApplicationSession session = new ApplicationSession();
 		session.configure( AppFactory.get().getSettings() );
 		AppFactory.get().sessions().add( session );
 		client.setCurrentSession( session );
@@ -35,7 +35,7 @@ public class SessionCommand
 	}
 
 	@Help( "sets the path to the maven settings file" )
-	public void mavenSettingsFilePath( Client client, Session session, String path, Log log )
+	public void mavenSettingsFilePath( Client client, ApplicationSession session, String path, Log log )
 	{
 		session.setMavenSettingsFilePath( path );
 
@@ -43,7 +43,7 @@ public class SessionCommand
 	}
 
 	@Help( "sets the maven shell command to execute maven" )
-	public void mavenShellCommand( Client client, Session session, String command, Log log )
+	public void mavenShellCommand( Client client, ApplicationSession session, String command, Log log )
 	{
 		session.setMavenShellCommand( command );
 
@@ -51,7 +51,7 @@ public class SessionCommand
 	}
 
 	@Help( "sets the current working session to the specified index" )
-	public void workOn( Client client, Session session, Integer index, Log log )
+	public void workOn( Client client, ApplicationSession session, Integer index, Log log )
 	{
 		if( index == null )
 		{
@@ -59,7 +59,7 @@ public class SessionCommand
 			return;
 		}
 
-		List<Session> sessions = AppFactory.get().sessions();
+		List<ApplicationSession> sessions = AppFactory.get().sessions();
 		if( index < 0 || index >= sessions.size() )
 		{
 			log.html( Tools.errorMessage( "The session " + index + " does not exist !" ) );

@@ -1,4 +1,4 @@
-package fr.lteconsulting.pomexplorer.commands;
+package fr.lteconsulting.pomexplorer.tools;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class FilteredGAVs
 		return gav != null && (filter == null || gav.toString().toLowerCase().contains( filter ));
 	}
 
-	List<Gav> getGavs( Session session )
+	public List<Gav> getGavs( Session session )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		Stream<Gav> stream;

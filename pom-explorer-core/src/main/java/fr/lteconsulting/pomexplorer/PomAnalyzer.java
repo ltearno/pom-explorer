@@ -226,7 +226,6 @@ public class PomAnalyzer
 		{
 			Project project = new Project( session, pomFile, isExternal );
 			session.projects().add( project );
-			session.repositories().add( project );
 			return project;
 		}
 		catch( Exception e )

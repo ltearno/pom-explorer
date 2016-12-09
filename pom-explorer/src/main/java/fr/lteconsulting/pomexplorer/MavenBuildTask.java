@@ -9,7 +9,7 @@ import fr.lteconsulting.autothreaded.AutoThreaded;
 @AutoThreaded
 public class MavenBuildTask
 {
-	public Boolean build( Session session, Project project, String talkId )
+	public Boolean build( ApplicationSession session, Project project, String talkId )
 	{
 		try
 		{
@@ -38,7 +38,7 @@ public class MavenBuildTask
 		}
 	}
 
-	private void log( Session session, Project project, String talkId, String message )
+	private void log( ApplicationSession session, Project project, String talkId, String message )
 	{
 		message = Tools.buildMessage( "[building " + project.getGav() + "] " + message );
 		for( Client client : session.getClients() )

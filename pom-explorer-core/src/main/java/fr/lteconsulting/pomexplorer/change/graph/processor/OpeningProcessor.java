@@ -12,8 +12,6 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 
 /**
  * When a gav dependency if changed, care is taken to reopen the relation source in snapshot if needed
- * 
- * @author Arnaud
  */
 public class OpeningProcessor implements ChangeProcessor<GraphChange>
 {

@@ -10,7 +10,8 @@
     <url>http://www.lteconsulting.fr</url>
     <packaging>pom</packaging>
     <modules>
-        <module>pom-explorer</module>
+        <module>pom-explorer-core</module>
+		<module>pom-explorer</module>
         <module>processor</module>
     </modules>
     <developers>

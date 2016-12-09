@@ -25,7 +25,7 @@ import fr.lteconsulting.pomexplorer.GraphQuery;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.Repository;
 import fr.lteconsulting.pomexplorer.graph.RepositoryRelation;
@@ -35,11 +35,12 @@ import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.tools.FilteredGAVs;
 
 public class GraphCommand
 {
 	@Help( "displays an interactive 3d WebGL graph of the projects" )
-	public void main( Session session, Log log )
+	public void main( ApplicationSession session, Log log )
 	{
 		String url = "graph.html?session=" + System.identityHashCode( session );
 		url += "&graphQueryId=" + GraphQuery.register( null );
@@ -47,13 +48,13 @@ public class GraphCommand
 	}
 
 	@Help( "displays an interactive 3d WebGL graph of the projects, limited to dependency tree of the given root gavs" )
-	public void roots( Session session, Log log, FilteredGAVs roots )
+	public void roots( ApplicationSession session, Log log, FilteredGAVs roots )
 	{
 		String url = "graph.html?session=" + System.identityHashCode( session );
-		url += "&graphQueryId=" + GraphQuery.register( new HashSet<>( roots.getGavs( session ) ) );
+		url += "&graphQueryId=" + GraphQuery.register( new HashSet<>( roots.getGavs( session.session() ) ) );
 		log.html( "Root gavs : " );
 		StringBuilder sb = new StringBuilder();
-		roots.getGavs( session ).forEach( root -> sb.append( root + "<br/>" ) );
+		roots.getGavs( session.session() ).forEach( root -> sb.append( root + "<br/>" ) );
 		log.html( sb.toString() );
 		log.html( "To display the graph, go to : <a href='" + url + "' target='_blank'>" + url + "</a><br/>" );
 	}
@@ -78,7 +79,7 @@ public class GraphCommand
 	}
 
 	@Help( "exports a GraphML file" )
-	public void export( Session session, Log log )
+	public void export( ApplicationSession session, Log log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 
@@ -205,7 +206,7 @@ public class GraphCommand
 		}
 	}
 
-	private String getGAVRepository( Session session, Gav gav )
+	private String getGAVRepository( ApplicationSession session, Gav gav )
 	{
 		Project project = session.projects().forGav( gav );
 		if( project == null )
@@ -215,13 +216,13 @@ public class GraphCommand
 	}
 
 	@Help( "displays a graph on the server machine" )
-	public void server( Session session, Log log )
+	public void server( ApplicationSession session, Log log )
 	{
 		server( session, null, log );
 	}
 
 	@Help( "displays a graph on the server machine. Parameter is the filter for GAVs" )
-	public void server( Session session, String filter, Log log )
+	public void server( ApplicationSession session, String filter, Log log )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 

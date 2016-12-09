@@ -9,7 +9,7 @@ import org.apache.maven.project.MavenProject;
 
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.ProjectTools;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.graph.relation.RelationType;
@@ -44,7 +44,7 @@ public class ProjectDto
 	@SuppressWarnings( "unused" )
 	private String plugins;
 
-	public static ProjectDto fromProject( Session session, Project project )
+	public static ProjectDto fromProject( ApplicationSession session, Project project )
 	{
 		MavenProject mavenProject = project.getMavenProject();
 		ProjectDto dto = new ProjectDto();
@@ -75,7 +75,7 @@ public class ProjectDto
 		return dto;
 	}
 
-	private static List<Reference> getReferences( Session session, Project project )
+	private static List<Reference> getReferences( ApplicationSession session, Project project )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		Set<Relation> relations = tx.relationsReverse( project.getGav() );
@@ -92,7 +92,7 @@ public class ProjectDto
 		return res;
 	}
 
-	private static List<String> getParentChain( Session session, Project project )
+	private static List<String> getParentChain( ApplicationSession session, Project project )
 	{
 		List<String> res = new ArrayList<>();
 

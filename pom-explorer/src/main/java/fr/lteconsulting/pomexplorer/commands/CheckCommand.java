@@ -14,7 +14,7 @@ import org.jgrapht.alg.CycleDetector;
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.model.Gav;
@@ -22,7 +22,7 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 public class CheckCommand
 {
 	@Help( "checks some commons points of errors, at least of attention..." )
-	public void main( Client client, Session session, Log log )
+	public void main( Client client, ApplicationSession session, Log log )
 	{
 		StringBuilder sb = new StringBuilder();
 
@@ -94,7 +94,7 @@ public class CheckCommand
 		log.html( sb.toString() );
 	}
 
-	private Map<MiniGAV, Set<Gav>> multipleGavs( Session session )
+	private Map<MiniGAV, Set<Gav>> multipleGavs( ApplicationSession session )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		Map<MiniGAV, Set<Gav>> prov = new HashMap<>();
@@ -121,7 +121,7 @@ public class CheckCommand
 		return res;
 	}
 
-	private List<Gav> gavsWithoutProject( Session session )
+	private List<Gav> gavsWithoutProject( ApplicationSession session )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 		Set<Gav> res = new HashSet<Gav>();

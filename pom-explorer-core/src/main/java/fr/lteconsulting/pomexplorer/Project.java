@@ -782,8 +782,7 @@ public class Project
 		}
 	}
 
-	private void buildDependencyTree( Queue<DependencyNode> nodeQueue, boolean full, boolean online, Session session,
-			Map<String, Profile> profiles, Log log )
+	private void buildDependencyTree( Queue<DependencyNode> nodeQueue, boolean full, boolean online, Session session, Map<String, Profile> profiles, Log log )
 	{
 		int neededLevels = full ? -1 : 1;
 

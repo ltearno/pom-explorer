@@ -7,20 +7,21 @@ import fr.lteconsulting.pomexplorer.GavTools;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.javac.JavaSourceAnalyzer;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.tools.FilteredGAVs;
 
 public class ClassesCommand
 {
 	@Help( "gives the java classes provided by the session's gavs" )
-	public void main( Session session, Log log, Client client )
+	public void main( ApplicationSession session, Log log, Client client )
 	{
 		providedBy( session, log, client, null );
 	}
 
 	@Help( "gives the java classes provided by the session's gavs, filtered by the given parameter" )
-	public void providedBy( Session session, Log log, Client client, FilteredGAVs gavFilter )
+	public void providedBy( ApplicationSession session, Log log, Client client, FilteredGAVs gavFilter )
 	{
 		if( gavFilter == null )
 		{
@@ -30,9 +31,9 @@ public class ClassesCommand
 
 		log.html( "<br/>GAV list filtered with '" + gavFilter + "' :<br/>" );
 
-		for( Gav gav : gavFilter.getGavs( session ) )
+		for( Gav gav : gavFilter.getGavs( session.session() ) )
 		{
-			List<String> classes = GavTools.analyseProvidedClasses( session, gav, log );
+			List<String> classes = GavTools.analyseProvidedClasses( session.session(), gav, log );
 			if( classes == null )
 			{
 				log.html( Tools.warningMessage( "No class provided by gav " + gav ) );
@@ -52,11 +53,11 @@ public class ClassesCommand
 	 * references
 	 */
 	@Help( "gives the fqn list of referenced classes by the session's gavs, filtered by the given parameter" )
-	public void referencedBy( Session session, Log log, FilteredGAVs gavFilter )
+	public void referencedBy( ApplicationSession session, Log log, FilteredGAVs gavFilter )
 	{
 		JavaSourceAnalyzer analyzer = new JavaSourceAnalyzer();
 
-		for( Gav gav : gavFilter.getGavs( session ) )
+		for( Gav gav : gavFilter.getGavs( session.session() ) )
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )

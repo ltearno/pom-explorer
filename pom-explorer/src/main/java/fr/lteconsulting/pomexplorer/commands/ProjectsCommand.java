@@ -15,11 +15,11 @@ import java.util.Set;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Profile;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.ProjectTools;
-import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.graph.relation.RelationType;
@@ -27,11 +27,12 @@ import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.model.transitivity.DependencyNode;
+import fr.lteconsulting.pomexplorer.tools.FilteredGAVs;
 
 public class ProjectsCommand
 {
 	@Help( "list the session's projects" )
-	public void main( Session session, Log log )
+	public void main( ApplicationSession session, Log log )
 	{
 		log.html( "<br/>Project list:<br/>" );
 		List<Project> list = new ArrayList<>();
@@ -49,7 +50,7 @@ public class ProjectsCommand
 	}
 
 	@Help( "list the session's projects - with details. Parameter is a filter for the GAVs" )
-	public void details( Session session, CommandOptions options, FilteredGAVs gavFilter, Log logi )
+	public void details( ApplicationSession session, CommandOptions options, FilteredGAVs gavFilter, Log logi )
 	{
 		assert gavFilter != null;
 
@@ -69,14 +70,21 @@ public class ProjectsCommand
 			}
 		}
 
-		StringBuilder log = new StringBuilder();
-		List<Project> list = gavFilter.getGavs( session ).stream().map( gav -> session.projects().forGav( gav ) ).filter( p -> p != null ).sorted( Project.alphabeticalComparator )
+		List<Project> list = gavFilter
+				.getGavs( session.session() )
+				.stream()
+				.map( gav -> session.projects().forGav( gav ) )
+				.filter( p -> p != null )
+				.sorted( Project.alphabeticalComparator )
 				.collect( toList() );
+		
 		if( list.isEmpty() )
 		{
 			logi.html( "found no project corresponding to your search...<br/>" );
 			return;
 		}
+
+		StringBuilder log = new StringBuilder();
 
 		log.append( "<div class='projects'>" );
 
@@ -135,7 +143,7 @@ public class ProjectsCommand
 		}
 	}
 
-	private void showProperties( Session session, StringBuilder log, Project project )
+	private void showProperties( ApplicationSession session, StringBuilder log, Project project )
 	{
 		Project current = project;
 		boolean first = true;
@@ -197,7 +205,7 @@ public class ProjectsCommand
 		}
 	}
 
-	private void showReferences( StringBuilder sb, PomGraphReadTransaction tx, Project project, Session session, Log logi )
+	private void showReferences( StringBuilder sb, PomGraphReadTransaction tx, Project project, ApplicationSession session, Log logi )
 	{
 		Set<Relation> relations = tx.relationsReverse( project.getGav() );
 		if( !relations.isEmpty() )
@@ -215,7 +223,7 @@ public class ProjectsCommand
 	}
 
 	private void showTransitiveDependencies( boolean showManaged, boolean fetchMissingProjects, boolean online, StringBuilder sb, PomGraphReadTransaction tx, Project project,
-			Map<String, Profile> profiles, Session session, Log log )
+			Map<String, Profile> profiles, ApplicationSession session, Log log )
 	{
 		sb.append( "<div><div>transitive dependencies</div><div>" );
 
@@ -294,7 +302,7 @@ public class ProjectsCommand
 
 	}
 
-	private void showParenChain( StringBuilder sb, Session session, Project project )
+	private void showParenChain( StringBuilder sb, ApplicationSession session, Project project )
 	{
 		sb.append( "<div><div>parent chain</div><div>" );
 

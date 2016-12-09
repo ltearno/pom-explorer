@@ -37,31 +37,7 @@ import fr.lteconsulting.pomexplorer.webserver.XWebServer;
 
 public class AppFactory
 {
-	private static final AppFactory INSTANCE = new AppFactory();
-
-	private AppFactory()
-	{
-	}
-
-	public static AppFactory get()
-	{
-		return INSTANCE;
-	}
-
-	private final List<Session> sessions = new ArrayList<>();
-
 	private Commands commands;
-
-	private RpcServices rpcServices;
-
-	private ApplicationSettings settings;
-
-	private WebServer webServer;
-
-	public List<Session> sessions()
-	{
-		return sessions;
-	}
 
 	public Commands commands()
 	{
@@ -87,6 +63,30 @@ public class AppFactory
 		}
 
 		return commands;
+	}
+
+	private static final AppFactory INSTANCE = new AppFactory();
+
+	private AppFactory()
+	{
+	}
+
+	public static AppFactory get()
+	{
+		return INSTANCE;
+	}
+
+	private final List<ApplicationSession> sessions = new ArrayList<>();
+
+	private RpcServices rpcServices;
+
+	private ApplicationSettings settings;
+
+	private WebServer webServer;
+
+	public List<ApplicationSession> sessions()
+	{
+		return sessions;
 	}
 
 	public RpcServices rpcServices()
@@ -212,18 +212,18 @@ public class AppFactory
 		@Override
 		public String onGraphQuery( String sessionIdString, String graphQueryId )
 		{
-			List<Session> sessions = AppFactory.get().sessions();
+			List<ApplicationSession> sessions = AppFactory.get().sessions();
 			if( sessions == null || sessions.isEmpty() )
 				return "No session available. Go to main page !";
 
-			Session session = null;
+			ApplicationSession session = null;
 
 			try
 			{
 				Integer sessionId = Integer.parseInt( sessionIdString );
 				if( sessionId != null )
 				{
-					for( Session s : sessions )
+					for( ApplicationSession s : sessions )
 					{
 						if( System.identityHashCode( s ) == sessionId )
 						{

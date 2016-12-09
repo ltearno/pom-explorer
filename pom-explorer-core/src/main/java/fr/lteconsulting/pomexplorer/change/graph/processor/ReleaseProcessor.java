@@ -1,8 +1,8 @@
 package fr.lteconsulting.pomexplorer.change.graph.processor;
 
 import fr.lteconsulting.pomexplorer.Log;
-import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.change.ChangeProcessor;
 import fr.lteconsulting.pomexplorer.change.ChangeSet;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange;
@@ -12,8 +12,6 @@ import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 /**
  * If a project is released (ie its version changes from not released to released),
  * takes care that the dependencies are also released
- * 
- * @author Arnaud Tournier
  */
 public class ReleaseProcessor implements ChangeProcessor<GraphChange>
 {

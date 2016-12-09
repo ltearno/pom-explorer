@@ -14,9 +14,10 @@ import java.util.stream.Collectors;
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.tools.FilteredGAVs;
 import fr.lteconsulting.pomexplorer.tools.StringSplitter;
 
 public class Commands
@@ -73,7 +74,7 @@ public class Commands
 				{
 					Class<?> pCls = m.getParameterTypes()[i];
 
-					if( pCls == Client.class || pCls == Session.class || pCls == CommandOptions.class || pCls == Log.class )
+					if( pCls == Client.class || pCls == ApplicationSession.class || pCls == CommandOptions.class || pCls == Log.class )
 						continue;
 
 					sb.append( " <b><i>" + m.getParameters()[i].getName() + "</i></b>" );
@@ -134,7 +135,7 @@ public class Commands
 			return;
 
 		CommandOptions options = new CommandOptions();
-		Session session = client.getCurrentSession();
+		ApplicationSession session = client.getCurrentSession();
 		Class<?>[] argTypes = info.method.getParameterTypes();
 		Object[] args = new Object[argTypes.length];
 		int curPart = 2;
@@ -175,7 +176,7 @@ public class Commands
 					continue;
 				}
 
-				if( argTypes[curArg] == Session.class )
+				if( argTypes[curArg] == ApplicationSession.class )
 				{
 					if( session == null )
 					{
@@ -351,7 +352,7 @@ public class Commands
 		int c = 0;
 		for( Class<?> t : m.getParameterTypes() )
 		{
-			if( t != Client.class && t != Session.class && t != CommandOptions.class && t != Log.class )
+			if( t != Client.class && t != ApplicationSession.class && t != CommandOptions.class && t != Log.class )
 				c++;
 		}
 		return c;

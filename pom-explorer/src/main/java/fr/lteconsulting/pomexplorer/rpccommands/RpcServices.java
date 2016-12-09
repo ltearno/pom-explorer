@@ -7,7 +7,7 @@ import java.util.Map;
 
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Log;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.webserver.RpcMessage;
 
@@ -64,7 +64,7 @@ public class RpcServices
 
 			if( paramType == Client.class )
 				param = client;
-			else if( paramType == Session.class )
+			else if( paramType == ApplicationSession.class )
 				param = client.getCurrentSession();
 			else if( paramType == Log.class )
 				param = log;

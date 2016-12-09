@@ -10,23 +10,24 @@ import fr.lteconsulting.pomexplorer.GavTools;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.javac.JavaSourceAnalyzer;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.tools.FilteredGAVs;
 
 public class GarbageCommand
 {
 	@Help( "displays the list of dependencies declared but not used in the java code of a project and referenced transitive dependencies not declared in the pom file, arguments : gav_filter" )
-	public void dependencies( Session session, Log log, CommandOptions options, FilteredGAVs gavFilter )
+	public void dependencies( ApplicationSession session, Log log, CommandOptions options, FilteredGAVs gavFilter )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
 
 		log.html(
 				"<i>Note : although this tool will follow all the transitive dependencies inside your own projects, it will not recursively fetch all your externaly dependencies. For example, if you declare 'undertow-servlet' and depend only on 'undertow-core', you will get warnings that undetow class references have no provider found. This is a sign that you depend on a transitive dependency (from an external library) without declaring it in your maven project.</i><br/>" );
 
-		for( Gav gav : gavFilter.getGavs( session ) )
+		for( Gav gav : gavFilter.getGavs( session.session() ) )
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )
@@ -51,7 +52,7 @@ public class GarbageCommand
 			for( Gav provider : dependencies )
 			{
 				Set<String> providedClasses = new HashSet<>();
-				List<String> cc = GavTools.analyseProvidedClasses( session, provider, log );
+				List<String> cc = GavTools.analyseProvidedClasses( session.session(), provider, log );
 				if( cc != null )
 					providedClasses.addAll( cc );
 
@@ -73,7 +74,7 @@ public class GarbageCommand
 
 			// own internal classes
 			Set<String> ownClasses = new HashSet<>();
-			List<String> ownClassesList = GavTools.analyseProvidedClasses( session, gav, log );
+			List<String> ownClassesList = GavTools.analyseProvidedClasses( session.session(), gav, log );
 			if( ownClassesList != null )
 				ownClasses.addAll( ownClassesList );
 

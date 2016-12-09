@@ -49,6 +49,8 @@ public class ProjectRepository
 	public void add( Project project )
 	{
 		projects.put( project.getGav(), project );
+		
+		session.sendEventAddedProject( project );
 	}
 
 	public void remove( Project project )

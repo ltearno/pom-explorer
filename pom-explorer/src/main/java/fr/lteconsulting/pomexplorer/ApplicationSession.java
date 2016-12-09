@@ -1,14 +1,12 @@
 package fr.lteconsulting.pomexplorer;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
+import fr.lteconsulting.pomexplorer.Session.XSession;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange;
 import fr.lteconsulting.pomexplorer.change.project.ProjectChange;
 import fr.lteconsulting.pomexplorer.graph.PomGraph;
-import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
 
 /**
@@ -26,64 +24,54 @@ import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
  * @author Arnaud
  *
  */
-public class Session
+public class ApplicationSession
 {
-	private String mavenSettingsFilePath = null;
+	private final Session session = new Session();
 
-	private String mavenShellCommand = "C:\\Program Files (x86)\\apache-maven-3.1.1\\bin\\mvn.bat";
-
+	// To Move to Application
 	private final GitRepositories gitRepositories = new GitRepositories();
-
-	private final ProjectRepository projects = new ProjectRepository( this );
-
-	private final PomGraph graph = new PomGraph();
-
 	private final Set<Project> maintainedProjects = new HashSet<>();
-
 	private final Set<Client> clients = new HashSet<>();
-
 	private final ProjectsWatcher projectsWatcher = new ProjectsWatcherAutoThreaded();
-
 	private final BuilderAutoThreaded builder = new BuilderAutoThreaded();
 
-	private final Map<String, MavenResolver> resolvers = new HashMap<>();
-
-	private final Set<ProjectChange> projectChanges = new HashSet<>();
-
-	private final Set<GraphChange> graphChanges = new HashSet<>();
-
-	public Session()
+	public ApplicationSession()
 	{
 		builder.setSession( this );
+
+		session.setCallback( new XSession()
+		{
+			@Override
+			public void projectAdded( Project project )
+			{
+				repositories().add( project );
+			}
+		} );
+	}
+
+	public Session session()
+	{
+		return session;
 	}
 
 	public void configure( ApplicationSettings settings )
 	{
-		this.mavenSettingsFilePath = settings.getDefaultMavenSettingsFile();
+		session.setMavenSettingsFilePath( settings.getDefaultMavenSettingsFile() );
 	}
 
 	public MavenResolver mavenResolver()
 	{
-		String mavenSettingsFilePath = getMavenSettingsFilePath();
-		MavenResolver resolver = resolvers.get( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath );
-		if( resolver == null )
-		{
-			resolver = new MavenResolver();
-			resolver.init( mavenSettingsFilePath );
-			resolvers.put( mavenSettingsFilePath == null ? "-" : mavenSettingsFilePath, resolver );
-		}
-
-		return resolver;
+		return session.mavenResolver();
 	}
 
 	public PomGraph graph()
 	{
-		return graph;
+		return session.graph();
 	}
 
 	public ProjectRepository projects()
 	{
-		return projects;
+		return session.projects();
 	}
 
 	public GitRepositories repositories()
@@ -103,12 +91,12 @@ public class Session
 
 	public Set<ProjectChange> projectChanges()
 	{
-		return projectChanges;
+		return session.projectChanges();
 	}
 
 	public Set<GraphChange> graphChanges()
 	{
-		return graphChanges;
+		return session.graphChanges();
 	}
 
 	public void cleanBuildList()
@@ -118,31 +106,27 @@ public class Session
 
 	public String getMavenSettingsFilePath()
 	{
-		return mavenSettingsFilePath;
+		return session.getMavenSettingsFilePath();
 	}
 
 	public void setMavenSettingsFilePath( String mavenSettingsFilePath )
 	{
-		this.mavenSettingsFilePath = mavenSettingsFilePath;
+		session.setMavenSettingsFilePath( mavenSettingsFilePath );
 	}
 
 	public String getMavenShellCommand()
 	{
-		return mavenShellCommand;
+		return session.getMavenShellCommand();
 	}
 
 	public void setMavenShellCommand( String mavenShellCommand )
 	{
-		this.mavenShellCommand = mavenShellCommand;
+		session.setMavenShellCommand( mavenShellCommand );
 	}
 
 	public String getDescription()
 	{
-		PomGraphReadTransaction tx = graph.read();
-		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : "
-				+ (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>" + "Maven shell command : "
-				+ (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>" + projects.size() + " projects<br/>" + tx.gavs().size() + " GAVs<br/>"
-				+ tx.relations().size() + " relations<br/></div>";
+		return session.getDescription();
 	}
 
 	public void addClient( Client client )

@@ -22,7 +22,7 @@ public class Builder
 
 	private final String pipelineStatusTalkId = "buildPipelineStatus";
 
-	private Session session;
+	private ApplicationSession session;
 
 	private final Set<Project> projectsToBuild = new HashSet<>();
 
@@ -32,7 +32,7 @@ public class Builder
 
 	private final Set<Project> erroredProjects = new HashSet<>();
 
-	public void setSession( Session session )
+	public void setSession( ApplicationSession session )
 	{
 		this.session = session;
 	}
@@ -199,7 +199,7 @@ public class Builder
 		return null;
 	}
 
-	private void processProjectChange( Session session, Project project )
+	private void processProjectChange( ApplicationSession session, Project project )
 	{
 		if( project == null || projectsToBuild.contains( project ) )
 			return;

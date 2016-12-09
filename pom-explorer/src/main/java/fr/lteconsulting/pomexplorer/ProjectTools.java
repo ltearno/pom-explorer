@@ -14,7 +14,6 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class ProjectTools
 {
-
 	public static void showDependencies( Project project, StringBuilder sb, Log log )
 	{
 		MavenProject mavenProject = project.getMavenProject();

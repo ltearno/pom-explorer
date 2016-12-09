@@ -5,7 +5,7 @@ import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
-import fr.lteconsulting.pomexplorer.Session;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.change.Change.ChangeCause;
 import fr.lteconsulting.pomexplorer.change.graph.GraphChange;
@@ -21,17 +21,18 @@ import fr.lteconsulting.pomexplorer.change.project.ProjectChangeProcessing;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.model.GroupArtifact;
+import fr.lteconsulting.pomexplorer.tools.FilteredGAVs;
 
 public class ChangeCommand
 {
 	@Help( "lists the change set" )
-	public void main( Session session, Log log )
+	public void main( ApplicationSession session, Log log )
 	{
 		list( session, log );
 	}
 
 	@Help( "lists the change set" )
-	public void list( Session session, Log log )
+	public void list( ApplicationSession session, Log log )
 	{
 		if( session.graphChanges().isEmpty() )
 		{
@@ -81,17 +82,17 @@ public class ChangeCommand
 	}
 
 	@Help( "process the graph changes with active processors (propagator, releaser, opener)" )
-	public void processChanges( Session session, Log log )
+	public void processChanges( ApplicationSession session, Log log )
 	{
 		log.html( "Processing changes...<br/>" );
 		GraphChangeProcessing processing = new GraphChangeProcessing();
-		Set<GraphChange> processed = processing.process( session, log, session.graphChanges() );
+		Set<GraphChange> processed = processing.process( session.session(), log, session.graphChanges() );
 		processed.forEach( change -> session.graphChanges().add( change ) );
 		log.html( "Done !<br/>Use the 'change list' command to see the new changesets<br/>" );
 	}
 
 	@Help( "resolve the current graph changeset. That is all the graph changes are converted into project changes and injected in the project changeset." )
-	public void resolveChanges( Session session, Log log )
+	public void resolveChanges( ApplicationSession session, Log log )
 	{
 		Set<GraphChange> changes = new HashSet<>( session.graphChanges() );
 		session.graphChanges().clear();
@@ -174,23 +175,23 @@ public class ChangeCommand
 		}
 
 		ProjectChangeProcessing processing = new ProjectChangeProcessing();
-		Set<ProjectChange> processedChanges = processing.process( session, log, session.projectChanges() );
+		Set<ProjectChange> processedChanges = processing.process( session.session(), log, session.projectChanges() );
 		session.projectChanges().clear();
 		session.projectChanges().addAll( processedChanges );
 		log.html( "Done !<br/>Use the 'change list' command to see the new changesets<br/>" );
 	}
 
 	@Help( "applies the project changes in the pom.xml files" )
-	public void apply( Session session, Log log )
+	public void apply( ApplicationSession session, Log log )
 	{
 		log.html( "applying project changes<br/>" );
 		PomChanger changer = new PomChanger();
-		changer.applyChanges( session, session.projectChanges(), log );
+		changer.applyChanges( session.session(), session.projectChanges(), log );
 		log.html( "done<br/>" );
 	}
 
 	@Help( "clears the graph and project changes list" )
-	public void clear( Session session, Log log )
+	public void clear( ApplicationSession session, Log log )
 	{
 		log.html( "clearing change set<br/>" );
 		session.graphChanges().clear();
@@ -199,7 +200,7 @@ public class ChangeCommand
 	}
 
 	@Help( "changes a gav in the graph" )
-	public void gav( Session session, Log log, Gav gav, Gav newGav )
+	public void gav( ApplicationSession session, Log log, Gav gav, Gav newGav )
 	{
 		GavChange change = new GavChange( gav, newGav );
 		session.graphChanges().add( change );
@@ -207,7 +208,7 @@ public class ChangeCommand
 	}
 
 	@Help( "changes a relation in the graph" )
-	public void relation( Session session, Log log, Gav source, String gact, Gav newTarget )
+	public void relation( ApplicationSession session, Log log, Gav source, String gact, Gav newTarget )
 	{
 		RelationChange change = RelationChange.create( source, gact, newTarget );
 		if( change == null )
@@ -222,7 +223,7 @@ public class ChangeCommand
 	}
 
 	@Help( "removes a relation from the graph" )
-	public void removeRelation( Session session, Log log, Gav source, String gact )
+	public void removeRelation( ApplicationSession session, Log log, Gav source, String gact )
 	{
 		RelationChange change = RelationChange.create( source, gact, null );
 		if( change == null )
@@ -238,14 +239,14 @@ public class ChangeCommand
 
 	@Help( "sets or adds a dependency to a project" )
 	public void setProject(
-			Session session,
+			ApplicationSession session,
 			Log log,
 			FilteredGAVs gavs,
 			@Help( "can be <i>project</i>, <i>parent</i>, <i>property</i>, <i>d:group:artifact:classifier:type</i>, <i>dm:group:artifact:classifier:type</i>, <i>p:group:artifact</i> or <i>pm:group:artifact</i>" ) String location,
 			@Help( "can be <i>groupId</i>, <i>artifactId</i>, <i>version</i>, <i>scope</i>, or a property name" ) String nodeName,
 			String newValue )
 	{
-		for( Gav gav : gavs.getGavs( session ) )
+		for( Gav gav : gavs.getGavs( session.session() ) )
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )
@@ -268,9 +269,9 @@ public class ChangeCommand
 	}
 
 	@Help( "removes a dependency from a project" )
-	public void removeProject( Session session, Log log, FilteredGAVs gavs, String location, String nodeName )
+	public void removeProject( ApplicationSession session, Log log, FilteredGAVs gavs, String location, String nodeName )
 	{
-		for( Gav gav : gavs.getGavs( session ) )
+		for( Gav gav : gavs.getGavs( session.session() ) )
 		{
 			Project project = session.projects().forGav( gav );
 			if( project == null )
