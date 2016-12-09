@@ -527,7 +527,8 @@ public class Project
 		}
 
 		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
-		if( projectProfiles != null )
+		if( projectProfiles != null && dependencyMap != null )
+
 		{
 			projectProfiles.stream()
 					.filter( p -> isProfileActivated( profiles, p ) )
