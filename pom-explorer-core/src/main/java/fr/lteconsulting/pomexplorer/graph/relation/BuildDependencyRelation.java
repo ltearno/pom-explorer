@@ -12,6 +12,6 @@ public class BuildDependencyRelation extends Relation
 	@Override
 	public String toString()
 	{
-		return "[B] " + target;
+		return source + "-(build)->" + target.toString();
 	}
 }

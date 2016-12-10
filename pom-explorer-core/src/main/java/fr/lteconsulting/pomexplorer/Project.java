@@ -209,6 +209,13 @@ public class Project
 		}
 		return dependencies;
 	}
+	
+	private static Map<Gav, Gav> defaultGavs = new HashMap<>();
+	
+	static
+	{
+		defaultGavs.put( new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", null ), new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", "2.2-beta-5" ) );
+	}
 
 	public Set<Gav> getPluginDependencies( Map<String, Profile> profiles, Log log )
 	{
@@ -225,8 +232,7 @@ public class Project
 			List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 			if( projectProfiles != null )
 			{
-				projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).filter( p -> p.getBuild() != null ).filter( p -> p.getBuild().getPlugins() != null ).map( p -> p.getBuild().getPlugins() ).forEach( plugins -> plugins.stream().forEach( plugin ->
-				{
+				projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).filter( p -> p.getBuild() != null ).filter( p -> p.getBuild().getPlugins() != null ).map( p -> p.getBuild().getPlugins() ).forEach( plugins -> plugins.stream().forEach( plugin -> {
 					Gav unresolvedGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
 					pluginDependencies.add( resolveGav( unresolvedGav, log ) );
 				} ) );
@@ -609,7 +615,7 @@ public class Project
 		return res;
 	}
 
-	public DependencyNode getDependencyTree( boolean full, boolean online, Map<String, Profile> profiles, Log log )
+	public DependencyNode getTransitiveDependencyTree( boolean full, boolean online, Map<String, Profile> profiles, Log log )
 	{
 		if( full && fullTree != null )
 			return fullTree;
@@ -634,12 +640,14 @@ public class Project
 		return rootNode;
 	}
 
-	@Override public String toString()
+	@Override
+	public String toString()
 	{
 		return getGav() + " (<i>" + pomFile.getAbsolutePath() + "</i>)";
 	}
 
-	@Override public int hashCode()
+	@Override
+	public int hashCode()
 	{
 		final int prime = 31;
 		int result = 1;
@@ -647,7 +655,8 @@ public class Project
 		return result;
 	}
 
-	@Override public boolean equals( Object obj )
+	@Override
+	public boolean equals( Object obj )
 	{
 		if( this == obj )
 			return true;
@@ -767,6 +776,8 @@ public class Project
 				continue;
 			for( Entry<DependencyKey, RawDependency> e : localDependencies.entrySet() )
 			{
+				System.out.println( e );
+				
 				DependencyKey dependencyKey = e.getKey();
 				RawDependency dependency = e.getValue();
 				if( dependency.isOptional() && !node.isRoot() )

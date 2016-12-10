@@ -227,7 +227,7 @@ public class ProjectsCommand
 	{
 		sb.append( "<div><div>transitive dependencies</div><div>" );
 
-		DependencyNode dependencyNode = project.getDependencyTree( true, online, profiles, log );
+		DependencyNode dependencyNode = project.getTransitiveDependencyTree( true, online, profiles, log );
 		Map<DependencyKey, DependencyNode> dependencies = new HashMap<>();
 		dependencyNode.visitDepth( n -> dependencies.put( n.getKey(), n ) );
 

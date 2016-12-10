@@ -27,6 +27,12 @@ public class PomAnalyzer
 {
 	private final static Set<String> IGNORED_DIRS = new HashSet<>( Arrays.asList( "target", "bin", "src", "node_modules", ".git", "war", "gwt-unitCache", ".idea", ".settings" ) );
 
+	/**
+	 * CURRENTLY
+	 * - listing pom files recursively (build the file set)
+	 * - read pom files () **PROBLEM: Also add them in the session's projects although the next processes might not work (fetching required dependencies and so
+	 * on...)**
+	 */
 	public void analyze( String directory, boolean verbose, boolean fetchMissingProjects, boolean online, String[] profilesId, Session session, Log log )
 	{
 		log.html( "analyzing '" + directory + "'<br/>" );
@@ -127,13 +133,15 @@ public class PomAnalyzer
 
 	public void addProjectToGraph( Project project, PomGraphWriteTransaction tx, boolean fetchMissingProjects, boolean online, Session session, Map<String, Profile> profiles, Log log )
 	{
+		System.out.println( "begin " + project );
+
 		tx.removeRelations( tx.relations( project.getGav() ) );
 
 		try
 		{
 			Gav gav = project.getGav();
 			Gav parentGav = project.getParent();
-			DependencyNode dependencyNode = project.getDependencyTree( false, online, profiles, log );
+			DependencyNode dependencyNode = project.getTransitiveDependencyTree( false, online, profiles, log );
 			Set<Gav> pluginDependencies = project.getPluginDependencies( profiles, log );
 
 			tx.addGav( gav );
@@ -157,6 +165,7 @@ public class PomAnalyzer
 
 			for( Gav pluginGav : pluginDependencies )
 			{
+				// TODO Should add resolved GAV plugin dependencies
 				tx.addGav( pluginGav );
 				tx.addRelation( new BuildDependencyRelation( gav, pluginGav ) );
 			}
@@ -166,6 +175,8 @@ public class PomAnalyzer
 			log.html( Tools.errorMessage( "Cannot add project " + project + " to graph. Cause: " + e.getMessage() ) );
 			Tools.logStacktrace( e, log );
 		}
+
+		System.out.println( "end" );
 	}
 
 	private boolean acceptedDir( String name )

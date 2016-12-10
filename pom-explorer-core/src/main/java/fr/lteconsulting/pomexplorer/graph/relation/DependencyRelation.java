@@ -22,7 +22,7 @@ public class DependencyRelation extends Relation
 	@Override
 	public String toString()
 	{
-		return source + "->" + dependency.toString();
+		return source + "--------->" + dependency.toString();
 	}
 
 	@Override
