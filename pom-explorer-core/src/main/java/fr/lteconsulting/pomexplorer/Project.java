@@ -9,11 +9,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
 
 import org.apache.maven.model.Exclusion;
@@ -32,9 +29,7 @@ import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.model.GroupArtifact;
 import fr.lteconsulting.pomexplorer.model.VersionScope;
 import fr.lteconsulting.pomexplorer.model.transitivity.DependencyManagement;
-import fr.lteconsulting.pomexplorer.model.transitivity.DependencyNode;
 import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
-import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
 
 /**
  * A POM project information
@@ -43,15 +38,25 @@ import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
  * <ol>
  * <li>raw : how the thing is declared in maven pom file
  * <li>declared : how the thing is declared with variables resolved
- * <li>local : how the thing is resolved with the local hierarchy (parents)
+ * <li>local : how the thing is resolved with the local hierarchy (parents+boms)
  * <li>transitive : how the thing is resolves including transitive dependency
  * processing
- *
- * @author Arnaud
+ * 
+ * 
+ * <ol>
+ * <li>Just reading the local pom file (Maybe required to read the parent chain to know the gav, ERROR if unable)
+ * <li>Reading the parents and BOMs if required => able to build the graph
+ * <li>Having access to the desired level of transitive dependencies (so need to fetch new projects)
+ * 
+ * <ol>
+ * <li>Local project information (without variable resolution) (many things can be null)
+ * <li>Hierarchical project information (with variable resolution) [project+ancestors+boms] (allow to resolve everything for the local project)
+ * <li>Transitive information [transitive projects] (allow to know a the transitive dependency tree)
  */
 public class Project
 {
-	private final Session session;
+	public static final Comparator<Project> alphabeticalComparator = Comparator.comparing( Project::toString );
+
 	private final File pomFile;
 	private final boolean isExternal;
 
@@ -64,19 +69,22 @@ public class Project
 	private Set<Dependency> dependencies;
 	private Set<Gav> pluginDependencies;
 
-	private DependencyNode partialTree = null;
-	private DependencyNode fullTree = null;
+	private Map<String, ValueResolution> cachedResolutions;
+	private Map<DependencyKey, DependencyManagement> cachedLocalDependencyManagement;
+	private static Map<Gav, Gav> defaultGavs = new HashMap<>();
 
-	public static final Comparator<Project> alphabeticalComparator = Comparator.comparing( Project::toString );
-
-	public Project( Session session, File pomFile, boolean isExternal )
+	static
 	{
-		this.session = session;
+		defaultGavs.put( new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", null ), new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", "2.2-beta-5" ) );
+	}
+
+	public Project( File pomFile, boolean isExternal )
+	{
 		this.pomFile = pomFile;
 		this.isExternal = isExternal;
 	}
 
-	public void initialize() throws Exception
+	public void readPomFile() throws Exception
 	{
 		project = readPomFile( pomFile );
 		if( project == null )
@@ -94,10 +102,10 @@ public class Project
 			parentGav = null;
 		}
 
-		String groupId = project.getGroupId() != null ? project.getGroupId() : getParent().getGroupId();
-		String version = project.getVersion() != null ? project.getVersion() : getParent().getVersion();
+		String groupId = project.getGroupId() != null ? project.getGroupId() : getParentGav().getGroupId();
+		String version = project.getVersion() != null ? project.getVersion() : getParentGav().getVersion();
 		if( "${parent.version}".equals( version ) )
-			version = getParent().getVersion();
+			version = getParentGav().getVersion();
 
 		gav = new Gav( groupId, project.getArtifactId(), version );
 
@@ -106,38 +114,6 @@ public class Project
 
 		properties = new HashMap<>();
 		project.getProperties().forEach( ( key, value ) -> properties.put( key.toString(), value.toString() ) );
-	}
-
-	public Gav getGav()
-	{
-		return gav;
-	}
-
-	public Gav getDeclaredGav()
-	{
-		return new Gav( project.getModel().getGroupId(), project.getModel().getArtifactId(), project.getModel().getVersion() );
-	}
-
-	public Gav getDeclaredParentGav()
-	{
-		Parent parent = project.getModel().getParent();
-		if( parent == null )
-			return null;
-
-		return new Gav( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
-	}
-
-	public Gav getParent()
-	{
-		return parentGav;
-	}
-
-	public Project getParentProject()
-	{
-		if( parentGav == null )
-			return null;
-
-		return session.projects().forGav( parentGav );
 	}
 
 	public File getPomFile()
@@ -150,12 +126,116 @@ public class Project
 		return project;
 	}
 
-	public Map<String, String> getProperties()
+	public boolean isBuildable()
+	{
+		return !isExternal && pomFile.getParentFile().toPath().resolve( "src" ).toFile().exists();
+	}
+
+	public Gav getRawGav()
+	{
+		return new Gav( project.getModel().getGroupId(), project.getModel().getArtifactId(), project.getModel().getVersion() );
+	}
+
+	public Gav getGav()
+	{
+		return gav;
+	}
+
+	public Gav getRawParentGav()
+	{
+		Parent parent = project.getModel().getParent();
+		if( parent == null )
+			return null;
+
+		return new Gav( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
+	}
+
+	public Gav getParentGav()
+	{
+		return parentGav;
+	}
+
+	public Map<String, String> getRawProperties()
 	{
 		return properties;
 	}
 
-	public Map<DependencyKey, Dependency> getDependencyManagement( Log log )
+	public String interpolateValue( String value, ProjectContainer projects, Log log )
+	{
+		ValueResolution res = interpolateValueEx( value, projects, log );
+		return res.resolved;
+	}
+
+	public ValueResolution interpolateValueEx( String value, ProjectContainer projects, Log log )
+	{
+		if( cachedResolutions != null && cachedResolutions.containsKey( value ) )
+			return cachedResolutions.get( value );
+	
+		ValueResolution res = new ValueResolution();
+		res.raw = value;
+	
+		if( value != null )
+		{
+			int start = value.indexOf( "${" );
+			int end = -1;
+			if( start >= 0 )
+			{
+				StringBuilder sb = new StringBuilder();
+	
+				while( start >= 0 )
+				{
+					if( start > end + 1 )
+						sb.append( value.substring( end + 1, start ) );
+	
+					end = value.indexOf( "}", start );
+	
+					String propertyReference = value.substring( start + 2, end );
+					String propertyResolved = resolveProperty( log, propertyReference, projects );
+					if( res.properties == null )
+						res.properties = new HashMap<>();
+					else
+						res.properties.size();
+					res.properties.put( propertyReference, propertyResolved );
+					sb.append( propertyResolved );
+					sb.append( value.substring( end + 1 ) );
+	
+					start = value.indexOf( "${", end + 1 );
+				}
+	
+				if( end < value.length() - 1 )
+					sb.append( value.substring( end + 1 ) );
+	
+				value = sb.toString();
+			}
+		}
+	
+		res.resolved = value;
+	
+		if( cachedResolutions == null )
+			cachedResolutions = new HashMap<>();
+		cachedResolutions.put( value, res );
+	
+		return res;
+	}
+
+	public Gav interpolateGav( Gav gav, ProjectContainer projects, Log log )
+	{
+		String groupId = interpolateValue( gav.getGroupId(), projects, log );
+		String artifactId = interpolateValue( gav.getArtifactId(), projects, log );
+		String version = interpolateValue( gav.getVersion(), projects, log );
+	
+		if( version == null )
+		{
+			log.html( Tools.warningMessage( "unspecified dependency version to " + groupId + ":" + artifactId + " in project '" + this.gav + "', check the pom file please" ) );
+	
+			// find a way to handle those versions :
+			// "org.apache.maven.plugins:maven-something-plugin":
+		}
+	
+		return new Gav( groupId, artifactId, version );
+	}
+
+	public Map<DependencyKey, Dependency> getInterpolatedDependencyManagement( ProjectContainer projects, Log log )
 	{
 		if( dependencyManagement == null )
 		{
@@ -165,12 +245,12 @@ public class Project
 			{
 				for( org.apache.maven.model.Dependency d : project.getDependencyManagement().getDependencies() )
 				{
-					String groupId = resolveValue( log, d.getGroupId() );
-					String artifactId = resolveValue( log, d.getArtifactId() );
-					String version = resolveValue( log, d.getVersion() );
-					Scope scope = Scope.fromString( resolveValue( log, d.getScope() ) );
-					String classifier = resolveValue( log, d.getClassifier() );
-					String type = resolveValue( log, d.getType() );
+					String groupId = interpolateValue( d.getGroupId(), projects, log );
+					String artifactId = interpolateValue( d.getArtifactId(), projects, log );
+					String version = interpolateValue( d.getVersion(), projects, log );
+					Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
+					String classifier = interpolateValue( d.getClassifier(), projects, log );
+					String type = interpolateValue( d.getType(), projects, log );
 
 					Gav dependencyGav = new Gav( groupId, artifactId, version );
 					Dependency dependency = new Dependency( dependencyGav, scope, classifier, type );
@@ -189,7 +269,7 @@ public class Project
 	 * @param log
 	 * @return
 	 */
-	public Set<Dependency> getDependencies( Log log )
+	public Set<Dependency> getInterpolatedDependencies( ProjectContainer projects, Log log )
 	{
 		if( dependencies == null )
 		{
@@ -197,27 +277,20 @@ public class Project
 
 			for( org.apache.maven.model.Dependency d : project.getDependencies() )
 			{
-				String groupId = resolveValue( log, d.getGroupId() );
-				String artifactId = resolveValue( log, d.getArtifactId() );
-				String version = resolveValue( log, d.getVersion() );
-				Scope scope = Scope.fromString( resolveValue( log, d.getScope() ) );
-				String classifier = resolveValue( log, d.getClassifier() );
-				String type = resolveValue( log, d.getType() );
+				String groupId = interpolateValue( d.getGroupId(), projects, log );
+				String artifactId = interpolateValue( d.getArtifactId(), projects, log );
+				String version = interpolateValue( d.getVersion(), projects, log );
+				Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
+				String classifier = interpolateValue( d.getClassifier(), projects, log );
+				String type = interpolateValue( d.getType(), projects, log );
 
 				dependencies.add( new Dependency( new Gav( groupId, artifactId, version ), scope, classifier, type ) );
 			}
 		}
 		return dependencies;
 	}
-	
-	private static Map<Gav, Gav> defaultGavs = new HashMap<>();
-	
-	static
-	{
-		defaultGavs.put( new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", null ), new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", "2.2-beta-5" ) );
-	}
 
-	public Set<Gav> getPluginDependencies( Map<String, Profile> profiles, Log log )
+	public Set<Gav> getInterpolatedPluginDependencies( Map<String, Profile> profiles, ProjectContainer projects, Log log )
 	{
 		if( pluginDependencies == null )
 		{
@@ -225,419 +298,21 @@ public class Project
 
 			for( Plugin plugin : project.getBuildPlugins() )
 			{
-				Gav unresolvedGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
-				pluginDependencies.add( resolveGav( unresolvedGav, log ) );
+				Gav rawGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
+				pluginDependencies.add( interpolateGav( rawGav, projects, log ) );
 			}
 
 			List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 			if( projectProfiles != null )
 			{
 				projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).filter( p -> p.getBuild() != null ).filter( p -> p.getBuild().getPlugins() != null ).map( p -> p.getBuild().getPlugins() ).forEach( plugins -> plugins.stream().forEach( plugin -> {
-					Gav unresolvedGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
-					pluginDependencies.add( resolveGav( unresolvedGav, log ) );
+					Gav ramGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
+					pluginDependencies.add( interpolateGav( ramGav, projects, log ) );
 				} ) );
 			}
 		}
 
 		return pluginDependencies;
-	}
-
-	public Project getPropertyDefinitionProject( String property )
-	{
-		if( property.startsWith( "project." ) )
-			return this;
-
-		if( properties.containsKey( property ) )
-			return this;
-
-		Project parentProject = null;
-		if( parentGav != null )
-			parentProject = session.projects().forGav( parentGav );
-
-		if( parentProject != null )
-		{
-			Project definition = parentProject.getPropertyDefinitionProject( property );
-			if( definition != null )
-				return definition;
-		}
-
-		return null;
-	}
-
-	private String resolveProperty( Log log, String propertyName )
-	{
-		PropertyLocation propertyDefinition = getPropertyDefinition( log, propertyName, true );
-		if( propertyDefinition == null )
-		{
-			if( log != null )
-				log.html( Tools.warningMessage( "cannot resolve property '" + propertyName + "' in project " + toString() ) );
-			else
-				System.out.println( "cannot resolve property '" + propertyName + "' in project " + toString() );
-			return null;
-		}
-
-		if( isMavenVariable( propertyDefinition.getPropertyValue() ) )
-			return propertyDefinition.getProject().resolveProperty( log, propertyDefinition.getPropertyValue() );
-
-		return propertyDefinition.getPropertyValue();
-	}
-
-	public static class ValueResolution
-	{
-		private String raw;
-		private String resolved;
-		private Map<String, String> properties;
-
-		public String getRaw()
-		{
-			return raw;
-		}
-
-		public String getResolved()
-		{
-			return resolved;
-		}
-
-		public Map<String, String> getProperties()
-		{
-			return properties;
-		}
-	}
-
-	private Map<String, ValueResolution> cachedResolutions;
-
-	public ValueResolution resolveValueEx( Log log, String value )
-	{
-		if( cachedResolutions != null && cachedResolutions.containsKey( value ) )
-			return cachedResolutions.get( value );
-
-		ValueResolution res = new ValueResolution();
-		res.raw = value;
-
-		if( value != null )
-		{
-			int start = value.indexOf( "${" );
-			int end = -1;
-			if( start >= 0 )
-			{
-				StringBuilder sb = new StringBuilder();
-
-				while( start >= 0 )
-				{
-					if( start > end + 1 )
-						sb.append( value.substring( end + 1, start ) );
-
-					end = value.indexOf( "}", start );
-
-					String propertyReference = value.substring( start + 2, end );
-					String propertyResolved = resolveProperty( log, propertyReference );
-					if( res.properties == null )
-						res.properties = new HashMap<>();
-					else
-						res.properties.size();
-					res.properties.put( propertyReference, propertyResolved );
-					sb.append( propertyResolved );
-					sb.append( value.substring( end + 1 ) );
-
-					start = value.indexOf( "${", end + 1 );
-				}
-
-				if( end < value.length() - 1 )
-					sb.append( value.substring( end + 1 ) );
-
-				value = sb.toString();
-			}
-		}
-
-		res.resolved = value;
-
-		if( cachedResolutions == null )
-			cachedResolutions = new HashMap<>();
-		cachedResolutions.put( value, res );
-
-		return res;
-	}
-
-	public String resolveValue( Log log, String value )
-	{
-		ValueResolution res = resolveValueEx( log, value );
-		return res.resolved;
-	}
-
-	public Gav resolveGav( Gav gav, Log log )
-	{
-		String groupId = resolveValue( log, gav.getGroupId() );
-		String artifactId = resolveValue( log, gav.getArtifactId() );
-		String version = resolveValue( log, gav.getVersion() );
-
-		if( version == null )
-		{
-			log.html( Tools.warningMessage( "unspecified dependency version to " + groupId + ":" + artifactId + " in project '" + this.gav + "', check the pom file please" ) );
-
-			// find a way to handle those versions :
-			// "org.apache.maven.plugins:maven-something-plugin":
-		}
-
-		return new Gav( groupId, artifactId, version );
-	}
-
-	public boolean isBuildable()
-	{
-		return !isExternal && pomFile.getParentFile().toPath().resolve( "src" ).toFile().exists();
-	}
-
-	public boolean fetchMissingGavsForResolution( boolean online, Log log, Set<Project> fetchedProjects )
-	{
-		boolean ok = true;
-
-		if( parentGav != null )
-		{
-			if( !session.projects().contains( parentGav ) )
-			{
-				Project parentProject = session.projects().fetchProject( parentGav, online, log );
-				if( parentProject != null )
-					fetchedProjects.add( parentProject );
-				if( parentProject == null || !parentProject.fetchMissingGavsForResolution( online, log, fetchedProjects ) )
-				{
-					ok = false;
-					log.html( Tools.errorMessage( "cannot resolve project " + toString() + " due to:<br/>&nbsp;&nbsp;&nbsp;missing parent project " + parentGav ) );
-				}
-			}
-		}
-
-		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
-		{
-			for( org.apache.maven.model.Dependency d : project.getDependencyManagement().getDependencies() )
-			{
-				if( "import".equals( d.getScope() ) && "pom".equals( d.getType() ) )
-				{
-					Gav bomGav = resolveGav( new Gav( d.getGroupId(), d.getArtifactId(), d.getVersion() ), log );
-					if( !session.projects().contains( bomGav ) )
-					{
-						Project bomProject = session.projects().fetchProject( bomGav, online, log );
-						if( bomProject != null )
-							fetchedProjects.add( bomProject );
-						if( bomProject == null || !bomProject.fetchMissingGavsForResolution( online, log, fetchedProjects ) )
-						{
-							ok = false;
-							log.html( Tools.errorMessage( "cannot resolve project " + toString() + " due to:<br/>&nbsp;&nbsp;&nbsp;missing bom import " + bomGav ) );
-						}
-					}
-				}
-			}
-		}
-
-		return ok;
-	}
-
-	private Map<DependencyKey, DependencyManagement> cachedLocalDependencyManagement;
-
-	public Map<DependencyKey, DependencyManagement> getLocalDependencyManagement( Map<DependencyKey, DependencyManagement> result, boolean online, Map<String, Profile> profiles, Log log )
-	{
-		if( result == null && cachedLocalDependencyManagement != null )
-			return cachedLocalDependencyManagement;
-
-		boolean storeInCache = result == null;
-
-		Project current = this;
-		while( current != null )
-		{
-			result = current.getDeclaredDependencyManagement( result, online, profiles, log );
-
-			current = current.getParentProject( online, log );
-		}
-
-		if( storeInCache )
-			cachedLocalDependencyManagement = result;
-
-		return result;
-	}
-
-	private Map<DependencyKey, DependencyManagement> completeDependencyManagementMap( Map<DependencyKey, DependencyManagement> result, List<org.apache.maven.model.Dependency> dependencies, boolean online, Map<String, Profile> profiles, Log log )
-	{
-		if( dependencies != null )
-		{
-			for( org.apache.maven.model.Dependency d : dependencies )
-			{
-				String groupId = resolveValue( log, d.getGroupId() );
-				String artifactId = resolveValue( log, d.getArtifactId() );
-				String version = resolveValue( log, d.getVersion() );
-				Scope scope = Scope.fromString( resolveValue( log, d.getScope() ) );
-				String classifier = resolveValue( log, d.getClassifier() );
-				String type = resolveValue( log, d.getType() );
-
-				assert groupId != null;
-				assert artifactId != null;
-				assert type != null;
-
-				DependencyKey key = new DependencyKey( groupId, artifactId, classifier, type );
-				if( result != null && result.containsKey( key ) )
-					continue;
-
-				if( scope == Scope.IMPORT )
-				{
-					// importer le bom
-					assert version != null;
-
-					Project bomProject = session.projects().fetchProject( new Gav( groupId, artifactId, version ), online, log );
-					if( bomProject == null )
-					{
-						log.html( Tools.errorMessage( "cannot fetch the project " + groupId + ":" + artifactId + ":" + version + ", dependency resolution won't be exact" ) );
-						continue;
-					}
-					result = bomProject.getLocalDependencyManagement( result, online, profiles, log );
-				}
-
-				DependencyManagement mngt = new DependencyManagement( new VersionScope( version, scope ) );
-
-				if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
-				{
-					for( Exclusion exclusion : d.getExclusions() )
-					{
-						String excludedGroupId = resolveValue( log, exclusion.getGroupId() );
-						String excludedArtifactId = resolveValue( log, exclusion.getArtifactId() );
-						mngt.addExclusion( new GroupArtifact( excludedGroupId, excludedArtifactId ) );
-					}
-				}
-
-				if( result == null )
-					result = new HashMap<>();
-				result.put( key, mngt );
-			}
-		}
-
-		return result;
-	}
-
-	public Map<DependencyKey, DependencyManagement> getDeclaredDependencyManagement( Map<DependencyKey, DependencyManagement> dependencyMap, boolean online, Map<String, Profile> profiles, Log log )
-	{
-		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
-		{
-			if( dependencyMap != null )
-				dependencyMap.putAll( completeDependencyManagementMap( dependencyMap, project.getDependencyManagement().getDependencies(), online, profiles, log ) );
-		}
-
-		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
-		if( projectProfiles != null && dependencyMap != null )
-		{
-			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).filter( p -> p.getDependencyManagement() != null ).filter( p -> p.getDependencyManagement().getDependencies() != null ).map( p -> p.getDependencyManagement().getDependencies() )
-					.map( dependencies -> completeDependencyManagementMap( dependencyMap, dependencies, online, profiles, log ) ).forEach( dependencyMap::putAll );
-		}
-
-		return dependencyMap;
-	}
-
-	public Map<DependencyKey, RawDependency> getLocalDependencies( Map<DependencyKey, RawDependency> res, boolean online, Map<String, Profile> profiles, Log log )
-	{
-		Project current = this;
-
-		while( current != null )
-		{
-			res = current.getDeclaredDependencies( res, profiles, log );
-
-			current = current.getParentProject( online, log );
-		}
-
-		return res;
-	}
-
-	public Map<DependencyKey, RawDependency> getRawDependencies()
-	{
-		Map<DependencyKey, RawDependency> res = new HashMap<>();
-
-		for( org.apache.maven.model.Dependency d : getMavenProject().getDependencies() )
-		{
-			DependencyKey key = new DependencyKey( d.getGroupId(), d.getArtifactId(), d.getClassifier(), d.getType() );
-
-			RawDependency raw = new RawDependency( new VersionScope( d.getVersion(), Scope.fromString( d.getScope() ) ), d.isOptional() );
-			if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
-			{
-				for( Exclusion exclusion : d.getExclusions() )
-					raw.addExclusion( new GroupArtifact( exclusion.getGroupId(), exclusion.getArtifactId() ) );
-			}
-
-			res.put( key, raw );
-		}
-
-		return res;
-	}
-
-	private Map<DependencyKey, RawDependency> completeDependenciesMap( Map<DependencyKey, RawDependency> res, List<org.apache.maven.model.Dependency> dependencies, Log log )
-	{
-		if( dependencies != null )
-		{
-			for( org.apache.maven.model.Dependency d : dependencies )
-			{
-				String groupId = resolveValue( log, d.getGroupId() );
-				String artifactId = resolveValue( log, d.getArtifactId() );
-				String version = resolveValue( log, d.getVersion() );
-				Scope scope = Scope.fromString( resolveValue( log, d.getScope() ) );
-				String classifier = resolveValue( log, d.getClassifier() );
-				String type = resolveValue( log, d.getType() );
-
-				DependencyKey key = new DependencyKey( groupId, artifactId, classifier, type );
-				if( res != null && res.containsKey( key ) )
-					continue;
-
-				RawDependency raw = new RawDependency( new VersionScope( version, scope ), d.isOptional() );
-				if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
-				{
-					for( Exclusion exclusion : d.getExclusions() )
-					{
-						String excludedGroupId = resolveValue( log, exclusion.getGroupId() );
-						String excludedArtifactId = resolveValue( log, exclusion.getArtifactId() );
-						raw.addExclusion( new GroupArtifact( excludedGroupId, excludedArtifactId ) );
-					}
-				}
-
-				if( res == null )
-					res = new HashMap<>();
-				res.put( key, raw );
-			}
-		}
-		return res;
-	}
-
-	public Map<DependencyKey, RawDependency> getDeclaredDependencies( Map<DependencyKey, RawDependency> res, Map<String, Profile> profiles, Log log )
-	{
-		if( res == null )
-			res = new HashMap<>();
-
-		res = completeDependenciesMap( res, getMavenProject().getDependencies(), log );
-		Map<DependencyKey, RawDependency> fRes = res;
-
-		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
-		if( projectProfiles != null )
-		{
-			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), log ) );
-		}
-
-		return res;
-	}
-
-	public DependencyNode getTransitiveDependencyTree( boolean full, boolean online, Map<String, Profile> profiles, Log log )
-	{
-		if( full && fullTree != null )
-			return fullTree;
-
-		if( !full && partialTree != null )
-			return partialTree;
-
-		Queue<DependencyNode> nodeQueue = new LinkedList<>();
-
-		DependencyKey gact = new DependencyKey( gav.getGroupId(), gav.getArtifactId(), null, project.getPackaging() );
-		VersionScope vs = new VersionScope( gav.getVersion(), Scope.COMPILE );
-
-		DependencyNode rootNode = new DependencyNode( this, gact, vs );
-		nodeQueue.add( rootNode );
-		buildDependencyTree( nodeQueue, full, online, session, profiles, log );
-
-		if( full )
-			fullTree = rootNode;
-		else
-			partialTree = rootNode;
-
-		return rootNode;
 	}
 
 	@Override
@@ -675,7 +350,245 @@ public class Project
 		return true;
 	}
 
-	private PropertyLocation getPropertyDefinition( Log log, String propertyName, boolean online )
+	public Map<DependencyKey, DependencyManagement> getHierarchicalDependencyManagement( Map<DependencyKey, DependencyManagement> result, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	{
+		if( cachedLocalDependencyManagement != null )
+		{
+			if( result == null )
+				result = new HashMap<>();
+	
+			result.putAll( cachedLocalDependencyManagement );
+	
+			return result;
+		}
+	
+		boolean storeInCache = result == null;
+	
+		Project current = this;
+		while( current != null )
+		{
+			result = current.getInterpolatedDependencyManagementWithBomImport( result, profiles, projects, log );
+	
+			current = projects.getParentProject( current );
+		}
+	
+		if( storeInCache )
+			cachedLocalDependencyManagement = result;
+	
+		return result;
+	}
+
+	/**
+	 * TODO should use depmngt from the parent to resolve values if missing
+	 */
+	private Map<DependencyKey, DependencyManagement> getInterpolatedDependencyManagementWithBomImport( Map<DependencyKey, DependencyManagement> dependencyMap, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	{
+		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
+		{
+			if( dependencyMap == null )
+				dependencyMap = new HashMap<>();
+
+			completeDependencyManagementMap( dependencyMap, project.getDependencyManagement().getDependencies(), profiles, projects, log );
+		}
+
+		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
+		if( projectProfiles != null )
+		{
+			if( dependencyMap == null )
+				dependencyMap = new HashMap<>();
+
+			final Map<DependencyKey, DependencyManagement> dependencyMapFinal = dependencyMap;
+
+			projectProfiles.stream()
+					.filter( p -> isProfileActivated( profiles, p ) )
+					.filter( p -> p.getDependencyManagement() != null )
+					.filter( p -> p.getDependencyManagement().getDependencies() != null )
+					.map( p -> p.getDependencyManagement().getDependencies() )
+					.map( dependencies -> completeDependencyManagementMap( dependencyMapFinal, dependencies, profiles, projects, log ) );
+		}
+
+		return dependencyMap;
+	}
+
+	public Map<DependencyKey, RawDependency> getLocalDependencies( Map<DependencyKey, RawDependency> res, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	{
+		res = completeDependenciesMap( res, getMavenProject().getDependencies(), profiles, projects, log );
+		Map<DependencyKey, RawDependency> fRes = res;
+
+		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
+		if( projectProfiles != null )
+			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), profiles, projects, log ) );
+
+		return res;
+	}
+
+	private Map<DependencyKey, RawDependency> completeDependenciesMap( Map<DependencyKey, RawDependency> res, List<org.apache.maven.model.Dependency> dependencies, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	{
+		if( dependencies != null )
+		{
+			for( org.apache.maven.model.Dependency d : dependencies )
+			{
+				String groupId = interpolateValue( d.getGroupId(), projects, log );
+				String artifactId = interpolateValue( d.getArtifactId(), projects, log );
+				String classifier = interpolateValue( d.getClassifier(), projects, log );
+				String type = interpolateValue( d.getType(), projects, log );
+
+				DependencyKey key = new DependencyKey( groupId, artifactId, classifier, type );
+				if( res != null && res.containsKey( key ) )
+					continue;
+
+				String version = interpolateValue( d.getVersion(), projects, log );
+				Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
+
+				if( version == null || scope == null )
+				{
+					Map<DependencyKey, DependencyManagement> mngt = getHierarchicalDependencyManagement( null, profiles, projects, log );
+					DependencyManagement dm = mngt.get( key );
+					if( version == null && dm == null )
+						log.html( Tools.warningMessage( "Missing version and version not found in depencency management for dependency to " + key + " in project " + this ) );
+
+					if( version == null )
+						version = dm.getVs().getVersion();
+
+					if( scope == null )
+						scope = dm != null ? dm.getVs().getScope() : Scope.COMPILE;
+				}
+
+				RawDependency raw = new RawDependency( new VersionScope( version, scope ), d.isOptional() );
+				if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
+				{
+					for( Exclusion exclusion : d.getExclusions() )
+					{
+						String excludedGroupId = interpolateValue( exclusion.getGroupId(), projects, log );
+						String excludedArtifactId = interpolateValue( exclusion.getArtifactId(), projects, log );
+						raw.addExclusion( new GroupArtifact( excludedGroupId, excludedArtifactId ) );
+					}
+				}
+
+				if( res == null )
+					res = new HashMap<>();
+				res.put( key, raw );
+			}
+		}
+		return res;
+	}
+
+	/**
+	 * For the dependencies given,
+	 * 
+	 * <p>
+	 * if they are not already present in the map,
+	 * <ul>
+	 * <li>interpolate,
+	 * <li>if it is a bom import, import it as well
+	 */
+	private Map<DependencyKey, DependencyManagement> completeDependencyManagementMap( Map<DependencyKey, DependencyManagement> result, List<org.apache.maven.model.Dependency> dependencies, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	{
+		if( dependencies != null )
+		{
+			List<Gav> importedBoms = new ArrayList<>();
+
+			for( org.apache.maven.model.Dependency d : dependencies )
+			{
+				String groupId = interpolateValue( d.getGroupId(), projects, log );
+				String artifactId = interpolateValue( d.getArtifactId(), projects, log );
+				String version = interpolateValue( d.getVersion(), projects, log );
+				Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
+				String classifier = interpolateValue( d.getClassifier(), projects, log );
+				String type = interpolateValue( d.getType(), projects, log );
+
+				assert groupId != null;
+				assert artifactId != null;
+				assert type != null;
+
+				DependencyKey key = new DependencyKey( groupId, artifactId, classifier, type );
+				if( result != null && result.containsKey( key ) )
+					continue;
+
+				if( scope == Scope.IMPORT )
+				{
+					assert version != null;
+
+					importedBoms.add( new Gav( groupId, artifactId, version ) );
+				}
+
+				DependencyManagement mngt = new DependencyManagement( new VersionScope( version, scope ) );
+
+				if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
+				{
+					for( Exclusion exclusion : d.getExclusions() )
+					{
+						String excludedGroupId = interpolateValue( exclusion.getGroupId(), projects, log );
+						String excludedArtifactId = interpolateValue( exclusion.getArtifactId(), projects, log );
+						mngt.addExclusion( new GroupArtifact( excludedGroupId, excludedArtifactId ) );
+					}
+				}
+
+				if( result == null )
+					result = new HashMap<>();
+
+				result.put( key, mngt );
+			}
+
+			for( Gav bomGav : importedBoms )
+			{
+				Project bomProject = projects.forGav( bomGav );
+				if( bomProject == null )
+				{
+					log.html( Tools.errorMessage( "missing project " + bomGav + ", dependency management resolution won't be exact" ) );
+					continue;
+				}
+
+				result = bomProject.getHierarchicalDependencyManagement( result, profiles, projects, log );
+			}
+		}
+
+		return result;
+	}
+
+	private MavenProject readPomFile( File pom )
+	{
+		try( FileReader reader = new FileReader( pom ) )
+		{
+			MavenXpp3Reader mavenReader = new MavenXpp3Reader();
+			Model model = mavenReader.read( reader );
+			model.setPomFile( pom );
+
+			return new MavenProject( model );
+		}
+		catch( IOException | XmlPullParserException e )
+		{
+			return null;
+		}
+	}
+
+	private boolean isProfileActivated( Map<String, Profile> profiles, org.apache.maven.model.Profile p )
+	{
+		if( profiles == null )
+			return false;
+
+		return profiles.keySet().contains( p.getId() ) || (p.getActivation() != null && p.getActivation().isActiveByDefault());
+	}
+
+	private String resolveProperty( Log log, String propertyName, ProjectContainer projects )
+	{
+		PropertyLocation propertyDefinition = getPropertyDefinition( log, propertyName, true, projects );
+		if( propertyDefinition == null )
+		{
+			if( log != null )
+				log.html( Tools.warningMessage( "cannot resolve property '" + propertyName + "' in project " + toString() ) );
+			else
+				System.out.println( "cannot resolve property '" + propertyName + "' in project " + toString() );
+			return null;
+		}
+
+		if( isMavenVariable( propertyDefinition.getPropertyValue() ) )
+			return propertyDefinition.getProject().resolveProperty( log, propertyDefinition.getPropertyValue(), projects );
+
+		return propertyDefinition.getPropertyValue();
+	}
+
+	private PropertyLocation getPropertyDefinition( Log log, String propertyName, boolean online, ProjectContainer projects )
 	{
 		String originalRequestedPropertyName = propertyName;
 
@@ -721,16 +634,13 @@ public class Project
 
 		if( parentGav != null )
 		{
-			Project parentProject = session.projects().forGav( parentGav );
-			if( parentProject == null )
-				parentProject = session.projects().fetchProject( parentGav, online, log );
-
+			Project parentProject = projects.forGav( parentGav );
 			if( parentProject != null )
 			{
 				if( propertyName.startsWith( "project.parent." ) )
 					propertyName = propertyName.replace( "project.parent.", "project." );
 
-				return parentProject.getPropertyDefinition( log, propertyName, online );
+				return parentProject.getPropertyDefinition( log, propertyName, online, projects );
 			}
 			else
 			{
@@ -739,200 +649,5 @@ public class Project
 		}
 
 		return null;
-	}
-
-	private MavenProject readPomFile( File pom )
-	{
-		try( FileReader reader = new FileReader( pom ) )
-		{
-			MavenXpp3Reader mavenReader = new MavenXpp3Reader();
-			Model model = mavenReader.read( reader );
-			model.setPomFile( pom );
-
-			return new MavenProject( model );
-		}
-		catch( IOException | XmlPullParserException e )
-		{
-			return null;
-		}
-	}
-
-	private void buildDependencyTree( Queue<DependencyNode> nodeQueue, boolean full, boolean online, Session session, Map<String, Profile> profiles, Log log )
-	{
-		int neededLevels = full ? -1 : 1;
-
-		while( !nodeQueue.isEmpty() )
-		{
-			DependencyNode node = nodeQueue.poll();
-
-			if( neededLevels >= 0 && node.getLevel() >= neededLevels )
-				continue;
-
-			node.collectDependencyManagement( online, profiles, log );
-
-			Map<DependencyKey, RawDependency> localDependencies = node.getProject().getLocalDependencies( null, online, profiles, log );
-
-			if( localDependencies == null )
-				continue;
-			for( Entry<DependencyKey, RawDependency> e : localDependencies.entrySet() )
-			{
-				System.out.println( e );
-				
-				DependencyKey dependencyKey = e.getKey();
-				RawDependency dependency = e.getValue();
-				if( dependency.isOptional() && !node.isRoot() )
-					continue;
-
-				GroupArtifact ga = new GroupArtifact( dependencyKey.getGroupId(), dependencyKey.getArtifactId() );
-				if( isGroupArtifactExcluded( node, ga ) )
-					continue;
-
-				DependencyNode existingNode = node.searchNodeForGroupArtifact( ga );
-				if( existingNode != null )
-				{
-					if( existingNode.getLevel() <= node.getLevel() + 1 )
-						continue;
-					else
-						existingNode.removeFromParent();
-				}
-
-				String version = null;
-				Scope scope = null;
-
-				DependencyManagement dependencyManagement = node.getTopLevelManagement( dependencyKey );
-				DependencyManagement localManagement = node.getLocalManagement( dependencyKey );
-				if( dependencyManagement != null && dependencyManagement.getVs().getVersion() != null )
-				{
-					// si le top level management est le notre, c'est la version
-					// déclarée qui prend le pas
-					if( dependencyManagement == localManagement && dependency.getVs().getVersion() != null )
-						version = dependency.getVs().getVersion();
-					else
-						version = dependencyManagement.getVs().getVersion();
-				}
-				else
-				{
-					version = dependency.getVs().getVersion();
-				}
-
-				if( dependencyManagement != null && dependencyManagement.getVs().getScope() != null )
-				{
-					if( dependencyManagement == localManagement && dependency.getVs().getScope() != null )
-						scope = dependency.getVs().getScope();
-					else
-						scope = dependencyManagement.getVs().getScope();
-				}
-				else
-				{
-					if( node.isRoot() )
-					{
-						scope = dependency.getVs().getScope();
-						if( scope == null )
-							scope = Scope.COMPILE;
-					}
-					else
-					{
-						scope = Scope.getScopeTransformation( node.getVs().getScope(), dependency.getVs().getScope() );
-						if( scope == null )
-							continue;
-					}
-				}
-
-				assert scope != null;
-				assert version != null;
-
-				if( scope == Scope.IMPORT || scope == Scope.SYSTEM )
-					continue;
-
-				// get remote repositories
-				List<Repository> additionalRepos = node.getProject().getProjectRepositories( log );
-
-				Gav dependencyGav = new Gav( dependencyKey.getGroupId(), dependencyKey.getArtifactId(), version );
-
-				Project childProject = null;
-
-				if( neededLevels < 0 || node.getLevel() >= neededLevels )
-				{
-					childProject = session.projects().fetchProject( dependencyGav, online, additionalRepos, log );
-					if( childProject == null )
-					{
-						// TODO : use specified repositories if needed !
-						if( dependency.isOptional() )
-							log.html( Tools.warningMessage( "cannot fetch project " + dependencyGav + " referenced in " + node.getProject() + " (this is an optional dependency)" ) );
-						else
-							log.html( Tools.errorMessage( "cannot fetch project " + dependencyGav + " referenced in " + node.getProject() ) );
-						continue;
-					}
-				}
-
-				DependencyNode child = new DependencyNode( childProject, dependencyKey, new VersionScope( version, scope ) );
-				child.addExclusions( dependency.getExclusions() );
-
-				node.addChild( child );
-
-				DependencyManagement dm = node.getLocalManagement( dependencyKey );
-				if( dm != null )
-					child.addExclusions( dm.getExclusions() );
-
-				if( scope == Scope.SYSTEM )
-					continue;
-
-				// TODO it seems to me that transitive dependency policy only
-				// applies to jar artifacts, is that true ??
-				// if( "jar".equals( dependencyKey.getType() ) )
-				nodeQueue.add( child );
-			}
-		}
-	}
-
-	private List<Repository> getProjectRepositories( Log log )
-	{
-		List<Repository> res = null;
-
-		Project current = this;
-		while( current != null )
-		{
-			if( current.project.getRepositories() != null && !current.project.getRepositories().isEmpty() )
-			{
-				if( res == null )
-					res = new ArrayList<>();
-
-				for( org.apache.maven.model.Repository r : current.project.getRepositories() )
-				{
-					res.add( new Repository( r.getId(), r.getUrl() ) );
-				}
-			}
-			current = current.getParentProject( true, log );
-		}
-
-		return res;
-	}
-
-	private boolean isGroupArtifactExcluded( DependencyNode node, GroupArtifact ga )
-	{
-		while( node != null )
-		{
-			if( node.isExcluded( ga ) )
-				return true;
-			node = node.getParent();
-		}
-
-		return false;
-	}
-
-	private Project getParentProject( boolean online, Log log )
-	{
-		if( parentGav == null )
-			return null;
-
-		return session.projects().fetchProject( parentGav, online, log );
-	}
-
-	private boolean isProfileActivated( Map<String, Profile> profiles, org.apache.maven.model.Profile p )
-	{
-		if( profiles == null )
-			return false;
-
-		return profiles.keySet().contains( p.getId() ) || (p.getActivation() != null && p.getActivation().isActiveByDefault());
 	}
 }

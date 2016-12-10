@@ -2,6 +2,7 @@ package fr.lteconsulting.pomexplorer.change.project.processor;
 
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.ProjectContainer;
 import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.change.ChangeProcessor;
@@ -28,7 +29,7 @@ public class FollowVariableProcessor implements ChangeProcessor<ProjectChange>
 			}
 
 			String propertyName = Tools.getPropertyNameFromPropertyReference( currentValue );
-			Project definitionProject = change.getProject().getPropertyDefinitionProject( propertyName );
+			Project definitionProject = getPropertyDefinitionProject( change.getProject(), session.projects(), propertyName );
 			if( definitionProject == null )
 			{
 				log.html( Tools.warningMessage( "cannot find where the property " + currentValue + " is defined ! abandonning change" ) );
@@ -37,5 +38,27 @@ public class FollowVariableProcessor implements ChangeProcessor<ProjectChange>
 
 			changeSet.addChange( SetPropertyCaller.withProject( definitionProject ).withPropertyName( propertyName ).withNewValue( change.getNewValue() ).call() );
 		}
+	}
+
+	private Project getPropertyDefinitionProject( Project project, ProjectContainer projects, String property )
+	{
+		if( property.startsWith( "project." ) )
+			return project;
+
+		if( project.getRawProperties().containsKey( property ) )
+			return project;
+
+		Project parentProject = null;
+		if( project.getParentGav() != null )
+			parentProject = projects.forGav( project.getParentGav() );
+
+		if( parentProject != null )
+		{
+			Project definition = getPropertyDefinitionProject( parentProject, projects, property );
+			if( definition != null )
+				return definition;
+		}
+
+		return null;
 	}
 }

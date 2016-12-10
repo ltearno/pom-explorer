@@ -55,21 +55,21 @@ public class ProjectDto
 		dto.description = mavenProject.getDescription();
 		dto.file = project.getPomFile().getAbsolutePath();
 		dto.scm = mavenProject.getScm() != null ? mavenProject.getScm().getUrl() : null;
-		dto.properties = project.getProperties();
+		dto.properties = project.getRawProperties();
 		dto.parentChain = getParentChain( session, project );
 		dto.references = getReferences( session, project );
 
 		StringBuilder sb = new StringBuilder();
-		ProjectTools.showDependencyManagement( project, sb, null );
+		ProjectTools.showDependencyManagement( project, sb, session.projects(), null );
 		dto.dependencyManagement = sb.toString();
 		sb = new StringBuilder();
-		ProjectTools.showPluginManagement( project, sb, null );
+		ProjectTools.showPluginManagement( project, sb, session.projects(), null );
 		dto.pluginManagement = sb.toString();
 		sb = new StringBuilder();
-		ProjectTools.showDependencies( project, sb, null );
+		ProjectTools.showDependencies( project, sb, session.projects(), null );
 		dto.dependencies = sb.toString();
 		sb = new StringBuilder();
-		ProjectTools.showPlugins( project, sb, null );
+		ProjectTools.showPlugins( project, sb, session.projects(), null );
 		dto.plugins = sb.toString();
 
 		return dto;
@@ -98,7 +98,7 @@ public class ProjectDto
 
 		do
 		{
-			project = project.getParentProject();
+			project = session.session().projects().getParentProject( project );
 			if( project != null )
 				res.add( project.getGav().toString() );
 		}

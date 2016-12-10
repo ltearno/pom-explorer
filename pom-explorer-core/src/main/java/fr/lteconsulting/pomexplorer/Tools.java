@@ -54,7 +54,7 @@ public class Tools
 
 	public static String logMessage( String message )
 	{
-		return "<span style=''>" + message + "</span><br/>";
+		return "<span>" + message + "</span><br/>";
 	}
 
 	public static String warningMessage( String message )

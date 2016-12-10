@@ -11,6 +11,7 @@ import fr.lteconsulting.hexa.client.tools.Action1;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Profile;
 import fr.lteconsulting.pomexplorer.Project;
+import fr.lteconsulting.pomexplorer.ProjectContainer;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.GroupArtifact;
 import fr.lteconsulting.pomexplorer.model.VersionScope;
@@ -34,9 +35,9 @@ public class DependencyNode
 		this.vs = vs;
 	}
 
-	public void collectDependencyManagement( boolean online, Map<String, Profile> profiles, Log log )
+	public void collectDependencyManagement( Map<String, Profile> profiles, ProjectContainer projects, Log log )
 	{
-		dependencyManagement = project.getLocalDependencyManagement( null, online, profiles, log );
+		dependencyManagement = project.getHierarchicalDependencyManagement( null, profiles, projects, log );
 	}
 
 	public DependencyKey getKey()

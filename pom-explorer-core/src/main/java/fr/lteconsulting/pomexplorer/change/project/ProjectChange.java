@@ -1,6 +1,9 @@
 package fr.lteconsulting.pomexplorer.change.project;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.maven.model.Exclusion;
 
 import fr.lteconsulting.Mandatory;
 import fr.lteconsulting.UseBuilderGenerator;
@@ -12,9 +15,11 @@ import fr.lteconsulting.pomexplorer.change.project.Location.Parent;
 import fr.lteconsulting.pomexplorer.change.project.Location.Plugin;
 import fr.lteconsulting.pomexplorer.change.project.Location.PluginManagement;
 import fr.lteconsulting.pomexplorer.change.project.Location.Property;
+import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.model.GroupArtifact;
+import fr.lteconsulting.pomexplorer.model.VersionScope;
 import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
 
 public class ProjectChange extends Change
@@ -99,7 +104,7 @@ public class ProjectChange extends Change
 			@Override
 			public String visit( Dependency dependency )
 			{
-				Map<DependencyKey, RawDependency> deps = project.getRawDependencies();
+				Map<DependencyKey, RawDependency> deps = getRawDependencies( project );
 				DependencyKey key = dependency.getKey();
 
 				RawDependency dep = deps.get( key );
@@ -112,21 +117,42 @@ public class ProjectChange extends Change
 			@Override
 			public String visit( Property property )
 			{
-				return project.getProperties().get( nodeName );
+				return project.getRawProperties().get( nodeName );
 			}
 
 			@Override
 			public String visit( fr.lteconsulting.pomexplorer.change.project.Location.Project project )
 			{
-				Gav gav = ProjectChange.this.project.getDeclaredGav();
+				Gav gav = ProjectChange.this.project.getRawGav();
 				return getGavValue( gav, nodeName );
 			}
 
 			@Override
 			public String visit( Parent parent )
 			{
-				Gav gav = ProjectChange.this.project.getDeclaredParentGav();
+				Gav gav = ProjectChange.this.project.getRawParentGav();
 				return getGavValue( gav, nodeName );
+			}
+
+			private Map<DependencyKey, RawDependency> getRawDependencies( Project project )
+			{
+				Map<DependencyKey, RawDependency> res = new HashMap<>();
+
+				for( org.apache.maven.model.Dependency d : project.getMavenProject().getDependencies() )
+				{
+					DependencyKey key = new DependencyKey( d.getGroupId(), d.getArtifactId(), d.getClassifier(), d.getType() );
+
+					RawDependency raw = new RawDependency( new VersionScope( d.getVersion(), Scope.fromString( d.getScope() ) ), d.isOptional() );
+					if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
+					{
+						for( Exclusion exclusion : d.getExclusions() )
+							raw.addExclusion( new GroupArtifact( exclusion.getGroupId(), exclusion.getArtifactId() ) );
+					}
+
+					res.put( key, raw );
+				}
+
+				return res;
 			}
 		} );
 	}

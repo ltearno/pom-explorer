@@ -1,13 +1,16 @@
 package fr.lteconsulting.pomexplorer.commands;
 
-import fr.lteconsulting.pomexplorer.Client;
-import fr.lteconsulting.pomexplorer.Log;
-import fr.lteconsulting.pomexplorer.PomAnalyzer;
-import fr.lteconsulting.pomexplorer.Project;
+import java.io.File;
+import java.util.Set;
+
 import fr.lteconsulting.pomexplorer.ApplicationSession;
+import fr.lteconsulting.pomexplorer.Client;
+import fr.lteconsulting.pomexplorer.DefaultPomFileLoader;
+import fr.lteconsulting.pomexplorer.Log;
+import fr.lteconsulting.pomexplorer.PomAnalysis;
+import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.Tools;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
-import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.tools.FilteredGAVs;
 
@@ -49,32 +52,50 @@ public class GavCommand
 	public void add( ApplicationSession session, Log log, Client client, Gav gav )
 	{
 		log.html( "analyzing " + gav + "...<br/>" );
-		PomAnalyzer analyzer = new PomAnalyzer();
-		Project project = analyzer.fetchGavWithMaven( session.session(), log, gav, true );
-		if( project == null )
+		DefaultPomFileLoader loader = new DefaultPomFileLoader( session.session(), true );
+
+		File pomFile = loader.loadPomFileForGav( gav, null, log );
+		if( pomFile == null )
 		{
 			log.html( Tools.errorMessage( "cannot fetch project " + gav ) );
+			return;
 		}
-		else
-		{
-			log.html( "project " + project + " fetched successfully.<br/>" );
-			PomGraphWriteTransaction tx = session.graph().write();
-			analyzer.addProjectToGraph( project, tx, true, true, session.session(), null, log );
-			tx.commit();
-		}
+
+		PomAnalysis analysis = new PomAnalysis( session.session(), loader, null, false, log );
+		analysis.addFile( pomFile );
+		analysis.loadProjects();
+		analysis.completeLoadedProjects();
+		analysis.addCompletedProjectsToSession();
+		Set<Project> addedToGraph = analysis.addCompletedProjectsToGraph();
+
+		log.html( "project " + gav + " fetched successfully, " + addedToGraph.size() + " project added to graph.<br/>" );
 	}
 
 	@Help( "analyze gavs which have no associated project" )
 	public void resolve( ApplicationSession session, Log log, Client client )
 	{
-		PomGraphReadTransaction tx = session.graph().read();
-		PomAnalyzer analyzer = new PomAnalyzer();
+		DefaultPomFileLoader loader = new DefaultPomFileLoader( session.session(), true );
 
-		tx.gavs().stream().filter( gav -> session.projects().forGav( gav ) == null ).forEach( gav -> {
-			log.html( "analyzing " + gav + "...<br/>" );
-			analyzer.fetchGavWithMaven( session.session(), log, gav, true );
+		PomAnalysis analysis = new PomAnalysis( session.session(), loader, null, false, log );
+
+		session.graph().read().gavs().stream().filter( gav -> session.projects().forGav( gav ) == null ).forEach( gav -> {
+			log.html( "fetching pom file for " + gav + "...<br/>" );
+
+			File pomFile = loader.loadPomFileForGav( gav, null, log );
+			if( pomFile == null )
+			{
+				log.html( Tools.errorMessage( "cannot fetch project " + gav ) );
+				return;
+			}
+
+			analysis.addFile( pomFile );
 		} );
 
-		log.html( "finished !<br/>" );
+		analysis.loadProjects();
+		analysis.completeLoadedProjects();
+		analysis.addCompletedProjectsToSession();
+		Set<Project> addedToGraph = analysis.addCompletedProjectsToGraph();
+
+		log.html( "finished, " + addedToGraph.size() + " project added to graph.<br/>" );
 	}
 }

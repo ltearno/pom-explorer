@@ -16,10 +16,12 @@ import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 
 import fr.lteconsulting.pomexplorer.ApplicationSession;
+import fr.lteconsulting.pomexplorer.DefaultPomFileLoader;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Profile;
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.ProjectTools;
+import fr.lteconsulting.pomexplorer.TransitivityResolver;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.graph.relation.RelationType;
@@ -77,7 +79,7 @@ public class ProjectsCommand
 				.filter( p -> p != null )
 				.sorted( Project.alphabeticalComparator )
 				.collect( toList() );
-		
+
 		if( list.isEmpty() )
 		{
 			logi.html( "found no project corresponding to your search...<br/>" );
@@ -117,10 +119,10 @@ public class ProjectsCommand
 			showReferences( log, session.graph().read(), project, session, logi );
 			showScm( log, mavenProject );
 			showProperties( session, log, project );
-			ProjectTools.showDependencyManagement( project, log, logi );
-			ProjectTools.showPluginManagement( project, log, logi );
-			ProjectTools.showDependencies( project, log, logi );
-			ProjectTools.showPlugins( project, log, logi );
+			ProjectTools.showDependencyManagement( project, log, session.projects(), logi );
+			ProjectTools.showPluginManagement( project, log, session.projects(), logi );
+			ProjectTools.showDependencies( project, log, session.projects(), logi );
+			ProjectTools.showPlugins( project, log, session.projects(), logi );
 			showTransitiveDependencies( showManagedDependencies, fetchMissingProjects, online, log, session.graph().read(), project, profiles, session, logi );
 			log.append( "</div>" );
 
@@ -180,7 +182,7 @@ public class ProjectsCommand
 				}
 			}
 
-			Gav parentGav = current.getParent();
+			Gav parentGav = current.getParentGav();
 			if( parentGav != null )
 				current = session.projects().forGav( parentGav );
 			else
@@ -226,8 +228,11 @@ public class ProjectsCommand
 			Map<String, Profile> profiles, ApplicationSession session, Log log )
 	{
 		sb.append( "<div><div>transitive dependencies</div><div>" );
+		
+		DefaultPomFileLoader loader = new DefaultPomFileLoader( session.session(), online );
 
-		DependencyNode dependencyNode = project.getTransitiveDependencyTree( true, online, profiles, log );
+		TransitivityResolver transitivityResolver = new TransitivityResolver();
+		DependencyNode dependencyNode = transitivityResolver.getTransitiveDependencyTree( session.session(), project, true, online, profiles, loader, log );
 		Map<DependencyKey, DependencyNode> dependencies = new HashMap<>();
 		dependencyNode.visitDepth( n -> dependencies.put( n.getKey(), n ) );
 
@@ -307,7 +312,7 @@ public class ProjectsCommand
 		sb.append( "<div><div>parent chain</div><div>" );
 
 		boolean first = true;
-		Gav parent = project.getParent();
+		Gav parent = project.getParentGav();
 		if( parent == null )
 		{
 			sb.append( "-" );
