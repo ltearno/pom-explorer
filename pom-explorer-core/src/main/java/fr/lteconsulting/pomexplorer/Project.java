@@ -38,7 +38,7 @@ import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
 
 /**
  * A POM project information
- * 
+ * <p>
  * levels of accessors :
  * <ol>
  * <li>raw : how the thing is declared in maven pom file
@@ -46,7 +46,7 @@ import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
  * <li>local : how the thing is resolved with the local hierarchy (parents)
  * <li>transitive : how the thing is resolves including transitive dependency
  * processing
- * 
+ *
  * @author Arnaud
  */
 public class Project
@@ -55,11 +55,10 @@ public class Project
 	private final File pomFile;
 	private final boolean isExternal;
 
-	private final MavenProject project;
-
-	private final Gav parentGav;
-	private final Gav gav;
-	private final Map<String, String> properties;
+	private MavenProject project;
+	private Gav parentGav;
+	private Gav gav;
+	private Map<String, String> properties;
 
 	private Map<DependencyKey, Dependency> dependencyManagement;
 	private Set<Dependency> dependencies;
@@ -68,14 +67,17 @@ public class Project
 	private DependencyNode partialTree = null;
 	private DependencyNode fullTree = null;
 
-	public static final Comparator<Project> alphabeticalComparator = ( a, b ) -> a.toString().compareTo( b.toString() );
+	public static final Comparator<Project> alphabeticalComparator = Comparator.comparing( Project::toString );
 
-	public Project( Session session, File pomFile, boolean isExternal ) throws Exception
+	public Project( Session session, File pomFile, boolean isExternal )
 	{
 		this.session = session;
 		this.pomFile = pomFile;
 		this.isExternal = isExternal;
+	}
 
+	public void initialize() throws Exception
+	{
 		project = readPomFile( pomFile );
 		if( project == null )
 			throw new RuntimeException( "cannot read pom " + pomFile.getAbsolutePath() );
@@ -113,8 +115,7 @@ public class Project
 
 	public Gav getDeclaredGav()
 	{
-		return new Gav( project.getModel().getGroupId(), project.getModel().getArtifactId(),
-				project.getModel().getVersion() );
+		return new Gav( project.getModel().getGroupId(), project.getModel().getArtifactId(), project.getModel().getVersion() );
 	}
 
 	public Gav getDeclaredParentGav()
@@ -160,8 +161,7 @@ public class Project
 		{
 			dependencyManagement = new HashMap<>();
 
-			if( project.getDependencyManagement() != null
-					&& project.getDependencyManagement().getDependencies() != null )
+			if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
 			{
 				for( org.apache.maven.model.Dependency d : project.getDependencyManagement().getDependencies() )
 				{
@@ -185,7 +185,7 @@ public class Project
 
 	/**
 	 * Declared dependencies with values resolved
-	 * 
+	 *
 	 * @param log
 	 * @return
 	 */
@@ -225,15 +225,11 @@ public class Project
 			List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 			if( projectProfiles != null )
 			{
-				projectProfiles.stream()
-						.filter( p -> isProfileActivated( profiles, p ) )
-						.filter( p -> p.getBuild() != null )
-						.filter( p -> p.getBuild().getPlugins() != null )
-						.map( p -> p.getBuild().getPlugins() )
-						.forEach( plugins -> plugins.stream().forEach( plugin -> {
-							Gav unresolvedGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
-							pluginDependencies.add( resolveGav( unresolvedGav, log ) );
-						} ) );
+				projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).filter( p -> p.getBuild() != null ).filter( p -> p.getBuild().getPlugins() != null ).map( p -> p.getBuild().getPlugins() ).forEach( plugins -> plugins.stream().forEach( plugin ->
+				{
+					Gav unresolvedGav = new Gav( plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion() );
+					pluginDependencies.add( resolveGav( unresolvedGav, log ) );
+				} ) );
 			}
 		}
 
@@ -268,8 +264,7 @@ public class Project
 		if( propertyDefinition == null )
 		{
 			if( log != null )
-				log.html( Tools
-						.warningMessage( "cannot resolve property '" + propertyName + "' in project " + toString() ) );
+				log.html( Tools.warningMessage( "cannot resolve property '" + propertyName + "' in project " + toString() ) );
 			else
 				System.out.println( "cannot resolve property '" + propertyName + "' in project " + toString() );
 			return null;
@@ -371,8 +366,7 @@ public class Project
 
 		if( version == null )
 		{
-			log.html( Tools.warningMessage( "unspecified dependency version to " + groupId + ":" + artifactId
-					+ " in project '" + this.gav + "', check the pom file please" ) );
+			log.html( Tools.warningMessage( "unspecified dependency version to " + groupId + ":" + artifactId + " in project '" + this.gav + "', check the pom file please" ) );
 
 			// find a way to handle those versions :
 			// "org.apache.maven.plugins:maven-something-plugin":
@@ -397,12 +391,10 @@ public class Project
 				Project parentProject = session.projects().fetchProject( parentGav, online, log );
 				if( parentProject != null )
 					fetchedProjects.add( parentProject );
-				if( parentProject == null
-						|| !parentProject.fetchMissingGavsForResolution( online, log, fetchedProjects ) )
+				if( parentProject == null || !parentProject.fetchMissingGavsForResolution( online, log, fetchedProjects ) )
 				{
 					ok = false;
-					log.html( Tools.errorMessage( "cannot resolve project " + toString()
-							+ " due to:<br/>&nbsp;&nbsp;&nbsp;missing parent project " + parentGav ) );
+					log.html( Tools.errorMessage( "cannot resolve project " + toString() + " due to:<br/>&nbsp;&nbsp;&nbsp;missing parent project " + parentGav ) );
 				}
 			}
 		}
@@ -419,12 +411,10 @@ public class Project
 						Project bomProject = session.projects().fetchProject( bomGav, online, log );
 						if( bomProject != null )
 							fetchedProjects.add( bomProject );
-						if( bomProject == null
-								|| !bomProject.fetchMissingGavsForResolution( online, log, fetchedProjects ) )
+						if( bomProject == null || !bomProject.fetchMissingGavsForResolution( online, log, fetchedProjects ) )
 						{
 							ok = false;
-							log.html( Tools.errorMessage( "cannot resolve project " + toString()
-									+ " due to:<br/>&nbsp;&nbsp;&nbsp;missing bom import " + bomGav ) );
+							log.html( Tools.errorMessage( "cannot resolve project " + toString() + " due to:<br/>&nbsp;&nbsp;&nbsp;missing bom import " + bomGav ) );
 						}
 					}
 				}
@@ -436,8 +426,7 @@ public class Project
 
 	private Map<DependencyKey, DependencyManagement> cachedLocalDependencyManagement;
 
-	public Map<DependencyKey, DependencyManagement> getLocalDependencyManagement(
-			Map<DependencyKey, DependencyManagement> result, boolean online, Map<String, Profile> profiles, Log log )
+	public Map<DependencyKey, DependencyManagement> getLocalDependencyManagement( Map<DependencyKey, DependencyManagement> result, boolean online, Map<String, Profile> profiles, Log log )
 	{
 		if( result == null && cachedLocalDependencyManagement != null )
 			return cachedLocalDependencyManagement;
@@ -458,9 +447,7 @@ public class Project
 		return result;
 	}
 
-	private Map<DependencyKey, DependencyManagement> completeDependencyManagementMap(
-			Map<DependencyKey, DependencyManagement> result, List<org.apache.maven.model.Dependency> dependencies,
-			boolean online, Map<String, Profile> profiles, Log log )
+	private Map<DependencyKey, DependencyManagement> completeDependencyManagementMap( Map<DependencyKey, DependencyManagement> result, List<org.apache.maven.model.Dependency> dependencies, boolean online, Map<String, Profile> profiles, Log log )
 	{
 		if( dependencies != null )
 		{
@@ -486,12 +473,10 @@ public class Project
 					// importer le bom
 					assert version != null;
 
-					Project bomProject = session.projects().fetchProject( new Gav( groupId, artifactId, version ), online,
-							log );
+					Project bomProject = session.projects().fetchProject( new Gav( groupId, artifactId, version ), online, log );
 					if( bomProject == null )
 					{
-						log.html( Tools.errorMessage( "cannot fetch the project " + groupId + ":" + artifactId + ":"
-								+ version + ", dependency resolution won't be exact" ) );
+						log.html( Tools.errorMessage( "cannot fetch the project " + groupId + ":" + artifactId + ":" + version + ", dependency resolution won't be exact" ) );
 						continue;
 					}
 					result = bomProject.getLocalDependencyManagement( result, online, profiles, log );
@@ -529,20 +514,14 @@ public class Project
 		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 		if( projectProfiles != null && dependencyMap != null )
 		{
-			projectProfiles.stream()
-					.filter( p -> isProfileActivated( profiles, p ) )
-					.filter( p -> p.getDependencyManagement() != null )
-					.filter( p -> p.getDependencyManagement().getDependencies() != null )
-					.map( p -> p.getDependencyManagement().getDependencies() )
-					.map( dependencies -> completeDependencyManagementMap( dependencyMap, dependencies, online, profiles, log ) )
-					.forEach( dependencyMap::putAll );
+			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).filter( p -> p.getDependencyManagement() != null ).filter( p -> p.getDependencyManagement().getDependencies() != null ).map( p -> p.getDependencyManagement().getDependencies() )
+					.map( dependencies -> completeDependencyManagementMap( dependencyMap, dependencies, online, profiles, log ) ).forEach( dependencyMap::putAll );
 		}
 
 		return dependencyMap;
 	}
 
-	public Map<DependencyKey, RawDependency> getLocalDependencies( Map<DependencyKey, RawDependency> res, boolean online,
-			Map<String, Profile> profiles, Log log )
+	public Map<DependencyKey, RawDependency> getLocalDependencies( Map<DependencyKey, RawDependency> res, boolean online, Map<String, Profile> profiles, Log log )
 	{
 		Project current = this;
 
@@ -564,8 +543,7 @@ public class Project
 		{
 			DependencyKey key = new DependencyKey( d.getGroupId(), d.getArtifactId(), d.getClassifier(), d.getType() );
 
-			RawDependency raw = new RawDependency( new VersionScope( d.getVersion(), Scope.fromString( d.getScope() ) ),
-					d.isOptional() );
+			RawDependency raw = new RawDependency( new VersionScope( d.getVersion(), Scope.fromString( d.getScope() ) ), d.isOptional() );
 			if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
 			{
 				for( Exclusion exclusion : d.getExclusions() )
@@ -578,8 +556,7 @@ public class Project
 		return res;
 	}
 
-	private Map<DependencyKey, RawDependency> completeDependenciesMap( Map<DependencyKey, RawDependency> res,
-			List<org.apache.maven.model.Dependency> dependencies, Log log )
+	private Map<DependencyKey, RawDependency> completeDependenciesMap( Map<DependencyKey, RawDependency> res, List<org.apache.maven.model.Dependency> dependencies, Log log )
 	{
 		if( dependencies != null )
 		{
@@ -615,8 +592,7 @@ public class Project
 		return res;
 	}
 
-	public Map<DependencyKey, RawDependency> getDeclaredDependencies( Map<DependencyKey, RawDependency> res,
-			Map<String, Profile> profiles, Log log )
+	public Map<DependencyKey, RawDependency> getDeclaredDependencies( Map<DependencyKey, RawDependency> res, Map<String, Profile> profiles, Log log )
 	{
 		if( res == null )
 			res = new HashMap<>();
@@ -627,9 +603,7 @@ public class Project
 		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 		if( projectProfiles != null )
 		{
-			projectProfiles.stream()
-					.filter( p -> isProfileActivated( profiles, p ) )
-					.forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), log ) );
+			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), log ) );
 		}
 
 		return res;
@@ -660,14 +634,12 @@ public class Project
 		return rootNode;
 	}
 
-	@Override
-	public String toString()
+	@Override public String toString()
 	{
 		return getGav() + " (<i>" + pomFile.getAbsolutePath() + "</i>)";
 	}
 
-	@Override
-	public int hashCode()
+	@Override public int hashCode()
 	{
 		final int prime = 31;
 		int result = 1;
@@ -675,8 +647,7 @@ public class Project
 		return result;
 	}
 
-	@Override
-	public boolean equals( Object obj )
+	@Override public boolean equals( Object obj )
 	{
 		if( this == obj )
 			return true;
@@ -709,31 +680,27 @@ public class Project
 		switch( propertyName )
 		{
 			case "version":
-				log.html( Tools.warningMessage( "illegal property 'version' used in the project " + toString()
-						+ ", value resolved to project's version." ) );
+				log.html( Tools.warningMessage( "illegal property 'version' used in the project " + toString() + ", value resolved to project's version." ) );
 			case "project.version":
 			case "pom.version":
 				return new PropertyLocation( this, null, "project.version", gav.getVersion() );
 
 			case "groupId":
 			case "@project.groupId@":
-				log.html( Tools.warningMessage( "illegal property '" + propertyName + "' used in the project " + toString()
-						+ ", value resolved to project's groupId." ) );
+				log.html( Tools.warningMessage( "illegal property '" + propertyName + "' used in the project " + toString() + ", value resolved to project's groupId." ) );
 			case "project.groupId":
 			case "pom.groupId":
 				return new PropertyLocation( this, null, "project.groupId", gav.getGroupId() );
 
 			case "artifactId":
-				log.html( Tools.warningMessage( "illegal property 'artifactId' used in the project " + toString()
-						+ ", value resolved to project's artifactId." ) );
+				log.html( Tools.warningMessage( "illegal property 'artifactId' used in the project " + toString() + ", value resolved to project's artifactId." ) );
 			case "project.artifactId":
 			case "pom.artifactId":
 				return new PropertyLocation( this, null, "project.artifactId", gav.getArtifactId() );
 
 			case "project.prerequisites.maven":
 				if( project.getPrerequisites() != null )
-					return new PropertyLocation( this, null, "project.prerequisites.maven",
-							project.getPrerequisites().getMaven() );
+					return new PropertyLocation( this, null, "project.prerequisites.maven", project.getPrerequisites().getMaven() );
 				break;
 
 			case "mavenVersion":
@@ -758,8 +725,7 @@ public class Project
 			}
 			else
 			{
-				log.html( Tools.warningMessage( "cannot find parent project to resolve property '"
-						+ originalRequestedPropertyName + "' in project " + toString() ) );
+				log.html( Tools.warningMessage( "cannot find parent project to resolve property '" + originalRequestedPropertyName + "' in project " + toString() ) );
 			}
 		}
 
@@ -770,8 +736,8 @@ public class Project
 	{
 		try( FileReader reader = new FileReader( pom ) )
 		{
-			MavenXpp3Reader mavenreader = new MavenXpp3Reader();
-			Model model = mavenreader.read( reader );
+			MavenXpp3Reader mavenReader = new MavenXpp3Reader();
+			Model model = mavenReader.read( reader );
 			model.setPomFile( pom );
 
 			return new MavenProject( model );
@@ -881,17 +847,14 @@ public class Project
 					{
 						// TODO : use specified repositories if needed !
 						if( dependency.isOptional() )
-							log.html( Tools.warningMessage( "cannot fetch project " + dependencyGav + " referenced in "
-									+ node.getProject() + " (this is an optional dependency)" ) );
+							log.html( Tools.warningMessage( "cannot fetch project " + dependencyGav + " referenced in " + node.getProject() + " (this is an optional dependency)" ) );
 						else
-							log.html( Tools.errorMessage(
-									"cannot fetch project " + dependencyGav + " referenced in " + node.getProject() ) );
+							log.html( Tools.errorMessage( "cannot fetch project " + dependencyGav + " referenced in " + node.getProject() ) );
 						continue;
 					}
 				}
 
-				DependencyNode child = new DependencyNode( childProject, dependencyKey,
-						new VersionScope( version, scope ) );
+				DependencyNode child = new DependencyNode( childProject, dependencyKey, new VersionScope( version, scope ) );
 				child.addExclusions( dependency.getExclusions() );
 
 				node.addChild( child );
@@ -956,7 +919,9 @@ public class Project
 
 	private boolean isProfileActivated( Map<String, Profile> profiles, org.apache.maven.model.Profile p )
 	{
-		return profiles.keySet().contains( p.getId() )
-				|| (p.getActivation() != null && p.getActivation().isActiveByDefault());
+		if( profiles == null )
+			return false;
+
+		return profiles.keySet().contains( p.getId() ) || (p.getActivation() != null && p.getActivation().isActiveByDefault());
 	}
 }

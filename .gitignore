@@ -1,32 +1,26 @@
-*.class
-bin/
-target/
+**/bin/
+**/target/
 
 # Eclipse files
-.classpath
-.factorypath
-.project
-.settings/
+**/.classpath
+**/.factorypath
+**/.project
+**/.settings/
 
-# Mobile Tools for Java (J2ME)
+# IntelliJ files
+**/.idea/
+**/*.iml
+
+# Misc
 .mtj.tmp/
-
-# Package Files #
-*.jar
-*.war
-*.ear
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-welcome.commands
+**/hs_err_pid*
 config.properties
-.factorypath
-.idea/
-pom-explorer.iml
-served-data/
 
-*.graphml
-/target/
+# 
+**/welcome.commands
+**/served-data/
+**/*.graphml
+
 pom-explorer/export.csv
 pom-explorer/pomexplorer-ui/pomexplorer-ui/obj/
 pom-explorer/pomexplorer-ui/node_modules/

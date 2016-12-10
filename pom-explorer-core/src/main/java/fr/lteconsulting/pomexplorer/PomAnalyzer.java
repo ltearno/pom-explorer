@@ -35,19 +35,22 @@ public class PomAnalyzer
 
 		long duration = System.currentTimeMillis();
 
-		Set<File> pomFiles = new HashSet<>();
 		File file = new File( directory );
 		if( !file.exists() )
 			log.html( Tools.errorMessage( "'" + directory + "' does not exist !" ) );
 
-		scanPomFiles( file, session, log, pomFiles );
+		Map<String, Profile> profiles = new HashMap<>();
+		for( int i = 0; i < profilesId.length; i++ )
+			profiles.put( profilesId[i], new Profile( profilesId[i] ) );
 
-		Set<Project> unresolvableProjects = new HashSet<>();
+		Set<File> pomFiles = new HashSet<>();
+
+		scanPomFiles( file, session, log, pomFiles );
 
 		Set<Project> loadedProjects = new HashSet<>();
 		for( File pomFile : pomFiles )
 		{
-			Project project = createAndRegisterProject( pomFile, false, session, log );
+			Project project = readAndRegisterProject( pomFile, false, session, log );
 			if( project != null )
 				loadedProjects.add( project );
 		}
@@ -56,17 +59,11 @@ public class PomAnalyzer
 		if( verbose )
 		{
 			log.html( "<br/>loaded projects:<br/>" );
-			loadedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( p ) -> log.html( p + "<br/>" ) );
-		}
-
-		log.html( "Read profiles to use in the analyze...<br/>" );
-		Map<String, Profile> profiles = new HashMap<>();
-		for( int i = 0; i < profilesId.length; i++ )
-		{
-			profiles.put( profilesId[i], new Profile( profilesId[i] ) );
+			loadedProjects.stream().sorted( Project.alphabeticalComparator ).forEach( ( Project p ) -> log.html( p + "<br/>" ) );
 		}
 
 		log.html( "fetching missing parents and boms...<br/>" );
+		Set<Project> unresolvableProjects = new HashSet<>();
 		Set<Project> toGraphProjects = new HashSet<>();
 		for( Project project : loadedProjects )
 		{
@@ -80,10 +77,9 @@ public class PomAnalyzer
 
 		log.html( "adding projects to graph" );
 		PomGraphWriteTransaction tx = session.graph().write();
+
 		for( Project project : toGraphProjects )
-		{
 			addProjectToGraph( project, tx, fetchMissingProjects, online, session, profiles, log );
-		}
 
 		for( Project unresolvable : unresolvableProjects )
 			session.projects().remove( unresolvable );
@@ -98,7 +94,7 @@ public class PomAnalyzer
 		{
 			StringBuilder sb = new StringBuilder();
 			sb.append( "<br/>" + unresolvableProjects.size() + " unresolvable projects:<br/>" );
-			unresolvableProjects.stream().sorted( Project.alphabeticalComparator ).forEach( g -> sb.append( "- " + g + "<br/>" ) );
+			unresolvableProjects.stream().sorted( Project.alphabeticalComparator ).forEach( project -> sb.append( "- " + project + "<br/>" ) );
 			log.html( sb.toString() );
 		}
 	}
@@ -119,7 +115,7 @@ public class PomAnalyzer
 
 		Project project = null;
 		if( pomFile != null )
-			project = createAndRegisterProject( pomFile, true, session, log );
+			project = readAndRegisterProject( pomFile, true, session, log );
 
 		return project;
 	}
@@ -127,9 +123,6 @@ public class PomAnalyzer
 	public void addProjectToGraph( Project project, PomGraphWriteTransaction tx, boolean fetchMissingProjects, boolean online, Session session, Map<String, Profile> profiles, Log log )
 	{
 		tx.removeRelations( tx.relations( project.getGav() ) );
-
-		if( profiles == null )
-			profiles = new HashMap<>();
 
 		try
 		{
@@ -182,8 +175,7 @@ public class PomAnalyzer
 	{
 		String pathName = path.getFileName().toString();
 
-		return (Files.isDirectory( path ) && acceptedDir( pathName ))
-				|| (pathName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( pathName ));
+		return (Files.isDirectory( path ) && acceptedDir( pathName )) || (pathName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( pathName ));
 	}
 
 	private void scanPomFiles( File startFile, Session session, Log log, Set<File> pomFiles )
@@ -203,8 +195,7 @@ public class PomAnalyzer
 				if( !acceptedDir( name ) )
 					return;
 
-				try(
-						DirectoryStream<Path> pathStream = Files.newDirectoryStream( file.toPath(), this::acceptedPath ) )
+				try( DirectoryStream<Path> pathStream = Files.newDirectoryStream( file.toPath(), this::acceptedPath ) )
 				{
 					pathStream.forEach( path -> queue.add( new File( path.toString() ) ) );
 				}
@@ -220,19 +211,23 @@ public class PomAnalyzer
 		}
 	}
 
-	private Project createAndRegisterProject( File pomFile, boolean isExternal, Session session, Log log )
+	private Project readAndRegisterProject( File pomFile, boolean isExternal, Session session, Log log )
 	{
 		try
 		{
 			Project project = new Project( session, pomFile, isExternal );
+
+			project.initialize();
+
 			session.projects().add( project );
+
 			return project;
 		}
 		catch( Exception e )
 		{
 			log.html( Tools.errorMessage( "error loading pom file " + pomFile.getAbsolutePath() + ", message: " + e.getMessage() ) );
-		}
 
-		return null;
+			return null;
+		}
 	}
 }
