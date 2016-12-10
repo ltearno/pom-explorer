@@ -15,15 +15,9 @@ public class AnalyzeCommand
 
 		PomAnalyzer analyzer = new PomAnalyzer();
 
-		// Is some profiles passed in option ?
-		Object optionP = options.getOption( "profiles" );
-		String[] profiles;
-		if( optionP == null )
-			profiles = new String[] {};
-		else
-		{
-			profiles = ((String) optionP).trim().split( "," );
-		}
+		String[] profiles = null;
+		if( options.getOption( "profiles" ) != null )
+			profiles = ((String) options.getOption( "profiles" )).trim().split( "," );
 
 		analyzer.analyze( directory, !options.hasFlag( "quiet" ), !options.hasFlag( "nofetch" ), !options.hasFlag( "offline" ), profiles, session.session(), log );
 

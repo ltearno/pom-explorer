@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import fr.lteconsulting.pomexplorer.tools.StringSplitter;
 
-public class StringSplitterTests
+public class StringSplitterTest
 {
 	@Test
 	public void test()

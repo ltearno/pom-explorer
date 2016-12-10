@@ -39,9 +39,13 @@ public class PomAnalyzer
 		if( !file.exists() )
 			log.html( Tools.errorMessage( "'" + directory + "' does not exist !" ) );
 
-		Map<String, Profile> profiles = new HashMap<>();
-		for( int i = 0; i < profilesId.length; i++ )
-			profiles.put( profilesId[i], new Profile( profilesId[i] ) );
+		Map<String, Profile> profiles = null;
+		if( profilesId != null )
+		{
+			profiles = new HashMap<>();
+			for( int i = 0; i < profilesId.length; i++ )
+				profiles.put( profilesId[i], new Profile( profilesId[i] ) );
+		}
 
 		Set<File> pomFiles = new HashSet<>();
 
@@ -72,8 +76,9 @@ public class PomAnalyzer
 			else
 				unresolvableProjects.add( project );
 		}
+		log.html( "fetched missing projects<br/>" );
 
-		log.html( "fetched missing projects, " + toGraphProjects.size() + " resolved projects and " + unresolvableProjects.size() + " unresolved projects<br/>" );
+		log.html( toGraphProjects.size() + " resolved projects and " + unresolvableProjects.size() + " unresolved projects<br/>" );
 
 		log.html( "adding projects to graph" );
 		PomGraphWriteTransaction tx = session.graph().write();
