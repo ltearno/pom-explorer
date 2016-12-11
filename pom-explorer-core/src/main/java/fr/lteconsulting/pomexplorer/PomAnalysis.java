@@ -18,6 +18,7 @@ import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 import fr.lteconsulting.pomexplorer.model.Dependency;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.Gav;
@@ -51,6 +52,7 @@ public class PomAnalysis
 	private final Set<Project> loadedProjects = new HashSet<>();
 	private final Set<Project> completedProjects = new HashSet<>();
 	private final Set<Project> unresolvableProjects = new HashSet<>();
+	private final Set<Project> duplicatedProjects = new HashSet<>();
 
 	private final ProjectContainer projects;
 
@@ -69,12 +71,22 @@ public class PomAnalysis
 
 		duration = System.currentTimeMillis() - duration;
 
+		if( !analyzis.getDuplicatedProjects().isEmpty() )
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append( "<br/>" + analyzis.getDuplicatedProjects().size() + " duplicated projects:<br/>" );
+			sb.append( "<ul>" );
+			analyzis.getDuplicatedProjects().stream().sorted( Project.alphabeticalComparator ).forEach( project -> sb.append( "<li>" + project + "</li>" ) );
+			sb.append( "</ul>" );
+			log.html( Tools.warningMessage( sb.toString() ) );
+		}
+
 		if( !analyzis.getUnresolvableProjects().isEmpty() )
 		{
 			StringBuilder sb = new StringBuilder();
 			sb.append( "<br/>" + analyzis.getUnresolvableProjects().size() + " unresolvable projects:<br/>" );
 			sb.append( "<ul>" );
-			analyzis.getUnresolvableProjects().stream().sorted( Project.alphabeticalComparator ).forEach( project -> sb.append( "<ul>" + project + "</li>" ) );
+			analyzis.getUnresolvableProjects().stream().sorted( Project.alphabeticalComparator ).forEach( project -> sb.append( "<li>" + project + "</li>" ) );
 			sb.append( "</ul>" );
 			log.html( Tools.warningMessage( sb.toString() ) );
 		}
@@ -120,6 +132,11 @@ public class PomAnalysis
 	public Set<Project> getUnresolvableProjects()
 	{
 		return unresolvableProjects;
+	}
+
+	public Set<Project> getDuplicatedProjects()
+	{
+		return duplicatedProjects;
 	}
 
 	public Set<File> addDirectory( String directory )
@@ -194,10 +211,23 @@ public class PomAnalysis
 
 		for( Project project : loadedProjects )
 		{
-			if( processProjectForCompleteness( project, pomFileLoader ) )
+			if( session.projects().contains( project.getGav() ) || completedProjects.stream().filter( p -> p.getGav().equals( project.getGav() ) ).findFirst().isPresent() )
+			{
+				Project duplicate = session.projects().forGav( project.getGav() );
+				if( duplicate == null )
+					duplicate = completedProjects.stream().filter( p -> p.getGav().equals( project.getGav() ) ).findFirst().get();
+
+				duplicatedProjects.add( project );
+				log.html( Tools.warningMessage( "trying to add a project which is duplicated: " + project + ", already inserted : " + duplicate ) );
+			}
+			else if( processProjectForCompleteness( project, pomFileLoader ) )
+			{
 				readyProjects.add( project );
+			}
 			else
+			{
 				unresolvableProjects.add( project );
+			}
 		}
 
 		log.html( Tools.logMessage( readyProjects.size() + " ready projects and " + unresolvableProjects.size() + " unresolvable projects" ) );
@@ -222,6 +252,8 @@ public class PomAnalysis
 		{
 			if( addProjectToGraph( project ) )
 				addedToGraph.add( project );
+			else
+				log.html( Tools.errorMessage( "cannot add to graph project " + project ) );
 		}
 
 		completedProjects.clear();
@@ -263,8 +295,7 @@ public class PomAnalysis
 			}
 
 			// add resolved local plugin dependencies
-			// TODO Should add Local plugin dependencies instead of just interpolated...
-			Set<Gav> pluginDependencies = project.getInterpolatedPluginDependencies( profiles, projects, log );
+			Set<Gav> pluginDependencies = project.getLocalPluginDependencies( profiles, projects, log );
 			if( pluginDependencies != null )
 			{
 				for( Gav pluginGav : pluginDependencies )
@@ -304,12 +335,12 @@ public class PomAnalysis
 		{
 			for( org.apache.maven.model.Dependency d : project.getMavenProject().getDependencyManagement().getDependencies() )
 			{
-				if( "import".equals( d.getScope() ) && "pom".equals( d.getType() ) )
+				if( Scope.fromString( d.getScope() ) == Scope.IMPORT && "pom".equals( d.getType() ) )
 				{
 					// TODO should use project's dependency management to resolve the gav when version is null (rare cases maybe)
 					Gav bomGav = project.interpolateGav( new Gav( d.getGroupId(), d.getArtifactId(), d.getVersion() ), projects, log );
 
-					if( projects.forGav( project.getParentGav() ) == null )
+					if( projects.forGav( bomGav ) == null )
 					{
 						Project bomProject = loadAndCheckProject( bomGav, callback, project );
 						if( bomProject != null )

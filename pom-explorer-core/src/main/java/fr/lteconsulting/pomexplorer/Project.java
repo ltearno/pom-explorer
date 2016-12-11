@@ -483,6 +483,9 @@ public class Project
 				String artifactId = interpolateValue( d.getArtifactId(), projects, log );
 				String version = interpolateValue( d.getVersion(), projects, log );
 
+				if( version == null )
+					continue;
+
 				assert groupId != null;
 				assert artifactId != null;
 
@@ -522,8 +525,9 @@ public class Project
 				{
 					Map<DependencyKey, DependencyManagement> mngt = getHierarchicalDependencyManagement( null, profiles, projects, log );
 					DependencyManagement dm = mngt.get( key );
-					if( version == null && dm == null )
-						log.html( Tools.warningMessage( "Missing version and version not found in depencency management for dependency to " + key + " in project " + this ) );
+
+					if( version == null && (dm == null || dm.getVs() == null) )
+						log.html( Tools.warningMessage( "missing version and version not found in depencency management for dependency to " + key + " in project " + this ) );
 
 					if( version == null )
 						version = dm.getVs().getVersion();
@@ -613,7 +617,7 @@ public class Project
 				Project bomProject = projects.forGav( bomGav );
 				if( bomProject == null )
 				{
-					log.html( Tools.errorMessage( "missing project " + bomGav + ", dependency management resolution won't be exact" ) );
+					log.html( Tools.errorMessage( "missing project " + bomGav + ", dependency management resolution won't be exact for project " + this ) );
 					continue;
 				}
 

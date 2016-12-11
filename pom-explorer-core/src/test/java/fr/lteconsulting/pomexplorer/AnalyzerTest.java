@@ -169,7 +169,10 @@ public class AnalyzerTest
 
 		try
 		{
-			PomAnalysis.runFullRecursiveAnalysis( "c:\\Documents\\Repos", session, new DefaultPomFileLoader( session, true ), null, true, System.out::println );
+			String directory;
+			// directory = "c:\\Documents\\Repos\\formation-programmation-java\\projets\\javaee\\cartes-webapp";
+			directory = "c:\\Documents\\Repos";
+			PomAnalysis.runFullRecursiveAnalysis( directory, session, new DefaultPomFileLoader( session, true ), null, true, System.out::println );
 		}
 		catch( Exception e )
 		{
@@ -193,6 +196,7 @@ public class AnalyzerTest
 				.filter( gav -> gav.getVersion() == null )
 				.forEach( gav -> {
 					System.out.println( gav );
+					tx.dependenciesRec( gav ).stream().forEach( r -> System.out.println( " - " + r ) );
 				} );
 	}
 

@@ -25,9 +25,14 @@ public class DefaultPomFileLoader implements PomFileLoader
 
 		MavenResolver resolver = session.mavenResolver();
 
+		log.html( Tools.logMessage( "fetching pom file for gav " + gav ) );
+
 		File pomFile = resolver.resolvePom( gav, "pom", online, additionalRepos, log );
 		if( pomFile == null || !pomFile.exists() )
+		{
+			log.html( Tools.errorMessage( "cannot fetch pom file for gav " + gav ) );
 			return null;
+		}
 
 		return pomFile;
 	}
