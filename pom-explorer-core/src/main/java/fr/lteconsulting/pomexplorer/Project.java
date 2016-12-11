@@ -71,6 +71,7 @@ public class Project
 
 	private Map<String, ValueResolution> cachedResolutions;
 	private Map<DependencyKey, DependencyManagement> cachedLocalDependencyManagement;
+	private Map<GroupArtifact, String> cachedLocalPluginDependencyManagement;
 	private static Map<Gav, Gav> defaultGavs = new HashMap<>();
 
 	static
@@ -170,10 +171,10 @@ public class Project
 	{
 		if( cachedResolutions != null && cachedResolutions.containsKey( value ) )
 			return cachedResolutions.get( value );
-	
+
 		ValueResolution res = new ValueResolution();
 		res.raw = value;
-	
+
 		if( value != null )
 		{
 			int start = value.indexOf( "${" );
@@ -181,14 +182,14 @@ public class Project
 			if( start >= 0 )
 			{
 				StringBuilder sb = new StringBuilder();
-	
+
 				while( start >= 0 )
 				{
 					if( start > end + 1 )
 						sb.append( value.substring( end + 1, start ) );
-	
+
 					end = value.indexOf( "}", start );
-	
+
 					String propertyReference = value.substring( start + 2, end );
 					String propertyResolved = resolveProperty( log, propertyReference, projects );
 					if( res.properties == null )
@@ -198,23 +199,23 @@ public class Project
 					res.properties.put( propertyReference, propertyResolved );
 					sb.append( propertyResolved );
 					sb.append( value.substring( end + 1 ) );
-	
+
 					start = value.indexOf( "${", end + 1 );
 				}
-	
+
 				if( end < value.length() - 1 )
 					sb.append( value.substring( end + 1 ) );
-	
+
 				value = sb.toString();
 			}
 		}
-	
+
 		res.resolved = value;
-	
+
 		if( cachedResolutions == null )
 			cachedResolutions = new HashMap<>();
 		cachedResolutions.put( value, res );
-	
+
 		return res;
 	}
 
@@ -223,15 +224,7 @@ public class Project
 		String groupId = interpolateValue( gav.getGroupId(), projects, log );
 		String artifactId = interpolateValue( gav.getArtifactId(), projects, log );
 		String version = interpolateValue( gav.getVersion(), projects, log );
-	
-		if( version == null )
-		{
-			log.html( Tools.warningMessage( "unspecified dependency version to " + groupId + ":" + artifactId + " in project '" + this.gav + "', check the pom file please" ) );
-	
-			// find a way to handle those versions :
-			// "org.apache.maven.plugins:maven-something-plugin":
-		}
-	
+
 		return new Gav( groupId, artifactId, version );
 	}
 
@@ -315,6 +308,30 @@ public class Project
 		return pluginDependencies;
 	}
 
+	public Set<Gav> getLocalPluginDependencies( Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	{
+		Set<Gav> interpolated = getInterpolatedPluginDependencies( profiles, projects, log );
+		Set<Gav> result = new HashSet<>();
+
+		for( Gav i : interpolated )
+		{
+			if( i.getVersion() != null )
+			{
+				result.add( i );
+			}
+			else
+			{
+				String version = getHierarchicalPluginDependencyManagement( null, profiles, projects, log ).get( new GroupArtifact( i.getGroupId(), i.getArtifactId() ) );
+				if( version == null )
+					log.html( Tools.warningMessage( "unresolvable plugin dependency to " + i + " in project " + this ) );
+
+				result.add( new Gav( i.getGroupId(), i.getArtifactId(), version ) );
+			}
+		}
+
+		return result;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -352,29 +369,57 @@ public class Project
 
 	public Map<DependencyKey, DependencyManagement> getHierarchicalDependencyManagement( Map<DependencyKey, DependencyManagement> result, Map<String, Profile> profiles, ProjectContainer projects, Log log )
 	{
-		if( cachedLocalDependencyManagement != null )
+		if( cachedLocalDependencyManagement == null )
 		{
-			if( result == null )
-				result = new HashMap<>();
-	
-			result.putAll( cachedLocalDependencyManagement );
-	
-			return result;
+			cachedLocalDependencyManagement = new HashMap<>();
+
+			Project current = this;
+			while( current != null )
+			{
+				current.getInterpolatedDependencyManagementWithBomImport( cachedLocalDependencyManagement, profiles, projects, log );
+				current = projects.getParentProject( current );
+			}
 		}
-	
-		boolean storeInCache = result == null;
-	
-		Project current = this;
-		while( current != null )
+
+		if( result == null )
+			result = new HashMap<>();
+
+		result.putAll( cachedLocalDependencyManagement );
+
+		return result;
+	}
+
+	public Map<DependencyKey, RawDependency> getLocalDependencies( Map<DependencyKey, RawDependency> res, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	{
+		res = completeDependenciesMap( res, getMavenProject().getDependencies(), profiles, projects, log );
+		Map<DependencyKey, RawDependency> fRes = res;
+
+		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
+		if( projectProfiles != null )
+			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), profiles, projects, log ) );
+
+		return res;
+	}
+
+	public Map<GroupArtifact, String> getHierarchicalPluginDependencyManagement( Map<GroupArtifact, String> result, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	{
+		if( cachedLocalPluginDependencyManagement == null )
 		{
-			result = current.getInterpolatedDependencyManagementWithBomImport( result, profiles, projects, log );
-	
-			current = projects.getParentProject( current );
+			cachedLocalPluginDependencyManagement = new HashMap<>();
+
+			Project current = this;
+			while( current != null )
+			{
+				current.getInterpolatedPluginDependencyManagement( cachedLocalPluginDependencyManagement, profiles, projects, log );
+				current = projects.getParentProject( current );
+			}
 		}
-	
-		if( storeInCache )
-			cachedLocalDependencyManagement = result;
-	
+
+		if( result == null )
+			result = new HashMap<>();
+
+		result.putAll( cachedLocalPluginDependencyManagement );
+
 		return result;
 	}
 
@@ -410,16 +455,49 @@ public class Project
 		return dependencyMap;
 	}
 
-	public Map<DependencyKey, RawDependency> getLocalDependencies( Map<DependencyKey, RawDependency> res, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	/**
+	 * TODO should use depmngt from the parent to resolve values if missing
+	 */
+	private Map<GroupArtifact, String> getInterpolatedPluginDependencyManagement( Map<GroupArtifact, String> dependencyMap, Map<String, Profile> profiles, ProjectContainer projects, Log log )
 	{
-		res = completeDependenciesMap( res, getMavenProject().getDependencies(), profiles, projects, log );
-		Map<DependencyKey, RawDependency> fRes = res;
+		if( project.getPluginManagement() != null && project.getPluginManagement().getPlugins() != null )
+		{
+			if( dependencyMap == null )
+				dependencyMap = new HashMap<>();
 
-		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
-		if( projectProfiles != null )
-			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), profiles, projects, log ) );
+			completePluginDependencyManagementMap( dependencyMap, project.getPluginManagement().getPlugins(), projects, log );
+		}
 
-		return res;
+		// TODO Is there really nothing in profiles for Plugin Management ?
+
+		return dependencyMap;
+	}
+
+	private Map<GroupArtifact, String> completePluginDependencyManagementMap( Map<GroupArtifact, String> result, List<org.apache.maven.model.Plugin> plugins, ProjectContainer projects, Log log )
+	{
+		if( plugins != null )
+		{
+			for( org.apache.maven.model.Plugin d : plugins )
+			{
+				String groupId = interpolateValue( d.getGroupId(), projects, log );
+				String artifactId = interpolateValue( d.getArtifactId(), projects, log );
+				String version = interpolateValue( d.getVersion(), projects, log );
+
+				assert groupId != null;
+				assert artifactId != null;
+
+				GroupArtifact key = new GroupArtifact( groupId, artifactId );
+				if( result != null && result.containsKey( key ) )
+					continue;
+
+				if( result == null )
+					result = new HashMap<>();
+
+				result.put( key, version );
+			}
+		}
+
+		return result;
 	}
 
 	private Map<DependencyKey, RawDependency> completeDependenciesMap( Map<DependencyKey, RawDependency> res, List<org.apache.maven.model.Dependency> dependencies, Map<String, Profile> profiles, ProjectContainer projects, Log log )

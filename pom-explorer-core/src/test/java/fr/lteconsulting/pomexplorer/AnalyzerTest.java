@@ -1,14 +1,21 @@
 package fr.lteconsulting.pomexplorer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.model.GroupArtifact;
 import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
 
 public class AnalyzerTest
@@ -64,6 +71,11 @@ public class AnalyzerTest
 
 		assertEquals( 2, session.projects().size() );
 
+		List<String> shouldBeMissing = new ArrayList<>();
+		shouldBeMissing.add( "fr.lteconsulting:d:1.0-SNAPSHOT" );
+		shouldBeMissing.add( "fr.lteconsulting:c:1.0-SNAPSHOT" );
+		shouldBeMissing.add( "fr.lteconsulting:c:1.0-SNAPSHOT" );
+
 		session.projects().values().forEach( project -> {
 			System.out.println( "PROJECT " + project );
 			System.out.println( "DEPENDENCIES" );
@@ -71,17 +83,83 @@ public class AnalyzerTest
 				System.out.println( dependency );
 			} );
 
+			/**
+			 * Checks that transitive dependencies cannot be resolved
+			 */
 			TransitivityResolver resolver = new TransitivityResolver();
 			resolver.getTransitiveDependencyTree( session, project, true, true, null, new PomFileLoader()
 			{
 				@Override
 				public File loadPomFileForGav( Gav gav, List<Repository> additionalRepos, Log log )
 				{
-					System.out.println( "MISSING " + gav );
+					assertTrue( shouldBeMissing.contains( gav.toString() ) );
+					shouldBeMissing.remove( gav.toString() );
+
 					return null;
 				}
 			}, System.out::println );
 		} );
+
+		assertTrue( shouldBeMissing.isEmpty() );
+	}
+
+	@Test
+	public void test06()
+	{
+		Session session = new Session();
+
+		PomAnalysis.runFullRecursiveAnalysis( "testSets/set06", session, null, null, true, System.out::println );
+
+		assertEquals( 4, session.projects().size() );
+
+		session.projects().values().forEach( project -> {
+			System.out.println( "PROJECT " + project );
+			System.out.println( "DEPENDENCIES" );
+			session.graph().read().dependencies( project.getGav() ).forEach( dependency -> {
+				System.out.println( dependency );
+			} );
+
+			/**
+			 * Checks that transitive dependencies can be resolved
+			 */
+			TransitivityResolver resolver = new TransitivityResolver();
+			resolver.getTransitiveDependencyTree( session, project, true, true, null, new PomFileLoader()
+			{
+				@Override
+				public File loadPomFileForGav( Gav gav, List<Repository> additionalRepos, Log log )
+				{
+					fail( "missing gav " + gav + " but should not!" );
+
+					return null;
+				}
+			}, System.out::println );
+		} );
+	}
+
+	@Test
+	public void test07()
+	{
+		Session session = new Session();
+
+		PomAnalysis.runFullRecursiveAnalysis( "testSets/set07", session, null, null, true, System.out::println );
+
+		assertEquals( 2, session.projects().size() );
+
+		Project project = session.projects().forGav( Gav.parse( "fr.lteconsulting:a:1.0-SNAPSHOT" ) );
+		assertNotNull( project );
+
+		Map<GroupArtifact, String> pluginManagement = project.getHierarchicalPluginDependencyManagement( null, null, session.projects(), System.out::println );
+
+		assertEquals( 2, pluginManagement.size() );
+		assertEquals( "1.0-SNAPSHOT", pluginManagement.get( new GroupArtifact( "fr.lteconsulting", "plugin-a" ) ) );
+		assertEquals( "4", pluginManagement.get( new GroupArtifact( "fr.lteconsulting", "plugin-b" ) ) );
+
+		Set<Gav> plugins = project.getLocalPluginDependencies( null, session.projects(), System.out::println );
+
+		assertEquals( 3, plugins.size() );
+		assertTrue( plugins.contains( new Gav( "fr.lteconsulting", "plugin-a", "1.0-SNAPSHOT" ) ) );
+		assertTrue( plugins.contains( new Gav( "fr.lteconsulting", "plugin-b", "4" ) ) );
+		assertTrue( plugins.contains( new Gav( "fr.lteconsulting", "plugin-c", "5" ) ) );
 	}
 
 	@Test
