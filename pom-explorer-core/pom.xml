@@ -2,12 +2,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>fr.lteconsulting</groupId>
+	
+	<parent>
+		<groupId>fr.lteconsulting</groupId>
+		<artifactId>pom-explorer-modules</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	
 	<artifactId>pom-explorer-core</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	
 	<packaging>jar</packaging>
+	
 	<name>pom-explorer-core</name>
+	
 	<url>http://maven.apache.org</url>
+	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -17,6 +26,7 @@
 		<wagonVersion>1.0</wagonVersion>
 		<version.io.undertow>1.4.0.Final</version.io.undertow>
 	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
