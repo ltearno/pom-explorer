@@ -14,7 +14,7 @@ public class AnalyzeCommand
 	public void directory( CommandOptions options, Client client, ApplicationSession session, Log log, String directory )
 	{
 		log.html( "Analyzing directory '" + directory + "'...<br/>" );
-		log.html( "<i>possible options: quiet, nofetch, offline, profiles</i>" );
+		log.html( "<i>possible options: verbose, nofetch, offline, profiles</i>" );
 
 		String[] profiles = null;
 		if( options.getOption( "profiles" ) != null )
@@ -26,7 +26,7 @@ public class AnalyzeCommand
 		else
 			log.html( Tools.logMessage( "<b>nofetch</b> options set, no pom resolution will be attempted" ) );
 
-		PomAnalysis.runFullRecursiveAnalysis( directory, session.session(), pomFileLoader, profiles, !options.hasFlag( "quiet" ), log );
+		PomAnalysis.runFullRecursiveAnalysis( directory, session.session(), pomFileLoader, profiles, options.hasFlag( "verbose" ), log );
 
 		log.html( "Analyzis completed.<br/>" );
 	}
