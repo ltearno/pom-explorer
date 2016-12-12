@@ -5,7 +5,7 @@
 	
     <groupId>fr.lteconsulting</groupId>
     <artifactId>pom-explorer-modules</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2</version>
 	
     <name>pom-explorer-modules</name>
     <description>pom-explorer-modules</description>
