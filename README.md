@@ -285,3 +285,19 @@ If a `config.properties` file is found in the working directory it is used to co
 ### Done
 
 - user wants the project X to be always build with latest dependencies. If code is modified in a depended project, required projects should be rebuilt.
+
+
+
+
+
+## YourKit sponsorship
+
+YourKit has gracefully given away a licence for the Pom Explorer project ! If Pom Exlorer is fast enough, it might be thanks to the YourKit profiler !
+
+![](https://www.yourkit.com/images/yklogo.png)
+
+YourKit supports open source projects with its full-featured Java Profiler.
+
+YourKit, LLC is the creator of <a href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a>
+and <a href="https://www.yourkit.com/.net/profiler/">YourKit .NET Profiler</a>,
+innovative and intelligent tools for profiling Java and .NET applications.
