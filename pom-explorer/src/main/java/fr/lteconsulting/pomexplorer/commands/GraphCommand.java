@@ -1,6 +1,7 @@
 package fr.lteconsulting.pomexplorer.commands;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.Writer;
 import java.util.Date;
 import java.util.HashSet;
@@ -48,7 +49,7 @@ public class GraphCommand
 	}
 
 	@Help( "displays an interactive 3d WebGL graph of the projects, limited to dependency tree of the given root gavs" )
-	public void roots( ApplicationSession session, Log log, @Help("gav filter, can be a comma separated list of filters") FilteredGAVs roots )
+	public void roots( ApplicationSession session, Log log, @Help( "gav filter, can be a comma separated list of filters" ) FilteredGAVs roots )
 	{
 		String url = "graph.html?session=" + System.identityHashCode( session );
 		url += "&graphQueryId=" + GraphQuery.register( new HashSet<>( roots.getGavs( session.session() ) ) );
@@ -81,6 +82,12 @@ public class GraphCommand
 	@Help( "exports a GraphML file" )
 	public void export( ApplicationSession session, Log log )
 	{
+		export( session, log, null );
+	}
+
+	@Help( "exports a GraphML file, and filters the gav that are exported" )
+	public void export( ApplicationSession session, Log log, FilteredGAVs gavFilter )
+	{
 		PomGraphReadTransaction tx = session.graph().read();
 
 		try
@@ -110,20 +117,20 @@ public class GraphCommand
 							return vertex.toString();
 						}
 					}, new IntegerEdgeNameProvider<RepositoryRelation>(), new EdgeNameProvider<RepositoryRelation>()
-					{
-						@Override
-						public String getEdgeName( RepositoryRelation edge )
-						{
-							return edge.toString();
-						}
-					} );
+			{
+				@Override
+				public String getEdgeName( RepositoryRelation edge )
+				{
+					return edge.toString();
+				}
+			} );
 
 			DirectedGraph<Gav, Relation> g = tx.internalGraph();
 
 			DirectedGraph<Gav, Relation> ng = new DirectedMultigraph<Gav, Relation>( (Class<? extends Relation>) Relation.class );
 			for( Gav gav : g.vertexSet() )
 			{
-				if( !isOkGav( gav ) )
+				if( gavFilter != null && !gavFilter.accept( gav ) )
 					continue;
 
 				ng.addVertex( gav );
@@ -132,7 +139,7 @@ public class GraphCommand
 				{
 					Gav target = g.getEdgeTarget( relation );
 
-					if( !isOkGav( target ) )
+					if( gavFilter != null && !gavFilter.accept( target ) )
 						continue;
 
 					if( !isOkRelation( relation ) )

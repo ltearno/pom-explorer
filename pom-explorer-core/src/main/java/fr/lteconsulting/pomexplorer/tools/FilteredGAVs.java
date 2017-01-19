@@ -45,11 +45,7 @@ public class FilteredGAVs
 		if( filters != null )
 			stream = tx.gavs()
 					.stream()
-					.filter( gav ->
-					{
-						String toSearch = gav.toString().toLowerCase();
-						return Arrays.stream( filters ).anyMatch( filter -> toSearch.contains( filter ) );
-					} );
+					.filter( this::accept );
 		else
 			stream = tx.gavs().stream();
 
@@ -58,5 +54,11 @@ public class FilteredGAVs
 		stream.sorted( Gav.alphabeticalComparator ).forEachOrdered( gav -> res.add( gav ) );
 
 		return res;
+	}
+
+	public boolean accept( Gav gav )
+	{
+		String toSearch = gav.toString().toLowerCase();
+		return Arrays.stream( filters ).anyMatch( filter -> toSearch.contains( filter ) );
 	}
 }
