@@ -48,7 +48,7 @@ public class GraphCommand
 	}
 
 	@Help( "displays an interactive 3d WebGL graph of the projects, limited to dependency tree of the given root gavs" )
-	public void roots( ApplicationSession session, Log log, FilteredGAVs roots )
+	public void roots( ApplicationSession session, Log log, @Help("gav filter, can be a comma separated list of filters") FilteredGAVs roots )
 	{
 		String url = "graph.html?session=" + System.identityHashCode( session );
 		url += "&graphQueryId=" + GraphQuery.register( new HashSet<>( roots.getGavs( session.session() ) ) );

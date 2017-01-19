@@ -56,7 +56,7 @@ public class ProjectsCommand
 	{
 		assert gavFilter != null;
 
-		logi.html( "projects details filtered by '" + gavFilter.getFilter() + "':<br/>" );
+		logi.html( "projects details filtered by '" + gavFilter.getFilterDescription() + "':<br/>" );
 		logi.html( "<i>possible options: managed, nofetch, offline, profiles</i><br/>" );
 
 		// Is some profiles passed in option ?

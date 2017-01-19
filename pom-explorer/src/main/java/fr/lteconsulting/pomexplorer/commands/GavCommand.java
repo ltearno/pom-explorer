@@ -33,7 +33,7 @@ public class GavCommand
 	{
 		StringBuilder sb = new StringBuilder();
 
-		sb.append( "<br/>GAV list filtered with '" + (gavFilter != null ? gavFilter.getFilter() : "no filter") + "' :<br/>" );
+		sb.append( "<br/>GAV list filtered with '" + (gavFilter != null ? gavFilter.getFilterDescription() : "no filter") + "' :<br/>" );
 		if( gavFilter != null )
 		{
 			gavFilter.getGavs( session.session() ).stream().sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) ).forEach( gav -> sb.append( gav + "<br/>" ) );

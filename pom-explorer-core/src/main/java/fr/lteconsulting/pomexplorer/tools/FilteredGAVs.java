@@ -1,7 +1,10 @@
 package fr.lteconsulting.pomexplorer.tools;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import fr.lteconsulting.pomexplorer.Session;
@@ -13,32 +16,40 @@ import fr.lteconsulting.pomexplorer.model.Gav;
  */
 public class FilteredGAVs
 {
-	private final String filter;
+	private final String[] filters;
 
 	public FilteredGAVs( String filter )
 	{
 		if( filter != null )
+		{
 			filter = filter.toLowerCase();
-		this.filter = filter;
+			filters = filter.split( "," );
+		}
+		else
+		{
+			filters = null;
+		}
 	}
 
-	public String getFilter()
+	public String getFilterDescription()
 	{
-		return filter;
-	}
-
-	public boolean accept( Gav gav )
-	{
-		return gav != null && (filter == null || gav.toString().toLowerCase().contains( filter ));
+		return Arrays.stream( filters ).collect( Collectors.joining( ", " ) );
 	}
 
 	public List<Gav> getGavs( Session session )
 	{
 		PomGraphReadTransaction tx = session.graph().read();
+
 		Stream<Gav> stream;
 
-		if( filter != null )
-			stream = tx.gavs().stream().filter( gav -> gav.toString().toLowerCase().contains( filter ) );
+		if( filters != null )
+			stream = tx.gavs()
+					.stream()
+					.filter( gav ->
+					{
+						String toSearch = gav.toString().toLowerCase();
+						return Arrays.stream( filters ).anyMatch( filter -> toSearch.contains( filter ) );
+					} );
 		else
 			stream = tx.gavs().stream();
 
