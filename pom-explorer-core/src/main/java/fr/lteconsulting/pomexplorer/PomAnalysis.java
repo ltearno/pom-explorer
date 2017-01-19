@@ -335,7 +335,7 @@ public class PomAnalysis
 		{
 			for( org.apache.maven.model.Dependency d : project.getMavenProject().getDependencyManagement().getDependencies() )
 			{
-				if( Scope.fromString( d.getScope() ) == Scope.IMPORT && "pom".equals( d.getType() ) )
+				if( Scope.fromString( project.interpolateValue( d.getScope(), projects, log ) ) == Scope.IMPORT && "pom".equals( d.getType() ) )
 				{
 					// TODO should use project's dependency management to resolve the gav when version is null (rare cases maybe)
 					Gav bomGav = project.interpolateGav( new Gav( d.getGroupId(), d.getArtifactId(), d.getVersion() ), projects, log );

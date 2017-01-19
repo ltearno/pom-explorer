@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import fr.lteconsulting.pomexplorer.graph.relation.Scope;
+import fr.lteconsulting.pomexplorer.model.Dependency;
+import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
@@ -30,12 +33,14 @@ public class AnalyzerTest
 		assertEquals( 1, session.projects().size() );
 
 		System.out.println( "DEPENDENCIES" );
-		session.graph().read().dependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation -> {
+		session.graph().read().dependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation ->
+		{
 			System.out.println( relation );
 		} );
 
 		System.out.println( "BUILD DEPENDENCIES" );
-		session.graph().read().buildDependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation -> {
+		session.graph().read().buildDependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation ->
+		{
 			System.out.println( relation );
 		} );
 
@@ -43,7 +48,8 @@ public class AnalyzerTest
 		session.graph().read().gavs().stream()
 				.sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
 				.filter( gav -> gav.getVersion() == null )
-				.forEach( gav -> {
+				.forEach( gav ->
+				{
 					System.out.println( gav );
 				} );
 	}
@@ -57,7 +63,8 @@ public class AnalyzerTest
 
 		assertEquals( 5, session.projects().size() );
 
-		session.projects().values().forEach( project -> {
+		session.projects().values().forEach( project ->
+		{
 			System.out.println( "PROJECT " + project );
 		} );
 	}
@@ -76,10 +83,12 @@ public class AnalyzerTest
 		shouldBeMissing.add( "fr.lteconsulting:c:1.0-SNAPSHOT" );
 		shouldBeMissing.add( "fr.lteconsulting:c:1.0-SNAPSHOT" );
 
-		session.projects().values().forEach( project -> {
+		session.projects().values().forEach( project ->
+		{
 			System.out.println( "PROJECT " + project );
 			System.out.println( "DEPENDENCIES" );
-			session.graph().read().dependencies( project.getGav() ).forEach( dependency -> {
+			session.graph().read().dependencies( project.getGav() ).forEach( dependency ->
+			{
 				System.out.println( dependency );
 			} );
 
@@ -112,10 +121,12 @@ public class AnalyzerTest
 
 		assertEquals( 4, session.projects().size() );
 
-		session.projects().values().forEach( project -> {
+		session.projects().values().forEach( project ->
+		{
 			System.out.println( "PROJECT " + project );
 			System.out.println( "DEPENDENCIES" );
-			session.graph().read().dependencies( project.getGav() ).forEach( dependency -> {
+			session.graph().read().dependencies( project.getGav() ).forEach( dependency ->
+			{
 				System.out.println( dependency );
 			} );
 
@@ -163,6 +174,19 @@ public class AnalyzerTest
 	}
 
 	@Test
+	public void test08()
+	{
+		Session session = new Session();
+
+		PomAnalysis.runFullRecursiveAnalysis( "testSets/set08", session, null, null, true, System.out::println );
+
+		assertEquals( 1, session.projects().size() );
+
+		Project project = session.projects().forGav( Gav.parse( "fr.lteconsulting:a:1.0-SNAPSHOT" ) );
+		assertNotNull( project );
+	}
+
+	@Test
 	public void test02()
 	{
 		Session session = new Session();
@@ -180,12 +204,14 @@ public class AnalyzerTest
 		}
 
 		System.out.println( "DEPENDENCIES" );
-		session.graph().read().dependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation -> {
+		session.graph().read().dependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation ->
+		{
 			System.out.println( relation );
 		} );
 
 		System.out.println( "BUILD DEPENDENCIES" );
-		session.graph().read().buildDependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation -> {
+		session.graph().read().buildDependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation ->
+		{
 			System.out.println( relation );
 		} );
 
@@ -194,7 +220,8 @@ public class AnalyzerTest
 		tx.gavs().stream()
 				.sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
 				.filter( gav -> gav.getVersion() == null )
-				.forEach( gav -> {
+				.forEach( gav ->
+				{
 					System.out.println( gav );
 					tx.dependenciesRec( gav ).stream().forEach( r -> System.out.println( " - " + r ) );
 				} );
@@ -233,7 +260,8 @@ public class AnalyzerTest
 		PomGraphReadTransaction tx = session.graph().read();
 		tx.gavs().stream()
 				.sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
-				.forEach( gav -> {
+				.forEach( gav ->
+				{
 					System.out.println( gav );
 				} );
 	}
