@@ -42,6 +42,7 @@ public class PomAnalysis
 			".idea",
 			".settings" ) );
 
+    private final Set<String> ignoredDirs;
 	private final Session session;
 	private final PomFileLoader pomFileLoader;
 	private final Log log;
@@ -55,6 +56,8 @@ public class PomAnalysis
 	private final Set<Project> duplicatedProjects = new HashSet<>();
 
 	private final ProjectContainer projects;
+
+   
 
 	public static void runFullRecursiveAnalysis( String directory, Session session, PomFileLoader pomFileLoader, String[] profilesId, boolean verbose, Log log )
 	{
@@ -100,6 +103,8 @@ public class PomAnalysis
 	public PomAnalysis( Session session, PomFileLoader pomFileLoader, String[] profilesId, boolean verbose, Log log )
 	{
 		this.session = session;
+		this.ignoredDirs = new HashSet<>(IGNORED_DIRS);
+		ignoredDirs.addAll(session.getIgnoredDirs());
 		this.pomFileLoader = pomFileLoader;
 		this.log = log;
 		this.verbose = verbose;
@@ -396,8 +401,7 @@ public class PomAnalysis
 
 			if( file.isDirectory() )
 			{
-				String name = file.getName();
-				if( !acceptedDir( name ) )
+				if( !acceptedDir( file ) )
 					continue;
 
 				try( DirectoryStream<Path> pathStream = Files.newDirectoryStream( file.toPath(), this::acceptedPath ) )
@@ -418,10 +422,10 @@ public class PomAnalysis
 		return pomFiles;
 	}
 
-	private boolean acceptedDir( String name )
+	private boolean acceptedDir( File file )
 	{
-		for( String ignored : IGNORED_DIRS )
-			if( ignored.equalsIgnoreCase( name ) )
+		for( String ignored : ignoredDirs )
+			if( ignored.equalsIgnoreCase( file.getName() ) || new File(ignored).equals( file ) )
 				return false;
 		return true;
 	}
@@ -430,7 +434,7 @@ public class PomAnalysis
 	{
 		String pathName = path.getFileName().toString();
 
-		return (Files.isDirectory( path ) && acceptedDir( pathName )) || (pathName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( pathName ));
+		return (Files.isDirectory( path ) && acceptedDir( path.toFile() )) || (pathName.endsWith( ".pom" ) || "pom.xml".equalsIgnoreCase( pathName ));
 	}
 
 	private Project loadProject( File pomFile, boolean isExternal )

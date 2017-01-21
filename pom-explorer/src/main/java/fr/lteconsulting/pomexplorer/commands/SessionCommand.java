@@ -1,12 +1,16 @@
 package fr.lteconsulting.pomexplorer.commands;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.AppFactory;
+import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.Client;
 import fr.lteconsulting.pomexplorer.Log;
 import fr.lteconsulting.pomexplorer.Tools;
-import fr.lteconsulting.pomexplorer.ApplicationSession;
 
 public class SessionCommand
 {
@@ -50,6 +54,19 @@ public class SessionCommand
 		log.html( "Session's maven shell command set to " + command + "<br/>" );
 	}
 
+	@Help( "ignore directories when analyzing projects" )
+    public void ignoreDirs( Client client, ApplicationSession session, @Help( "comma separated list of directory names or absolute paths" ) String dirNames, Log log )
+    {
+        if (dirNames != null) {
+            Set<String> ignoredDirs = new HashSet<>(Arrays.asList(dirNames.split(",")));
+            session.setIgnoredDirs(ignoredDirs);
+        }
+        else {
+            session.setIgnoredDirs(Collections.emptySet());
+        }
+        log.html( "Session's custom ignored directories set to " + (dirNames != null && !dirNames.isEmpty() ? dirNames : "(none)") + "<br/>" );
+    }
+	
 	@Help( "sets the current working session to the specified index" )
 	public void workOn( Client client, ApplicationSession session, Integer index, Log log )
 	{

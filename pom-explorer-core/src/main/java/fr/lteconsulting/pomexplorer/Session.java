@@ -32,6 +32,7 @@ public class Session
 	private final Set<ProjectChange> projectChanges = new HashSet<>();
 	private final Set<GraphChange> graphChanges = new HashSet<>();
 	private XSession xSession = null;
+	private Set<String> ignoredDirs = new HashSet<>();
 
 	public XSession setCallback( XSession callback )
 	{
@@ -94,13 +95,23 @@ public class Session
 		this.mavenShellCommand = mavenShellCommand;
 	}
 
-	public String getDescription()
+	public Set<String> getIgnoredDirs() {
+        return ignoredDirs;
+    }
+
+    public void setIgnoredDirs(Set<String> ignoredDirs) {
+        this.ignoredDirs = ignoredDirs;
+    }
+
+    public String getDescription()
 	{
 		PomGraphReadTransaction tx = graph.read();
 		return "<div><b>WorkingSession " + System.identityHashCode( this ) + "</b><br/>" + "Maven configuration file : "
 				+ (mavenSettingsFilePath != null ? mavenSettingsFilePath : "(system default)") + "<br/>" + "Maven shell command : "
 				+ (mavenShellCommand != null ? mavenShellCommand : "(null)") + "<br/>" + projects.size() + " projects<br/>" + tx.gavs().size() + " GAVs<br/>"
-				+ tx.relations().size() + " relations<br/></div>";
+				+ tx.relations().size() + " relations<br/>"
+				+ "custom ignored directories: " + ignoredDirs + "<br/>"
+				+ "</div>";
 	}
 
 	public void sendEventAddedProject( Project project )
@@ -108,4 +119,5 @@ public class Session
 		if( xSession != null )
 			xSession.projectAdded( project );
 	}
+   
 }

@@ -123,6 +123,11 @@ public class ApplicationSession
 	{
 		session.setMavenShellCommand( mavenShellCommand );
 	}
+	
+	public void setIgnoredDirs(Set<String> ignoredDirs)
+    {
+        session.setIgnoredDirs(ignoredDirs);
+    }
 
 	public String getDescription()
 	{
@@ -148,4 +153,5 @@ public class ApplicationSession
 	{
 		return projectsWatcher;
 	}
+
 }
