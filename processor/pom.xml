@@ -21,8 +21,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<scope>test</scope>
-			<version>3.8.1</version>
 		</dependency>
 	</dependencies>
 	
