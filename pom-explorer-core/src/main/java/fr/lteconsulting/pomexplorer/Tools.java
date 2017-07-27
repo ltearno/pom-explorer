@@ -77,20 +77,26 @@ public class Tools
 		return "<span style='color:red;'>" + message + "</span><br/>";
 	}
 
-	public static void logStacktrace( Exception e, Log log )
+	public static void logStacktrace( Throwable exception, Log log )
 	{
-		Throwable t = e;
-		if( t instanceof InvocationTargetException )
-			t = ((InvocationTargetException) t).getTargetException();
+		if( exception instanceof InvocationTargetException )
+			exception = ((InvocationTargetException) exception).getTargetException();
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append( t.toString() + "<br/>" );
+		sb.append( exception.toString() + "<br/>" );
 
-		for( StackTraceElement st : t.getStackTrace() )
+		for( StackTraceElement st : exception.getStackTrace() )
 			sb.append( st.toString() + "<br/>" );
 
 		log.html( sb.toString() );
+
+		Throwable cause = exception.getCause();
+		if( cause != null && cause != exception )
+		{
+			log.html( "Caused by<br>" );
+			logStacktrace( cause, log );
+		}
 	}
 
 	/**
