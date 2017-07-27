@@ -61,4 +61,22 @@ public class FilteredGAVs
 		String toSearch = gav.toString().toLowerCase();
 		return Arrays.stream( filters ).anyMatch( filter -> toSearch.contains( filter ) );
 	}
+
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append( "[FilteredGAVs:" );
+		if( filters != null )
+		{
+			for( String filter : filters )
+			{
+				sb.append( " " );
+				sb.append( filter );
+			}
+		}
+		sb.append( "]" );
+
+		return sb.toString();
+	}
 }

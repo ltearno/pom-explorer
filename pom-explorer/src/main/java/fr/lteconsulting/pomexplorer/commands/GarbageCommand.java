@@ -150,7 +150,7 @@ public class GarbageCommand
 
 			log.html( "Referenced FQNs from transitive dependencies :<br/>" );
 			log.html( referencedTransitiveDependencies.size() + " referenced transitive dependencies GAV<br/>" );
-			referencedTransitiveDependencies.stream().sorted().forEachOrdered( g -> log.html( g + "<br/>" ) );
+			referencedTransitiveDependencies.stream().sorted( Gav.alphabeticalComparator ).forEachOrdered( g -> log.html( g + "<br/>" ) );
 			log.html( "<br/>" );
 
 			log.html( "GAV declared directly in the project's dependencies but not referenced in the project's sources (<i>may include false positives like imported or module poms</i>):<br/>" );
