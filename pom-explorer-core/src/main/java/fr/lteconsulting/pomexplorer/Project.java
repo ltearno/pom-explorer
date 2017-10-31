@@ -529,7 +529,7 @@ public class Project
 					if( version == null && (dm == null || dm.getVs() == null) )
 						log.html( Tools.warningMessage( "missing version and version not found in depencency management for dependency to " + key + " in project " + this ) );
 
-					if( version == null )
+					if( version == null && dm != null )
 						version = dm.getVs().getVersion();
 
 					if( scope == null )

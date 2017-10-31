@@ -117,7 +117,9 @@ public class AppFactory
 	public WebServer webServer()
 	{
 		if( webServer == null )
+		{
 			webServer = new WebServer( xWebServer );
+		}
 
 		return webServer;
 	}
@@ -136,17 +138,23 @@ public class AppFactory
 			for( String command : commands )
 			{
 				if( command.isEmpty() || command.startsWith( "#" ) )
+				{
 					continue;
+				}
 
 				if( command.startsWith( "=" ) )
 				{
 					String message = command.substring( 1 );
 					if( message.isEmpty() )
+					{
 						message = "<br/>";
+					}
 					client.sendHtml( talkId, message );
 				}
 				else
+				{
 					AppFactory.get().commands().takeCommand( client, createLogger( client, talkId ), command );
+				}
 			}
 
 			client.sendClose( talkId );
@@ -214,7 +222,9 @@ public class AppFactory
 		{
 			List<ApplicationSession> sessions = AppFactory.get().sessions();
 			if( sessions == null || sessions.isEmpty() )
+			{
 				return "No session available. Go to main page !";
+			}
 
 			ApplicationSession session = null;
 
@@ -239,7 +249,9 @@ public class AppFactory
 			}
 
 			if( session == null )
+			{
 				session = sessions.get( 0 );
+			}
 
 			GraphQuery query = GraphQuery.get( graphQueryId );
 
@@ -361,42 +373,64 @@ public class AppFactory
 		public boolean equals( Object obj )
 		{
 			if( this == obj )
+			{
 				return true;
+			}
 			if( obj == null )
+			{
 				return false;
+			}
 			if( getClass() != obj.getClass() )
+			{
 				return false;
+			}
 
 			EdgeDto other = (EdgeDto) obj;
 
 			if( from == null )
 			{
 				if( other.from != null )
+				{
 					return false;
+				}
 			}
 			else if( !from.equals( other.from ) )
+			{
 				return false;
+			}
 			if( label == null )
 			{
 				if( other.label != null )
+				{
 					return false;
+				}
 			}
 			else if( !label.equals( other.label ) )
+			{
 				return false;
+			}
 			if( relation == null )
 			{
 				if( other.relation != null )
+				{
 					return false;
+				}
 			}
 			else if( !relation.equals( other.relation ) )
+			{
 				return false;
+			}
 			if( to == null )
 			{
 				if( other.to != null )
+				{
 					return false;
+				}
 			}
 			else if( !to.equals( other.to ) )
+			{
 				return false;
+			}
 			return true;
 		}
 	}

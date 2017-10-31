@@ -1,14 +1,9 @@
 package fr.lteconsulting.pomexplorer;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.Set;
+import java.util.function.Predicate;
 
 import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
@@ -24,6 +19,7 @@ public class TransitivityResolver
 {
 	private static class Cache
 	{
+        private Predicate<GroupArtifact> excludeFilter;
 		private final Map<Integer, TransitivityProjectInformation> cache = new HashMap<>();
 
 		public TransitivityProjectInformation getInformation( Project project )
@@ -38,9 +34,19 @@ public class TransitivityResolver
 
 			return res;
 		}
+
+        public void setExcludeFilter(Predicate<GroupArtifact> excludeFilter)
+        {
+            this.excludeFilter = excludeFilter;
+        }
 	}
 
-	private static final Cache cache = new Cache();
+	private final Cache cache = new Cache();
+
+    public void setExcludeFilter(Predicate<GroupArtifact> excludeFilter)
+    {
+        cache.setExcludeFilter(excludeFilter);
+    }
 
 	public DependencyNode getTransitiveDependencyTree( Session session, Project project, boolean full, boolean online, Map<String, Profile> profiles, PomFileLoader loader, Log log )
 	{
@@ -52,6 +58,7 @@ public class TransitivityResolver
 	private static class TransitivityProjectInformation
 	{
 		private final Project project;
+		private Predicate<GroupArtifact> excludeFilter;
 
 		private DependencyNode partialTree = null;
 		private DependencyNode fullTree = null;
@@ -60,6 +67,11 @@ public class TransitivityResolver
 		{
 			this.project = project;
 		}
+
+		public void setExcludeFilter(Predicate<GroupArtifact> excludeFilter)
+        {
+            this.excludeFilter = excludeFilter;
+        }
 
 		public DependencyNode getTransitiveDependencyTree( Session session, boolean full, boolean online, Map<String, Profile> profiles, PomFileLoader loader, Log log )
 		{
@@ -90,6 +102,9 @@ public class TransitivityResolver
 
 		private boolean isGroupArtifactExcluded( DependencyNode node, GroupArtifact ga )
 		{
+			if(excludeFilter!=null && !excludeFilter.test(ga))
+				return false;
+
 			while( node != null )
 			{
 				if( node.isExcluded( ga ) )
@@ -156,8 +171,6 @@ public class TransitivityResolver
 
 				for( Entry<DependencyKey, RawDependency> e : localDependencies.entrySet() )
 				{
-					System.out.println( e );
-
 					DependencyKey dependencyKey = e.getKey();
 					RawDependency dependency = e.getValue();
 					if( dependency.isOptional() && !node.isRoot() )

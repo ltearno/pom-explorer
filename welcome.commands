@@ -16,7 +16,7 @@
 session create
 #
 # Uncomment the following line if you have a non-default maven settings file
-#session mavenSettingsFilePath C:\someDirectory\settings.xml
+# session mavenSettingsFilePath C:\somewhere\settings.xml
 #
 =
 =Analyzing the default directory

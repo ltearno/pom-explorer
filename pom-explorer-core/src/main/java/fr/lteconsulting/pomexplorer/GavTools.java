@@ -33,7 +33,7 @@ public class GavTools
 			ZipInputStream zip = new ZipInputStream( new FileInputStream( resolvedFile ) );
 			for( ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry() )
 			{
-				System.out.println( entry.getName() );
+				log.html( entry.getName() +"<br/>");
 				if( !entry.isDirectory() && entry.getName().endsWith( ".class" ) )
 				{
 					String className = entry.getName().replace( '/', '.' );
