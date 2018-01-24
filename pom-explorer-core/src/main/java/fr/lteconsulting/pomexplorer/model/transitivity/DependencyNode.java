@@ -71,7 +71,7 @@ public class DependencyNode
 		return parent == null;
 	}
 
-	public DependencyNode getRootNode()
+	private DependencyNode getRootNode()
 	{
 		DependencyNode node = this;
 		while( node.parent != null )
@@ -96,7 +96,7 @@ public class DependencyNode
 		return parent;
 	}
 
-	Map<GroupArtifact, DependencyNode> cachedNodesByGA;
+	private Map<GroupArtifact, DependencyNode> cachedNodesByGA;
 
 	public void addChild( DependencyNode child )
 	{
@@ -191,12 +191,12 @@ public class DependencyNode
 		return false;
 	}
 
-	void print( int level )
+	private void print(int level)
 	{
 		StringBuilder sb = new StringBuilder();
 		for( int i = 0; i < level; i++ )
 			sb.append( "   " );
-		sb.append( gact + " " + vs );
+		sb.append(gact).append(" ").append(vs);
 		System.out.println( sb.toString() );
 		if( children != null )
 		{

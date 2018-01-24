@@ -11,6 +11,7 @@ package fr.lteconsulting.pomexplorer.activity;
  * <p>
  * Methods marked with the {@link @Direct} annotation are called directly from the calling thread
  */
+//FIXME either garbage or not complete yet
 public class Activity
 {
 	/**
