@@ -4,10 +4,10 @@ import fr.lteconsulting.pomexplorer.Tools;
 
 public class DependencyKey implements Comparable<DependencyKey>
 {
-	final String groupId;
-	final String artifactId;
-	final String classifier;
-	final String type;
+	private final String groupId;
+	private final String artifactId;
+	private final String classifier;
+	private final String type;
 
 	public static DependencyKey parse( String string )
 	{

@@ -22,7 +22,7 @@ public class TransitivityResolver
         private Predicate<GroupArtifact> excludeFilter;
 		private final Map<Integer, TransitivityProjectInformation> cache = new HashMap<>();
 
-		public TransitivityProjectInformation getInformation( Project project )
+		TransitivityProjectInformation getInformation(Project project)
 		{
 			TransitivityProjectInformation res = cache.get( System.identityHashCode( project ) );
 
@@ -35,7 +35,7 @@ public class TransitivityResolver
 			return res;
 		}
 
-        public void setExcludeFilter(Predicate<GroupArtifact> excludeFilter)
+        void setExcludeFilter(Predicate<GroupArtifact> excludeFilter)
         {
             this.excludeFilter = excludeFilter;
         }

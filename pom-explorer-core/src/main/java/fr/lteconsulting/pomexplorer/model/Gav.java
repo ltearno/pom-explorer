@@ -30,6 +30,7 @@ public class Gav
 			if( o2.version == null )
 				return 1;
 
+			//FIXME either useless code or a bug
 			r = o1.version.compareTo( o2.version );
 
 			return 0;

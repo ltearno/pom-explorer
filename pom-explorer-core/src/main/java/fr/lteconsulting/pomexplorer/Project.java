@@ -72,12 +72,6 @@ public class Project
 	private Map<String, ValueResolution> cachedResolutions;
 	private Map<DependencyKey, DependencyManagement> cachedLocalDependencyManagement;
 	private Map<GroupArtifact, String> cachedLocalPluginDependencyManagement;
-	private static Map<Gav, Gav> defaultGavs = new HashMap<>();
-
-	static
-	{
-		defaultGavs.put( new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", null ), new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", "2.2-beta-5" ) );
-	}
 
 	public Project( File pomFile, boolean isExternal )
 	{
@@ -85,8 +79,7 @@ public class Project
 		this.isExternal = isExternal;
 	}
 
-	public void readPomFile() throws Exception
-	{
+	public void readPomFile() {
 		project = readPomFile( pomFile );
 		if( project == null )
 			throw new RuntimeException( "cannot read pom " + pomFile.getAbsolutePath() );
@@ -283,7 +276,7 @@ public class Project
 		return dependencies;
 	}
 
-	public Set<Gav> getInterpolatedPluginDependencies( Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	private Set<Gav> getInterpolatedPluginDependencies(Map<String, Profile> profiles, ProjectContainer projects, Log log)
 	{
 		if( pluginDependencies == null )
 		{
@@ -473,7 +466,7 @@ public class Project
 		return dependencyMap;
 	}
 
-	private Map<GroupArtifact, String> completePluginDependencyManagementMap( Map<GroupArtifact, String> result, List<org.apache.maven.model.Plugin> plugins, ProjectContainer projects, Log log )
+	private void completePluginDependencyManagementMap(Map<GroupArtifact, String> result, List<Plugin> plugins, ProjectContainer projects, Log log )
 	{
 		if( plugins != null )
 		{
@@ -500,7 +493,6 @@ public class Project
 			}
 		}
 
-		return result;
 	}
 
 	private Map<DependencyKey, RawDependency> completeDependenciesMap( Map<DependencyKey, RawDependency> res, List<org.apache.maven.model.Dependency> dependencies, Map<String, Profile> profiles, ProjectContainer projects, Log log )

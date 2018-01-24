@@ -11,7 +11,7 @@ public class GroupArtifact
 			return null;
 
 		String[] parts = string.split( ":" );
-		if( parts == null || parts.length != 2 )
+		if(parts.length != 2)
 			return null;
 
 		return new GroupArtifact( parts[0], parts[1] );

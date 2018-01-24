@@ -64,12 +64,7 @@ public class ClassUsageExtractorVisitor extends ASTVisitor
 		if( !firstLetter.toUpperCase().equals( firstLetter ) )
 			return;
 
-		List<String> users = fqnUsage.get( name );
-		if( users == null )
-		{
-			users = new ArrayList<>();
-			fqnUsage.put( name, users );
-		}
+		List<String> users = fqnUsage.computeIfAbsent(name, k -> new ArrayList<>());
 
 		users.add( currentFilePath );
 
