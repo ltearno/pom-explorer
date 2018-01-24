@@ -15,7 +15,7 @@ public class Dependency
 
 	private DependencyKey key;
 
-	public static final Comparator<Dependency> alphabeticalComparator = ( a, b ) -> a.toString().compareTo( b.toString() );
+	public static final Comparator<Dependency> alphabeticalComparator = Comparator.comparing(Dependency::toString);
 
 	public Dependency( Gav gav, Scope scope, String classifier, String type )
 	{

@@ -44,9 +44,8 @@ public class PomGraph
 	private DirectedMultigraph<Gav, Relation> createGraph()
 	{
 		@SuppressWarnings( "unchecked" )
-		Class<? extends Relation> edgeClass = (Class<? extends Relation>) (Object) Relation.class;
-		DirectedMultigraph<Gav, Relation> graph = new DirectedMultigraph<Gav, Relation>( edgeClass );
-		return graph;
+		Class<? extends Relation> edgeClass = Relation.class;
+		return new DirectedMultigraph<>(edgeClass);
 	}
 
 	public static class PomGraphReadTransaction
@@ -98,9 +97,7 @@ public class PomGraph
 			if( relations == null || relations.size() != 1 )
 				return null;
 
-			Gav parent = txGraph.getEdgeTarget( relations.iterator().next() );
-
-			return parent;
+			return txGraph.getEdgeTarget( relations.iterator().next() );
 		}
 
 		public Set<Gav> children( Gav gav )
@@ -116,9 +113,6 @@ public class PomGraph
 
 		/**
 		 * Gets the outgoing relations of a GAV
-		 * 
-		 * @param gav
-		 * @return
 		 */
 		public Set<Relation> relations( Gav gav )
 		{
@@ -129,9 +123,6 @@ public class PomGraph
 
 		/**
 		 * Recursively gets the outgoing relations of a GAV
-		 * 
-		 * @param gav
-		 * @return
 		 */
 		public Set<Relation> relationsRec( Gav gav )
 		{
@@ -142,9 +133,6 @@ public class PomGraph
 
 		/**
 		 * Gets the ingoing relations of a GAV
-		 * 
-		 * @param gav
-		 * @return
 		 */
 		public Set<Relation> relationsReverse( Gav gav )
 		{
@@ -155,9 +143,6 @@ public class PomGraph
 
 		/**
 		 * Recursively gets the ingoing relations of a GAV
-		 * 
-		 * @param gav
-		 * @return
 		 */
 		public Set<Relation> relationsReverseRec( Gav gav )
 		{
@@ -188,9 +173,6 @@ public class PomGraph
 
 		/**
 		 * Returns the set of GAVs which depend directly on the one passed by parameter
-		 * 
-		 * @param gav
-		 * @return
 		 */
 		public Set<DependencyRelation> dependents( Gav gav )
 		{
@@ -215,7 +197,7 @@ public class PomGraph
 		private Set<ParentRelation> filterParentRelations( Set<Relation> relations )
 		{
 			Set<ParentRelation> res = new HashSet<>();
-			relations.stream().filter( r -> r instanceof ParentRelation ).map( r -> (ParentRelation) r ).forEach( r -> res.add( r ) );
+			relations.stream().filter( r -> r instanceof ParentRelation ).map( r -> (ParentRelation) r ).forEach(res::add);
 
 			return res;
 		}
@@ -223,7 +205,7 @@ public class PomGraph
 		private Set<DependencyRelation> filterDependencyRelations( Set<Relation> relations )
 		{
 			Set<DependencyRelation> res = new HashSet<>();
-			relations.stream().filter( r -> r instanceof DependencyRelation ).map( r -> (DependencyRelation) r ).forEach( r -> res.add( r ) );
+			relations.stream().filter( r -> r instanceof DependencyRelation ).map( r -> (DependencyRelation) r ).forEach(res::add);
 
 			return res;
 		}
@@ -231,7 +213,7 @@ public class PomGraph
 		private Set<BuildDependencyRelation> filterBuildDependencyRelations( Set<Relation> relations )
 		{
 			Set<BuildDependencyRelation> res = new HashSet<>();
-			relations.stream().filter( r -> r instanceof BuildDependencyRelation ).map( r -> (BuildDependencyRelation) r ).forEach( r -> res.add( r ) );
+			relations.stream().filter( r -> r instanceof BuildDependencyRelation ).map( r -> (BuildDependencyRelation) r ).forEach(res::add);
 
 			return res;
 		}

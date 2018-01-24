@@ -65,31 +65,31 @@ public class PomAnalysis
 
 		long duration = System.currentTimeMillis();
 
-		PomAnalysis analyzis = new PomAnalysis( session, pomFileLoader, profilesId, verbose, log );
-		analyzis.addDirectory( directory );
-		Set<Project> loadedProjects = analyzis.loadProjects();
-		analyzis.completeLoadedProjects();
-		analyzis.addCompletedProjectsToSession();
-		Set<Project> addedToGraph = analyzis.addCompletedProjectsToGraph();
+		PomAnalysis analysis = new PomAnalysis( session, pomFileLoader, profilesId, verbose, log );
+		analysis.addDirectory( directory );
+		Set<Project> loadedProjects = analysis.loadProjects();
+		analysis.completeLoadedProjects();
+		analysis.addCompletedProjectsToSession();
+		Set<Project> addedToGraph = analysis.addCompletedProjectsToGraph();
 
 		duration = System.currentTimeMillis() - duration;
 
-		if( !analyzis.getDuplicatedProjects().isEmpty() )
+		if( !analysis.getDuplicatedProjects().isEmpty() )
 		{
 			StringBuilder sb = new StringBuilder();
-			sb.append( "<br/>" + analyzis.getDuplicatedProjects().size() + " duplicated projects:<br/>" );
+			sb.append("<br/>").append(analysis.getDuplicatedProjects().size()).append(" duplicated projects:<br/>");
 			sb.append( "<ul>" );
-			analyzis.getDuplicatedProjects().stream().sorted( Project.alphabeticalComparator ).forEach( project -> sb.append( "<li>" + project + "</li>" ) );
+			analysis.getDuplicatedProjects().stream().sorted( Project.alphabeticalComparator ).forEach( project -> sb.append("<li>").append(project).append("</li>"));
 			sb.append( "</ul>" );
 			log.html( Tools.warningMessage( sb.toString() ) );
 		}
 
-		if( !analyzis.getUnresolvableProjects().isEmpty() )
+		if( !analysis.getUnresolvableProjects().isEmpty() )
 		{
 			StringBuilder sb = new StringBuilder();
-			sb.append( "<br/>" + analyzis.getUnresolvableProjects().size() + " unresolvable projects:<br/>" );
+			sb.append("<br/>").append(analysis.getUnresolvableProjects().size()).append(" unresolvable projects:<br/>");
 			sb.append( "<ul>" );
-			analyzis.getUnresolvableProjects().stream().sorted( Project.alphabeticalComparator ).forEach( project -> sb.append( "<li>" + project + "</li>" ) );
+			analysis.getUnresolvableProjects().stream().sorted( Project.alphabeticalComparator ).forEach( project -> sb.append("<li>").append(project).append("</li>"));
 			sb.append( "</ul>" );
 			log.html( Tools.warningMessage( sb.toString() ) );
 		}
@@ -112,8 +112,7 @@ public class PomAnalysis
 		if( profilesId != null )
 		{
 			profiles = new HashMap<>();
-			for( int i = 0; i < profilesId.length; i++ )
-				profiles.put( profilesId[i], new Profile( profilesId[i] ) );
+			for (String aProfilesId : profilesId) profiles.put(aProfilesId, new Profile(aProfilesId));
 		}
 		else
 		{
@@ -216,7 +215,7 @@ public class PomAnalysis
 
 		for( Project project : loadedProjects )
 		{
-			if( session.projects().contains( project.getGav() ) || completedProjects.stream().filter( p -> p.getGav().equals( project.getGav() ) ).findFirst().isPresent() )
+			if( session.projects().contains( project.getGav() ) || completedProjects.stream().anyMatch(p -> p.getGav().equals( project.getGav() ) ))
 			{
 				Project duplicate = session.projects().forGav( project.getGav() );
 				if( duplicate == null )
@@ -355,6 +354,7 @@ public class PomAnalysis
 			}
 		}
 
+		//FIXME complete is always true
 		if( complete )
 		{
 			completedProjects.addAll( projectsToAddToReady );

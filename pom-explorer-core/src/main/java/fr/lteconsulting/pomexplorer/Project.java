@@ -72,12 +72,6 @@ public class Project
 	private Map<String, ValueResolution> cachedResolutions;
 	private Map<DependencyKey, DependencyManagement> cachedLocalDependencyManagement;
 	private Map<GroupArtifact, String> cachedLocalPluginDependencyManagement;
-	private static Map<Gav, Gav> defaultGavs = new HashMap<>();
-
-	static
-	{
-		defaultGavs.put( new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", null ), new Gav( "org.apache.maven.plugins", "maven-assembly-plugin", "2.2-beta-5" ) );
-	}
 
 	public Project( File pomFile, boolean isExternal )
 	{
@@ -85,8 +79,7 @@ public class Project
 		this.isExternal = isExternal;
 	}
 
-	public void readPomFile() throws Exception
-	{
+	public void readPomFile() {
 		project = readPomFile( pomFile );
 		if( project == null )
 			throw new RuntimeException( "cannot read pom " + pomFile.getAbsolutePath() );
@@ -258,9 +251,6 @@ public class Project
 
 	/**
 	 * Declared dependencies with values resolved
-	 *
-	 * @param log
-	 * @return
 	 */
 	public Set<Dependency> getInterpolatedDependencies( ProjectContainer projects, Log log )
 	{
