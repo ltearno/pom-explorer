@@ -45,6 +45,10 @@
 			<groupId>com.ximpleware</groupId>
 			<artifactId>vtd-xml</artifactId>
 		</dependency>
+		<dependency>		
+ 			<groupId>org.jgrapht</groupId>		
+ 			<artifactId>jgrapht-ext</artifactId>		
+ 		</dependency>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
