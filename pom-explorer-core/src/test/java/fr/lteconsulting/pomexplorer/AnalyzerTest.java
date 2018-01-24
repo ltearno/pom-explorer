@@ -6,14 +6,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import fr.lteconsulting.pomexplorer.graph.relation.Scope;
-import fr.lteconsulting.pomexplorer.model.Dependency;
-import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
@@ -33,25 +27,16 @@ public class AnalyzerTest
 		assertEquals( 1, session.projects().size() );
 
 		System.out.println( "DEPENDENCIES" );
-		session.graph().read().dependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation ->
-		{
-			System.out.println( relation );
-		} );
+		session.graph().read().dependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach(System.out::println);
 
 		System.out.println( "BUILD DEPENDENCIES" );
-		session.graph().read().buildDependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation ->
-		{
-			System.out.println( relation );
-		} );
+		session.graph().read().buildDependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach(System.out::println);
 
 		System.out.println( "NULL VERSION GAVS" );
 		session.graph().read().gavs().stream()
-				.sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
+				.sorted(Comparator.comparing(Gav::toString))
 				.filter( gav -> gav.getVersion() == null )
-				.forEach( gav ->
-				{
-					System.out.println( gav );
-				} );
+				.forEach(System.out::println);
 	}
 
 	@Test
@@ -87,10 +72,7 @@ public class AnalyzerTest
 		{
 			System.out.println( "PROJECT " + project );
 			System.out.println( "DEPENDENCIES" );
-			session.graph().read().dependencies( project.getGav() ).forEach( dependency ->
-			{
-				System.out.println( dependency );
-			} );
+			session.graph().read().dependencies( project.getGav() ).forEach(System.out::println);
 
 			/**
 			 * Checks that transitive dependencies cannot be resolved
@@ -125,10 +107,7 @@ public class AnalyzerTest
 		{
 			System.out.println( "PROJECT " + project );
 			System.out.println( "DEPENDENCIES" );
-			session.graph().read().dependencies( project.getGav() ).forEach( dependency ->
-			{
-				System.out.println( dependency );
-			} );
+			session.graph().read().dependencies( project.getGav() ).forEach(System.out::println);
 
 			/**
 			 * Checks that transitive dependencies can be resolved
@@ -204,21 +183,15 @@ public class AnalyzerTest
 		}
 
 		System.out.println( "DEPENDENCIES" );
-		session.graph().read().dependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation ->
-		{
-			System.out.println( relation );
-		} );
+		session.graph().read().dependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach(System.out::println);
 
 		System.out.println( "BUILD DEPENDENCIES" );
-		session.graph().read().buildDependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach( relation ->
-		{
-			System.out.println( relation );
-		} );
+		session.graph().read().buildDependencies( Gav.parse( "fr.lteconsulting:pom-explorer:1.1-SNAPSHOT" ) ).forEach(System.out::println);
 
 		System.out.println( "NULL VERSION GAVS" );
 		PomGraphReadTransaction tx = session.graph().read();
 		tx.gavs().stream()
-				.sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
+				.sorted(Comparator.comparing(Gav::toString))
 				.filter( gav -> gav.getVersion() == null )
 				.forEach( gav ->
 				{
@@ -232,14 +205,7 @@ public class AnalyzerTest
 	{
 		Session session = new Session();
 
-		Log log = new Log()
-		{
-			@Override
-			public void html( String log )
-			{
-				System.out.println( log );
-			}
-		};
+		Log log = System.out::println;
 
 		DefaultPomFileLoader pomLoader = new DefaultPomFileLoader( session, true );
 
@@ -259,10 +225,7 @@ public class AnalyzerTest
 		System.out.println( "GAVS" );
 		PomGraphReadTransaction tx = session.graph().read();
 		tx.gavs().stream()
-				.sorted( ( g1, g2 ) -> g1.toString().compareTo( g2.toString() ) )
-				.forEach( gav ->
-				{
-					System.out.println( gav );
-				} );
+				.sorted(Comparator.comparing(Gav::toString))
+				.forEach(System.out::println);
 	}
 }

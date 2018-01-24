@@ -196,7 +196,7 @@ public class DependencyNode
 		StringBuilder sb = new StringBuilder();
 		for( int i = 0; i < level; i++ )
 			sb.append( "   " );
-		sb.append( gact + " " + vs );
+		sb.append(gact).append(" ").append(vs);
 		System.out.println( sb.toString() );
 		if( children != null )
 		{

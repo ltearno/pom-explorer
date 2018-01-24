@@ -2,6 +2,7 @@ package fr.lteconsulting.pomexplorer.javac;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -38,7 +39,7 @@ public class JavaSourceAnalyzer
 		if( logFqns )
 		{
 			log.html( "referenced fqns :<br/>" );
-			usageExtractor.getQualifiedNames().stream().filter( s -> s != null ).forEachOrdered( fqn -> log.html( fqn + "<br/>" ) );
+			usageExtractor.getQualifiedNames().stream().filter(Objects::nonNull).forEachOrdered(fqn -> log.html( fqn + "<br/>" ) );
 		}
 	}
 
