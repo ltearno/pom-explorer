@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.jgrapht.graph.DirectedMultigraph;
 
@@ -194,29 +195,27 @@ public class PomGraph
 			return filterBuildDependencyRelations( relationsReverseRec( gav ) );
 		}
 
-		private Set<ParentRelation> filterParentRelations( Set<Relation> relations )
+		private static Set<ParentRelation> filterParentRelations( Set<Relation> relations )
 		{
-			Set<ParentRelation> res = new HashSet<>();
-			relations.stream().filter( r -> r instanceof ParentRelation ).map( r -> (ParentRelation) r ).forEach(res::add);
-
-			return res;
+            return filterRelations(relations, ParentRelation.class);
 		}
 
-		private Set<DependencyRelation> filterDependencyRelations( Set<Relation> relations )
+        private static Set<DependencyRelation> filterDependencyRelations( Set<Relation> relations )
 		{
-			Set<DependencyRelation> res = new HashSet<>();
-			relations.stream().filter( r -> r instanceof DependencyRelation ).map( r -> (DependencyRelation) r ).forEach(res::add);
-
-			return res;
+            return filterRelations(relations, DependencyRelation.class);
 		}
 
-		private Set<BuildDependencyRelation> filterBuildDependencyRelations( Set<Relation> relations )
+        private static Set<BuildDependencyRelation> filterBuildDependencyRelations( Set<Relation> relations )
 		{
-			Set<BuildDependencyRelation> res = new HashSet<>();
-			relations.stream().filter( r -> r instanceof BuildDependencyRelation ).map( r -> (BuildDependencyRelation) r ).forEach(res::add);
-
-			return res;
+		    return filterRelations(relations, BuildDependencyRelation.class);
 		}
+
+        private static <T> Set<T> filterRelations(Set<Relation> relations, Class<T> clazz) {
+            return relations.stream()
+                    .filter(clazz::isInstance)
+                    .map(clazz::cast)
+                    .collect(Collectors.toSet());
+        }
 
 		private void relations( Gav gav, Set<Relation> set )
 		{
