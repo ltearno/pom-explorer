@@ -26,7 +26,8 @@ public class AnalyzerTest
 	private static final String PROJECT_B = "fr.lteconsulting:b:1.0-SNAPSHOT";
 	private static final String PROJECT_C = "fr.lteconsulting:c:1.0-SNAPSHOT";
 	private static final String PROJECT_D = "fr.lteconsulting:d:1.0-SNAPSHOT";
-	private static final String PROJECT_E = "fr.lteconsulting:e:1.0-SNAPSHOT";
+	private static final String PROJECT_E = "fr.lteconsulting:e:2.0-SNAPSHOT";
+	private static final String PROJECT_F = "fr.lteconsulting:f:1.5";
 
 	@Test
 	public void test01()
@@ -55,7 +56,7 @@ public class AnalyzerTest
 		assertDependencies(session, PROJECT_C, 2);
 		assertDependencies(session, PROJECT_D, 0);
 		assertDependencies(session, PROJECT_E, 0);
-		assertNullGavs(session, 0);
+		assertNoNullGavs(session);
 	}
 
 	@Test
@@ -71,7 +72,7 @@ public class AnalyzerTest
 		assertDependencies(session, PROJECT_B, 0);
 		assertDependencies(session, PROJECT_C, 1);
 		assertDependencies(session, PROJECT_D, 0);
-		assertNullGavs(session, 0);
+		assertNoNullGavs(session);
 	}
 
 	@Test
@@ -87,7 +88,7 @@ public class AnalyzerTest
 		assertDependencies(session, PROJECT_B, 0);
 		assertDependencies(session, PROJECT_C, 1);
 		assertDependencies(session, PROJECT_D, 0);
-		assertNullGavs(session, 0);
+		assertNoNullGavs(session);
 	}
 
 	@Test
@@ -100,6 +101,7 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 2);
 		assertDependencies(session, PROJECT_A, 1);
+		assertParentDependency(session, PROJECT_A, PROJECT_B);
 		assertDependencies(session, PROJECT_B, 1);
 
 		List<String> shouldBeMissing = new ArrayList<>();
@@ -113,9 +115,7 @@ public class AnalyzerTest
 			System.out.println("DEPENDENCIES");
 			session.graph().read().dependencies(project.getGav()).forEach(System.out::println);
 
-			/**
-			 * Checks that transitive dependencies cannot be resolved
-			 */
+			 // Checks that transitive dependencies cannot be resolved
 			TransitivityResolver resolver = new TransitivityResolver();
 			resolver.getTransitiveDependencyTree(session, project, true, true, null, new PomFileLoader()
 			{
@@ -154,9 +154,8 @@ public class AnalyzerTest
 			System.out.println("DEPENDENCIES");
 			session.graph().read().dependencies(project.getGav()).forEach(System.out::println);
 
-			/**
-			 * Checks that transitive dependencies can be resolved
-			 */
+
+			// Checks that transitive dependencies can be resolved
 			TransitivityResolver resolver = new TransitivityResolver();
 			resolver.getTransitiveDependencyTree(session, project, true, true, null, new PomFileLoader()
 			{
@@ -214,6 +213,28 @@ public class AnalyzerTest
 
 		Project project = session.projects().forGav(Gav.parse("fr.lteconsulting:a:1.0-SNAPSHOT"));
 		assertNotNull(project);
+	}
+
+
+	@Test
+	public void test09_multiModule()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/set09");
+		//assert
+		assertProjects(session, 6);
+		assertDependencies(session, PROJECT_A, 0);
+		assertDependencies(session, PROJECT_B, 2);
+		assertParentDependency(session, PROJECT_B, PROJECT_A);
+		assertDependencies(session, PROJECT_C, 4);
+		assertParentDependency(session, PROJECT_C, PROJECT_A);
+		assertDependencies(session, PROJECT_D, 3);
+		assertParentDependency(session, PROJECT_D, PROJECT_A);
+		assertDependencies(session, PROJECT_E, 1);
+		assertDependencies(session, PROJECT_F, 0);
+		assertNoNullGavs(session);
 	}
 
 	@Test
@@ -277,6 +298,7 @@ public class AnalyzerTest
 				.forEach(System.out::println);
 	}
 
+
 	private void runFullRecursiveAnalysis(Session session, String testSet)
 	{
 		PomAnalysis.runFullRecursiveAnalysis(testSet, session, null, null, true, System.out::println);
@@ -293,13 +315,6 @@ public class AnalyzerTest
 	{
 		assertDependencies(session, gavString, numberOfDependencies, "DEPENDENCIES RESULT FOR " + gavString + "\ndependencies:");
 		assertBuildDependencies(session, gavString, numberOfBuildDependencies);
-	}
-
-	private void assertDependenciesWithUnresolved(Session session, String gavString, int numberOfDependencies, String... unresolvedGavs)
-	{
-		assertDependencies(session, gavString, numberOfDependencies, "DEPENDENCIES RESULT FOR " + gavString + "\ndependencies:");
-		System.out.println("missing dependencies:");
-		//TODO find out how to retrieve unresolved dependencies from graph/session
 	}
 
 	private void assertDependencies(Session session, String gavString, int numberOfDependencies)
@@ -329,6 +344,11 @@ public class AnalyzerTest
 		assertEquals("parent dependency of " + gavString, parent, Gav.parse(parentGav));
 	}
 
+	private void assertNoNullGavs(Session session)
+	{
+		assertNullGavs(session, 0);
+	}
+
 	private void assertNullGavs(Session session, int numberOfNullGavs)
 	{
 		System.out.println("NULL VERSION GAVS");
@@ -337,6 +357,6 @@ public class AnalyzerTest
 				.sorted(Comparator.comparing(Gav::toString))
 				.collect(Collectors.toList());
 		nullGavs.forEach(System.out::println);
-		assertEquals("null gavs", numberOfNullGavs, nullGavs.size());
+		assertEquals("number of null gavs", numberOfNullGavs, nullGavs.size());
 	}
 }
