@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.lteconsulting</groupId>
     <artifactId>c</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>test project c</description>
     <dependencies>
