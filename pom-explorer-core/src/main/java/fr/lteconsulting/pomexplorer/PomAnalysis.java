@@ -370,6 +370,7 @@ public class PomAnalysis
 
 	private Project loadAndCheckProject( Gav gav, PomFileLoader callback, Project resolvedProject )
 	{
+		//FIXME #48, NullPointerException if callback was not defined (flag nofetch was set)
 		File pomFile = callback.loadPomFileForGav( gav, null, log );
 		if( pomFile == null )
 		{

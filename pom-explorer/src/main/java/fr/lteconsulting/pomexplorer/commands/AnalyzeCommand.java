@@ -28,6 +28,6 @@ public class AnalyzeCommand
 
 		PomAnalysis.runFullRecursiveAnalysis( directory, session.session(), pomFileLoader, profiles, options.hasFlag( "verbose" ), log );
 
-		log.html( "Analyzis completed.<br/>" );
+		log.html( "Analysis completed.<br/>" );
 	}
 }

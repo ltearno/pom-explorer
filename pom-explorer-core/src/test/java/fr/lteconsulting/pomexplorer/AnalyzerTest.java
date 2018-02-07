@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
@@ -235,6 +236,47 @@ public class AnalyzerTest
 		assertDependencies(session, PROJECT_E, 1);
 		assertDependencies(session, PROJECT_F, 0);
 		assertNoNullGavs(session);
+	}
+
+	@Test
+	@Ignore("Regression test for #48")
+	public void test10_unresolvedParent()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/set10");
+		//assert
+		assertProjects(session, 1);
+		assertDependencies(session, PROJECT_A, 1);
+		assertParentDependency(session, PROJECT_A, PROJECT_C);
+
+		List<String> shouldBeMissing = new ArrayList<>();
+		shouldBeMissing.add(PROJECT_D);
+		shouldBeMissing.add(PROJECT_C);
+
+		session.projects().values().forEach(project ->
+		{
+			System.out.println("PROJECT " + project);
+			System.out.println("DEPENDENCIES");
+			session.graph().read().dependencies(project.getGav()).forEach(System.out::println);
+
+			// Checks that transitive dependencies cannot be resolved
+			TransitivityResolver resolver = new TransitivityResolver();
+			resolver.getTransitiveDependencyTree(session, project, true, true, null, new PomFileLoader()
+			{
+				@Override
+				public File loadPomFileForGav(Gav gav, List<Repository> additionalRepos, Log log)
+				{
+					assertTrue(shouldBeMissing.contains(gav.toString()));
+					shouldBeMissing.remove(gav.toString());
+
+					return null;
+				}
+			}, System.out::println);
+		});
+
+		assertTrue(shouldBeMissing.isEmpty());
 	}
 
 	@Test
