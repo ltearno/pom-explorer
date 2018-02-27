@@ -120,6 +120,10 @@ public class Project
 		return project;
 	}
 
+	public boolean isExternal(){
+		return isExternal;
+	}
+
 	public boolean isBuildable()
 	{
 		return !isExternal && pomFile.getParentFile().toPath().resolve( "src" ).toFile().exists();

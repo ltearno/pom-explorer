@@ -224,6 +224,7 @@ public class PomAnalysis
 				duplicatedProjects.add( project );
 				log.html( Tools.warningMessage( "trying to add a project which is duplicated: " + project + ", already inserted : " + duplicate ) );
 			}
+			//FIXME processProjectForCompleteness returns always true, are unresolvableProjects irrelevant?
 			else if( processProjectForCompleteness( project, pomFileLoader ) )
 			{
 				readyProjects.add( project );
