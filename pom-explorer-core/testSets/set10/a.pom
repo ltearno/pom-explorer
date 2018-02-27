@@ -9,7 +9,6 @@
 	  <version>1.0-SNAPSHOT</version>
   </parent>
   
-  <groupId>fr.lteconsulting</groupId>
   <artifactId>a</artifactId>
   <version>1.0-SNAPSHOT</version>
   
