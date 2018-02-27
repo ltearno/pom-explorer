@@ -207,9 +207,9 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/set07");
+		runFullRecursiveAnalysis(session, "testSets/set08");
 		//assert
-		assertProjects(session, 2);
+		assertProjects(session, 1);
 		assertDependencies(session, PROJECT_A, 1);
 
 		Project project = session.projects().forGav(Gav.parse("fr.lteconsulting:a:1.0-SNAPSHOT"));

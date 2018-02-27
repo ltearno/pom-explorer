@@ -43,9 +43,7 @@ public class Gav
 		if( parts.length != 3 )
 			return null;
 
-		Gav gav = new Gav( parts[0], parts[1], parts[2] );
-
-		return gav;
+		return new Gav( parts[0], parts[1], parts[2] );
 	}
 
 	public Gav copyWithVersion( String version )
