@@ -59,7 +59,7 @@ public class PomAnalysis
 
    
 
-	public static void runFullRecursiveAnalysis( String directory, Session session, PomFileLoader pomFileLoader, String[] profilesId, boolean verbose, Log log )
+	public static PomAnalysis runFullRecursiveAnalysis( String directory, Session session, PomFileLoader pomFileLoader, String[] profilesId, boolean verbose, Log log )
 	{
 		log.html( "analyzing '" + directory + "'<br/>" );
 
@@ -98,6 +98,8 @@ public class PomAnalysis
 				+ loadedProjects.size() + " projects loaded and added to the pom graph,<br/>"
 				+ addedToGraph.size() + " projects added to graph,<br/>"
 				+ "in " + duration + " ms.<br/>" );
+
+		return analysis;
 	}
 
 	public PomAnalysis( Session session, PomFileLoader pomFileLoader, String[] profilesId, boolean verbose, Log log )
@@ -384,6 +386,7 @@ public class PomAnalysis
 		if( project != null && processProjectForCompleteness( project, callback ) )
 			return project;
 
+		//FIXME processProjectForCompleteness returns always true, even if there is a bom import which cannot be resolved, hence this message never appears
 		log.html( Tools.errorMessage( "cannot resolve project " + resolvedProject + " due to:<br/>&nbsp;&nbsp;&nbsp;missing bom import " + gav ) );
 		return null;
 	}
