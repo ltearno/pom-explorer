@@ -302,6 +302,30 @@ public class AnalyzerTest
 		assertTrue(shouldBeMissing.isEmpty());
 	}
 
+	@Test
+	public void pomWithoutGroupId()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/pomWithoutGroupId");
+		//assert
+		assertProjects(session, 0);
+		assertPomFilesWithErrors(pomAnalysis, 1);
+	}
+
+	@Test
+	public void pomWithoutVersion()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/pomWithoutVersion");
+		//assert
+		assertProjects(session, 0);
+		assertPomFilesWithErrors(pomAnalysis, 1);
+	}
+
 
 	@Test
 	public void localTest1()
@@ -365,9 +389,9 @@ public class AnalyzerTest
 	}
 
 
-	private void runFullRecursiveAnalysis(Session session, String testSet)
+	private PomAnalysis runFullRecursiveAnalysis(Session session, String testSet)
 	{
-		PomAnalysis.runFullRecursiveAnalysis(testSet, session, null, null, true, System.out::println);
+		return PomAnalysis.runFullRecursiveAnalysis(testSet, session, null, null, true, System.out::println);
 	}
 
 	private void assertProjects(Session session, int numberOfProjects)
@@ -375,6 +399,15 @@ public class AnalyzerTest
 		ProjectRepository projects = session.projects();
 		projects.values().forEach(project -> System.out.println("PROJECT " + project));
 		assertEquals("number of projects", numberOfProjects, projects.size());
+	}
+
+
+	private void assertPomFilesWithErrors(PomAnalysis pomAnalysis, int numberOfPomFiles)
+	{
+		System.out.println("ERRONEOUS POM FILES");
+		List<File> files = pomAnalysis.getErroneousPomFiles();
+		files.forEach(System.out::println);
+		assertEquals("number of projects with errors", numberOfPomFiles, files.size());
 	}
 
 	private void assertDependenciesAndBuildDependencies(Session session, String gavString, int numberOfDependencies, int numberOfBuildDependencies)
