@@ -218,12 +218,12 @@ public class AnalyzerTest
 
 
 	@Test
-	public void test09_multiModule()
+	public void multiModule()
 	{
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/set09");
+		runFullRecursiveAnalysis(session, "testSets/multiModule");
 		//assert
 		assertProjects(session, 6);
 		assertDependencies(session, PROJECT_A, 0);
@@ -238,14 +238,37 @@ public class AnalyzerTest
 		assertNoNullGavs(session);
 	}
 
+
 	@Test
-	@Ignore("Regression test for #48")
-	public void test10_unresolvedParent()
+	public void pomDependency()
 	{
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/set10");
+		runFullRecursiveAnalysis(session, "testSets/pomDependency");
+		//assert
+		assertProjects(session, 6);
+		assertDependencies(session, PROJECT_A, 0);
+		assertDependencies(session, PROJECT_B, 1);
+		assertTransitiveDependency(session, PROJECT_B, 2);
+		assertParentDependency(session, PROJECT_B, PROJECT_A);
+		assertDependencies(session, PROJECT_C, 4);
+		assertParentDependency(session, PROJECT_C, PROJECT_A);
+		assertDependencies(session, PROJECT_D, 3);
+		assertParentDependency(session, PROJECT_D, PROJECT_A);
+		assertDependencies(session, PROJECT_E, 1);
+		assertDependencies(session, PROJECT_F, 0);
+		assertNoNullGavs(session);
+	}
+
+	@Test
+	@Ignore("Regression test for #48")
+	public void unresolvedParent()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/unresolvedParent");
 		//assert
 		assertProjects(session, 1);
 		assertDependencies(session, PROJECT_A, 1);
@@ -278,6 +301,7 @@ public class AnalyzerTest
 
 		assertTrue(shouldBeMissing.isEmpty());
 	}
+
 
 	@Test
 	public void localTest1()
@@ -362,6 +386,13 @@ public class AnalyzerTest
 	private void assertDependencies(Session session, String gavString, int numberOfDependencies)
 	{
 		assertDependencies(session, gavString, numberOfDependencies, "DEPENDENCIES OF " + gavString);
+	}
+	private void assertTransitiveDependency(Session session, String gavString, int numberOfDependencies)
+	{
+		System.out.println("TRANSITIVE DEPENDENCIES OF " + gavString);
+		Set<DependencyRelation> dependencies = session.graph().read().dependenciesRec(Gav.parse(gavString));
+		dependencies.forEach(System.out::println);
+		assertEquals("transitive dependencies of " + gavString, numberOfDependencies, dependencies.size());
 	}
 
 	private void assertDependencies(Session session, String gavString, int numberOfDependencies, String message)

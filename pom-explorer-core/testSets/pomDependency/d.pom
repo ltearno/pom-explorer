@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fr.lteconsulting</groupId>
+        <artifactId>a</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>d</artifactId>
+    <description>submodule of a</description>
+
+    <dependencies>
+        <!-- inter module dependencies -->
+        <dependency>
+            <groupId>fr.lteconsulting</groupId>
+            <artifactId>b</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.lteconsulting</groupId>
+            <artifactId>b</artifactId>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>fr.lteconsulting</groupId>
+            <artifactId>c</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>
