@@ -5,14 +5,8 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
@@ -50,6 +44,7 @@ public class PomAnalysis
 	private final Map<String, Profile> profiles;
 
 	private final List<File> pomFiles = new ArrayList<>();
+	private final List<File> erroneousPomFiles = new ArrayList<>();
 	private final Set<Project> loadedProjects = new HashSet<>();
 	private final Set<Project> completedProjects = new HashSet<>();
 	private final Set<Project> unresolvableProjects = new HashSet<>();
@@ -57,7 +52,6 @@ public class PomAnalysis
 
 	private final ProjectContainer projects;
 
-   
 
 	public static PomAnalysis runFullRecursiveAnalysis( String directory, Session session, PomFileLoader pomFileLoader, String[] profilesId, boolean verbose, Log log )
 	{
@@ -143,6 +137,10 @@ public class PomAnalysis
 	public Set<Project> getDuplicatedProjects()
 	{
 		return duplicatedProjects;
+	}
+
+	public List<File> getErroneousPomFiles(){
+		return erroneousPomFiles;
 	}
 
 	public Set<File> addDirectory( String directory )
@@ -340,21 +338,16 @@ public class PomAnalysis
 
 		if( project.getMavenProject().getDependencyManagement() != null && project.getMavenProject().getDependencyManagement().getDependencies() != null )
 		{
-			for( org.apache.maven.model.Dependency d : project.getMavenProject().getDependencyManagement().getDependencies() )
-			{
-				if( Scope.fromString( project.interpolateValue( d.getScope(), projects, log ) ) == Scope.IMPORT && "pom".equals( d.getType() ) )
-				{
+			project.getMavenProject().getDependencyManagement().getDependencies().stream()
+				.filter(d -> "pom".equals( d.getType() ) && Scope.fromString( project.interpolateValue( d.getScope(), projects, log ) ) == Scope.IMPORT )
+				.map(d -> {
 					// TODO should use project's dependency management to resolve the gav when version is null (rare cases maybe)
-					Gav bomGav = project.interpolateGav( new Gav( d.getGroupId(), d.getArtifactId(), d.getVersion() ), projects, log );
-
-					if( projects.forGav( bomGav ) == null )
-					{
-						Project bomProject = loadAndCheckProject( bomGav, callback, project );
-						if( bomProject != null )
-							projectsToAddToReady.add( bomProject );
-					}
-				}
-			}
+					return project.interpolateGav( new Gav( d.getGroupId(), d.getArtifactId(), d.getVersion() ), projects, log );
+				})
+				.filter(bomGav -> projects.forGav( bomGav ) == null)
+				.map(bomGav -> loadAndCheckProject( bomGav, callback, project ))
+				.filter(Objects::nonNull)
+				.forEach(projectsToAddToReady::add);
 		}
 
 		//FIXME complete is always true
@@ -454,7 +447,7 @@ public class PomAnalysis
 		catch( Exception e )
 		{
 			log.html( Tools.errorMessage( "error loading pom file " + pomFile.getAbsolutePath() + ", message: " + e.getMessage() ) );
-
+			erroneousPomFiles.add(pomFile);
 			return null;
 		}
 	}
