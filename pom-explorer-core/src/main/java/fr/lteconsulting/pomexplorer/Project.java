@@ -84,6 +84,40 @@ public class Project
 		if( project == null )
 			throw new RuntimeException( "cannot read pom " + pomFile.getAbsolutePath() );
 
+		initParent();
+
+		final String groupId;
+		if (project.getGroupId() != null){
+			groupId = project.getGroupId();
+		} else if(parentGav != null) {
+			groupId = parentGav.getGroupId();
+		} else {
+			throw new IllegalStateException("project does not have groupId and neither is a parent pom defined");
+		}
+
+		String version;
+		if (project.getVersion() != null){
+			version = project.getVersion();
+		} else if(parentGav != null) {
+			version = parentGav.getVersion();
+		} else {
+			throw new IllegalStateException("project does not have version and neither is a parent pom defined");
+		}
+
+		if( "${parent.version}".equals( version ) )
+			version = getParentGav().getVersion();
+
+		gav = new Gav( groupId, project.getArtifactId(), version );
+
+		if( !gav.isResolved() )
+			throw new RuntimeException( "Non resolved project's GAV: " + gav );
+
+		properties = new HashMap<>();
+		project.getProperties().forEach( ( key, value ) -> properties.put( key.toString(), value.toString() ) );
+	}
+
+	private void initParent()
+	{
 		Parent parent = project.getModel().getParent();
 		if( parent != null )
 		{
@@ -95,19 +129,6 @@ public class Project
 		{
 			parentGav = null;
 		}
-
-		String groupId = project.getGroupId() != null ? project.getGroupId() : getParentGav().getGroupId();
-		String version = project.getVersion() != null ? project.getVersion() : getParentGav().getVersion();
-		if( "${parent.version}".equals( version ) )
-			version = getParentGav().getVersion();
-
-		gav = new Gav( groupId, project.getArtifactId(), version );
-
-		if( !gav.isResolved() )
-			throw new RuntimeException( "Non resolved project's GAV: " + gav );
-
-		properties = new HashMap<>();
-		project.getProperties().forEach( ( key, value ) -> properties.put( key.toString(), value.toString() ) );
 	}
 
 	public File getPomFile()

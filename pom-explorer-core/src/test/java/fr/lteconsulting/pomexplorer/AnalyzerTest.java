@@ -405,7 +405,7 @@ public class AnalyzerTest
 	private void assertPomFilesWithErrors(PomAnalysis pomAnalysis, int numberOfPomFiles)
 	{
 		System.out.println("ERRONEOUS POM FILES");
-		List<File> files = pomAnalysis.getErroneousPomFiles();
+		List<PomReadingException> files = pomAnalysis.getErroneousPomFiles();
 		files.forEach(System.out::println);
 		assertEquals("number of projects with errors", numberOfPomFiles, files.size());
 	}

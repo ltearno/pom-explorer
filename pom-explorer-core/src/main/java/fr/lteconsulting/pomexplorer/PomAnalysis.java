@@ -44,7 +44,7 @@ public class PomAnalysis
 	private final Map<String, Profile> profiles;
 
 	private final List<File> pomFiles = new ArrayList<>();
-	private final List<File> erroneousPomFiles = new ArrayList<>();
+	private final List<PomReadingException> erroneousPomFiles = new ArrayList<>();
 	private final Set<Project> loadedProjects = new HashSet<>();
 	private final Set<Project> completedProjects = new HashSet<>();
 	private final Set<Project> unresolvableProjects = new HashSet<>();
@@ -139,7 +139,7 @@ public class PomAnalysis
 		return duplicatedProjects;
 	}
 
-	public List<File> getErroneousPomFiles(){
+	public List<PomReadingException> getErroneousPomFiles(){
 		return erroneousPomFiles;
 	}
 
@@ -447,7 +447,7 @@ public class PomAnalysis
 		catch( Exception e )
 		{
 			log.html( Tools.errorMessage( "error loading pom file " + pomFile.getAbsolutePath() + ", message: " + e.getMessage() ) );
-			erroneousPomFiles.add(pomFile);
+			erroneousPomFiles.add(new PomReadingException(pomFile, e));
 			return null;
 		}
 	}
