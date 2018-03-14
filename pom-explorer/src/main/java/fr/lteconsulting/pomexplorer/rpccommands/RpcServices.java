@@ -60,7 +60,7 @@ public class RpcServices
 		for( int i = 0; i < parameterTypes.length; i++ )
 		{
 			Class<?> paramType = parameterTypes[i];
-			Object param = null;
+			final Object param;
 
 			if( paramType == Client.class )
 				param = client;
@@ -78,8 +78,7 @@ public class RpcServices
 
 		try
 		{
-			Object result = method.invoke( service, parameters );
-			return result;
+			return method.invoke( service, parameters );
 		}
 		catch( IllegalAccessException | IllegalArgumentException | InvocationTargetException e )
 		{

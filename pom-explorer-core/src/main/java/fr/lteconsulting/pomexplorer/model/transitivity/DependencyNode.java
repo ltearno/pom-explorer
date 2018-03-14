@@ -37,7 +37,7 @@ public class DependencyNode
 
 	public void collectDependencyManagement( Map<String, Profile> profiles, ProjectContainer projects, Log log )
 	{
-		dependencyManagement = project.getHierarchicalDependencyManagement( null, profiles, projects, log );
+		dependencyManagement = project.getHierarchicalDependencyManagement( null, profiles, projects, log , true);
 	}
 
 	public DependencyKey getKey()

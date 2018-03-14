@@ -1,10 +1,5 @@
 package fr.lteconsulting.pomexplorer;
 
-import java.io.File;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.Predicate;
-
 import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.Gav;
@@ -14,6 +9,11 @@ import fr.lteconsulting.pomexplorer.model.transitivity.DependencyManagement;
 import fr.lteconsulting.pomexplorer.model.transitivity.DependencyNode;
 import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
 import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
+
+import java.io.File;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Predicate;
 
 public class TransitivityResolver
 {
@@ -85,10 +85,10 @@ public class TransitivityResolver
 
 			Gav gav = project.getGav();
 
-			DependencyKey gact = new DependencyKey( gav.getGroupId(), gav.getArtifactId(), null, project.getMavenProject().getPackaging() );
-			VersionScope vs = new VersionScope( gav.getVersion(), Scope.COMPILE );
+			DependencyKey key = new DependencyKey( gav.getGroupId(), gav.getArtifactId(), null, project.getMavenProject().getPackaging() );
+			VersionScope vs = new VersionScope( gav.getVersion(), null, Scope.COMPILE );
 
-			DependencyNode rootNode = new DependencyNode( project, gact, vs );
+			DependencyNode rootNode = new DependencyNode( project, key, vs );
 			nodeQueue.add( rootNode );
 			buildDependencyTree( nodeQueue, full, online, session, profiles, loader, log );
 
@@ -142,11 +142,12 @@ public class TransitivityResolver
 		{
 			Project current = project;
 
+			boolean versionCanBeSelfManaged = true;
 			while( current != null )
 			{
-				res = current.getLocalDependencies( res, profiles, session.projects(), log );
-
+				res = current.getLocalDependencies( res, profiles, session.projects(), log , versionCanBeSelfManaged);
 				current = session.projects().getParentProject( current );
+				versionCanBeSelfManaged = false;
 			}
 
 			return res;
@@ -189,50 +190,33 @@ public class TransitivityResolver
 							existingNode.removeFromParent();
 					}
 
-					String version = null;
-					Scope scope = null;
-
-					DependencyManagement dependencyManagement = node.getTopLevelManagement( dependencyKey );
-					DependencyManagement localManagement = node.getLocalManagement( dependencyKey );
-					if( dependencyManagement != null && dependencyManagement.getVs().getVersion() != null )
+					final Optional<VersionScope> optionalVs = getVersionScopeFromDependencyManagement( node, dependencyKey, dependency );
+					final VersionScope vs;
+					if(optionalVs.isPresent() )
 					{
-						// si le top level management est le notre, c'est la version
-						// déclarée qui prend le pas
-						if( dependencyManagement == localManagement && dependency.getVs().getVersion() != null )
-							version = dependency.getVs().getVersion();
-						else
-							version = dependencyManagement.getVs().getVersion();
+						vs = optionalVs.get();
 					}
 					else
 					{
-						version = dependency.getVs().getVersion();
-					}
-
-					if( dependencyManagement != null && dependencyManagement.getVs().getScope() != null )
-					{
-						if( dependencyManagement == localManagement && dependency.getVs().getScope() != null )
-							scope = dependency.getVs().getScope();
-						else
-							scope = dependencyManagement.getVs().getScope();
-					}
-					else
-					{
+						vs = dependency.getVs();
 						if( node.isRoot() )
 						{
-							scope = dependency.getVs().getScope();
-							if( scope == null )
-								scope = Scope.COMPILE;
+							if(vs.getScope() == null) {
+								vs.setScope( Scope.COMPILE );
+							}
 						}
 						else
 						{
-							scope = Scope.getScopeTransformation( node.getVs().getScope(), dependency.getVs().getScope() );
-							if( scope == null )
+							Scope scope = Scope.getScopeTransformation( node.getVs().getScope(), dependency.getVs().getScope() );
+							if(scope == null )
 								continue;
+							vs.setScope( scope );
 						}
 					}
 
+					Scope scope = vs.getScope();
 					assert scope != null;
-					assert version != null : "null version of dependency " + dependencyKey + " -> " + dependency + " (for project " + project + ")";
+					assert vs.getVersion() != null : "null version of dependency " + dependencyKey + " -> " + dependency + " (for project " + project + ")";
 
 					if( scope == Scope.IMPORT || scope == Scope.SYSTEM )
 						continue;
@@ -240,7 +224,7 @@ public class TransitivityResolver
 					// get remote repositories
 					List<Repository> additionalRepos = getProjectRepositories( session, node.getProject(), log );
 
-					Gav dependencyGav = new Gav( dependencyKey.getGroupId(), dependencyKey.getArtifactId(), version );
+					Gav dependencyGav = new Gav( dependencyKey.getGroupId(), dependencyKey.getArtifactId(), vs.getVersion() );
 
 					Project childProject = null;
 
@@ -286,7 +270,7 @@ public class TransitivityResolver
 						}
 					}
 
-					DependencyNode child = new DependencyNode( childProject, dependencyKey, new VersionScope( version, scope ) );
+					DependencyNode child = new DependencyNode( childProject, dependencyKey, vs );
 					child.addExclusions( dependency.getExclusions() );
 
 					node.addChild( child );
@@ -295,6 +279,7 @@ public class TransitivityResolver
 					if( dm != null )
 						child.addExclusions( dm.getExclusions() );
 
+					//FIXME is always false
 					if( scope == Scope.SYSTEM )
 						continue;
 
@@ -305,5 +290,25 @@ public class TransitivityResolver
 				}
 			}
 		}
+	}
+
+	private static Optional<VersionScope> getVersionScopeFromDependencyManagement( DependencyNode node, DependencyKey dependencyKey, RawDependency dependency )
+	{
+		DependencyManagement dependencyManagement = node.getTopLevelManagement( dependencyKey );
+		DependencyManagement localManagement = node.getLocalManagement( dependencyKey );
+		if( dependencyManagement != null && dependencyManagement.getVs().getVersion() != null )
+		{
+			// si le top level management est le notre, c'est la version
+			// déclarée qui prend le pas
+			if( dependencyManagement == localManagement && dependency.getVs().getVersion() != null )
+			{
+				return Optional.of(dependency.getVs());
+			}
+			else
+			{
+				return Optional.of(dependencyManagement.getVs());
+			}
+		}
+		return Optional.empty();
 	}
 }
