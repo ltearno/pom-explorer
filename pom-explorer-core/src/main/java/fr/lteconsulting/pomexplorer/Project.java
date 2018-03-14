@@ -1,18 +1,10 @@
 package fr.lteconsulting.pomexplorer;
 
-import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
+import fr.lteconsulting.pomexplorer.graph.relation.Scope;
+import fr.lteconsulting.pomexplorer.model.*;
+import fr.lteconsulting.pomexplorer.model.transitivity.DependencyManagement;
+import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
@@ -21,15 +13,12 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
-import fr.lteconsulting.pomexplorer.depanalyze.PropertyLocation;
-import fr.lteconsulting.pomexplorer.graph.relation.Scope;
-import fr.lteconsulting.pomexplorer.model.Dependency;
-import fr.lteconsulting.pomexplorer.model.DependencyKey;
-import fr.lteconsulting.pomexplorer.model.Gav;
-import fr.lteconsulting.pomexplorer.model.GroupArtifact;
-import fr.lteconsulting.pomexplorer.model.VersionScope;
-import fr.lteconsulting.pomexplorer.model.transitivity.DependencyManagement;
-import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+
+import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
 
 /**
  * A POM project information
@@ -285,14 +274,9 @@ public class Project
 
 			for( org.apache.maven.model.Dependency d : project.getDependencies() )
 			{
-				String groupId = interpolateValue( d.getGroupId(), projects, log );
-				String artifactId = interpolateValue( d.getArtifactId(), projects, log );
-				String version = interpolateValue( d.getVersion(), projects, log );
-				Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
-				String classifier = interpolateValue( d.getClassifier(), projects, log );
-				String type = interpolateValue( d.getType(), projects, log );
+				DependencyKeyVersionAndScope triple = interpolateDependencyKeyVersionAndScope( d, projects, log );
 
-				dependencies.add( new Dependency( new Gav( groupId, artifactId, version ), scope, classifier, type ) );
+				dependencies.add( new Dependency( triple.key, triple.scope, triple.version ) );
 			}
 		}
 		return dependencies;
@@ -382,17 +366,19 @@ public class Project
 		return true;
 	}
 
-	public Map<DependencyKey, DependencyManagement> getHierarchicalDependencyManagement( Map<DependencyKey, DependencyManagement> result, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	public Map<DependencyKey, DependencyManagement> getHierarchicalDependencyManagement( Map<DependencyKey, DependencyManagement> result, Map<String, Profile> profiles, ProjectContainer projects, Log log, boolean versionCanBeSelfManaged )
 	{
 		if( cachedLocalDependencyManagement == null )
 		{
 			cachedLocalDependencyManagement = new HashMap<>();
 
 			Project current = this;
+			boolean canBeSelfManaged = versionCanBeSelfManaged;
 			while( current != null )
 			{
-				current.getInterpolatedDependencyManagementWithBomImport( cachedLocalDependencyManagement, profiles, projects, log );
+				current.getInterpolatedDependencyManagementWithBomImport( cachedLocalDependencyManagement, profiles, projects, log , canBeSelfManaged);
 				current = projects.getParentProject( current );
+				canBeSelfManaged = false;
 			}
 		}
 
@@ -404,14 +390,14 @@ public class Project
 		return result;
 	}
 
-	public Map<DependencyKey, RawDependency> getLocalDependencies( Map<DependencyKey, RawDependency> res, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	public Map<DependencyKey, RawDependency> getLocalDependencies( Map<DependencyKey, RawDependency> res, Map<String, Profile> profiles, ProjectContainer projects, Log log, boolean versionCanBeSelfManaged )
 	{
-		res = completeDependenciesMap( res, getMavenProject().getDependencies(), profiles, projects, log );
+		res = completeDependenciesMap( res, getMavenProject().getDependencies(), profiles, projects, log, versionCanBeSelfManaged);
 		Map<DependencyKey, RawDependency> fRes = res;
 
 		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 		if( projectProfiles != null )
-			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), profiles, projects, log ) );
+			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), profiles, projects, log , versionCanBeSelfManaged) );
 
 		return res;
 	}
@@ -441,14 +427,14 @@ public class Project
 	/**
 	 * TODO should use depmngt from the parent to resolve values if missing
 	 */
-	private Map<DependencyKey, DependencyManagement> getInterpolatedDependencyManagementWithBomImport( Map<DependencyKey, DependencyManagement> dependencyMap, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	private Map<DependencyKey, DependencyManagement> getInterpolatedDependencyManagementWithBomImport( Map<DependencyKey, DependencyManagement> dependencyMap, Map<String, Profile> profiles, ProjectContainer projects, Log log, boolean versionCanBeSelfManaged )
 	{
 		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
 		{
 			if( dependencyMap == null )
 				dependencyMap = new HashMap<>();
 
-			completeDependencyManagementMap( dependencyMap, project.getDependencyManagement().getDependencies(), profiles, projects, log );
+			completeDependencyManagementMap( dependencyMap, project.getDependencyManagement().getDependencies(), profiles, projects, log, versionCanBeSelfManaged );
 		}
 
 		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
@@ -464,7 +450,7 @@ public class Project
 					.filter( p -> p.getDependencyManagement() != null )
 					.filter( p -> p.getDependencyManagement().getDependencies() != null )
 					.map( p -> p.getDependencyManagement().getDependencies() )
-					.map( dependencies -> completeDependencyManagementMap( dependencyMapFinal, dependencies, profiles, projects, log ) );
+					.map( dependencies -> completeDependencyManagementMap( dependencyMapFinal, dependencies, profiles, projects, log, versionCanBeSelfManaged ) );
 		}
 
 		return dependencyMap;
@@ -518,49 +504,21 @@ public class Project
 		return result;
 	}
 
-	private Map<DependencyKey, RawDependency> completeDependenciesMap( Map<DependencyKey, RawDependency> res, List<org.apache.maven.model.Dependency> dependencies, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	private Map<DependencyKey, RawDependency> completeDependenciesMap( Map<DependencyKey, RawDependency> res, List<org.apache.maven.model.Dependency> dependencies, Map<String, Profile> profiles, ProjectContainer projects, Log log, boolean versionCanBeSelfManaged )
 	{
 		if( dependencies != null )
 		{
 			for( org.apache.maven.model.Dependency d : dependencies )
 			{
-				String groupId = interpolateValue( d.getGroupId(), projects, log );
-				String artifactId = interpolateValue( d.getArtifactId(), projects, log );
-				String classifier = interpolateValue( d.getClassifier(), projects, log );
-				String type = interpolateValue( d.getType(), projects, log );
-
-				DependencyKey key = new DependencyKey( groupId, artifactId, classifier, type );
+				DependencyKeyVersionAndScope triple = interpolateDependencyKeyVersionAndScope( d, projects, log );
+				DependencyKey key = triple.key;
 				if( res != null && res.containsKey( key ) )
 					continue;
 
-				String version = interpolateValue( d.getVersion(), projects, log );
-				Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
+				VersionScope vs = determineVersionScope( triple.version, triple.scope, profiles, projects, log, key, versionCanBeSelfManaged );
+				RawDependency raw = new RawDependency( vs, d.isOptional() );
 
-				if( version == null || scope == null )
-				{
-					Map<DependencyKey, DependencyManagement> mngt = getHierarchicalDependencyManagement( null, profiles, projects, log );
-					DependencyManagement dm = mngt.get( key );
-
-					if( version == null && (dm == null || dm.getVs() == null) )
-						log.html( Tools.warningMessage( "missing version and version not found in depencency management for dependency to " + key + " in project " + this ) );
-
-					if( version == null && dm != null )
-						version = dm.getVs().getVersion();
-
-					if( scope == null )
-						scope = dm != null ? dm.getVs().getScope() : Scope.COMPILE;
-				}
-
-				RawDependency raw = new RawDependency( new VersionScope( version, scope ), d.isOptional() );
-				if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
-				{
-					for( Exclusion exclusion : d.getExclusions() )
-					{
-						String excludedGroupId = interpolateValue( exclusion.getGroupId(), projects, log );
-						String excludedArtifactId = interpolateValue( exclusion.getArtifactId(), projects, log );
-						raw.addExclusion( new GroupArtifact( excludedGroupId, excludedArtifactId ) );
-					}
-				}
+				addExclusions( projects, log, d, raw::addExclusion );
 
 				if( res == null )
 					res = new HashMap<>();
@@ -570,16 +528,89 @@ public class Project
 		return res;
 	}
 
+	private DependencyKeyVersionAndScope interpolateDependencyKeyVersionAndScope( org.apache.maven.model.Dependency d, ProjectContainer projects, Log log )
+	{
+		String groupId = interpolateValue( d.getGroupId(), projects, log );
+		String artifactId = interpolateValue( d.getArtifactId(), projects, log );
+		String version = interpolateValue( d.getVersion(), projects, log );
+		Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
+		String classifier = interpolateValue( d.getClassifier(), projects, log );
+		String type = interpolateValue( d.getType(), projects, log );
+
+		assert groupId != null;
+		assert artifactId != null;
+		assert type != null;
+
+		DependencyKey key = new DependencyKey( groupId, artifactId, classifier, type );
+		return new DependencyKeyVersionAndScope( key, version, scope );
+
+	}
+
+
+	private VersionScope determineVersionScope( String nullableVersion, Scope nullableScope, Map<String, Profile> profiles, ProjectContainer projects, Log log, DependencyKey key, boolean versionCanBeSelfManaged )
+	{
+		if( nullableVersion != null && nullableScope != null )
+		{
+			return new VersionScope( nullableVersion, versionCanBeSelfManaged, nullableScope );
+		}
+
+		Map<DependencyKey, DependencyManagement> management = getHierarchicalDependencyManagement( null, profiles, projects, log , versionCanBeSelfManaged);
+		DependencyManagement dm = management.get( key );
+
+		String version = nullableVersion;
+		Scope scope = nullableScope;
+
+		boolean isSelfManaged = true;
+
+		if( dm != null && dm.getVs() != null )
+		{
+			if( version == null )
+			{
+				version = dm.getVs().getVersion();
+				isSelfManaged = dm.getVs().isVersionSelfManaged().orElse(false);
+			}
+			else
+			{
+				isSelfManaged = true;
+			}
+
+			if( scope == null )
+				scope = dm.getVs().getScope();
+		}
+
+		if( version == null )
+			log.html( Tools.warningMessage( "missing version and version not found in depencency management for dependency to " + key + " in project " + this ) );
+
+		if( scope == null )
+			scope = Scope.COMPILE;
+
+		return new VersionScope( version, versionCanBeSelfManaged && isSelfManaged, scope );
+	}
+
+
+	private void addExclusions( ProjectContainer projects, Log log, org.apache.maven.model.Dependency d, ExclusionAdder exclusionAdder )
+	{
+		if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
+		{
+			for( Exclusion exclusion : d.getExclusions() )
+			{
+				String excludedGroupId = interpolateValue( exclusion.getGroupId(), projects, log );
+				String excludedArtifactId = interpolateValue( exclusion.getArtifactId(), projects, log );
+				exclusionAdder.add( new GroupArtifact( excludedGroupId, excludedArtifactId ) );
+			}
+		}
+	}
+
 	/**
 	 * For the dependencies given,
-	 * 
+	 *
 	 * <p>
 	 * if they are not already present in the map,
 	 * <ul>
 	 * <li>interpolate,
 	 * <li>if it is a bom import, import it as well
 	 */
-	private Map<DependencyKey, DependencyManagement> completeDependencyManagementMap( Map<DependencyKey, DependencyManagement> result, List<org.apache.maven.model.Dependency> dependencies, Map<String, Profile> profiles, ProjectContainer projects, Log log )
+	private Map<DependencyKey, DependencyManagement> completeDependencyManagementMap( Map<DependencyKey, DependencyManagement> result, List<org.apache.maven.model.Dependency> dependencies, Map<String, Profile> profiles, ProjectContainer projects, Log log, boolean versionCanBeSelfManaged )
 	{
 		if( dependencies != null )
 		{
@@ -587,44 +618,25 @@ public class Project
 
 			for( org.apache.maven.model.Dependency d : dependencies )
 			{
-				String groupId = interpolateValue( d.getGroupId(), projects, log );
-				String artifactId = interpolateValue( d.getArtifactId(), projects, log );
-				String version = interpolateValue( d.getVersion(), projects, log );
-				Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
-				String classifier = interpolateValue( d.getClassifier(), projects, log );
-				String type = interpolateValue( d.getType(), projects, log );
-
-				assert groupId != null;
-				assert artifactId != null;
-				assert type != null;
-
-				DependencyKey key = new DependencyKey( groupId, artifactId, classifier, type );
+				DependencyKeyVersionAndScope triple = interpolateDependencyKeyVersionAndScope( d, projects, log );
+				DependencyKey key = triple.key;
 				if( result != null && result.containsKey( key ) )
 					continue;
 
-				if( scope == Scope.IMPORT )
+				if( triple.scope == Scope.IMPORT )
 				{
-					assert version != null;
-
-					importedBoms.add( new Gav( groupId, artifactId, version ) );
+					assert triple.version != null;
+					importedBoms.add( new Gav( key.getGroupId(), key.getArtifactId(), triple.version ) );
 				}
 
-				DependencyManagement mngt = new DependencyManagement( new VersionScope( version, scope ) );
-
-				if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
-				{
-					for( Exclusion exclusion : d.getExclusions() )
-					{
-						String excludedGroupId = interpolateValue( exclusion.getGroupId(), projects, log );
-						String excludedArtifactId = interpolateValue( exclusion.getArtifactId(), projects, log );
-						mngt.addExclusion( new GroupArtifact( excludedGroupId, excludedArtifactId ) );
-					}
-				}
+				VersionScope versionScope = determineVersionScope( triple.version, triple.scope, profiles, projects, log, key, versionCanBeSelfManaged );
+				DependencyManagement management = new DependencyManagement( versionScope );
+				addExclusions( projects, log, d, management::addExclusion );
 
 				if( result == null )
 					result = new HashMap<>();
 
-				result.put( key, mngt );
+				result.put( key, management );
 			}
 
 			for( Gav bomGav : importedBoms )
@@ -636,7 +648,7 @@ public class Project
 					continue;
 				}
 
-				result = bomProject.getHierarchicalDependencyManagement( result, profiles, projects, log );
+				result = bomProject.getHierarchicalDependencyManagement( result, profiles, projects, log , versionCanBeSelfManaged);
 			}
 		}
 
@@ -746,5 +758,25 @@ public class Project
 		}
 
 		return null;
+	}
+
+	@FunctionalInterface
+	private interface ExclusionAdder
+	{
+		void add(GroupArtifact artifact);
+	}
+
+	private static class DependencyKeyVersionAndScope
+	{
+		public DependencyKey key; //private class so public is fine
+		public String version;
+		public Scope scope;
+
+		DependencyKeyVersionAndScope(DependencyKey key, String version, Scope scope)
+		{
+			this.key = key;
+			this.version = version;
+			this.scope = scope;
+		}
 	}
 }

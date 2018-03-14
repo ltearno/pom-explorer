@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 import fr.lteconsulting.pomexplorer.model.Gav;
@@ -84,10 +85,10 @@ public class Tools
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append( exception.toString() + "<br/>" );
+		sb.append(exception.toString()).append("<br/>");
 
 		for( StackTraceElement st : exception.getStackTrace() )
-			sb.append( st.toString() + "<br/>" );
+			sb.append(st.toString()).append("<br/>");
 
 		log.html( sb.toString() );
 
@@ -112,8 +113,10 @@ public class Tools
 
 	public static Gav releasedGav( Gav gav )
 	{
-		if( !isReleased( gav ) )
-			return new Gav( gav.getGroupId(), gav.getArtifactId(), gav.getVersion().substring( 0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length() ) );
+		if( !isReleased( gav ) ) {
+			String versionWithoutSnapshotSuffix = gav.getVersion().substring(0, gav.getVersion().length() - SNAPSHOT_SUFFIX.length());
+			return new Gav( gav.getGroupId(), gav.getArtifactId(), versionWithoutSnapshotSuffix);
+		}
 
 		return gav;
 	}
@@ -173,7 +176,7 @@ public class Tools
 		else
 			version += "-open";
 
-		return gav.copyWithVersion( version + SNAPSHOT_SUFFIX );
+		return gav.copyWithVersion( version + SNAPSHOT_SUFFIX);
 	}
 
 	/**
@@ -193,7 +196,7 @@ public class Tools
 
 	public static List<String> readFileLines( String path )
 	{
-		ArrayList<String> res = new ArrayList<String>();
+		ArrayList<String> res = new ArrayList<>();
 
 		File file = new File( path );
 		if( !file.exists() )

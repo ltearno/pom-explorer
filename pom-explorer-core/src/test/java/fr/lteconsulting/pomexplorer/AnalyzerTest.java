@@ -1,24 +1,21 @@
 package fr.lteconsulting.pomexplorer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
+import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
+import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
+import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.model.GroupArtifact;
+import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
-import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
-import fr.lteconsulting.pomexplorer.model.Gav;
-import fr.lteconsulting.pomexplorer.model.GroupArtifact;
-import fr.lteconsulting.pomexplorer.model.transitivity.Repository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 public class AnalyzerTest
 {
@@ -52,9 +49,12 @@ public class AnalyzerTest
 		runFullRecursiveAnalysis(session, "testSets/set02");
 		//assert
 		assertProjects(session, 5);
-		assertDependencies(session, PROJECT_A, 1);
-		assertDependencies(session, PROJECT_B, 1);
-		assertDependencies(session, PROJECT_C, 2);
+		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_B, true ));
+		assertDependencies(session, PROJECT_B, new GavIsSelfManaged( PROJECT_C, true ));
+		assertDependencies(session, PROJECT_C,
+			new GavIsSelfManaged( PROJECT_D, true ),
+			new GavIsSelfManaged( PROJECT_E, true )
+		);
 		assertDependencies(session, PROJECT_D, 0);
 		assertDependencies(session, PROJECT_E, 0);
 		assertNoNullGavs(session);
@@ -69,9 +69,12 @@ public class AnalyzerTest
 		runFullRecursiveAnalysis(session, "testSets/set03");
 		//assert
 		assertProjects(session, 4);
-		assertDependencies(session, PROJECT_A, 2);
+		assertDependencies(session, PROJECT_A,
+			new GavIsSelfManaged( PROJECT_B, true ),
+			new GavIsSelfManaged( PROJECT_C, true )
+		);
 		assertDependencies(session, PROJECT_B, 0);
-		assertDependencies(session, PROJECT_C, 1);
+		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_D, 0);
 		assertNoNullGavs(session);
 	}
@@ -85,9 +88,12 @@ public class AnalyzerTest
 		runFullRecursiveAnalysis(session, "testSets/set04");
 		//assert
 		assertProjects(session, 4);
-		assertDependencies(session, PROJECT_A, 2);
+		assertDependencies(session, PROJECT_A,
+				new GavIsSelfManaged( PROJECT_B, true ),
+				new GavIsSelfManaged( PROJECT_C, true )
+		);
 		assertDependencies(session, PROJECT_B, 0);
-		assertDependencies(session, PROJECT_C, 1);
+		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( "fr.lteconsulting:toto:1.4-SNAPSHOT", true ));
 		assertDependencies(session, PROJECT_D, 0);
 		assertNoNullGavs(session);
 	}
@@ -101,9 +107,9 @@ public class AnalyzerTest
 		runFullRecursiveAnalysis(session, "testSets/set05");
 		//assert
 		assertProjects(session, 2);
-		assertDependencies(session, PROJECT_A, 1);
+		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
 		assertParentDependency(session, PROJECT_A, PROJECT_B);
-		assertDependencies(session, PROJECT_B, 1);
+		assertDependencies(session, PROJECT_B, new GavIsSelfManaged( PROJECT_C, true ));
 
 		List<String> shouldBeMissing = new ArrayList<>();
 		shouldBeMissing.add(PROJECT_D);
@@ -143,9 +149,9 @@ public class AnalyzerTest
 		runFullRecursiveAnalysis(session, "testSets/set06");
 		//assert
 		assertProjects(session, 4);
-		assertDependencies(session, PROJECT_A, 1);
+		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
 		assertParentDependency(session, PROJECT_A, PROJECT_B);
-		assertDependencies(session, PROJECT_B, 1);
+		assertDependencies(session, PROJECT_B, new GavIsSelfManaged( PROJECT_C, true ));
 		assertDependencies(session, PROJECT_C, 0);
 		assertDependencies(session, PROJECT_D, 0);
 
@@ -180,7 +186,7 @@ public class AnalyzerTest
 		runFullRecursiveAnalysis(session, "testSets/set07");
 		//assert
 		assertProjects(session, 2);
-		assertDependencies(session, PROJECT_A, 1);
+		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
 		assertParentDependency(session, PROJECT_A, PROJECT_B);
 		assertDependencies(session, PROJECT_B, 0);
 
@@ -210,7 +216,7 @@ public class AnalyzerTest
 		runFullRecursiveAnalysis(session, "testSets/set08");
 		//assert
 		assertProjects(session, 1);
-		assertDependencies(session, PROJECT_A, 1);
+		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
 
 		Project project = session.projects().forGav(Gav.parse("fr.lteconsulting:a:1.0-SNAPSHOT"));
 		assertNotNull(project);
@@ -227,13 +233,25 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 6);
 		assertDependencies(session, PROJECT_A, 0);
-		assertDependencies(session, PROJECT_B, 2);
+		assertDependencies(session, PROJECT_B,
+				new GavIsSelfManaged(PROJECT_E, true),
+				new GavIsSelfManaged(PROJECT_F, false)
+		);
 		assertParentDependency(session, PROJECT_B, PROJECT_A);
-		assertDependencies(session, PROJECT_C, 4);
+		assertDependencies(session, PROJECT_C,
+				new GavIsSelfManaged(PROJECT_B, false),
+				new GavIsSelfManaged(PROJECT_B, false),
+				new GavIsSelfManaged(PROJECT_E, false),
+				new GavIsSelfManaged(PROJECT_F, true)
+		);
 		assertParentDependency(session, PROJECT_C, PROJECT_A);
-		assertDependencies(session, PROJECT_D, 3);
+		assertDependencies(session, PROJECT_D,
+				new GavIsSelfManaged(PROJECT_B, false),
+				new GavIsSelfManaged(PROJECT_B, false),
+				new GavIsSelfManaged(PROJECT_C, true)
+		);
 		assertParentDependency(session, PROJECT_D, PROJECT_A);
-		assertDependencies(session, PROJECT_E, 1);
+		assertDependencies(session, PROJECT_E, new GavIsSelfManaged( PROJECT_F, true ));
 		assertDependencies(session, PROJECT_F, 0);
 		assertNoNullGavs(session);
 	}
@@ -249,7 +267,7 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 6);
 		assertDependencies(session, PROJECT_A, 0);
-		assertDependencies(session, PROJECT_B, 1);
+		assertDependencies(session, PROJECT_B, new GavIsSelfManaged( PROJECT_E, true ));
 		assertTransitiveDependency(session, PROJECT_B, 2);
 		assertParentDependency(session, PROJECT_B, PROJECT_A);
 		assertDependencies(session, PROJECT_C, 4);
@@ -416,10 +434,33 @@ public class AnalyzerTest
 		assertBuildDependencies(session, gavString, numberOfBuildDependencies);
 	}
 
+	private void assertDependencies(Session session, String gavString, GavIsSelfManaged... gavs)
+	{
+		System.out.println("DEPENDENCIES OF " + gavString);
+		Set<DependencyRelation> dependencies = session.graph().read().dependencies(Gav.parse(gavString));
+		assertDependencies(gavs, dependencies);
+	}
+
+	private void assertDependencies(GavIsSelfManaged[] gavs, Set<DependencyRelation> dependencies)
+	{
+		List<GavIsSelfManaged> actualGavs = dependencies.stream().map( x ->
+				new GavIsSelfManaged( x.getTarget().toString(), x.getDependency().isVersionSelfManaged().orElse( null ) )
+		).collect( Collectors.toList());
+		assertThat(actualGavs).containsExactlyInAnyOrder(gavs);
+	}
+
 	private void assertDependencies(Session session, String gavString, int numberOfDependencies)
 	{
 		assertDependencies(session, gavString, numberOfDependencies, "DEPENDENCIES OF " + gavString);
 	}
+
+	private void assertTransitiveDependency(Session session, String gavString, GavIsSelfManaged... gavs)
+	{
+		System.out.println("TRANSITIVE DEPENDENCIES OF " + gavString);
+		Set<DependencyRelation> dependencies = session.graph().read().dependenciesRec(Gav.parse(gavString));
+		assertDependencies( gavs, dependencies );
+	}
+
 	private void assertTransitiveDependency(Session session, String gavString, int numberOfDependencies)
 	{
 		System.out.println("TRANSITIVE DEPENDENCIES OF " + gavString);
@@ -464,5 +505,38 @@ public class AnalyzerTest
 				.collect(Collectors.toList());
 		nullGavs.forEach(System.out::println);
 		assertEquals("number of null gavs", numberOfNullGavs, nullGavs.size());
+	}
+
+	private static class GavIsSelfManaged {
+		public String gav;
+		public boolean isSelfManaged;
+
+		public GavIsSelfManaged( String gav, boolean isSelfManaged )
+		{
+			this.gav = gav;
+			this.isSelfManaged = isSelfManaged;
+		}
+
+		@Override
+		public boolean equals( Object o )
+		{
+			if( this == o ) return true;
+			if( o == null || getClass() != o.getClass() ) return false;
+			GavIsSelfManaged that = ( GavIsSelfManaged ) o;
+			return isSelfManaged == that.isSelfManaged &&
+					Objects.equals( gav, that.gav );
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash( gav, isSelfManaged );
+		}
+
+		@Override
+		public String toString()
+		{
+			return gav + " managed: " + isSelfManaged;
+		}
 	}
 }

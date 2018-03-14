@@ -2,15 +2,19 @@ package fr.lteconsulting.pomexplorer.model;
 
 import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 
+import java.util.Optional;
+
 public class VersionScope
 {
 	private String version;
+	private Boolean isVersionSelfManaged;
 
 	private Scope scope;
 
-	public VersionScope( String version, Scope scope )
+	public VersionScope( String version, Boolean isVersionSelfManaged, Scope scope )
 	{
 		this.version = version;
+		this.isVersionSelfManaged = isVersionSelfManaged;
 		this.scope = scope;
 	}
 
@@ -19,7 +23,15 @@ public class VersionScope
 		return version;
 	}
 
-	public void setVersion( String version )
+	/**
+	 * Indicates whether {@link #getVersion()} is self managed or not whereas {@link Optional#empty()} indicates it is unknown.
+	 */
+	public Optional<Boolean> isVersionSelfManaged()
+	{
+		return Optional.ofNullable(isVersionSelfManaged);
+	}
+
+	public void setVersion(String version )
 	{
 		this.version = version;
 	}

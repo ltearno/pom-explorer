@@ -285,7 +285,7 @@ public class PomAnalysis
 			}
 
 			// add resolved local dependencies
-			Map<DependencyKey, RawDependency> dependencies = project.getLocalDependencies( null, profiles, projects, log );
+			Map<DependencyKey, RawDependency> dependencies = project.getLocalDependencies( null, profiles, projects, log, true);
 			if( dependencies != null )
 			{
 				for( Entry<DependencyKey, RawDependency> e : dependencies.entrySet() )
@@ -295,7 +295,7 @@ public class PomAnalysis
 
 					Gav dependencyGav = new Gav( key.getGroupId(), key.getArtifactId(), rawDependency.getVs().getVersion() );
 					tx.addGav( dependencyGav );
-					tx.addRelation( new DependencyRelation( gav, dependencyGav, new Dependency( dependencyGav, rawDependency.getVs().getScope(), key.getClassifier(), key.getType() ) ) );
+					tx.addRelation( new DependencyRelation( gav, dependencyGav, new Dependency(key.getGroupId(), key.getArtifactId(), rawDependency.getVs(), key.getClassifier(), key.getType() ) ) );
 				}
 			}
 

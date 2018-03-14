@@ -289,16 +289,16 @@ public class ProjectsCommand
 	{
 		if( deps.isEmpty() )
 		{
-			sb.append( "<b>no " + title + " dependencies.</b><br/>" );
+			sb.append("<b>no ").append(title).append(" dependencies.</b><br/>");
 		}
 		else
 		{
-			sb.append( "<b>" + title + " dependencies:</b><br/>" );
-			deps.entrySet().stream().sorted( ( a, b ) -> a.getKey().toString().compareTo( b.getKey().toString() ) ).forEach( entry -> {
+			sb.append("<b>").append(title).append(" dependencies:</b><br/>");
+			deps.entrySet().stream().sorted(Comparator.comparing(a -> a.getKey().toString())).forEach(entry -> {
 				DependencyKey key = entry.getKey();
 				DependencyNode n = entry.getValue();
-				sb.append( key + ":" + n.getVs().getVersion() + ":" + n.getVs().getScope() );
-				sb.append( ", <i>declared level " + n.getLevel() + " in " + n.getProject().getGav() + "</i>" );
+				sb.append(key).append(":").append(n.getVs().getVersion()).append(":").append(n.getVs().getScope());
+				sb.append(", <i>declared level ").append(n.getLevel()).append(" in ").append(n.getProject().getGav()).append("</i>");
 				// if( n.getLevel()>1)
 				// sb.append( ", <i>originated by " + n.d.getOriginatingDependency() + "</i>" );
 				sb.append( "<br/>" );

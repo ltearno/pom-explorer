@@ -7,7 +7,7 @@
     <packaging>jar</packaging>
     <description>test project a</description>
     <properties>
-        <cversion>1.2-SNAPSHOT</cversion>
+        <cversion>1.0-SNAPSHOT</cversion>
     </properties>
     <dependencies>
         <dependency>

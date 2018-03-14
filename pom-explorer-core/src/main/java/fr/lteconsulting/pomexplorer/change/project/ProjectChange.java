@@ -142,7 +142,7 @@ public class ProjectChange extends Change
 				{
 					DependencyKey key = new DependencyKey( d.getGroupId(), d.getArtifactId(), d.getClassifier(), d.getType() );
 
-					RawDependency raw = new RawDependency( new VersionScope( d.getVersion(), Scope.fromString( d.getScope() ) ), d.isOptional() );
+					RawDependency raw = new RawDependency( new VersionScope( d.getVersion(), null, Scope.fromString( d.getScope() ) ), d.isOptional() );
 					if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
 					{
 						for( Exclusion exclusion : d.getExclusions() )

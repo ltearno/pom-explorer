@@ -1,6 +1,7 @@
 package fr.lteconsulting.pomexplorer.model;
 
 import java.util.Comparator;
+import java.util.Optional;
 
 import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 
@@ -10,6 +11,7 @@ public class Dependency
 	private final String artifactId;
 	private final String version;
 	private final Scope scope;
+	private final Boolean isVersionSelfManaged;
 	private final String classifier;
 	private final String type;
 
@@ -29,9 +31,20 @@ public class Dependency
 
 	public Dependency( String groupId, String artifactId, String version, Scope scope, String classifier, String type )
 	{
+		this(groupId, artifactId, version, null, scope, classifier, type);
+	}
+
+	public Dependency(String groupId, String artifactId, VersionScope vs, String classifier, String type)
+	{
+		this(groupId, artifactId, vs.getVersion(), vs.isVersionSelfManaged().orElse(null), vs.getScope(), classifier, type);
+	}
+
+	public Dependency(String groupId, String artifactId, String version, Boolean isVersionSelfManaged, Scope scope, String classifier, String type )
+	{
 		this.groupId = groupId;
 		this.artifactId = artifactId;
 		this.version = version;
+		this.isVersionSelfManaged = isVersionSelfManaged;
 		this.scope = scope == null ? Scope.COMPILE : scope;
 		this.classifier = classifier;
 		this.type = type == null ? "jar" : type;
@@ -67,6 +80,10 @@ public class Dependency
 	public String getVersion()
 	{
 		return version;
+	}
+
+	public Optional<Boolean> isVersionSelfManaged() {
+		return Optional.ofNullable(isVersionSelfManaged);
 	}
 
 	public Scope getScope()
