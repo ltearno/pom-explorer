@@ -648,7 +648,7 @@ public class Project
 					continue;
 				}
 
-				result = bomProject.getHierarchicalDependencyManagement( result, profiles, projects, log , versionCanBeSelfManaged);
+				result = bomProject.getHierarchicalDependencyManagement( result, profiles, projects, log , false);
 			}
 		}
 

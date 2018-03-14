@@ -26,6 +26,7 @@ public class AnalyzerTest
 	private static final String PROJECT_D = "fr.lteconsulting:d:1.0-SNAPSHOT";
 	private static final String PROJECT_E = "fr.lteconsulting:e:2.0-SNAPSHOT";
 	private static final String PROJECT_F = "fr.lteconsulting:f:1.5";
+	private static final String PROJECT_G = "fr.lteconsulting:g:3.5.2";
 
 	@Test
 	public void test01()
@@ -276,6 +277,20 @@ public class AnalyzerTest
 		assertParentDependency(session, PROJECT_D, PROJECT_A);
 		assertDependencies(session, PROJECT_E, 1);
 		assertDependencies(session, PROJECT_F, 0);
+		assertNoNullGavs(session);
+	}
+
+	@Test
+	public void bomDependency()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/bomDependency");
+		//assert
+		assertProjects(session, 3);
+		assertDependencies(session, PROJECT_A, 0);
+		assertDependencies(session, PROJECT_B, new GavIsSelfManaged(PROJECT_A, false));
 		assertNoNullGavs(session);
 	}
 
