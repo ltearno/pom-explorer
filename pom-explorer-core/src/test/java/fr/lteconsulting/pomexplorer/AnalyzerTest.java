@@ -241,7 +241,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/multiModule");
+		runFullRecursiveAnalysis(session, "testSets/multiModule_inSubfolders");
 		//assert
 		assertProjects(session, 6);
 		assertDependencies(session, PROJECT_A, 0);
@@ -275,6 +275,52 @@ public class AnalyzerTest
 		assertNoNullGavs(session);
 	}
 
+
+	@Test
+	public void getSubmodules_submodulesInSubFolders()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/multiModule_inSubfolders");
+		//assert
+		assertProjects(session, 6);
+		assertSubmodules(session, PROJECT_A,
+				PROJECT_B,
+				PROJECT_C,
+				PROJECT_D
+		);
+	}
+
+
+	@Test
+	public void getSubmodules_submodulesInSameFolder()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/multiModule_inSameFolder");
+		//assert
+		assertProjects(session, 6);
+		assertSubmodules(session, PROJECT_A,
+				PROJECT_B,
+				PROJECT_C,
+				PROJECT_D
+		);
+	}
+
+	@Test
+	public void getSubmodules_submoduleIsAlsoMultiModule()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/multiModule_nested");
+		//assert
+		assertProjects(session, 6);
+		assertSubmodules(session, PROJECT_A, PROJECT_B, PROJECT_C );
+		assertSubmodules(session, PROJECT_B, PROJECT_D );
+	}
 
 	@Test
 	public void pomDependency()
@@ -575,11 +621,24 @@ public class AnalyzerTest
 		assertEquals("number of null gavs", numberOfNullGavs, nullGavs.size());
 	}
 
-	private static class GavIsSelfManaged {
-		public String gav;
-		public boolean isSelfManaged;
 
-		public GavIsSelfManaged( String gav, boolean isSelfManaged )
+	private void assertSubmodules( Session session, String multiModule, String... projects )
+	{
+		Gav multiModuleGav = Gav.parse( multiModule );
+		List<Project> submodules = session.projects().getSubmodules( multiModuleGav);
+		List<Project> expectedModules = Arrays.stream( projects )
+				.map( x -> session.projects().forGav( Gav.parse( x ) ) )
+				.collect( Collectors.toList());
+		assertThat(submodules)
+				.as( "submodules of "+multiModule )
+				.containsExactlyInAnyOrderElementsOf( expectedModules );
+	}
+
+	private static class GavIsSelfManaged {
+		String gav;
+		boolean isSelfManaged;
+
+		GavIsSelfManaged( String gav, boolean isSelfManaged )
 		{
 			this.gav = gav;
 			this.isSelfManaged = isSelfManaged;

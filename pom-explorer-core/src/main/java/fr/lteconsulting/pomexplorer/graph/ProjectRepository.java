@@ -1,14 +1,13 @@
 package fr.lteconsulting.pomexplorer.graph;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import fr.lteconsulting.pomexplorer.Project;
 import fr.lteconsulting.pomexplorer.ProjectContainer;
 import fr.lteconsulting.pomexplorer.Session;
 import fr.lteconsulting.pomexplorer.model.Gav;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ProjectRepository implements ProjectContainer
 {
@@ -57,5 +56,30 @@ public class ProjectRepository implements ProjectContainer
 	public Collection<Project> values()
 	{
 		return projects.values();
+	}
+
+	/**
+	 * Returns all submodules as {@link List} of {@link Project}s of the project with the given {@code gav}
+	 * or an empty list if it does not have any submodules or they are not part of this repository.
+	 *
+	 * @throws RuntimeException if the pom of the submodule does not exist.
+	 */
+	public List<Project> getSubmodules( Gav gav ){
+		return getSubmodulesAsStream( gav ).collect( Collectors.toList());
+	}
+
+	/**
+	 * Returns all submodules as {@link Stream} of {@link Project} of the project with the given {@code gav}
+	 * or an empty list if it does not have any submodules or they are not part of this repository.
+	 *
+	 * @throws RuntimeException if the pom of the submodule does not exist.
+	 */
+	public Stream<Project> getSubmodulesAsStream( Gav gav )
+	{
+		Project project = forGav( gav );
+		return project.getSubmodules()
+				.map( Project::getGav )
+				.filter( x -> session.projects().contains( x ) )
+				.map( x -> session.projects().forGav( x ) );
 	}
 }

@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
 
@@ -771,6 +772,36 @@ public class Project
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return All submodules of this project or an empty list if it does not have any.
+	 */
+	public Stream<Project> getSubmodules()
+	{
+		Stream<String> submodules = Stream.concat(
+				project.getModules().stream(),
+				project.getModel().getProfiles().stream().flatMap( x -> x.getModules().stream() )
+		);
+		return submodules.map( this::getSubmodule );
+	}
+
+	/**
+	 * Creates a new {@link Project} for the submodule with the given {@code moduleName}.
+	 * Notice that the project is not added to the current {@link Session} nor has another side effect
+	 * -- we just reuse Project to load groupId and version.
+	 */
+	private Project getSubmodule( String moduleName )
+	{
+		final File pomFile;
+		if( moduleName.endsWith( ".pom" ) )
+			pomFile = new File( this.pomFile.getParent() + "/" + moduleName );
+		else
+			pomFile = new File( this.pomFile.getParent() + "/" + moduleName + "/pom.xml" );
+
+		Project project = new Project( pomFile, false );
+		project.readPomFile();
+		return project;
 	}
 
 	@FunctionalInterface
