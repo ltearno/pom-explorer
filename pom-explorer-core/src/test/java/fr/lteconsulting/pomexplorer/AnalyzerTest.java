@@ -318,6 +318,29 @@ public class AnalyzerTest
 	}
 
 	@Test
+	public void versionInUnresolvedParent()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		PomAnalysis.runFullRecursiveAnalysis("testSets/versionInUnresolvedParent", session, new DefaultPomFileLoader( session, false ), null, true, System.out::println);
+		//assert
+		assertProjects(session, 3);
+		assertDependencies(session, PROJECT_A, 0);
+		assertDependenciesManagement(session, PROJECT_A,
+				new GavIsSelfManaged(PROJECT_B, true),
+				new GavIsSelfManaged(PROJECT_B, true)
+		);
+		assertDependencies(session, PROJECT_B, 0);
+		assertParentDependency( session, PROJECT_B, PROJECT_A );
+		assertDependencies(session, PROJECT_C,
+				new GavIsSelfManaged("fr.lteconsulting:b:null", false),
+				new GavIsSelfManaged("fr.lteconsulting:b:null", false)
+		);
+		assertNullGavs(session, 1);
+	}
+
+	@Test
 	@Ignore("Regression test for #48")
 	public void unresolvedParent()
 	{

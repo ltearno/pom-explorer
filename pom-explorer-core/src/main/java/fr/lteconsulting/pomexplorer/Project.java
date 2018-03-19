@@ -577,7 +577,7 @@ public class Project
 		String version = nullableVersion;
 		Scope scope = nullableScope;
 
-		boolean isSelfManaged = true;
+		boolean isSelfManaged = nullableVersion != null;
 
 		if( dm != null && dm.getVs() != null )
 		{
@@ -585,10 +585,6 @@ public class Project
 			{
 				version = dm.getVs().getVersion();
 				isSelfManaged = dm.getVs().isVersionSelfManaged().orElse(false);
-			}
-			else
-			{
-				isSelfManaged = true;
 			}
 
 			if( scope == null )
