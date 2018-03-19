@@ -12,6 +12,6 @@ public class ParentRelation extends Relation
 	@Override
 	public String toString()
 	{
-		return "parent";
+		return source + "-(parent)->" + target.toString();
 	}
 }

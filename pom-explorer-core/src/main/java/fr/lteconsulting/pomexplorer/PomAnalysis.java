@@ -9,13 +9,11 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
-import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.Scope;
+import fr.lteconsulting.pomexplorer.graph.relation.*;
 import fr.lteconsulting.pomexplorer.model.Dependency;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
 import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.model.transitivity.DependencyManagement;
 import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
 
 /**
@@ -296,6 +294,20 @@ public class PomAnalysis
 					Gav dependencyGav = new Gav( key.getGroupId(), key.getArtifactId(), rawDependency.getVs().getVersion() );
 					tx.addGav( dependencyGav );
 					tx.addRelation( new DependencyRelation( gav, dependencyGav, new Dependency(key.getGroupId(), key.getArtifactId(), rawDependency.getVs(), key.getClassifier(), key.getType() ) ) );
+				}
+			}
+
+			Map<DependencyKey, DependencyManagement> dependenciesManagement = project.getInterpolatedDependencyManagementWithBomImport( null, profiles, projects, log, true );
+			if( dependenciesManagement != null )
+			{
+				for( Entry<DependencyKey, DependencyManagement> e : dependenciesManagement.entrySet() )
+				{
+					DependencyKey key = e.getKey();
+					DependencyManagement dependencyManagement = e.getValue();
+
+					Gav dependencyGav = new Gav( key.getGroupId(), key.getArtifactId(), dependencyManagement.getVs().getVersion() );
+					tx.addGav( dependencyGav );
+					tx.addRelation( new DependencyManagementRelation( gav, dependencyGav, new Dependency(key.getGroupId(), key.getArtifactId(), dependencyManagement.getVs(), key.getClassifier(), key.getType() ) ) );
 				}
 			}
 

@@ -6,12 +6,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import fr.lteconsulting.pomexplorer.graph.relation.*;
 import org.jgrapht.graph.DirectedMultigraph;
 
-import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.model.Gav;
 
 public class PomGraph
@@ -152,6 +149,16 @@ public class PomGraph
 			return res;
 		}
 
+		public Set<DependencyManagementRelation> dependenciesManagement( Gav gav )
+		{
+			return filterDependencyManagementRelations( relations( gav ) );
+		}
+
+		public Set<DependencyManagementRelation> dependenciesManagementRec( Gav gav )
+		{
+			return filterDependencyManagementRelations( relationsRec( gav ) );
+		}
+
 		public Set<DependencyRelation> dependencies( Gav gav )
 		{
 			return filterDependencyRelations( relations( gav ) );
@@ -185,6 +192,16 @@ public class PomGraph
 			return filterDependencyRelations( relationsReverseRec( gav ) );
 		}
 
+		public Set<DependencyManagementRelation> dependentsManagement( Gav gav )
+		{
+			return filterDependencyManagementRelations( relationsReverse( gav ) );
+		}
+
+		public Set<DependencyManagementRelation> dependentsManagementRec( Gav gav )
+		{
+			return filterDependencyManagementRelations( relationsReverseRec( gav ) );
+		}
+
 		public Set<BuildDependencyRelation> buildDependents( Gav gav )
 		{
 			return filterBuildDependencyRelations( relationsReverse( gav ) );
@@ -205,7 +222,13 @@ public class PomGraph
             return filterRelations(relations, DependencyRelation.class);
 		}
 
-        private static Set<BuildDependencyRelation> filterBuildDependencyRelations( Set<Relation> relations )
+		private static Set<DependencyManagementRelation> filterDependencyManagementRelations( Set<Relation> relations )
+		{
+			return filterRelations(relations, DependencyManagementRelation.class);
+		}
+
+
+		private static Set<BuildDependencyRelation> filterBuildDependencyRelations( Set<Relation> relations )
 		{
 		    return filterRelations(relations, BuildDependencyRelation.class);
 		}

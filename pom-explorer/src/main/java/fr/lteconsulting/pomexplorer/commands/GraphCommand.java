@@ -1,19 +1,17 @@
 package fr.lteconsulting.pomexplorer.commands;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.Writer;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import fr.lteconsulting.pomexplorer.graph.relation.*;
 import org.jgrapht.DirectedGraph;
-import org.jgrapht.ext.EdgeNameProvider;
 import org.jgrapht.ext.GraphMLExporter;
 import org.jgrapht.ext.IntegerEdgeNameProvider;
 import org.jgrapht.ext.IntegerNameProvider;
 import org.jgrapht.ext.JGraphXAdapter;
-import org.jgrapht.ext.VertexNameProvider;
 import org.jgrapht.graph.DirectedMultigraph;
 import org.jgrapht.graph.DirectedSubgraph;
 
@@ -30,11 +28,6 @@ import fr.lteconsulting.pomexplorer.ApplicationSession;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.Repository;
 import fr.lteconsulting.pomexplorer.graph.RepositoryRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.Relation;
-import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.tools.FilteredGAVs;
 
@@ -70,13 +63,8 @@ public class GraphCommand
 		if( relation instanceof BuildDependencyRelation )
 			return false;
 
-		if( relation instanceof DependencyRelation )
-		{
-			if( relation.asDependencyRelation().getDependency().getScope() == Scope.TEST )
-				return false;
-		}
-
-		return true;
+		DependencyLikeRelation dependencyLikeRelation = relation.asDependencyLikeRelation();
+		return dependencyLikeRelation == null || dependencyLikeRelation.getDependency().getScope() != Scope.TEST;
 	}
 
 	@Help( "exports a GraphML file" )
@@ -92,42 +80,23 @@ public class GraphCommand
 
 		try
 		{
-			GraphMLExporter<Gav, Relation> exporter = new GraphMLExporter<Gav, Relation>( new IntegerNameProvider<Gav>(), new VertexNameProvider<Gav>()
-			{
-				@Override
-				public String getVertexName( Gav vertex )
-				{
-					return vertex.toString();
-				}
-			}, new IntegerEdgeNameProvider<Relation>(), new EdgeNameProvider<Relation>()
-			{
-				@Override
-				public String getEdgeName( Relation edge )
-				{
-					return edge.toString();
-				}
-			} );
+			GraphMLExporter<Gav, Relation> exporter = new GraphMLExporter<>(
+					new IntegerNameProvider<>(),
+					vertex -> vertex.toString(),
+					new IntegerEdgeNameProvider<>(),
+					edge -> edge.toString()
+			);
 
-			GraphMLExporter<Repository, RepositoryRelation> repoExporter = new GraphMLExporter<Repository, RepositoryRelation>( new IntegerNameProvider<Repository>(),
-					new VertexNameProvider<Repository>()
-					{
-						@Override
-						public String getVertexName( Repository vertex )
-						{
-							return vertex.toString();
-						}
-					}, new IntegerEdgeNameProvider<RepositoryRelation>(), new EdgeNameProvider<RepositoryRelation>()
-			{
-				@Override
-				public String getEdgeName( RepositoryRelation edge )
-				{
-					return edge.toString();
-				}
-			} );
+			GraphMLExporter<Repository, RepositoryRelation> repoExporter = new GraphMLExporter<Repository, RepositoryRelation>(
+					new IntegerNameProvider<>(),
+					vertex -> vertex.toString(),
+					new IntegerEdgeNameProvider<>(),
+					edge -> edge.toString()
+			);
 
 			DirectedGraph<Gav, Relation> g = tx.internalGraph();
 
-			DirectedGraph<Gav, Relation> ng = new DirectedMultigraph<Gav, Relation>( (Class<? extends Relation>) Relation.class );
+			DirectedGraph<Gav, Relation> ng = new DirectedMultigraph<>( Relation.class );
 			for( Gav gav : g.vertexSet() )
 			{
 				if( gavFilter != null && !gavFilter.accept( gav ) )
@@ -186,6 +155,8 @@ public class GraphCommand
 						rr.addRelation( "PARENT" );
 					else if( relation.getClass() == DependencyRelation.class )
 						rr.addRelation( "DEP" );
+					else if( relation.getClass() == DependencyManagementRelation.class )
+						rr.addRelation( "DEPMGNT" );
 					else if( relation.getClass() == BuildDependencyRelation.class )
 						rr.addRelation( "BUILD" );
 				}

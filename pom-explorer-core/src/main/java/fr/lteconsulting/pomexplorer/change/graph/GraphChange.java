@@ -1,9 +1,7 @@
 package fr.lteconsulting.pomexplorer.change.graph;
 
 import fr.lteconsulting.pomexplorer.change.Change;
-import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
-import fr.lteconsulting.pomexplorer.graph.relation.ParentRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyLikeRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.Relation;
 import fr.lteconsulting.pomexplorer.model.Dependency;
 import fr.lteconsulting.pomexplorer.model.DependencyKey;
@@ -58,20 +56,22 @@ public abstract class GraphChange extends Change
 		{
 			Gav source = relation.getSource();
 
-			if( relation instanceof ParentRelation )
-				return new ParentChange( source, newTarget );
-
-			if( relation instanceof BuildDependencyRelation )
-				return new PluginChange( source, new GroupArtifact( relation.getTarget().getGroupId(), relation.getTarget().getArtifactId() ), newTarget );
-
-			if( relation instanceof DependencyRelation )
+			switch( relation.getRelationType() )
 			{
-				DependencyRelation r = (DependencyRelation) relation;
-				Dependency d = r.getDependency();
-				return new DependencyChange( source, new DependencyKey( d.getGroupId(), d.getArtifactId(), d.getClassifier(), d.getType() ), newTarget );
+				case PARENT:
+					return new ParentChange( source, newTarget );
+				case BUILD_DEPENDENCY:
+					return new PluginChange( source, new GroupArtifact( relation.getTarget().getGroupId(), relation.getTarget().getArtifactId() ), newTarget );
+				case DEPENDENCY:
+				case DEPENDENCY_MANAGEMENT:
+				{
+					DependencyLikeRelation r = ( DependencyLikeRelation ) relation;
+					Dependency d = r.getDependency();
+					return new DependencyChange( source, new DependencyKey( d.getGroupId(), d.getArtifactId(), d.getClassifier(), d.getType() ), newTarget );
+				}
+				default:
+					return null;
 			}
-
-			return null;
 		}
 
 		public static RelationChange create( Gav source, String location, Gav newTarget )

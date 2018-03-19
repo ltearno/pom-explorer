@@ -245,15 +245,10 @@ public class Project
 			{
 				for( org.apache.maven.model.Dependency d : project.getDependencyManagement().getDependencies() )
 				{
-					String groupId = interpolateValue( d.getGroupId(), projects, log );
-					String artifactId = interpolateValue( d.getArtifactId(), projects, log );
-					String version = interpolateValue( d.getVersion(), projects, log );
-					Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
-					String classifier = interpolateValue( d.getClassifier(), projects, log );
-					String type = interpolateValue( d.getType(), projects, log );
+					DependencyKeyVersionAndScope triple = interpolateDependencyKeyVersionAndScope( d, projects, log );
 
-					Gav dependencyGav = new Gav( groupId, artifactId, version );
-					Dependency dependency = new Dependency( dependencyGav, scope, classifier, type );
+					Gav dependencyGav = new Gav( triple.key.getGroupId(), triple.key.getArtifactId(), triple.version );
+					Dependency dependency = new Dependency( dependencyGav, triple.scope, triple.key.getClassifier(), triple.key.getType() );
 
 					dependencyManagement.put( dependency.key(), dependency );
 				}
@@ -373,7 +368,7 @@ public class Project
 			cachedLocalDependencyManagement = new HashMap<>();
 
 			Project current = this;
-			boolean canBeSelfManaged = versionCanBeSelfManaged;
+			boolean canBeSelfManaged = true;
 			while( current != null )
 			{
 				current.getInterpolatedDependencyManagementWithBomImport( cachedLocalDependencyManagement, profiles, projects, log , canBeSelfManaged);
@@ -385,7 +380,27 @@ public class Project
 		if( result == null )
 			result = new HashMap<>();
 
-		result.putAll( cachedLocalDependencyManagement );
+		if( versionCanBeSelfManaged )
+		{
+			result.putAll( cachedLocalDependencyManagement );
+		}
+		else
+		{
+			for( Map.Entry<DependencyKey, DependencyManagement> entry : cachedLocalDependencyManagement.entrySet() )
+			{
+				final DependencyManagement cachedManagement = entry.getValue();
+
+				final DependencyManagement dependencyManagement;
+				if( !cachedManagement.getVs().isVersionSelfManaged().orElse( false ) )
+					dependencyManagement = cachedManagement;
+				else
+					dependencyManagement = new DependencyManagement( new VersionScope(
+							cachedManagement.getVs().getVersion(), false, cachedManagement.getVs().getScope()
+					) );
+
+				result.put( entry.getKey(), dependencyManagement );
+			}
+		}
 
 		return result;
 	}
@@ -397,7 +412,9 @@ public class Project
 
 		List<org.apache.maven.model.Profile> projectProfiles = getMavenProject().getModel().getProfiles();
 		if( projectProfiles != null )
-			projectProfiles.stream().filter( p -> isProfileActivated( profiles, p ) ).forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), profiles, projects, log , versionCanBeSelfManaged) );
+			projectProfiles.stream()
+					.filter( p -> isProfileActivated( profiles, p ) )
+					.forEach( p -> completeDependenciesMap( fRes, p.getDependencies(), profiles, projects, log , versionCanBeSelfManaged) );
 
 		return res;
 	}
@@ -427,7 +444,7 @@ public class Project
 	/**
 	 * TODO should use depmngt from the parent to resolve values if missing
 	 */
-	private Map<DependencyKey, DependencyManagement> getInterpolatedDependencyManagementWithBomImport( Map<DependencyKey, DependencyManagement> dependencyMap, Map<String, Profile> profiles, ProjectContainer projects, Log log, boolean versionCanBeSelfManaged )
+	Map<DependencyKey, DependencyManagement> getInterpolatedDependencyManagementWithBomImport( Map<DependencyKey, DependencyManagement> dependencyMap, Map<String, Profile> profiles, ProjectContainer projects, Log log, boolean versionCanBeSelfManaged )
 	{
 		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
 		{

@@ -10,7 +10,9 @@ public enum RelationType
 {
 	DEPENDENCY( "D" ),
 	BUILD_DEPENDENCY( "B" ),
-	PARENT( "P" );
+	PARENT( "P" ),
+	DEPENDENCY_MANAGEMENT("DM"),
+	;
 
 	private final String shortName;
 

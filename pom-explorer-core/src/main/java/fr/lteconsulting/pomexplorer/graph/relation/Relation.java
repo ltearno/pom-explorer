@@ -30,6 +30,14 @@ public abstract class Relation
 		return type;
 	}
 
+	public final DependencyLikeRelation asDependencyLikeRelation()
+	{
+		if( type != RelationType.DEPENDENCY && type != RelationType.DEPENDENCY_MANAGEMENT )
+			return null;
+
+		return (DependencyLikeRelation) this;
+	}
+
 	public final DependencyRelation asDependencyRelation()
 	{
 		if( type != RelationType.DEPENDENCY )
@@ -37,6 +45,15 @@ public abstract class Relation
 
 		return (DependencyRelation) this;
 	}
+
+	public final DependencyManagementRelation asDependencyManagementRelation()
+	{
+		if( type != RelationType.DEPENDENCY_MANAGEMENT )
+			return null;
+
+		return (DependencyManagementRelation) this;
+	}
+
 
 	public final BuildDependencyRelation asBuildDependencyRelation()
 	{

@@ -3,6 +3,8 @@ package fr.lteconsulting.pomexplorer;
 import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphReadTransaction;
 import fr.lteconsulting.pomexplorer.graph.ProjectRepository;
 import fr.lteconsulting.pomexplorer.graph.relation.BuildDependencyRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyLikeRelation;
+import fr.lteconsulting.pomexplorer.graph.relation.DependencyManagementRelation;
 import fr.lteconsulting.pomexplorer.graph.relation.DependencyRelation;
 import fr.lteconsulting.pomexplorer.model.Gav;
 import fr.lteconsulting.pomexplorer.model.GroupArtifact;
@@ -26,7 +28,6 @@ public class AnalyzerTest
 	private static final String PROJECT_D = "fr.lteconsulting:d:1.0-SNAPSHOT";
 	private static final String PROJECT_E = "fr.lteconsulting:e:2.0-SNAPSHOT";
 	private static final String PROJECT_F = "fr.lteconsulting:f:1.5";
-	private static final String PROJECT_G = "fr.lteconsulting:g:3.5.2";
 
 	@Test
 	public void test01()
@@ -51,6 +52,10 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 5);
 		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_B, true ));
+		assertDependenciesManagement( session, PROJECT_A,
+				new GavIsSelfManaged( PROJECT_B, true ),
+				new GavIsSelfManaged( PROJECT_C, true )
+		);
 		assertDependencies(session, PROJECT_B, new GavIsSelfManaged( PROJECT_C, true ));
 		assertDependencies(session, PROJECT_C,
 			new GavIsSelfManaged( PROJECT_D, true ),
@@ -75,6 +80,7 @@ public class AnalyzerTest
 			new GavIsSelfManaged( PROJECT_C, true )
 		);
 		assertDependencies(session, PROJECT_B, 0);
+		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_D, 0);
 		assertNoNullGavs(session);
@@ -94,6 +100,7 @@ public class AnalyzerTest
 				new GavIsSelfManaged( PROJECT_C, true )
 		);
 		assertDependencies(session, PROJECT_B, 0);
+		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( "fr.lteconsulting:toto:1.4-SNAPSHOT", true ));
 		assertDependencies(session, PROJECT_D, 0);
 		assertNoNullGavs(session);
@@ -109,6 +116,7 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 2);
 		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
+		assertDependenciesManagement(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
 		assertParentDependency(session, PROJECT_A, PROJECT_B);
 		assertDependencies(session, PROJECT_B, new GavIsSelfManaged( PROJECT_C, true ));
 
@@ -151,6 +159,7 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 4);
 		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
+		assertDependenciesManagement(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
 		assertParentDependency(session, PROJECT_A, PROJECT_B);
 		assertDependencies(session, PROJECT_B, new GavIsSelfManaged( PROJECT_C, true ));
 		assertDependencies(session, PROJECT_C, 0);
@@ -188,6 +197,7 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 2);
 		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
+		assertDependenciesManagement(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
 		assertParentDependency(session, PROJECT_A, PROJECT_B);
 		assertDependencies(session, PROJECT_B, 0);
 
@@ -218,6 +228,7 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 1);
 		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
+		assertDependenciesManagement(session, PROJECT_A, new GavIsSelfManaged( PROJECT_D, true ));
 
 		Project project = session.projects().forGav(Gav.parse("fr.lteconsulting:a:1.0-SNAPSHOT"));
 		assertNotNull(project);
@@ -234,6 +245,13 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 6);
 		assertDependencies(session, PROJECT_A, 0);
+		assertDependenciesManagement(session, PROJECT_A,
+				new GavIsSelfManaged(PROJECT_B, true),
+				new GavIsSelfManaged(PROJECT_B, true),
+				new GavIsSelfManaged(PROJECT_E, true),
+				new GavIsSelfManaged(PROJECT_E, true),
+				new GavIsSelfManaged(PROJECT_F, true)
+		);
 		assertDependencies(session, PROJECT_B,
 				new GavIsSelfManaged(PROJECT_E, true),
 				new GavIsSelfManaged(PROJECT_F, false)
@@ -269,7 +287,7 @@ public class AnalyzerTest
 		assertProjects(session, 6);
 		assertDependencies(session, PROJECT_A, 0);
 		assertDependencies(session, PROJECT_B, new GavIsSelfManaged( PROJECT_E, true ));
-		assertTransitiveDependency(session, PROJECT_B, 2);
+		assertTransitiveDependency(session, PROJECT_B, new GavIsSelfManaged( PROJECT_E, true ), new GavIsSelfManaged( PROJECT_F, true ));
 		assertParentDependency(session, PROJECT_B, PROJECT_A);
 		assertDependencies(session, PROJECT_C, 4);
 		assertParentDependency(session, PROJECT_C, PROJECT_A);
@@ -291,6 +309,11 @@ public class AnalyzerTest
 		assertProjects(session, 3);
 		assertDependencies(session, PROJECT_A, 0);
 		assertDependencies(session, PROJECT_B, new GavIsSelfManaged(PROJECT_A, false));
+		assertDependenciesManagement(session, PROJECT_B,
+				new GavIsSelfManaged(PROJECT_C, true),
+				new GavIsSelfManaged(PROJECT_A, false)
+		);
+		assertDependenciesManagement(session, PROJECT_C, new GavIsSelfManaged(PROJECT_A, true));
 		assertNoNullGavs(session);
 	}
 
@@ -456,7 +479,14 @@ public class AnalyzerTest
 		assertDependencies(gavs, dependencies);
 	}
 
-	private void assertDependencies(GavIsSelfManaged[] gavs, Set<DependencyRelation> dependencies)
+	private void assertDependenciesManagement(Session session, String gavString, GavIsSelfManaged... gavs)
+	{
+		System.out.println("DEPENDENCIES MANAGEMENT OF " + gavString);
+		Set<DependencyManagementRelation> dependencies = session.graph().read().dependenciesManagement(Gav.parse(gavString));
+		assertDependencies(gavs, dependencies);
+	}
+
+	private void assertDependencies(GavIsSelfManaged[] gavs, Set<? extends DependencyLikeRelation> dependencies)
 	{
 		List<GavIsSelfManaged> actualGavs = dependencies.stream().map( x ->
 				new GavIsSelfManaged( x.getTarget().toString(), x.getDependency().isVersionSelfManaged().orElse( null ) )
