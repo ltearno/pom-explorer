@@ -297,17 +297,17 @@ public class PomAnalysis
 				}
 			}
 
-			Map<DependencyKey, DependencyManagement> dependenciesManagement = project.getInterpolatedDependencyManagementWithBomImport( null, profiles, projects, log, true );
+			Map<DependencyKey, Dependency> dependenciesManagement = project.getInterpolatedDependencyManagement(projects, profiles, log);
 			if( dependenciesManagement != null )
 			{
-				for( Entry<DependencyKey, DependencyManagement> e : dependenciesManagement.entrySet() )
+				for( Entry<DependencyKey, Dependency> e : dependenciesManagement.entrySet() )
 				{
 					DependencyKey key = e.getKey();
-					DependencyManagement dependencyManagement = e.getValue();
+					Dependency dependency = e.getValue();
 
-					Gav dependencyGav = new Gav( key.getGroupId(), key.getArtifactId(), dependencyManagement.getVs().getVersion() );
+					Gav dependencyGav = new Gav( key.getGroupId(), key.getArtifactId(), dependency.getVersion() );
 					tx.addGav( dependencyGav );
-					tx.addRelation( new DependencyManagementRelation( gav, dependencyGav, new Dependency(key.getGroupId(), key.getArtifactId(), dependencyManagement.getVs(), key.getClassifier(), key.getType() ) ) );
+					tx.addRelation( new DependencyManagementRelation( gav, dependencyGav, dependency));
 				}
 			}
 

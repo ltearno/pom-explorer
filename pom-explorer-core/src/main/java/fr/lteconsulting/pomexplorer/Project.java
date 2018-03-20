@@ -238,6 +238,11 @@ public class Project
 
 	public Map<DependencyKey, Dependency> getInterpolatedDependencyManagement( ProjectContainer projects, Log log )
 	{
+		return getInterpolatedDependencyManagement( projects, null, log );
+	}
+
+	public Map<DependencyKey, Dependency> getInterpolatedDependencyManagement( ProjectContainer projects, Map<String, Profile>  profiles, Log log )
+	{
 		if( dependencyManagement == null )
 		{
 			dependencyManagement = new HashMap<>();
@@ -247,9 +252,14 @@ public class Project
 				for( org.apache.maven.model.Dependency d : project.getDependencyManagement().getDependencies() )
 				{
 					DependencyKeyVersionAndScope triple = interpolateDependencyKeyVersionAndScope( d, projects, log );
-
-					Gav dependencyGav = new Gav( triple.key.getGroupId(), triple.key.getArtifactId(), triple.version );
-					Dependency dependency = new Dependency( dependencyGav, triple.scope, triple.key.getClassifier(), triple.key.getType() );
+					VersionScope versionScope = determineVersionScope( triple.version, triple.scope, profiles, projects, log, triple.key, true);
+					Dependency dependency = new Dependency(
+							triple.key.getGroupId(),
+							triple.key.getArtifactId(),
+							versionScope,
+							triple.key.getClassifier(),
+							triple.key.getType()
+					);
 
 					dependencyManagement.put( dependency.key(), dependency );
 				}
@@ -445,7 +455,7 @@ public class Project
 	/**
 	 * TODO should use depmngt from the parent to resolve values if missing
 	 */
-	Map<DependencyKey, DependencyManagement> getInterpolatedDependencyManagementWithBomImport( Map<DependencyKey, DependencyManagement> dependencyMap, Map<String, Profile> profiles, ProjectContainer projects, Log log, boolean versionCanBeSelfManaged )
+	private Map<DependencyKey, DependencyManagement> getInterpolatedDependencyManagementWithBomImport( Map<DependencyKey, DependencyManagement> dependencyMap, Map<String, Profile> profiles, ProjectContainer projects, Log log, boolean versionCanBeSelfManaged )
 	{
 		if( project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null )
 		{

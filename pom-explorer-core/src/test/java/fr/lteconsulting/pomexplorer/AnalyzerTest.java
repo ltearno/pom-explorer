@@ -355,11 +355,25 @@ public class AnalyzerTest
 		assertProjects(session, 3);
 		assertDependencies(session, PROJECT_A, 0);
 		assertDependencies(session, PROJECT_B, new GavIsSelfManaged(PROJECT_A, false));
-		assertDependenciesManagement(session, PROJECT_B,
-				new GavIsSelfManaged(PROJECT_C, true),
-				new GavIsSelfManaged(PROJECT_A, false)
-		);
+		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged(PROJECT_C, true));
 		assertDependenciesManagement(session, PROJECT_C, new GavIsSelfManaged(PROJECT_A, true));
+		assertNoNullGavs(session);
+	}
+
+	@Test
+	public void bomDependencyInParent()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/bomDependencyInParent");
+		//assert
+		assertProjects(session, 4);
+		assertDependencies(session, PROJECT_A, 0);
+		assertDependencies(session, PROJECT_B, new GavIsSelfManaged(PROJECT_A, false));
+		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged(PROJECT_C, true));
+		assertDependenciesManagement(session, PROJECT_C, new GavIsSelfManaged(PROJECT_A, true));
+		assertDependenciesManagement(session, PROJECT_D, new GavIsSelfManaged(PROJECT_A, false));
 		assertNoNullGavs(session);
 	}
 
