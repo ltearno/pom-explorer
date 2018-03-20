@@ -625,9 +625,9 @@ public class AnalyzerTest
 	private void assertSubmodules( Session session, String multiModule, String... projects )
 	{
 		Gav multiModuleGav = Gav.parse( multiModule );
-		List<Project> submodules = session.projects().getSubmodules( multiModuleGav);
-		List<Project> expectedModules = Arrays.stream( projects )
-				.map( x -> session.projects().forGav( Gav.parse( x ) ) )
+		List<Gav> submodules = session.projects().getSubmodules( multiModuleGav);
+		List<Gav> expectedModules = Arrays.stream( projects )
+				.map( Gav::parse )
 				.collect( Collectors.toList());
 		assertThat(submodules)
 				.as( "submodules of "+multiModule )

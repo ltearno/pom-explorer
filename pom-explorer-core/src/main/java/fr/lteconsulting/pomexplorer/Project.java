@@ -777,13 +777,14 @@ public class Project
 	/**
 	 * @return All submodules of this project or an empty list if it does not have any.
 	 */
-	public Stream<Project> getSubmodules()
+	public Stream<Gav> getSubmodules()
 	{
 		Stream<String> submodules = Stream.concat(
 				project.getModules().stream(),
 				project.getModel().getProfiles().stream().flatMap( x -> x.getModules().stream() )
 		);
-		return submodules.map( this::getSubmodule );
+		return submodules.map( this::getSubmodule )
+				.map( Project::getGav );
 	}
 
 	/**
