@@ -23,8 +23,11 @@ public class AnalyzerTest
 {
 
 	private static final String PROJECT_A = "fr.lteconsulting:a:1.0-SNAPSHOT";
+	private static final String PROJECT_A_3 = "fr.lteconsulting:a:3.0-SNAPSHOT";
 	private static final String PROJECT_B = "fr.lteconsulting:b:1.0-SNAPSHOT";
+	private static final String PROJECT_B_2 = "fr.lteconsulting:b:2.0-SNAPSHOT";
 	private static final String PROJECT_C = "fr.lteconsulting:c:1.0-SNAPSHOT";
+	private static final String PROJECT_C_3 = "fr.lteconsulting:c:3.0-SNAPSHOT";
 	private static final String PROJECT_D = "fr.lteconsulting:d:1.0-SNAPSHOT";
 	private static final String PROJECT_E = "fr.lteconsulting:e:2.0-SNAPSHOT";
 	private static final String PROJECT_F = "fr.lteconsulting:f:1.5";
@@ -361,6 +364,22 @@ public class AnalyzerTest
 	}
 
 	@Test
+	public void bomDependencyProjectVersion()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/bomDependencyProjectVersion");
+		//assert
+		assertProjects(session, 3);
+		assertDependencies(session, PROJECT_A, 0);
+		assertDependencies(session, PROJECT_B_2, new GavIsSelfManaged(PROJECT_A_3, false));
+		assertDependenciesManagement(session, PROJECT_B_2, new GavIsSelfManaged(PROJECT_C_3, true));
+		assertDependenciesManagement(session, PROJECT_C_3, new GavIsSelfManaged(PROJECT_A_3, true));
+		assertNoNullGavs(session);
+	}
+
+	@Test
 	public void bomDependency_dependencyToItself()
 	{
 		//arrange
@@ -390,20 +409,6 @@ public class AnalyzerTest
 		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged(PROJECT_C, true));
 		assertDependenciesManagement(session, PROJECT_C, new GavIsSelfManaged(PROJECT_A, true));
 		assertDependenciesManagement(session, PROJECT_D, new GavIsSelfManaged(PROJECT_A, false));
-		assertNoNullGavs(session);
-	}
-
-	@Test
-	public void versionInParentProperty()
-	{
-		//arrange
-		Session session = new Session();
-		//act
-		runFullRecursiveAnalysis(session, "testSets/versionInParentProperty");
-		//assert
-		assertProjects(session, 2);
-		assertDependencies(session, PROJECT_A, 0);
-		assertDependencies(session, PROJECT_B, new GavIsSelfManaged(PROJECT_D, false));
 		assertNoNullGavs(session);
 	}
 
