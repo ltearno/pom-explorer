@@ -27,9 +27,11 @@ public class ProjectRepository implements ProjectContainer
 
 	public void add( Project project )
 	{
-		projects.put( project.getGav(), project );
-
-		session.sendEventAddedProject( project );
+		Project previousProject = projects.get( project.getGav() );
+		if (previousProject == null || previousProject.isExternal()) {
+			projects.put(project.getGav(), project);
+			session.sendEventAddedProject( project );
+		}
 	}
 
 	public void remove( Project project )
