@@ -14,6 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Performs an analysis of pom files by batch
@@ -42,7 +44,7 @@ public class PomAnalysis
 
 	private final List<File> pomFiles = new ArrayList<>();
 	private final List<PomReadingException> erroneousPomFiles = new ArrayList<>();
-	private final Map<Gav, Project> loadedProjects = new HashMap<>();
+	private final Map<Gav, List<Project>> loadedProjects = new HashMap<>();
 	private final Set<Project> completedProjects = new HashSet<>();
 	private final Set<Project> unresolvableProjects = new HashSet<>();
 	private final Set<Project> duplicatedProjects = new HashSet<>();
@@ -114,7 +116,7 @@ public class PomAnalysis
 
 		projects = session
 				.projects()
-				.combine( gav -> loadedProjects.values().stream()
+				.combine( gav -> getLoadedProjects()
 						.filter( p -> p.getGav().equals( gav ) )
 						.findFirst()
 						.orElse( null ) )
@@ -124,6 +126,12 @@ public class PomAnalysis
 						.orElse( null ) );
 
 		log.html( "Pom Analysis ready!" );
+	}
+
+	private Stream<Project> getLoadedProjects()
+	{
+		return loadedProjects.values().stream()
+				.flatMap( Collection::stream );
 	}
 
 	public Set<Project> getUnresolvableProjects()
@@ -189,7 +197,8 @@ public class PomAnalysis
 			if( project != null )
 			{
 				loadedProjects.add( project );
-				this.loadedProjects.put(project.getGav(), project );
+				List<Project> list = this.loadedProjects.computeIfAbsent( project.getGav(), k -> new ArrayList<>() );
+				list.add( project );
 			}
 		}
 
@@ -210,14 +219,15 @@ public class PomAnalysis
 		Set<Project> readyProjects = new HashSet<>();
 		Set<Project> unresolvableProjects = new HashSet<>();
 
-		for( Project project : loadedProjects.values() )
+		for( Project project : getLoadedProjects().collect( Collectors.toList()) )
 		{
-			if( session.projects().contains( project.getGav() ) || completedProjects.stream().anyMatch(p -> p.getGav().equals( project.getGav() ) ))
+			Project duplicate = session.projects().forGav( project.getGav() );
+			if( duplicate == null )
 			{
-				Project duplicate = session.projects().forGav( project.getGav() );
-				if( duplicate == null )
-					duplicate = completedProjects.stream().filter( p -> p.getGav().equals( project.getGav() ) ).findFirst().get();
-
+				duplicate = completedProjects.stream().filter( p -> p.getGav().equals( project.getGav() ) ).findFirst().orElse( null );
+			}
+			if( duplicate != null )
+			{
 				duplicatedProjects.add( project );
 				log.html( Tools.warningMessage( "trying to add a project which is duplicated: " + project + ", already inserted : " + duplicate ) );
 			}
@@ -378,8 +388,8 @@ public class PomAnalysis
 
 	private Project loadAndCheckProject( Gav gav, PomFileLoader callback, Project resolvedProject )
 	{
-		Project alreadyLoadedProject = loadedProjects.get(gav);
-		if(alreadyLoadedProject != null) return alreadyLoadedProject;
+		List<Project> alreadyLoadedProject = loadedProjects.get( gav );
+		if( alreadyLoadedProject != null ) return alreadyLoadedProject.get( 0 );
 
 		File pomFile = callback.loadPomFileForGav( gav, null, log );
 		if( pomFile == null )
@@ -393,8 +403,8 @@ public class PomAnalysis
 		if( project != null )
 		{
 			//The project might still be loaded, for instance if one uses LATEST as version
-			Project alreadyLoadedLatestProject = loadedProjects.get( project.getGav() );
-			if( alreadyLoadedLatestProject != null ) return alreadyLoadedLatestProject;
+			List<Project> alreadyLoadedLatestProject = loadedProjects.get( project.getGav() );
+			if( alreadyLoadedLatestProject != null ) return alreadyLoadedLatestProject.get(0);
 			if( processProjectForCompleteness( project, callback ) )
 			{
 				return project;
