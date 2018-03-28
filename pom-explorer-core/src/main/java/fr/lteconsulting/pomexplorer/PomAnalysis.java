@@ -389,7 +389,7 @@ public class PomAnalysis
 	private Project loadAndCheckProject( Gav gav, PomFileLoader callback, Project resolvedProject )
 	{
 		List<Project> alreadyLoadedProject = loadedProjects.get( gav );
-		if( alreadyLoadedProject != null ) return alreadyLoadedProject.get( 0 );
+		if( alreadyLoadedProject != null ) return null;
 
 		File pomFile = callback.loadPomFileForGav( gav, null, log );
 		if( pomFile == null )
@@ -404,7 +404,8 @@ public class PomAnalysis
 		{
 			//The project might still be loaded, for instance if one uses LATEST as version
 			List<Project> alreadyLoadedLatestProject = loadedProjects.get( project.getGav() );
-			if( alreadyLoadedLatestProject != null ) return alreadyLoadedLatestProject.get(0);
+			if( alreadyLoadedLatestProject != null ) return null;
+
 			if( processProjectForCompleteness( project, callback ) )
 			{
 				return project;
