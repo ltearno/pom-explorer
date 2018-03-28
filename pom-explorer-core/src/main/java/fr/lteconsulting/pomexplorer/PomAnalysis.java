@@ -341,9 +341,10 @@ public class PomAnalysis
 
 		Set<Project> projectsToAddToReady = new HashSet<>();
 
-		if( project.getParentGav() != null && projects.forGav( project.getParentGav() ) == null )
+		Gav parentGav = project.getParentGav();
+		if( parentGav != null && session.projects().forGav( parentGav ) == null && projects.forGav( parentGav ) == null )
 		{
-			Project parentProject = loadAndCheckProject( project.getParentGav(), callback, project );
+			Project parentProject = loadAndCheckProject( parentGav, callback, project );
 			if( parentProject != null )
 				projectsToAddToReady.add( parentProject );
 		}
