@@ -1,5 +1,12 @@
 package fr.lteconsulting.pomexplorer;
 
+import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
+import fr.lteconsulting.pomexplorer.graph.relation.*;
+import fr.lteconsulting.pomexplorer.model.Dependency;
+import fr.lteconsulting.pomexplorer.model.DependencyKey;
+import fr.lteconsulting.pomexplorer.model.Gav;
+import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -7,14 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.Map.Entry;
-
-import fr.lteconsulting.pomexplorer.graph.PomGraph.PomGraphWriteTransaction;
-import fr.lteconsulting.pomexplorer.graph.relation.*;
-import fr.lteconsulting.pomexplorer.model.Dependency;
-import fr.lteconsulting.pomexplorer.model.DependencyKey;
-import fr.lteconsulting.pomexplorer.model.Gav;
-import fr.lteconsulting.pomexplorer.model.transitivity.DependencyManagement;
-import fr.lteconsulting.pomexplorer.model.transitivity.RawDependency;
 
 /**
  * Performs an analysis of pom files by batch
@@ -342,7 +341,7 @@ public class PomAnalysis
 		Set<Project> projectsToAddToReady = new HashSet<>();
 
 		Gav parentGav = project.getParentGav();
-		if( parentGav != null && !loadedProjects.containsKey(parentGav) && projects.forGav( parentGav ) == null )
+		if( parentGav != null && projects.forGav( parentGav ) == null )
 		{
 			Project parentProject = loadAndCheckProject( parentGav, callback, project );
 			if( parentProject != null )
@@ -379,7 +378,9 @@ public class PomAnalysis
 
 	private Project loadAndCheckProject( Gav gav, PomFileLoader callback, Project resolvedProject )
 	{
-		//FIXME #48, NullPointerException if callback was not defined (flag nofetch was set)
+		Project alreadyLoadedProject = loadedProjects.get(gav);
+		if(alreadyLoadedProject != null) return alreadyLoadedProject;
+
 		File pomFile = callback.loadPomFileForGav( gav, null, log );
 		if( pomFile == null )
 		{
@@ -387,10 +388,18 @@ public class PomAnalysis
 			return null;
 		}
 
-		Project project = loadProject( pomFile, true );
 
-		if( project != null && processProjectForCompleteness( project, callback ) )
-			return project;
+		Project project = loadProject( pomFile, true );
+		if( project != null )
+		{
+			//The project might still be loaded, for instance if one uses LATEST as version
+			Project alreadyLoadedLatestProject = loadedProjects.get( project.getGav() );
+			if( alreadyLoadedLatestProject != null ) return alreadyLoadedLatestProject;
+			if( processProjectForCompleteness( project, callback ) )
+			{
+				return project;
+			}
+		}
 
 		//FIXME processProjectForCompleteness returns always true, even if there is a bom import which cannot be resolved, hence this message never appears
 		log.html( Tools.errorMessage( "cannot resolve project " + resolvedProject + " due to:<br/>&nbsp;&nbsp;&nbsp;missing bom import " + gav ) );
