@@ -43,7 +43,7 @@ public class PomAnalysis
 
 	private final List<File> pomFiles = new ArrayList<>();
 	private final List<PomReadingException> erroneousPomFiles = new ArrayList<>();
-	private final Set<Project> loadedProjects = new HashSet<>();
+	private final Map<Gav, Project> loadedProjects = new HashMap<>();
 	private final Set<Project> completedProjects = new HashSet<>();
 	private final Set<Project> unresolvableProjects = new HashSet<>();
 	private final Set<Project> duplicatedProjects = new HashSet<>();
@@ -115,7 +115,7 @@ public class PomAnalysis
 
 		projects = session
 				.projects()
-				.combine( gav -> loadedProjects.stream()
+				.combine( gav -> loadedProjects.values().stream()
 						.filter( p -> p.getGav().equals( gav ) )
 						.findFirst()
 						.orElse( null ) )
@@ -190,7 +190,7 @@ public class PomAnalysis
 			if( project != null )
 			{
 				loadedProjects.add( project );
-				this.loadedProjects.add( project );
+				this.loadedProjects.put(project.getGav(), project );
 			}
 		}
 
@@ -211,7 +211,7 @@ public class PomAnalysis
 		Set<Project> readyProjects = new HashSet<>();
 		Set<Project> unresolvableProjects = new HashSet<>();
 
-		for( Project project : loadedProjects )
+		for( Project project : loadedProjects.values() )
 		{
 			if( session.projects().contains( project.getGav() ) || completedProjects.stream().anyMatch(p -> p.getGav().equals( project.getGav() ) ))
 			{
@@ -342,7 +342,7 @@ public class PomAnalysis
 		Set<Project> projectsToAddToReady = new HashSet<>();
 
 		Gav parentGav = project.getParentGav();
-		if( parentGav != null && session.projects().forGav( parentGav ) == null && projects.forGav( parentGav ) == null )
+		if( parentGav != null && !loadedProjects.containsKey(parentGav) && projects.forGav( parentGav ) == null )
 		{
 			Project parentProject = loadAndCheckProject( parentGav, callback, project );
 			if( parentProject != null )
