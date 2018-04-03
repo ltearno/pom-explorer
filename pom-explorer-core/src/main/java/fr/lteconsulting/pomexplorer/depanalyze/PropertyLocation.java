@@ -6,13 +6,15 @@ public class PropertyLocation extends Location
 {
 	private final String propertyName;
 	private final String propertyValue;
+	private final boolean isSelfManaged;
 
-	public PropertyLocation( Project project, Location cause, String propertyName, String propertyValue )
+	public PropertyLocation( Project project, Location cause, String propertyName, String propertyValue, boolean isSelfManaged )
 	{
 		super( project, cause );
 
 		this.propertyName = propertyName;
 		this.propertyValue = propertyValue;
+		this.isSelfManaged = isSelfManaged;
 	}
 
 	public String getPropertyName()
@@ -23,6 +25,11 @@ public class PropertyLocation extends Location
 	public String getPropertyValue()
 	{
 		return propertyValue;
+	}
+
+	public boolean isSelfManaged()
+	{
+		return isSelfManaged;
 	}
 
 	@Override

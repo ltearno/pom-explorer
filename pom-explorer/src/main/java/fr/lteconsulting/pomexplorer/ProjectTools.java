@@ -108,11 +108,11 @@ public class ProjectTools
 
 			if( isMavenVariable( value ) )
 			{
-				sb.append( "(" + Tools.getPropertyNameFromPropertyReference( value ) + ")" );
+				sb.append( "(" ).append( Tools.getPropertyNameFromPropertyReference( value ) ).append( ")" );
 			}
 			else
 			{
-				sb.append( " (" + value + ", " );
+				sb.append( " (" ).append( value ).append( ", " );
 				boolean first = true;
 				for( Entry<String, String> e : properties.entrySet() )
 				{
@@ -120,7 +120,7 @@ public class ProjectTools
 						first = false;
 					else
 						sb.append( ", " );
-					sb.append( e.getKey() + "=" + e.getValue() );
+					sb.append( e.getKey() ).append( "=" ).append( e.getValue() );
 				}
 				sb.append( ")" );
 			}
