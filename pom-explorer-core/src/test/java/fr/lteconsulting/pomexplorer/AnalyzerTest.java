@@ -397,6 +397,20 @@ public class AnalyzerTest
 	}
 
 	@Test
+	public void versionInParentProperty()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/versionInParentProperty");
+		//assert
+		assertProjects(session, 2);
+		assertDependencies(session, PROJECT_A, 0);
+		assertDependencies(session, PROJECT_B, new GavIsSelfManaged(PROJECT_D, false));
+		assertNoNullGavs(session);
+	}
+
+	@Test
 	public void versionInUnresolvedParent()
 	{
 		//arrange

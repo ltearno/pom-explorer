@@ -172,7 +172,7 @@ public class Project
 	public String interpolateValue( String value, ProjectContainer projects, Log log )
 	{
 		ValueResolution res = interpolateValueEx( value, projects, log );
-		return res.resolved;
+		return res.getResolved();
 	}
 
 	public ValueResolution interpolateValueEx( String value, ProjectContainer projects, Log log )
@@ -181,7 +181,8 @@ public class Project
 			return cachedResolutions.get( value );
 
 		ValueResolution res = new ValueResolution();
-		res.raw = value;
+		res.setRaw( value );
+		res.setSelfManaged( true );
 
 		if( value != null )
 		{
@@ -199,12 +200,22 @@ public class Project
 					end = value.indexOf( "}", start );
 
 					String propertyReference = value.substring( start + 2, end );
-					String propertyResolved = resolveProperty( log, propertyReference, projects );
-					if( res.properties == null )
-						res.properties = new HashMap<>();
-					else
-						res.properties.size();
-					res.properties.put( propertyReference, propertyResolved );
+					PropertyLocation propertyLocation = resolveProperty( log, propertyReference, projects );
+					if( res.getProperties() == null )
+						res.setProperties( new HashMap<>() );
+
+					final String propertyResolved;
+					if(propertyLocation != null)
+					{
+						propertyResolved = propertyLocation.getPropertyValue();
+						res.setSelfManaged( propertyLocation.isSelfManaged() );
+					}else
+					{
+						propertyResolved = null;
+						res.setSelfManaged( false );
+					}
+					res.getProperties().put( propertyReference, propertyResolved );
+
 					sb.append( propertyResolved );
 					sb.append( value.substring( end + 1 ) );
 
@@ -218,7 +229,7 @@ public class Project
 			}
 		}
 
-		res.resolved = value;
+		res.setResolved( value );
 
 		if( cachedResolutions == null )
 			cachedResolutions = new HashMap<>();
@@ -251,14 +262,14 @@ public class Project
 			{
 				for( org.apache.maven.model.Dependency d : project.getDependencyManagement().getDependencies() )
 				{
-					DependencyKeyVersionAndScope triple = interpolateDependencyKeyVersionAndScope( d, projects, log );
-					VersionScope versionScope = determineVersionScope( triple.version, triple.scope, profiles, projects, log, triple.key, true);
+					DependencyKeyVersionAndScope keyVersionAndScope = interpolateDependencyKeyVersionAndScope( d, projects, log );
+					VersionScope versionScope = determineVersionScope( keyVersionAndScope, profiles, projects, log, keyVersionAndScope.key, true);
 					Dependency dependency = new Dependency(
-							triple.key.getGroupId(),
-							triple.key.getArtifactId(),
+							keyVersionAndScope.key.getGroupId(),
+							keyVersionAndScope.key.getArtifactId(),
 							versionScope,
-							triple.key.getClassifier(),
-							triple.key.getType()
+							keyVersionAndScope.key.getClassifier(),
+							keyVersionAndScope.key.getType()
 					);
 
 					dependencyManagement.put( dependency.key(), dependency );
@@ -538,12 +549,12 @@ public class Project
 		{
 			for( org.apache.maven.model.Dependency d : dependencies )
 			{
-				DependencyKeyVersionAndScope triple = interpolateDependencyKeyVersionAndScope( d, projects, log );
-				DependencyKey key = triple.key;
+				DependencyKeyVersionAndScope keyVersionAndScope = interpolateDependencyKeyVersionAndScope( d, projects, log );
+				DependencyKey key = keyVersionAndScope.key;
 				if( res != null && res.containsKey( key ) )
 					continue;
 
-				VersionScope vs = determineVersionScope( triple.version, triple.scope, profiles, projects, log, key, versionCanBeSelfManaged );
+				VersionScope vs = determineVersionScope( keyVersionAndScope, profiles, projects, log, key, versionCanBeSelfManaged );
 				RawDependency raw = new RawDependency( vs, d.isOptional() );
 
 				addExclusions( projects, log, d, raw::addExclusion );
@@ -560,7 +571,7 @@ public class Project
 	{
 		String groupId = interpolateValue( d.getGroupId(), projects, log );
 		String artifactId = interpolateValue( d.getArtifactId(), projects, log );
-		String version = interpolateValue( d.getVersion(), projects, log );
+		ValueResolution versionResolution = interpolateValueEx( d.getVersion(), projects, log );
 		Scope scope = Scope.fromString( interpolateValue( d.getScope(), projects, log ) );
 		String classifier = interpolateValue( d.getClassifier(), projects, log );
 		String type = interpolateValue( d.getType(), projects, log );
@@ -570,16 +581,18 @@ public class Project
 		assert type != null;
 
 		DependencyKey key = new DependencyKey( groupId, artifactId, classifier, type );
-		return new DependencyKeyVersionAndScope( key, version, scope );
-
+		return new DependencyKeyVersionAndScope( key, versionResolution.getResolved(), versionResolution.isSelfManaged(), scope );
 	}
 
 
-	private VersionScope determineVersionScope( String nullableVersion, Scope nullableScope, Map<String, Profile> profiles, ProjectContainer projects, Log log, DependencyKey key, boolean versionCanBeSelfManaged )
+	private VersionScope determineVersionScope(DependencyKeyVersionAndScope keyVersionAndScope, Map<String, Profile> profiles, ProjectContainer projects, Log log, DependencyKey key, boolean versionCanBeSelfManaged )
 	{
+		String nullableVersion = keyVersionAndScope.version;
+		Scope nullableScope = keyVersionAndScope.scope;
+		boolean canStillBeSelfManaged = versionCanBeSelfManaged && keyVersionAndScope.isVersionSelfManaged;
 		if( nullableVersion != null && nullableScope != null )
 		{
-			return new VersionScope( nullableVersion, versionCanBeSelfManaged, nullableScope );
+			return new VersionScope( nullableVersion, canStillBeSelfManaged, nullableScope );
 		}
 
 		Map<DependencyKey, DependencyManagement> management = getHierarchicalDependencyManagement( null, profiles, projects, log , versionCanBeSelfManaged);
@@ -603,12 +616,12 @@ public class Project
 		}
 
 		if( version == null )
-			log.html( Tools.warningMessage( "missing version and version not found in depencency management for dependency to " + key + " in project " + this ) );
+			log.html( Tools.warningMessage( "missing version and version not found in dependency management for dependency to " + key + " in project " + this ) );
 
 		if( scope == null )
 			scope = Scope.COMPILE;
 
-		return new VersionScope( version, versionCanBeSelfManaged && isSelfManaged, scope );
+		return new VersionScope( version, canStillBeSelfManaged && isSelfManaged, scope );
 	}
 
 
@@ -642,18 +655,18 @@ public class Project
 
 			for( org.apache.maven.model.Dependency d : dependencies )
 			{
-				DependencyKeyVersionAndScope triple = interpolateDependencyKeyVersionAndScope( d, projects, log );
-				DependencyKey key = triple.key;
+				DependencyKeyVersionAndScope keyVersionAndScope = interpolateDependencyKeyVersionAndScope( d, projects, log );
+				DependencyKey key = keyVersionAndScope.key;
 				if( result != null && result.containsKey( key ) )
 					continue;
 
-				if( triple.scope == Scope.IMPORT )
+				if( keyVersionAndScope.scope == Scope.IMPORT )
 				{
-					assert triple.version != null;
-					importedBoms.add( new Gav( key.getGroupId(), key.getArtifactId(), triple.version ) );
+					assert keyVersionAndScope.version != null;
+					importedBoms.add( new Gav( key.getGroupId(), key.getArtifactId(), keyVersionAndScope.version ) );
 				}
 
-				VersionScope versionScope = determineVersionScope( triple.version, triple.scope, profiles, projects, log, key, versionCanBeSelfManaged );
+				VersionScope versionScope = determineVersionScope( keyVersionAndScope, profiles, projects, log, key, versionCanBeSelfManaged );
 				DependencyManagement management = new DependencyManagement( versionScope );
 				addExclusions( projects, log, d, management::addExclusion );
 
@@ -703,9 +716,9 @@ public class Project
 		return profiles.keySet().contains( p.getId() ) || (p.getActivation() != null && p.getActivation().isActiveByDefault());
 	}
 
-	private String resolveProperty( Log log, String propertyName, ProjectContainer projects )
+	private PropertyLocation resolveProperty( Log log, String propertyName, ProjectContainer projects )
 	{
-		PropertyLocation propertyDefinition = getPropertyDefinition( log, propertyName, true, projects );
+		PropertyLocation propertyDefinition = getPropertyDefinition( log, propertyName, true, projects, true );
 		if( propertyDefinition == null )
 		{
 			if( log != null )
@@ -718,10 +731,10 @@ public class Project
 		if( isMavenVariable( propertyDefinition.getPropertyValue() ) )
 			return propertyDefinition.getProject().resolveProperty( log, propertyDefinition.getPropertyValue(), projects );
 
-		return propertyDefinition.getPropertyValue();
+		return propertyDefinition;
 	}
 
-	private PropertyLocation getPropertyDefinition( Log log, String propertyName, boolean online, ProjectContainer projects )
+	private PropertyLocation getPropertyDefinition( Log log, String propertyName, boolean online, ProjectContainer projects, boolean canPropertyBeSelfManaged )
 	{
 		String originalRequestedPropertyName = propertyName;
 
@@ -730,7 +743,7 @@ public class Project
 
 		String value = properties.get( propertyName );
 		if( value != null )
-			return new PropertyLocation( this, null, propertyName, value );
+			return new PropertyLocation( this, null, propertyName, value, canPropertyBeSelfManaged );
 
 		switch( propertyName )
 		{
@@ -738,31 +751,32 @@ public class Project
 				log.html( Tools.warningMessage( "illegal property 'version' used in the project " + toString() + ", value resolved to project's version." ) );
 			case "project.version":
 			case "pom.version":
-				return new PropertyLocation( this, null, "project.version", gav.getVersion() );
+				return new PropertyLocation( this, null, "project.version", gav.getVersion(), canPropertyBeSelfManaged );
 
 			case "groupId":
 			case "@project.groupId@":
 				log.html( Tools.warningMessage( "illegal property '" + propertyName + "' used in the project " + toString() + ", value resolved to project's groupId." ) );
 			case "project.groupId":
 			case "pom.groupId":
-				return new PropertyLocation( this, null, "project.groupId", gav.getGroupId() );
+				return new PropertyLocation( this, null, "project.groupId", gav.getGroupId(), canPropertyBeSelfManaged );
 
 			case "artifactId":
 				log.html( Tools.warningMessage( "illegal property 'artifactId' used in the project " + toString() + ", value resolved to project's artifactId." ) );
 			case "project.artifactId":
 			case "pom.artifactId":
-				return new PropertyLocation( this, null, "project.artifactId", gav.getArtifactId() );
+				return new PropertyLocation( this, null, "project.artifactId", gav.getArtifactId(), canPropertyBeSelfManaged );
 
 			case "project.prerequisites.maven":
 				if( project.getPrerequisites() != null )
-					return new PropertyLocation( this, null, "project.prerequisites.maven", project.getPrerequisites().getMaven() );
+					return new PropertyLocation( this, null, "project.prerequisites.maven", project.getPrerequisites().getMaven(), canPropertyBeSelfManaged );
 				break;
 
+			//FIXME that is most certainly wrong
 			case "mavenVersion":
-				return new PropertyLocation( this, null, propertyName, "3.1.1" );
+				return new PropertyLocation( this, null, propertyName, "3.1.1", canPropertyBeSelfManaged );
 
 			case "java.version":
-				return new PropertyLocation( this, null, propertyName, propertyName );
+				return new PropertyLocation( this, null, propertyName, propertyName, canPropertyBeSelfManaged );
 		}
 
 		if( parentGav != null )
@@ -773,7 +787,7 @@ public class Project
 				if( propertyName.startsWith( "project.parent." ) )
 					propertyName = propertyName.replace( "project.parent.", "project." );
 
-				return parentProject.getPropertyDefinition( log, propertyName, online, projects );
+				return parentProject.getPropertyDefinition( log, propertyName, online, projects, false );
 			}
 			else
 			{
@@ -823,14 +837,16 @@ public class Project
 
 	private static class DependencyKeyVersionAndScope
 	{
-		public DependencyKey key; //private class so public is fine
-		public String version;
-		public Scope scope;
+		private DependencyKey key;
+		private String version;
+		private boolean isVersionSelfManaged;
+		private Scope scope;
 
-		DependencyKeyVersionAndScope(DependencyKey key, String version, Scope scope)
+		DependencyKeyVersionAndScope( DependencyKey key, String version, boolean isVersionSelfManaged, Scope scope )
 		{
 			this.key = key;
 			this.version = version;
+			this.isVersionSelfManaged = isVersionSelfManaged;
 			this.scope = scope;
 		}
 	}
