@@ -44,6 +44,7 @@ public class PomAnalysis
 
 	private final List<File> pomFiles = new ArrayList<>();
 	private final List<PomReadingException> erroneousPomFiles = new ArrayList<>();
+	private final List<Project> erroneousProjects = new ArrayList<>();
 	private final Map<Gav, List<Project>> loadedProjects = new HashMap<>();
 	private final Set<Project> completedProjects = new HashSet<>();
 	private final Set<Project> unresolvableProjects = new HashSet<>();
@@ -144,8 +145,14 @@ public class PomAnalysis
 		return duplicatedProjects;
 	}
 
-	public List<PomReadingException> getErroneousPomFiles(){
+	public List<PomReadingException> getErroneousPomFiles()
+	{
 		return erroneousPomFiles;
+	}
+
+	public List<Project> getErroneousProjects()
+	{
+		return erroneousProjects;
 	}
 
 	public Set<File> addDirectory( String directory )
@@ -301,6 +308,7 @@ public class PomAnalysis
 					RawDependency rawDependency = e.getValue();
 
 					Gav dependencyGav = new Gav( key.getGroupId(), key.getArtifactId(), rawDependency.getVs().getVersion() );
+
 					tx.addGav( dependencyGav );
 					tx.addRelation( new DependencyRelation( gav, dependencyGav, new Dependency(key.getGroupId(), key.getArtifactId(), rawDependency.getVs(), key.getClassifier(), key.getType() ) ) );
 				}
@@ -315,8 +323,11 @@ public class PomAnalysis
 					Dependency dependency = e.getValue();
 
 					Gav dependencyGav = new Gav( key.getGroupId(), key.getArtifactId(), dependency.getVersion() );
-					tx.addGav( dependencyGav );
-					tx.addRelation( new DependencyManagementRelation( gav, dependencyGav, dependency));
+					if( !dependencyGav.equals( gav ) )
+					{
+						tx.addGav( dependencyGav );
+						tx.addRelation( new DependencyManagementRelation( gav, dependencyGav, dependency ) );
+					}
 				}
 			}
 
@@ -337,6 +348,7 @@ public class PomAnalysis
 		}
 		catch( Exception e )
 		{
+			erroneousProjects.add( project );
 			log.html( Tools.errorMessage( "Cannot add project " + project + " to graph. Cause: " + e.getMessage() ) );
 			Tools.logStacktrace( e, log );
 
