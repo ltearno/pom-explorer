@@ -44,7 +44,7 @@ public class PomAnalysis
 
 	private final List<File> pomFiles = new ArrayList<>();
 	private final List<PomReadingException> erroneousPomFiles = new ArrayList<>();
-	private final List<Project> erroneousProjects = new ArrayList<>();
+	private final List<ProjectAnalyseException> erroneousProjects = new ArrayList<>();
 	private final Map<Gav, List<Project>> loadedProjects = new HashMap<>();
 	private final Set<Project> completedProjects = new HashSet<>();
 	private final Set<Project> unresolvableProjects = new HashSet<>();
@@ -150,7 +150,7 @@ public class PomAnalysis
 		return erroneousPomFiles;
 	}
 
-	public List<Project> getErroneousProjects()
+	public List<ProjectAnalyseException> getErroneousProjects()
 	{
 		return erroneousProjects;
 	}
@@ -348,7 +348,7 @@ public class PomAnalysis
 		}
 		catch( Exception e )
 		{
-			erroneousProjects.add( project );
+			erroneousProjects.add( new ProjectAnalyseException(project, e) );
 			log.html( Tools.errorMessage( "Cannot add project " + project + " to graph. Cause: " + e.getMessage() ) );
 			Tools.logStacktrace( e, log );
 
