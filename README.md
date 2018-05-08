@@ -262,6 +262,10 @@ If a `config.properties` file is found in the working directory it is used to co
 
 - **defaultMavenSettingsFile** : if you want to use a specific Maven configuration file, you can set its path here.
 
+## Third party libraries using pom-explorer
+- [dep-graph-releaser](https://github.com/loewenfels/dep-graph-releaser), a tool to release a project and its dependent projects.  
+  => uses `pom-explorer-core` to perform a maven project analysis 
+
 ## Roadmap / Todo list
 
 - manage `gradle` and `npm` projects
