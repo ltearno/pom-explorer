@@ -110,6 +110,50 @@ public class AnalyzerTest
 	}
 
 	@Test
+	public void dependencyWithExclusion()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/dependencyWithExclusion");
+		//assert
+		assertProjects(session, 4);
+		assertDependencies(session, PROJECT_A,
+				new GavIsSelfManaged( PROJECT_B, true ),
+				new GavIsSelfManaged( PROJECT_C, true )
+		);
+		assertDependencies(session, PROJECT_B, 0);
+		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged( PROJECT_D, true ));
+		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( "fr.lteconsulting:toto:1.4-SNAPSHOT", true ));
+		assertDependencies(session, PROJECT_D, 0);
+		assertNoNullGavs(session);
+
+		assertDependencyHasExclusion(session, PROJECT_A, PROJECT_B, PROJECT_D);
+	}
+
+	@Test
+	public void dependencyManagementWithExclusion()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		runFullRecursiveAnalysis(session, "testSets/dependencyManagementWithExclusion");
+		//assert
+		assertProjects(session, 4);
+		assertDependencies(session, PROJECT_A,
+				new GavIsSelfManaged( PROJECT_B, true ),
+				new GavIsSelfManaged( PROJECT_C, true )
+		);
+		assertDependencies(session, PROJECT_B, 0);
+		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged( PROJECT_D, true ));
+		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( "fr.lteconsulting:toto:1.4-SNAPSHOT", true ));
+		assertDependencies(session, PROJECT_D, 0);
+		assertNoNullGavs(session);
+
+		assertDependencyManagementHasExclusion(session, PROJECT_A, PROJECT_B, PROJECT_D);
+	}
+
+	@Test
 	public void test05()
 	{
 		//arrange
@@ -681,6 +725,27 @@ public class AnalyzerTest
 		assertThat(submodules)
 				.as( "submodules of "+multiModule )
 				.containsExactlyInAnyOrderElementsOf( expectedModules );
+	}
+
+	private void assertDependencyHasExclusion( Session session, String gavString, String dependencyGavString, String excludedProjectGavString )
+	{
+		assertHasExclusion( gavString, dependencyGavString, excludedProjectGavString, session.graph().read().dependencies(Gav.parse(gavString)));
+	}
+
+	private void assertDependencyManagementHasExclusion( Session session, String gavString, String dependencyGavString, String excludedProjectGavString )
+	{
+		assertHasExclusion( gavString, dependencyGavString, excludedProjectGavString, session.graph().read().dependenciesManagement(Gav.parse(gavString)));
+	}
+
+	private void assertHasExclusion(String gavString, String dependencyGavString, String excludedProjectGavString, Set<? extends DependencyLikeRelation> dependencies)
+	{
+		Gav dependencyGav = Gav.parse( dependencyGavString );
+		DependencyLikeRelation relation = dependencies.stream()
+				.filter( gav -> gav.getTarget().equals(dependencyGav))
+				.findFirst().orElseThrow( () -> new AssertionError( gavString + " does not have a dependency to "+dependencyGavString ) );
+		Gav excludedProjectGav = Gav.parse( excludedProjectGavString );
+		Set<GroupArtifact> exclusions = relation.getDependency().getExclusions();
+		assertThat(exclusions).containsExactly( new GroupArtifact(excludedProjectGav.getGroupId(), excludedProjectGav.getArtifactId()));
 	}
 
 	private static class GavIsSelfManaged {

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fr.lteconsulting</groupId>
+    <artifactId>toto</artifactId>
+	
+			<version>1.4-SNAPSHOT</version>
+    
+	<packaging>jar</packaging>
+    <description>test project d</description>
+	<properties>
+		<uyt>FKFJHFGKJFHGKFJHG</uyt>
+		<tutu>no...</tutu>
+	</properties>
+</project>
