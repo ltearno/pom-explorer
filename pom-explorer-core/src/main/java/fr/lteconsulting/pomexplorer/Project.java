@@ -264,12 +264,16 @@ public class Project
 				{
 					DependencyKeyVersionAndScope keyVersionAndScope = interpolateDependencyKeyVersionAndScope( d, projects, log );
 					VersionScope versionScope = determineVersionScope( keyVersionAndScope, profiles, projects, log, keyVersionAndScope.key, true);
+					Set<GroupArtifact> exclusions = new HashSet<>();
+					addExclusions( projects, log, d, exclusions::add);
+
 					Dependency dependency = new Dependency(
 							keyVersionAndScope.key.getGroupId(),
 							keyVersionAndScope.key.getArtifactId(),
 							versionScope,
 							keyVersionAndScope.key.getClassifier(),
-							keyVersionAndScope.key.getType()
+							keyVersionAndScope.key.getType(),
+							exclusions
 					);
 
 					dependencyManagement.put( dependency.key(), dependency );
@@ -627,7 +631,7 @@ public class Project
 
 	private void addExclusions( ProjectContainer projects, Log log, org.apache.maven.model.Dependency d, ExclusionAdder exclusionAdder )
 	{
-		if( d.getExclusions() != null && !d.getExclusions().isEmpty() )
+		if( d.getExclusions() != null)
 		{
 			for( Exclusion exclusion : d.getExclusions() )
 			{

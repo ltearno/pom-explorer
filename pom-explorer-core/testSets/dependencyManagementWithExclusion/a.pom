@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fr.lteconsulting</groupId>
+    <artifactId>a</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <description>test project a</description>
+    <properties>
+        <cversion>1.0-SNAPSHOT</cversion>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>fr.lteconsulting</groupId>
+                <artifactId>b</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <scope>compile</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>fr.lteconsulting</groupId>
+                        <artifactId>d</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>fr.lteconsulting</groupId>
+            <artifactId>b</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.lteconsulting</groupId>
+            <artifactId>c</artifactId>
+            <version>${cversion}</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+</project>

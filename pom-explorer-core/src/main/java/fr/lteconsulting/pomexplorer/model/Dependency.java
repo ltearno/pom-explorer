@@ -1,7 +1,9 @@
 package fr.lteconsulting.pomexplorer.model;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.Set;
 
 import fr.lteconsulting.pomexplorer.graph.relation.Scope;
 
@@ -16,6 +18,7 @@ public class Dependency
 	private final String type;
 
 	private DependencyKey key;
+	private Set<GroupArtifact> exclusions;
 
 	public static final Comparator<Dependency> alphabeticalComparator = Comparator.comparing(Dependency::toString);
 
@@ -31,15 +34,19 @@ public class Dependency
 
 	public Dependency( String groupId, String artifactId, String version, Scope scope, String classifier, String type )
 	{
-		this(groupId, artifactId, version, null, scope, classifier, type);
+		this(groupId, artifactId, version, null, scope, classifier, type, Collections.emptySet());
 	}
 
 	public Dependency(String groupId, String artifactId, VersionScope vs, String classifier, String type)
 	{
-		this(groupId, artifactId, vs.getVersion(), vs.isVersionSelfManaged().orElse(null), vs.getScope(), classifier, type);
+		this(groupId, artifactId, vs, classifier, type, Collections.emptySet());
 	}
 
-	public Dependency(String groupId, String artifactId, String version, Boolean isVersionSelfManaged, Scope scope, String classifier, String type )
+	public Dependency(String groupId, String artifactId, VersionScope vs, String classifier, String type, Set<GroupArtifact> exclusions) {
+		this(groupId, artifactId, vs.getVersion(), vs.isVersionSelfManaged().orElse(null), vs.getScope(), classifier, type, exclusions);
+	}
+
+	public Dependency(String groupId, String artifactId, String version, Boolean isVersionSelfManaged, Scope scope, String classifier, String type, Set<GroupArtifact> exclusions)
 	{
 		this.groupId = groupId;
 		this.artifactId = artifactId;
@@ -48,6 +55,7 @@ public class Dependency
 		this.scope = scope == null ? Scope.COMPILE : scope;
 		this.classifier = classifier;
 		this.type = type == null ? "jar" : type;
+		this.exclusions = exclusions;
 	}
 
 	public DependencyKey key()
@@ -101,6 +109,11 @@ public class Dependency
 		return type;
 	}
 
+	public Set<GroupArtifact> getExclusions()
+	{
+		return exclusions;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -124,6 +137,7 @@ public class Dependency
 		result = prime * result + ((scope == null) ? 0 : scope.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		result = prime * result + ((version == null) ? 0 : version.hashCode());
+		result = prime * result + ((exclusions == null) ? 0 : exclusions.hashCode());
 		return result;
 	}
 
@@ -180,6 +194,13 @@ public class Dependency
 				return false;
 		}
 		else if( !version.equals( other.version ) )
+			return false;
+		if( exclusions == null )
+		{
+			if( other.exclusions != null )
+				return false;
+		}
+		else if( !exclusions.equals( other.exclusions ) )
 			return false;
 		return true;
 	}

@@ -310,7 +310,7 @@ public class PomAnalysis
 					Gav dependencyGav = new Gav( key.getGroupId(), key.getArtifactId(), rawDependency.getVs().getVersion() );
 
 					tx.addGav( dependencyGav );
-					tx.addRelation( new DependencyRelation( gav, dependencyGav, new Dependency(key.getGroupId(), key.getArtifactId(), rawDependency.getVs(), key.getClassifier(), key.getType() ) ) );
+					tx.addRelation( new DependencyRelation( gav, dependencyGav, new Dependency(key.getGroupId(), key.getArtifactId(), rawDependency.getVs(), key.getClassifier(), key.getType(), rawDependency.getExclusions()) ) );
 				}
 			}
 
