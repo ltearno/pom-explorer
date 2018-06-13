@@ -156,6 +156,11 @@ public class PomAnalysis
 		return erroneousProjects;
 	}
 
+	public List<UnresolvedPropertyException> getUnresolvedProperties()
+	{
+		return unresolvedProperties;
+	}
+
 	public Set<File> addDirectory( String directory )
 	{
 		log.html( "adding directory '" + directory + "'<br/>" );
