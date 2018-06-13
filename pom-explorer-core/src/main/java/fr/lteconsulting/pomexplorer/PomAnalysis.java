@@ -45,6 +45,7 @@ public class PomAnalysis
 	private final List<File> pomFiles = new ArrayList<>();
 	private final List<PomReadingException> erroneousPomFiles = new ArrayList<>();
 	private final List<ProjectAnalyseException> erroneousProjects = new ArrayList<>();
+	private final List<UnresolvedPropertyException> unresolvedProperties = new ArrayList<>();
 	private final Map<Gav, List<Project>> loadedProjects = new HashMap<>();
 	private final Set<Project> completedProjects = new HashSet<>();
 	private final Set<Project> unresolvableProjects = new HashSet<>();
@@ -285,6 +286,13 @@ public class PomAnalysis
 		PomGraphWriteTransaction tx = session.graph().write();
 
 		tx.removeRelations( tx.relations( project.getGav() ) );
+		Set<String> unresolvedProperties = project.getUnresolvedProperties();
+		if( unresolvedProperties != null )
+		{
+			unresolvedProperties.stream()
+					.map( name -> new UnresolvedPropertyException( name, project ) )
+					.collect( Collectors.toCollection( () -> this.unresolvedProperties ) );
+		}
 
 		try
 		{

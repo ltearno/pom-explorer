@@ -8,6 +8,7 @@ public class ValueResolution
 	private String resolved;
 	private Map<String, String> properties;
 	private boolean isSelfManaged;
+	private boolean hasUnresolvedProperties;
 
 	public String getRaw()
 	{
@@ -47,5 +48,15 @@ public class ValueResolution
 	public void setSelfManaged( Boolean selfManaged )
 	{
 		isSelfManaged = selfManaged;
+	}
+
+	public boolean hasUnresolvedProperties()
+	{
+		return hasUnresolvedProperties;
+	}
+
+	public void setHasUnresolvedProperties( boolean hasUnresolvedProperties )
+	{
+		this.hasUnresolvedProperties = hasUnresolvedProperties;
 	}
 }

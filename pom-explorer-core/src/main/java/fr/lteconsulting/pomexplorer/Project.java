@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static fr.lteconsulting.pomexplorer.Tools.isMavenVariable;
+import static fr.lteconsulting.pomexplorer.Tools.isNonResolvedValue;
 
 /**
  * A POM project information
@@ -62,6 +63,7 @@ public class Project
 	private Map<String, ValueResolution> cachedResolutions;
 	private Map<DependencyKey, DependencyManagement> cachedLocalDependencyManagement;
 	private Map<GroupArtifact, String> cachedLocalPluginDependencyManagement;
+	private Set<String> unresolvedProperties;
 
 	public Project( File pomFile, boolean isExternal )
 	{
@@ -174,15 +176,18 @@ public class Project
 		ValueResolution res = interpolateValueEx( value, projects, log );
 		return res.getResolved();
 	}
+	public ValueResolution interpolateValueEx( String value, ProjectContainer projects, Log log ){
+		return interpolateValueEx(value, projects, log, true);
+	}
 
-	public ValueResolution interpolateValueEx( String value, ProjectContainer projects, Log log )
+	public ValueResolution interpolateValueEx( String value, ProjectContainer projects, Log log, boolean canBeSelfManaged )
 	{
 		if( cachedResolutions != null && cachedResolutions.containsKey( value ) )
 			return cachedResolutions.get( value );
 
 		ValueResolution res = new ValueResolution();
 		res.setRaw( value );
-		res.setSelfManaged( true );
+		res.setSelfManaged( canBeSelfManaged );
 
 		if( value != null )
 		{
@@ -201,23 +206,41 @@ public class Project
 
 					String propertyReference = value.substring( start + 2, end );
 					PropertyLocation propertyLocation = resolveProperty( log, propertyReference, projects );
+
 					if( res.getProperties() == null )
 						res.setProperties( new HashMap<>() );
 
-					final String propertyResolved;
-					if(propertyLocation != null)
+					String propertyResolved = null;
+					if( propertyLocation != null )
 					{
 						propertyResolved = propertyLocation.getPropertyValue();
 						res.setSelfManaged( propertyLocation.isSelfManaged() );
-					}else
+
+						// theoretically we could end up with an endless loop if one has defined a property
+						// with a self reference (directly or indirectly). That's their fault we won't check for that.
+						while( isNonResolvedValue( propertyResolved ) )
+						{
+							// could be that the property itself is set up of multiple properties
+							ValueResolution valueResolution = propertyLocation.getProject().interpolateValueEx( propertyResolved, projects, log, propertyLocation.isSelfManaged());
+							if( !valueResolution.hasUnresolvedProperties() )
+							{
+								propertyResolved = valueResolution.getResolved();
+								res.setSelfManaged( valueResolution.isSelfManaged() );
+							} else
+							{
+								propertyResolved = null;
+							}
+						}
+					}
+					if(propertyResolved == null)
 					{
-						propertyResolved = null;
+						res.setHasUnresolvedProperties( true );
 						res.setSelfManaged( false );
 					}
+
 					res.getProperties().put( propertyReference, propertyResolved );
 
 					sb.append( propertyResolved );
-					sb.append( value.substring( end + 1 ) );
 
 					start = value.indexOf( "${", end + 1 );
 				}
@@ -729,12 +752,14 @@ public class Project
 				log.html( Tools.warningMessage( "cannot resolve property '" + propertyName + "' in project " + toString() ) );
 			else
 				System.out.println( "cannot resolve property '" + propertyName + "' in project " + toString() );
+
+			if( unresolvedProperties == null )
+			{
+				unresolvedProperties = new HashSet<>();
+			}
+			unresolvedProperties.add( propertyName );
 			return null;
 		}
-
-		if( isMavenVariable( propertyDefinition.getPropertyValue() ) )
-			return propertyDefinition.getProject().resolveProperty( log, propertyDefinition.getPropertyValue(), projects );
-
 		return propertyDefinition;
 	}
 
@@ -831,6 +856,11 @@ public class Project
 		Project project = new Project( pomFile, false );
 		project.readPomFile();
 		return project;
+	}
+
+	public Set<String> getUnresolvedProperties()
+	{
+		return unresolvedProperties;
 	}
 
 	@FunctionalInterface

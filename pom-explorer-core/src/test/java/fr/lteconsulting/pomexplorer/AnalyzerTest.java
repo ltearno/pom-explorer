@@ -125,10 +125,11 @@ public class AnalyzerTest
 		assertDependencies(session, PROJECT_B, 0);
 		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( "fr.lteconsulting:toto:1.4-SNAPSHOT", true ));
-		assertDependencies(session, PROJECT_D, 0);
+		assertDependencies(session, PROJECT_D, 1);
 		assertNoNullGavs(session);
 
 		assertDependencyHasExclusion(session, PROJECT_A, PROJECT_B, PROJECT_D);
+		assertThat(session.projects().forGav(Gav.parse(PROJECT_D)).getUnresolvedProperties()).containsExactly( "unknown" );
 	}
 
 	@Test
