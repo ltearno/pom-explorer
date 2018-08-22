@@ -51,7 +51,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/set02");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis( session, "testSets/set02" );
 		//assert
 		assertProjects(session, 5);
 		assertDependencies(session, PROJECT_A, new GavIsSelfManaged( PROJECT_B, true ));
@@ -66,7 +66,7 @@ public class AnalyzerTest
 		);
 		assertDependencies(session, PROJECT_D, 0);
 		assertDependencies(session, PROJECT_E, 0);
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -75,7 +75,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/set03");
+		PomAnalysis pomAnalysis =runFullRecursiveAnalysis(session, "testSets/set03");
 		//assert
 		assertProjects(session, 4);
 		assertDependencies(session, PROJECT_A,
@@ -86,7 +86,7 @@ public class AnalyzerTest
 		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_D, 0);
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -95,7 +95,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/set04");
+		PomAnalysis pomAnalysis =runFullRecursiveAnalysis(session, "testSets/set04");
 		//assert
 		assertProjects(session, 4);
 		assertDependencies(session, PROJECT_A,
@@ -106,7 +106,7 @@ public class AnalyzerTest
 		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( "fr.lteconsulting:toto:1.4-SNAPSHOT", true ));
 		assertDependencies(session, PROJECT_D, 0);
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -115,7 +115,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/dependencyWithExclusion");
+		PomAnalysis pomAnalysis =runFullRecursiveAnalysis(session, "testSets/dependencyWithExclusion");
 		//assert
 		assertProjects(session, 4);
 		assertDependencies(session, PROJECT_A,
@@ -126,7 +126,7 @@ public class AnalyzerTest
 		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( "fr.lteconsulting:toto:1.4-SNAPSHOT", true ));
 		assertDependencies(session, PROJECT_D, 1);
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 
 		assertDependencyHasExclusion(session, PROJECT_A, PROJECT_B, PROJECT_D);
 		assertThat(session.projects().forGav(Gav.parse(PROJECT_D)).getUnresolvedProperties()).containsExactly( "unknown" );
@@ -138,7 +138,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/dependencyManagementWithExclusion");
+		PomAnalysis pomAnalysis =runFullRecursiveAnalysis(session, "testSets/dependencyManagementWithExclusion");
 		//assert
 		assertProjects(session, 4);
 		assertDependencies(session, PROJECT_A,
@@ -149,7 +149,7 @@ public class AnalyzerTest
 		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged( PROJECT_D, true ));
 		assertDependencies(session, PROJECT_C, new GavIsSelfManaged( "fr.lteconsulting:toto:1.4-SNAPSHOT", true ));
 		assertDependencies(session, PROJECT_D, 0);
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 
 		assertDependencyManagementHasExclusion(session, PROJECT_A, PROJECT_B, PROJECT_D);
 	}
@@ -289,7 +289,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/multiModule_inSubfolders");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/multiModule_inSubfolders");
 		//assert
 		assertProjects(session, 6);
 		assertDependencies(session, PROJECT_A, 0);
@@ -320,7 +320,7 @@ public class AnalyzerTest
 		assertParentDependency(session, PROJECT_D, PROJECT_A);
 		assertDependencies(session, PROJECT_E, new GavIsSelfManaged( PROJECT_F, true ));
 		assertDependencies(session, PROJECT_F, 0);
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 
@@ -330,7 +330,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/multiModule_inSubfolders");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/multiModule_inSubfolders");
 		//assert
 		assertProjects(session, 6);
 		assertSubmodules(session, PROJECT_A,
@@ -338,6 +338,7 @@ public class AnalyzerTest
 				PROJECT_C,
 				PROJECT_D
 		);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 
@@ -347,7 +348,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/multiModule_inSameFolder");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/multiModule_inSameFolder");
 		//assert
 		assertProjects(session, 6);
 		assertSubmodules(session, PROJECT_A,
@@ -355,6 +356,7 @@ public class AnalyzerTest
 				PROJECT_C,
 				PROJECT_D
 		);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -363,11 +365,12 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/multiModule_nested");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/multiModule_nested");
 		//assert
 		assertProjects(session, 6);
 		assertSubmodules(session, PROJECT_A, PROJECT_B, PROJECT_C );
 		assertSubmodules(session, PROJECT_B, PROJECT_D );
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -376,7 +379,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/pomDependency");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/pomDependency");
 		//assert
 		assertProjects(session, 6);
 		assertDependencies(session, PROJECT_A, 0);
@@ -389,7 +392,7 @@ public class AnalyzerTest
 		assertParentDependency(session, PROJECT_D, PROJECT_A);
 		assertDependencies(session, PROJECT_E, 1);
 		assertDependencies(session, PROJECT_F, 0);
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -398,14 +401,14 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/bomDependency");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/bomDependency");
 		//assert
 		assertProjects(session, 3);
 		assertDependencies(session, PROJECT_A, 0);
 		assertDependencies(session, PROJECT_B, new GavIsSelfManaged(PROJECT_A, false));
 		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged(PROJECT_C, true));
 		assertDependenciesManagement(session, PROJECT_C, new GavIsSelfManaged(PROJECT_A, true));
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -414,14 +417,14 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/bomDependencyProjectVersion");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/bomDependencyProjectVersion");
 		//assert
 		assertProjects(session, 3);
 		assertDependencies(session, PROJECT_A, 0);
 		assertDependencies(session, PROJECT_B_2, new GavIsSelfManaged(PROJECT_A_3, false));
 		assertDependenciesManagement(session, PROJECT_B_2, new GavIsSelfManaged(PROJECT_C_3, true));
 		assertDependenciesManagement(session, PROJECT_C_3, new GavIsSelfManaged(PROJECT_A_3, true));
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -430,14 +433,14 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/bomDependencyWithSelfDependency");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/bomDependencyWithSelfDependency");
 		//assert
 		assertProjects(session, 3);
 		assertDependencies(session, PROJECT_A, 0);
 		assertDependencies(session, PROJECT_B, new GavIsSelfManaged(PROJECT_A, false));
 		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged(PROJECT_C, true));
 		assertDependenciesManagement(session, PROJECT_C, new GavIsSelfManaged(PROJECT_A, true));
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -446,7 +449,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		runFullRecursiveAnalysis(session, "testSets/bomDependencyInParent");
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/bomDependencyInParent");
 		//assert
 		assertProjects(session, 4);
 		assertDependencies(session, PROJECT_A, 0);
@@ -454,7 +457,7 @@ public class AnalyzerTest
 		assertDependenciesManagement(session, PROJECT_B, new GavIsSelfManaged(PROJECT_C, true));
 		assertDependenciesManagement(session, PROJECT_C, new GavIsSelfManaged(PROJECT_A, true));
 		assertDependenciesManagement(session, PROJECT_D, new GavIsSelfManaged(PROJECT_A, false));
-		assertNoNullGavs(session);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
 	@Test
@@ -463,7 +466,7 @@ public class AnalyzerTest
 		//arrange
 		Session session = new Session();
 		//act
-		PomAnalysis.runFullRecursiveAnalysis("testSets/versionInUnresolvedParent", session, new DefaultPomFileLoader( session, false ), null, true, System.out::println);
+		PomAnalysis pomAnalysis = PomAnalysis.runFullRecursiveAnalysis("testSets/versionInUnresolvedParent", session, new DefaultPomFileLoader( session, false ), null, true, System.out::println);
 		//assert
 		assertProjects(session, 3);
 		assertDependencies(session, PROJECT_A, 0);
@@ -477,7 +480,8 @@ public class AnalyzerTest
 				new GavIsSelfManaged("fr.lteconsulting:b:null", false),
 				new GavIsSelfManaged("fr.lteconsulting:b:null", false)
 		);
-		assertNullGavs(session, 1);
+		assertNullGavs( session, 1 );
+		assertNoErronousPomFiles( pomAnalysis);
 	}
 
 	@Test
@@ -545,6 +549,36 @@ public class AnalyzerTest
 		assertPomFilesWithErrors(pomAnalysis, 1);
 	}
 
+
+	@Ignore("Regressiontest for #69")
+	@Test
+	public void pomWithPropertyAsVersion()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/pomWithPropertyAsVersion");
+		//assert
+		assertProjects(session, 1);
+		assertDependencies(session, PROJECT_A, 0);
+		assertParentDependency(session, PROJECT_B, PROJECT_A);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
+	}
+
+	@Ignore("Regressiontest for #69")
+	@Test
+	public void pomWithTwoPropertiesAsVersion()
+	{
+		//arrange
+		Session session = new Session();
+		//act
+		PomAnalysis pomAnalysis = runFullRecursiveAnalysis(session, "testSets/pomWithTwoPropertiesAsVersion");
+		//assert
+		assertProjects(session, 1);
+		assertDependencies(session, PROJECT_A, 0);
+		assertParentDependency(session, PROJECT_B, PROJECT_A);
+		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
+	}
 
 	@Test
 	public void localTest1()
@@ -696,7 +730,17 @@ public class AnalyzerTest
 	private void assertParentDependency(Session session, String gavString, String parentGav)
 	{
 		Gav parent = session.graph().read().parent(Gav.parse(gavString));
-		assertEquals("parent dependency of " + gavString, parent, Gav.parse(parentGav));
+		assertEquals("parent dependency of " + gavString, Gav.parse(parentGav), parent);
+	}
+
+	private void assertNoNullGavsNoErroneousPoms( Session session, PomAnalysis pomAnalysis ){
+		assertNoNullGavs( session );
+		assertNoErronousPomFiles( pomAnalysis );
+	}
+
+	private void assertNoErronousPomFiles( PomAnalysis pomAnalysis )
+	{
+		assertThat(pomAnalysis.getErroneousPomFiles()).isEmpty();
 	}
 
 	private void assertNoNullGavs(Session session)
