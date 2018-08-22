@@ -9,6 +9,6 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>b</artifactId>
-    <version>${major.version}.${minor.version}</version>
+    <version>${major.version}.${minor.version}${version.suffix}</version>
 
 </project>

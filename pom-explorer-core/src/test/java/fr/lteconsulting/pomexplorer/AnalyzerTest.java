@@ -561,7 +561,7 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 1);
 		assertDependencies(session, PROJECT_A, 0);
-		assertParentDependency(session, PROJECT_B, PROJECT_A);
+		assertParentDependency(session, PROJECT_B_2, PROJECT_A);
 		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 
@@ -576,7 +576,7 @@ public class AnalyzerTest
 		//assert
 		assertProjects(session, 1);
 		assertDependencies(session, PROJECT_A, 0);
-		assertParentDependency(session, PROJECT_B, PROJECT_A);
+		assertParentDependency(session, PROJECT_B_2, PROJECT_A);
 		assertNoNullGavsNoErroneousPoms(session, pomAnalysis);
 	}
 

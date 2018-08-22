@@ -5,11 +5,12 @@
 
     <groupId>fr.lteconsulting</groupId>
     <artifactId>b</artifactId>
-    <version>1.0</version>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <major.version>1</major.version>
-        <minor.version>2</minor.version>
+        <major.version>2</major.version>
+        <minor.version>0</minor.version>
+        <version.suffix>-SNAPSHOT</version.suffix>
     </properties>
 
 
