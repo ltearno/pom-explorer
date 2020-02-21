@@ -55,7 +55,7 @@ public class MavenResolver
 		repositories = callMethod( mavenSession, "getRemoteRepositories" );
 		s = getField( mavenSession, "session" );
 		system = getField( mavenSession, "system" );
-		settings = getField( mavenSession, "settings" );
+		settings = getField(getField(mavenSession, "settingsManager"), "settings");
 		localRepositoryPath = getField( settings, "localRepository" );
 	}
 
