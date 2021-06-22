@@ -15,7 +15,7 @@ public class ProjectsService
 		// project filter, just a POC !
 		List<ProjectDto> result = client.getCurrentSession().projects().values().stream().filter( ( p ) -> p.getGav().toString().contains( query ) )
 				.limit( 200 ).sorted( Project.alphabeticalComparator )
-				.map( ( p ) -> ProjectDto.fromProject( client.getCurrentSession(), p ) ).filter( ( p ) -> p != null ).collect( Collectors.toList() );
+				.map( ( p ) -> ProjectDto.fromProject( client.getCurrentSession(), (msg) ->{}, p ) ).filter( ( p ) -> p != null ).collect( Collectors.toList() );
 
 		return result;
 	}

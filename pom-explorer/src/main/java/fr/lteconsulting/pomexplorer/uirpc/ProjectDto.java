@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import fr.lteconsulting.pomexplorer.Log;
 import org.apache.maven.project.MavenProject;
 
 import fr.lteconsulting.pomexplorer.Project;
@@ -44,7 +45,7 @@ public class ProjectDto
 	@SuppressWarnings( "unused" )
 	private String plugins;
 
-	public static ProjectDto fromProject( ApplicationSession session, Project project )
+	public static ProjectDto fromProject(ApplicationSession session, Log log, Project project )
 	{
 		MavenProject mavenProject = project.getMavenProject();
 		ProjectDto dto = new ProjectDto();
@@ -60,16 +61,16 @@ public class ProjectDto
 		dto.references = getReferences( session, project );
 
 		StringBuilder sb = new StringBuilder();
-		ProjectTools.showDependencyManagement( project, sb, session.projects(), null );
+		ProjectTools.showDependencyManagement( project, sb, session.projects(), log);
 		dto.dependencyManagement = sb.toString();
 		sb = new StringBuilder();
-		ProjectTools.showPluginManagement( project, sb, session.projects(), null );
+		ProjectTools.showPluginManagement( project, sb, session.projects(), log);
 		dto.pluginManagement = sb.toString();
 		sb = new StringBuilder();
-		ProjectTools.showDependencies( project, sb, session.projects(), null );
+		ProjectTools.showDependencies( project, sb, session.projects(), log);
 		dto.dependencies = sb.toString();
 		sb = new StringBuilder();
-		ProjectTools.showPlugins( project, sb, session.projects(), null );
+		ProjectTools.showPlugins( project, sb, session.projects(), log);
 		dto.plugins = sb.toString();
 
 		return dto;
