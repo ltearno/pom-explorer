@@ -24,7 +24,7 @@
 		<aetherVersion>1.0.0.v20140518</aetherVersion>
 		<mavenVersion>3.1.0</mavenVersion>
 		<wagonVersion>1.0</wagonVersion>
-		<version.io.undertow>1.4.15.Final</version.io.undertow>
+		<version.io.undertow>2.1.6.Final</version.io.undertow>
 	</properties>
 	
 	<dependencies>
