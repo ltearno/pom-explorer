@@ -1,5 +1,6 @@
 # pom-explorer
 
+[![build status](https://github.com/ltearno/pom-explorer/actions/workflows/maven-publish.yml/badge.svg)](https://github.com/ltearno/pom-explorer/actions/workflows/maven-publish.yml)
 [![security status](https://www.meterian.com/badge/gh/ltearno/pom-explorer/security)](https://www.meterian.com/report/gh/ltearno/pom-explorer)
 [![stability status](https://www.meterian.com/badge/gh/ltearno/pom-explorer/stability)](https://www.meterian.com/report/gh/ltearno/pom-explorer)
 
